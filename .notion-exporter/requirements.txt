@@ -1,0 +1,1 @@
+python-notion-exporter==1.0.6
