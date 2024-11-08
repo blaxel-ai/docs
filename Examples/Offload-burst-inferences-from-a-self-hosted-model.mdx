@@ -1,0 +1,66 @@
+This tutorial will show you how you can create a hybrid deployment of a model deployed on your own private cluster with Beamlit, in order to support burst traffic on your app.
+
+## Prerequisites
+
+- A Beamlit workspace
+- A running **Kubernetes cluster** (version 1.18 or later is recommended) where you have deployed a ML model (as a Deployment)
+- **Helm** installed on your local machine. Else see [Installation Guide](https://helm.sh/docs/intro/install/)
+
+## Guide
+
+Model offloading works by defining a [model deployment](../Models/Model-deployment.md) on Beamlit that references a Kubernetes Deployment that is on your own cluster. The is done via the Beamlit operator, which you can interact with using *Kubernetes Custom Resources (CR)*. The operator will:
+
+- create the corresponding resources on Beamlit
+- monitor metric usage for your Deployment
+- route traffic based on trigger conditions
+
+### Install the Beamlit operator
+
+The first step is to [install the Beamlit operator](../Models/Cloud-Burst-Network/Install-Beamlit-operator.md) in your cluster. The best way to do this is via the Helm chart (LINK TBD):
+
+```bash
+ # Download helm chart
+  helm repo add beamlit-operator https://beamlit.com/beamlit-operator
+```
+
+Once the repo is downloaded, install the operator in your cluster:
+
+```bash
+   # Install Beamlit operator
+  helm install controller . -n beamlit -- create-namespace --full
+```
+
+You can verify that the operator was successfully installed by running:
+
+```bash
+
+```
+
+### Make your model overflow
+
+You can offload an entire Kubernetes Deployment on Beamlit. Start by referencing the name of the deployment you are targeting:
+
+```bash
+  # Update your targeted model name
+  X_BEAMLIT_OFFLOADED_SERVICE = <your_deployment>
+```
+
+On Beamlit, a Kubernetes Deployment is mapped to a **ModelDeployment**. These are fully serverless and consume resources only when they are actively processing requests. Offloaded models activate only when a metric reaches a threshold. At all other times, requests go to your Deployment, while the model on Beamlit remains idle.
+
+Create a custom resource (CR) for a ModelDeployment to be remotely applied by the operator, following the template YAML below:
+
+```yaml
+
+```
+
+Create the model deployment by running the following command in your cluster:
+
+```bash
+
+  # Deploy your local model on Beamlit with burst watching
+  kubectl apply xxx
+```
+
+A model deployment is now created on Beamlit. It remains in standby mode until the activation metric reaches the threshold. While it does, the model will become active and requests will start being routed to Beamlit, making sure all your consumers are served. 
+
+For further reference, read our documentation about [model offloading](../Models/Cloud-Burst-Network/Model-overflow.md).

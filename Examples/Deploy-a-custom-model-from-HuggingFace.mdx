@@ -1,0 +1,56 @@
+This tutorial will show you how to use the Beamlit console to deploy a custom model that is stored on HuggingFace.
+
+## Prerequisites
+
+- A Beamlit workspace
+- A custom model that has been saved on a HuggingFace repository
+- A [HuggingFace](https://huggingface.co/) account
+- A HuggingFace access token that has access to the aforementioned model. Read about how to generate an access token on [this HuggingFace guide](https://huggingface.co/docs/hub/security-tokens).
+
+## Guide
+
+### Setup the workspace integration with HuggingFace
+
+To setup an integration with HuggingFace, you must use a [user access token](https://huggingface.co/docs/hub/security-tokens) generated on the HuggingFace console.
+
+Go in **Workspace Settings > Integrations**, and look for *HuggingFace*.
+
+[screen for integrations]
+
+Paste your user access token from HuggingFace. If there is already a token there, you can also replace it. All model deployments will start using the new token to connect to HuggingFace.
+
+### Deploy the model
+
+In **Global Inference Network > Models > Create a new model**, after having selected **Deploy from HuggingFace,** validate that the workspace configuration is correctly set and is being used for the model creation.
+
+[screen of first step]
+
+Then, choose a HuggingFace model to deploy using the search tool. You can search for both the organization name or model name. 
+
+<Info>You can select any model that the integration’s access token has access to.</Info>
+
+[screen of search step]
+
+Then, move on to the next step. Keep the [environment](../Model-Governance/Environments.md) set to *production* without any additional policy. 
+
+Give a name, then deploy the model.
+
+You can also run the following CLI command to deploy your model to the *production* environment: 
+
+```
+beamlit my-command TO COMPLETE
+```
+
+That’s it! Your model is deployed and ready to be called using the inference endpoint.
+
+### Call the model
+
+Use your model deployment’s [inference endpoint](../Models/Query-a-model.md) to make an inference request. The base URL should look like the following:
+
+`run.beamlit.com/your-workspace/your-model`
+
+If your HuggingFace model implements any other endpoint, they will be served on the URL above. For example:
+
+`run.beamlit.com/your-workspace/your-model/v1/chat/completions`
+
+For further reference, read our documentation about [model deployments](../Models/Model-deployment.md).

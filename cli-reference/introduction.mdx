@@ -1,0 +1,55 @@
+---
+
+title: 'Overview'
+
+description: 'Interact with Beamlit through a command line interface.'
+
+---
+
+Beamlit CLI is a command line tool to interact with the Beamlit APIs.
+
+## Get started
+
+To get started with the CLI, login to Beamlit using the following command:
+
+```bash
+beamlit login
+```
+
+You will be prompted to finish login using either an [API key](../Security/Access-tokens.md), or through your browser.
+
+Set a workspace to use as a context for the session by using the following command:
+
+```bash
+beamlit workspaces YOUR_WORKSPACE_SLUG
+
+/// Retrieve the list of workspaces you have access to by running:
+beamlit workspaces
+```
+
+You can now run any command to interact with Beamlit resources in your workspace. For example, to list models:
+
+```bash
+beamlit get models
+```
+
+## **Options**
+
+```
+-h, --help               help for beamlit
+-o, --output string      Output format. One of: pretty, yaml, json, table
+-w, --workspace string   Specify the Beamlit workspace to work on.
+-e, --env string         Specify the Beamlit environment to work on. One of: development, production
+```
+
+## See also
+
+- [beamlit apply](https://www.notion.so/beamlit_apply.md) - Apply a configuration to a resource by file
+- [beamlit completion](https://www.notion.so/beamlit_completion.md) - Generate the autocompletion script for the specified shell
+- [beamlit delete](https://www.notion.so/beamlit_delete.md) - Delete a resource
+- [beamlit get](https://www.notion.so/beamlit_get.md) - Get a resource
+- [beamlit login](https://www.notion.so/beamlit_login.md) - Log in to Beamlit
+- [beamlit logout](https://www.notion.so/beamlit_logout.md) - Log out from Beamlit
+- [beamlit metrics](https://www.notion.so/beamlit_metrics.md) - Get metrics for a model deployment
+- [beamlit run](https://www.notion.so/beamlit_run.md) - Run an inference
+- [beamlit workspaces](https://www.notion.so/beamlit_workspaces.md) - List all workspaces with the current workspace highlighted. Optionally set a new current workspace
