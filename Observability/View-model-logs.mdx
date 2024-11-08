@@ -1,0 +1,68 @@
+---
+
+title: 'View inference logs'
+
+description: 'Get visibility over all inference requests on your models.'
+
+---
+
+Beamlit stores inference logs for model deployments to give you visibility and troubleshooting abilities. All model deployments on Beamlit Global Inference Network generate logs, whereas you must allow models that are on-premise (and overflowing on Beamlit) to export logs.
+
+## Logs overview
+
+Both the logs for the routing of the request on Global Inference Network, and the logs of the inference itself are kept. These logs contain typically the following information:
+
+- XXX
+- XXX
+
+> We do not store info about the content of the inferences…
+
+### Deployment mode
+
+Depending on how you are interacting with Global Inference Network, logs storage and querying will behave differently.
+
+- Models that are deployed on Beamlit, either by direct deployment or when overflowing on Beamlit, **automatically export inference logs**. They can be viewed per specific model deployment.
+- Models that are deployed on your own clusters as an origin to be offloaded on Beamlit **do not export logs by default**. When configuring overflow, you can set variable <XXX:true> in order to activate exporting and centralize log monitoring
+
+> While *Beamlit Observability* offers a central place to store and query inference logs and metrics, integrations with external third-party observability providers (like Grafana, Prometheus, etc.) allow you to export all logs to your preferred observability platform.
+
+### Retention duration
+
+The default duration during which inference logs are kept and accessible is **72 hours**. After this retention period, logs are erased from Beamlit.
+
+> Enterprise plans have longer logs duration. If you need this retention period increased on your workspace, please contact us.
+
+### Live mode vs. batch mode
+
+Logs can be queried in two modes: 
+
+- live mode, where all new logs are streamed to you in real-time
+- batch mode, where you specify a period on which to run the query
+
+In CLI/API, the live mode can be activated with parameter <XXX:true>.
+
+## Accessing logs
+
+### Externally
+
+Not yet available?
+
+### Using the Beamlit console
+
+On the Beamlit console, open a model deployment and get to the ***Logs*** tab. 
+
+Logs for this specific model deployment will be displayed in real-time by default. You can search for logs, and filter on a specific time window on the page.
+
+[screen for logs]
+
+### Using the CLI
+
+Make a log query for a specific model deployment by running the following command:
+
+< TO COMPLETE >
+
+### Using the API
+
+Make a log query for a specific model deployment with the following API call:
+
+< TO COMPLETE >

@@ -1,0 +1,24 @@
+---
+
+title: 'Inference API'
+
+description: 'Run inferences on your Beamlit deployments.'
+
+---
+
+Whenever you deploy a model on Beamlit, an **inference endpoint** is generated on Global Inference Network.
+
+The inference URL looks like this:
+
+`run.beamlit.com/your-workspace/your-model`
+
+There is one distinct endpoint for each **model deployment,** i.e. for each combination of a model and an environment on which it is deployed. 
+
+For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
+
+- `run.beamlit.com/your-workspace/your-model?environment=production` will call the production deployment
+- `run.beamlit.com/your-workspace/your-model?environment=development` will call the environment deployment
+
+If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model is not deployed on the production environment, it will return an error.
+
+<Card title="Product documentation" icon="earth-americas" href="/Models/Query-a-model" > Read our product guide on querying a model. </Card>

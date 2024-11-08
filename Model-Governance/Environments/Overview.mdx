@@ -1,0 +1,15 @@
+Model governance plays a crucial role in managing your Global Inference Network's operations. It enables fine-grained control over deployment strategies, allowing you to define and enforce rules that dictate the behavior, deployment, and execution of models within your AI infrastructure. This helps ensure consistency, quality, and security across your models as they move from development to staging to production.
+
+Model governance in Beamlit is primarily driven by two key elements: **Environments** and **Policies**. These are the core levers that offer flexibility and control over how your models are managed and deployed.
+
+## Environments
+
+Environments in Beamlit represent logical entities that help manage the lifecycle of your models across various stages, such as development and production. By default, Beamlit provides two environments—**production** and **development**—which operate without deployment restrictions unless policies are attached. Environments ensure models adhere to specific guidelines, offering separation between different stages of deployment and promoting consistent, controlled releases.
+
+[Read more about Environments →](Overview.md)
+
+## Policies
+
+Policies in Beamlit provide a way to control how and where models are deployed. They enforce rules on execution, such as geographic restrictions or GPU requirements, ensuring compliance with organizational guidelines. Policies can be applied at the environment level or to specific model deployments, allowing for flexible, targeted control.
+
+[Read more about Policies →](Overview.md)

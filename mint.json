@@ -1,0 +1,156 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Documentation",
+  "logo": {
+    "dark": "/images/logo-dark.png",
+    "light": "/images/logo-light.svg"
+  },
+  "primaryTab": {
+    "name": "Documentation"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#FD7B35",
+    "light": "#FD7B35",
+    "dark": "#C75617",
+    "anchors": {
+      "from": "#FD7B35",
+      "to": "#FD7B35"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "support@beamlit.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Beamlit Console",
+    "url": "https://app.beamlit.com"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "openapi": "/api-reference/controlplane.yml",
+      "url": "api-reference"
+    },
+    {
+      "name": "CLI Reference",
+      "url": "cli-reference"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "Overview",
+        "Get-started"
+      ]
+    },
+    {
+      "group": "Overview",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "Inference API",
+      "pages": [
+        "api-reference/inference"
+      ]
+    },
+    {
+      "group": "Overview",
+      "pages": [
+        "cli-reference/introduction"
+      ]
+    },
+    {
+      "group": "Authentication API",
+      "pages": [
+        "cli-reference/beamlit_login",
+        "cli-reference/beamlit_set-workspace",
+        "cli-reference/beamlit_logout"
+      ]
+    },
+    {
+      "group": "Inference API",
+      "pages": [
+        "cli-reference/beamlit_run"
+      ]
+    },
+    {
+      "group": "Management API",
+      "pages": [
+        "cli-reference/beamlit_apply",
+        "cli-reference/beamlit_get-workspace",
+        "cli-reference/beamlit_get-workspaces",
+        "cli-reference/beamlit_get",
+        "cli-reference/beamlit_get_environments",
+        "cli-reference/beamlit_get_locations",
+        "cli-reference/beamlit_get_modelproviders",
+        "cli-reference/beamlit_get_models",
+        "cli-reference/beamlit_get_policies",
+        "cli-reference/beamlit_get_tools",
+        "cli-reference/beamlit_delete",
+        "cli-reference/beamlit_delete_environment",
+        "cli-reference/beamlit_delete_location",
+        "cli-reference/beamlit_delete_model",
+        "cli-reference/beamlit_delete_modelprovider",
+        "cli-reference/beamlit_delete_policy",
+        "cli-reference/beamlit_delete_tool"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "Examples/Deploy-a-custom-model-from-HuggingFace",
+        "Examples/Offload-burst-inferences-from-a-self-hosted-model",
+        "Examples/Deploy-Llama-3-10B-from-HuggingFace"
+      ]
+    },
+    {
+      "group": "Models",
+      "pages": [
+        "Models/Model-deployment",
+        "Models/Global-Inference-Network",
+        "Models/Query-a-model",
+        {
+          "group": "Cloud Burst Network",
+          "pages": [
+            "Models/Cloud-Burst-Network/Model-overflow",
+            "Models/Cloud-Burst-Network/Install-Beamlit-operator",
+            "Models/Cloud-Burst-Network/Cluster-configurations"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Model Governance",
+      "pages": [
+        "Model-Governance/Environments",
+        "Model-Governance/Dev-and-prod-lifecycle",
+        "Model-Governance/Policies"
+      ]
+    },
+    {
+      "group": "Observability",
+      "pages": [
+        "Observability/View-model-logs",
+        "Observability/View-model-metrics"
+      ]
+    },
+    {
+      "group": "Security",
+      "pages": [
+        "Security/Workspace-access-control"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "Integrations/HuggingFace"
+      ]
+    }
+  ]
+}

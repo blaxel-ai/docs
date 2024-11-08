@@ -1,0 +1,14 @@
+# Beamlit managed regions
+
+Beamlit offers a vast network of managed cloud regions powering the Global Inference Network. This network abstracts these regions, allowing users to run serverless AI workloads effortlessly.
+
+Workloads can also be executed on your own cloud (or on-premise) servers in addition to Beamlit managed regions, by connecting private clusters to the Global Inference Network.
+
+## Beamlit managed regions reference
+
+Below is the list of all Beamlit managed regions, with associated metadata.
+
+| **Region** | **Region technical name** | **Region country** | **Region continent** | **Available GPUs** |
+| --- | --- | --- | --- | --- |
+| Paris, France | *eu-west-3* | France | Europe | T4 |
+| TO COMPLETE |  |  |  |  |

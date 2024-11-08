@@ -1,0 +1,15 @@
+# Set up overflow metric
+
+The overflow metric is a customizable infrastructure metric that triggers model overflow when it hits a certain threshold.
+
+Currently, Beamlit only supports metrics from a self-managed Prometheus, evaluated through a Prometheus query (PromQL). 
+
+### Set up metric using Prometheus
+
+!> The Prometheus version must be at least xxx
+
+- pre-requisites on prom
+- which metrics are supported?
+- what is the format of the metric
+- examples
+- reference for the overflow parameters: metric, duration, condition to stop overflow

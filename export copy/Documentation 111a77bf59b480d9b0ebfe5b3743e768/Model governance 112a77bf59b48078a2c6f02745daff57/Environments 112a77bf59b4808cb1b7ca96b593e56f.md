@@ -1,0 +1,75 @@
+# Environments
+
+**Environments** are logical entities that provide a structured framework for managing the lifecycle of your applications across various stages of development, testing, and production.
+
+By bundling deployment policies, environments ensure that all workloads deployed within them adhere to consistent guidelines — promoting predictability, control, and quality throughout your organization.
+
+Currently, Beamlit provides all workspaces with two different environments: **production** and **development**. 
+
+- They are created without any policy: by default, models deployed on these environments won’t have any deployment restrictions.
+- They allow for a development/production release lifecycle: each environment provides a specific inference endpoint for models deployed within it.
+
+> Please reach out to us if you would like to use more than two environments.
+
+## **Attaching policies to an environment**
+
+You can attach deployment policies to any environment in order to enforce them across all model deployments on that environment.
+
+Run the following command to attach a policy to an environment
+
+< TO COMPLETE > 
+
+Read our complete reference for environments.
+
+### ~~Mandatory vs. optional policies~~
+
+~~Policies attached to an environment can be either **mandatory** or **optional**.~~ 
+
+- ~~Mandatory policies will always be enforced for all model deployments running on this environment~~
+- ~~Optional policies will be added by default for all model deployments running on this environment, but users will be able to remove or override them with specific policies when deploying the model~~
+
+### Attaching multiple policies to an environment
+
+When attaching multiple policies to an environment, their combined effect is the **UNION** of all of their effects for the same type of policy (a.k.a *OR* clause), and **INTERSECTION** across all types of policies (a.k.a *AND* clause)
+
+For example, let’s say you attach the following three policies on environment ‘development’:
+
+- US only: Country is United States *(type of policy: location)*
+- Asia only: Continent is Asia *(type of policy: location)*
+- T4 only: GPU is T4 *(type of policy: gpu)*
+
+Then, all models deployed on ‘development’ will run **necessarily on T4 accelerators**, which are on **any** region that is either in the US or in any country in Asia. 
+
+## **Deploying models to an environment**
+
+### Deploying a model
+
+When deploying a model, you can choose an environment on which to deploy it. When a model is deployed on an environment, this produces a “model deployment”.
+
+If you don’t specify an environment when deploying a model, the model is deployed on the *production* environment by default.
+
+Run the following command to deploy a model to an environment
+
+< TO COMPLETE > 
+
+Read our complete reference for deploying models. You can also use the Beamlit console or APIs for this.
+
+### Rolling out a model deployment to a new environment
+
+Model deployments can be released to a new environment. This replaces the model that was initially on the new target environment, and keeps the origin model deployment intact.
+
+For example, for Model XYZ:
+
+1. Let’s say you have version A of the model running on the *production* environment (the production deployment), and version B of the model running on the *development* environment (the development deployment). Each version can be called through the respective model deployment endpoint allowing to test version B while version A still runs.
+2. Once version B is tested and ready, you release the *development deployment* on the *production* environment.
+3. Now: version B runs on the *production* environment, and version B also runs on the *development* environment. Version A can no longer be called.
+4. You replace the *development* deployment with version C of the model. 
+5. Now: version B runs on the *production* environment, and version C runs on the *development* environment. 
+
+Run the following command to change the environment of a model deployment (typically for a development/production release)
+
+< TO COMPLETE > 
+
+Read our complete reference for deploying models. You can also use the Beamlit console or APIs for this.
+
+[screen of release to new environment]

@@ -1,5 +1,6 @@
-from python_notion_exporter import NotionExporter, ExportType, ViewExportType
 import os
+
+from python_notion_exporter import ExportType, NotionExporter, ViewExportType
 
 notion_token = os.getenv("NOTION_TOKEN")
 notion_file_token = os.getenv("NOTION_FILE_TOKEN")
@@ -9,7 +10,7 @@ if __name__ == "__main__":
     exporter = NotionExporter(
         token_v2=notion_token,
         file_token=notion_file_token,
-        pages={"Documentation": page},
+        pages={"Product Documentation": page},
         export_directory=".",
         export_name="export",
         flatten_export_file_tree=False,

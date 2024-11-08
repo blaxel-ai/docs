@@ -1,7 +1,7 @@
 import json
 import os
-import shutil
 import re
+import shutil
 
 page = os.getenv("NOTION_PAGE", "111a77bf59b480d9b0ebfe5b3743e768")
 
@@ -102,7 +102,7 @@ def rewrite_title(file_path):
         f.write(new_content)
 
 def process_export_folder():
-  os.chdir(f"export/Documentation {page}/")
+  os.chdir(f"export/Product Documentation {page}/")
 
   destination_folder = "../.."
   if os.getenv("DEBUG"):
