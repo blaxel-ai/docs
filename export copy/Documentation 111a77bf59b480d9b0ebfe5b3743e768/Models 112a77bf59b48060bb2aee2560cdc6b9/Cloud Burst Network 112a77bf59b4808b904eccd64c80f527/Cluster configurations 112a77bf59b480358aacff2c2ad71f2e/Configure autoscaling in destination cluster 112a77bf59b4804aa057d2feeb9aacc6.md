@@ -1,1 +1,0 @@
-# Configure autoscaling in destination cluster

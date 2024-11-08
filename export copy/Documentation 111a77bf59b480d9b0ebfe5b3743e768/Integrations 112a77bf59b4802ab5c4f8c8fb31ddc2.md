@@ -1,3 +1,0 @@
-# Integrations
-
-[HuggingFace](Integrations%20112a77bf59b4802ab5c4f8c8fb31ddc2/HuggingFace%20112a77bf59b4800a82ace7555fee7337.md)

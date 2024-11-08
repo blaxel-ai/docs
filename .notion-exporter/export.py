@@ -4,7 +4,7 @@ from python_notion_exporter import ExportType, NotionExporter, ViewExportType
 
 notion_token = os.getenv("NOTION_TOKEN")
 notion_file_token = os.getenv("NOTION_FILE_TOKEN")
-page = os.getenv("NOTION_PAGE", "111a77bf59b480d9b0ebfe5b3743e768")
+page = os.getenv("NOTION_PAGE", "13847e47b1ea80b389c8cfcfa90d34f9")
 
 if __name__ == "__main__":
     exporter = NotionExporter(

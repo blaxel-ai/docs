@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 
-page = os.getenv("NOTION_PAGE", "111a77bf59b480d9b0ebfe5b3743e768")
+page = os.getenv("NOTION_PAGE", "13847e47b1ea80b389c8cfcfa90d34f9")
 
 def copy_file(file_path, file_name, destination_folder):
   splitted_path = file_path.split("/")
