@@ -18,7 +18,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://.:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
-          git clone https://github.com/${{ github.repository_owner }}/control-plane
+          git clone https://github.com/${{ github.repository_owner }}/control-plane.git
           cp control-plane/api/api/definitions/controlplane.yml ./api-reference/controlplane.yml
           rm -rf control-plane
       - name: Copy Doc definition
@@ -26,7 +26,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://.:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
-          git clone https://github.com/${{ github.repository_owner }}/toolkit
+          git clone https://github.com/${{ github.repository_owner }}/toolkit.git
           cp -r toolkit/docs/* ./cli-reference/
           rm -rf toolkit
       - name: Setup Python
