@@ -8,7 +8,7 @@ description: 'Create and enforce fine-grained deployment rules.'
 
 Policies are used to program how and where your workloads are deployed on Beamlit. Policies can be defined as code, allowing for easy programming and customization of your [Global Inference Network](../Models/Global-Inference-Network.md).
 
-Policies apply to the entities they are attached to. They can be attached to individual model deployments, or to a whole environment to enforce them across your workspace.
+Policies apply to the entities they are attached to. They can be attached to individual [model deployments](../Models/Model-deployment.md), or to a whole [environment](Environments.md) to enforce them across your workspace.
 
 ## Policies overview
 
@@ -20,7 +20,7 @@ Example:
 
 - Policy `Country: US` means that attached workloads will only be able to run in locations that are in the United States.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using Global Inference Network’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Inference Network](../Models/Global-Inference-Network.md)’s default optimizations.
 
 ### Policy types
 
@@ -32,16 +32,14 @@ There are currently two types of policies: **location-based** and **flavor-based
 
 Location policies give control over which clusters will execute your workloads.
 
-They come in three different formats: 
+They come in two different formats: 
 
-- policies on **locations** allow to pass a specific list of locations (which represent physical execution clusters) on which the workload can be deployed and executed
-    - for example, execute only in the following locations: *San Francisco, USA* and *Tokyo, Japan*
-- policies on **countries** allow to define all physical locations inside of one or several countries at once
-    - for example, execute only in the following countries: *USA* and *Ireland*
-- policies on **continents** allow to define all physical locations inside of one or several continents at once
+- policies on **countries** allow to define all [physical locations](Policies.md) inside of one or several countries at once
+    - for example, execute only in the following country: *USA*
+- policies on **continents** allow to define all [physical locations](Policies.md) inside of one or several continents at once
     - for example, execute only in *North America*
 
-Refer to our reference on policy locations below for more information.
+Refer to [our reference on policy locations](Policies.md) below for more information.
 
 ### Flavor policies
 
@@ -55,73 +53,72 @@ They come in two different formats:
     - execute only on NVIDIA A100
     - execute only on NVIDIA L4 or NVIDIA T4
 
-Refer to our reference on policy flavors below for more information.
+Refer to [our reference on policy flavors](Policies.md) below for more information.
 
 ### Policies target
 
 <Note>This feature is coming soon!</Note>
 
+You can restrict the scope of objects affected by a policy through **targets**. This is particularly useful when you want to attach a policy to an environment without impacting all resources that depend on it.
+
+Targets specify the resource types the policy should influence. For instance, if you want to enforce the use of specific GPUs in the *production* environment for models, but allow functions to run on CPU, you can define a target on *models* for that policy.
+
+By default, a policy without a specified target applies to all resource types.
+
 ## Create a policy
 
-Create a policy using the following CLI command:
+Policies can be created from the Beamlit console, or from the Beamlit APIs and CLI.
 
-< TO COMPLETE >
-
-Policies can also be created using the Beamlit console, the Beamlit APIs and through the Beamlit operator.
+Read [our complete reference on policies](https://docs.beamlit.com/api-reference/policies/create-or-update-policy).
 
 ## Attach a policy
 
-Attaching a policy to a workload enforces it on the workload. Policies can be attached either to **environments**, or to specific **model deployments** (provided they do not collide with the environment-level policies).
-
-WHAT DOES THE TARGET DO
-
-When no policy on a certain type is applied to an environment or a model deployment, **all options for this type are considered allowed**. Workloads are executed using Global Inference Network’s default optimizations.
+Attaching a policy to a workload enforces it on the workload. Policies can be attached either to [**environments**](Environments.md), or to specific [**model deployments**](../Models/Model-deployment.md) (provided they [do not collide](Policies.md) with the environment-level policies).
 
 ### Attaching multiple policies
 
-You can attach multiple policies to the same environment or model deployment, or even apply policies on a model deployment while it already has policies from the linked environment. 
+When attaching **multiple policies** to a resource, it's crucial to understand their combined effect. This effect varies depending on whether you're attaching multiple policies to the same workload (e.g., one environment, or one model deployment), or applying policies to a workload that already inherits policies from its linked environment. 
 
-In this situation, their combined effect is the **UNION** of all of their effects for the same type of policy (a.k.a *OR* clause), and **INTERSECTION** across all types of policies (a.k.a *AND* clause).
+**If you are attaching multiple policies to the same resource.**
 
-WHAT IF COMBINING ENVIRONMENT AND DEPLOYMENT → MANDATORY VS OPTIONAL (reusable block?)
+In this situation, their combined effect is the **UNION** of all of their effects for the same [type](Policies.md) of policy (a.k.a *OR* clause), and **INTERSECTION** across all [types](Policies.md) of policies (a.k.a *AND* clause).
+
+**If you are attaching policies to a workload directly that already inherits policies from a linked environment**
+
+In this situation, a user cannot allow more options **on a policy [type](Policies.md)** **regulated by environment-level policies** by using deployment-specific policies. In other words, the combined effect is the **INTERSECTION** of all of their effects for the same type.
+
+The combined effect of policies of **different types** is the same as if all those policies where attached to the same resource (cf. above)
 
 For example:
 
 - Let’s assume the following policies:
-    - Policy A: Country is USA
-    - Policy B: Location is in: San Francisco, USA or Tokyo, Japan
-    - Policy C: GPU is NVIDIA T4
-- if the environment has the following combined policies:
-    - A and B: then workloads will only execute in Tokyo, Japan, and in any location in the USA (including San Francisco) — on any kind of GPU available there.
-    - B and C: then workloads will only execute in Tokyo, Japan or SF, USA, only on T4 GPUs.
+    - Policy A: Country is: USA
+    - Policy B: Continent is: North America, or Europe
+    - Policy C: GPU is: NVIDIA T4
+- if a single environment has the following combined policies:
+    - A and B: then workloads will only execute in any location in either North America (including USA) or Europe — on any kind of hardware available there.
+    - B and C: then workloads will only execute in any location in either North America or Europe, only on T4 GPUs.
     - A and C: then workloads will only execute in any location in the USA, only on T4 GPUs.
-    - A and B and C: then workloads will only execute in Tokyo, Japan, and in any location in the USA (including San Francisco) — only on T4 GPUs.
-- if we combine environment-level policies and deployment-level policies:
-    - to be completed
-
-~~max amount of policies?~~
+    - A and B and C: then workloads will only execute in any location in either North America (including USA) or Europe — only on T4 GPUs.
+- If an environment has certain policies, and additional policies are attached directly to a deployment linked to that environment:
+    - Environment (policy A) and deployment (policy B): then workloads will only execute in any location in the USA — on any kind of hardware available there.
+    - Environment (policy B) and deployment (policy A): same result
+    - Environment (policy B) and deployment (policy C): then workloads will only execute in any location in either North America or Europe, only on T4 GPUs.
+    - Environment (policy A) and deployment (policies B and C): then workloads will only execute in any location in the USA, only on T4 GPUs.
 
 ### Attaching a policy to an environment
 
-Attaching a policy to an environment **enforces it on all models** that are deployed on this environment.
+Attaching a policy to an environment **enforces it on all workloads** that are [deployed on this environment](Environments.md), and that are in the scope of the [target](Policies.md) of the policy.
 
-HOW TO SPECIFY MANDATORY VS ENFORCE
+A platform admin can thus apply policies at the environment level, ensuring they will be enforced for all deployments linked to this environment. This approach prevents other platform users from escalating their privileges.
 
-Attach a policy to an environment using the following CLI command:
+This is because as mentioned above, combining of policies at environment-level and policies at deployment-level has the following result:
 
-< TO COMPLETE >
+### Attaching a policy to a model deployment
 
-Policies can also be attached using the Beamlit console, the Beamlit APIs and through the Beamlit operator.
+Attaching a policy to a model deployment directly **enforces it on this specific model deployment,** provided it is in the scope of the [target](Policies.md) of the policy.
 
-### Attaching a policy to a model
-
-Attach a policy to a model deployment using the following CLI command:
-
-refer to section ‘multiple policies’ from here
-
-< TO COMPLETE >
-
-Policies can also be attached using the Beamlit console, the Beamlit APIs and through the Beamlit operator.
+If the deployment is already inheriting policies from its environment, the resulting effect is [as described above](Policies.md). You will not be able to allow more options than what is restricted at environment level.
 
 ## Policy reference
 
@@ -131,10 +128,15 @@ Below is the list of official names to build policies.
 
 | **Code** | **Type** | **Flavor Name** |
 | --- | --- | --- |
-|  | cpu |  |
-|  | gpu |  |
-|  | … |  |
+| CPU x86 | cpu | x86 |
+| t4 | gpu | NVIDIA T4 |
 
 ### Locations
 
-Read about the available parameters in the location reference.
+| **Code** | **Type** | **Name** |
+| --- | --- | --- |
+| eu | continent | Europe |
+| na | continent | North America |
+| us | country | United States |
+| fr | country | France |
+|  |  |  |
