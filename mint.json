@@ -21,12 +21,12 @@
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "support@beamlit.com"
+      "url": "mailto:support@beamlit.com"
     }
   ],
   "topbarCtaButton": {
     "name": "Beamlit Console",
-    "url": "https://app.beamlit.com"
+    "url": "https://beamlit.com/beta-signup"
   },
   "tabs": [
     {
@@ -43,8 +43,7 @@
     {
       "group": "Get Started",
       "pages": [
-        "Overview",
-        "Get-started"
+        "Overview"
       ]
     },
     {
@@ -105,8 +104,7 @@
       "group": "Examples",
       "pages": [
         "Examples/Deploy-a-custom-model-from-HuggingFace",
-        "Examples/Offload-burst-inferences-from-a-self-hosted-model",
-        "Examples/Deploy-Llama-3-10B-from-HuggingFace"
+        "Examples/Offload-burst-inferences-from-a-self-hosted-model"
       ]
     },
     {
@@ -120,7 +118,12 @@
           "pages": [
             "Models/Cloud-Burst-Network/Model-overflow",
             "Models/Cloud-Burst-Network/Install-Beamlit-operator",
-            "Models/Cloud-Burst-Network/Cluster-configurations"
+            {
+              "group": "Cluster configurations",
+              "pages": [
+                "Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric"
+              ]
+            }
           ]
         }
       ]
@@ -129,21 +132,21 @@
       "group": "Model Governance",
       "pages": [
         "Model-Governance/Environments",
-        "Model-Governance/Dev-and-prod-lifecycle",
         "Model-Governance/Policies"
       ]
     },
     {
       "group": "Observability",
       "pages": [
-        "Observability/View-model-logs",
-        "Observability/View-model-metrics"
+        "Observability/View-model-logs"
       ]
     },
     {
       "group": "Security",
       "pages": [
-        "Security/Workspace-access-control"
+        "Security/Workspace-access-control",
+        "Security/Service-accounts",
+        "Security/Access-tokens"
       ]
     },
     {

@@ -1,31 +1,39 @@
-# Welcome to Beamlit Documentation
+---
 
-Beamlit is a powerful platform designed to simplify and optimize machine learning model deployment and management. Our documentation portal is structured to help you quickly understand, implement, and leverage Beamlit's capabilities.
+title: 'Beamlit Documentation'
 
-## Core Concepts
+description: 'Welcome to Beamlit!'
 
-Beamlit builds upon Kubernetes, providing a seamless integration for managing your machine learning infrastructure. Key concepts include:
+---
 
-- Global Inference Network
-- Model Deployment and Scaling
-- Resource Management
+Beamlit is a **global infrastructure** that gives ML platform engineers the tools to deploy and run AI agents across multiple regions, ensuring **very low-latency and very high-availability**. 
 
-## Documentation Structure
+This portal provides comprehensive documentation, API references, and CLI instructions to help you operate the platform effectively.
+
+## Core concepts
+
+Beamlit's architecture is both **serverless** and **distributed**, automatically scaling compute resources without requiring server management. 
+
+At its core, Beamlit's **Global Inference Network** serves as the backbone, designed to deliver inferences at scale with exceptional availability and minimal latency. This allows for multi-region deployment, enabling AI workloads to run across multiple geographic areas or cloud providers. 
+
+For organizations with on-premise setups, Beamlit offers the **Cloud Burst Network** feature. This allows for minimal-footprint deployments with overflow capacity, providing flexibility in resource management. Additionally, Beamlit provides real-time observability, allowing users to monitor and analyze performance metrics for their model deployments.
+
+Among the important concepts in Beamlit are **models** and **deployments**. Models serve as the foundational logical entities, while deployments represent specific versions of these models implemented in various environments. Environments like development and production function as logical constructs for overseeing the model lifecycle across different stages. Policies play a crucial role in this framework, establishing and enforcing guidelines that govern the deployment process, thus ensuring adherence to organizational standards.
+
+The platform implements advanced security measures, including fine-grained authentication and authorization through Beamlit IAM, ensuring that your AI infrastructure remains protected.
+
+The platform supports model deployment and management through various methods, including APIs, CLI, console, or Kubernetes operator.
+
+## Documentation structure
 
 Our documentation is organized into the following main sections:
 
-- **Get Started:** Begin your journey with Beamlit by deploying your first model.
-- **Examples:** Explore real-world use cases and implementation guides.
-- **Models:** Learn about supported model types and deployment strategies.
-- **Model Governance:** Understand best practices for managing your models.
-- **Observability:** Monitor and optimize your model performance.
-- **Security:** Implement robust security measures for your ML infrastructure.
-- **Integrations:** Discover how Beamlit works with other tools and platforms.
-
-## Quick Links
-
-- [Get Started Guide](Get-started.md)
-- [Example Use Cases](Examples.md)
-- [API Reference](https://www.notion.so/Beamlit-Operators-13847e47b1ea81f4a0e9c9db1855631f?pvs=21)
-
-Whether you're new to Beamlit or an experienced user, our documentation is designed to provide you with the information you need to make the most of our platform. If you have any questions or need further assistance, please don't hesitate to contact our support team.
+- [**Examples:**](Examples/Deploy-a-custom-model-from-HuggingFace.md) Explore real-world use cases and implementation guides.
+- **Product Documentation**
+    - [**Models:**](Models/Model-deployment.md) Learn about supported model types and deployment strategies.
+    - [**Model Governance:**](Model-Governance/Environments.md) Understand best practices for managing your models.
+    - [**Observability:**](Observability/View-model-logs.md) Monitor and optimize your model performance.
+    - [Security:](Security/Workspace-access-control.md) Implement robust security measures for your ML infrastructure.
+    - [**Integrations:**](Integrations/HuggingFace.md) Discover how Beamlit works with other tools and platforms.
+- [**API reference:**](https://docs.beamlit.com/api-reference/introduction) Comprehensive guide to Beamlit's APIs.
+- [**CLI reference:**](https://docs.beamlit.com/cli-reference/introduction) Learn how to use Beamlit's command-line interface.
