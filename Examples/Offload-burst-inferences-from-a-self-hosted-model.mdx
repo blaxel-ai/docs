@@ -12,6 +12,8 @@ This tutorial demonstrates how you can create a hybrid deployment of a model dep
 
 - A Beamlit workspace
 - A running **Kubernetes cluster** (version 1.18 or later is recommended) where you have deployed a ML model (as a Deployment)
+
+- A Prometheus server (version XXX or later)
 - **Helm** installed on your local machine. Else see [Installation Guide](https://helm.sh/docs/intro/install/)
 
 ## Guide
@@ -19,23 +21,26 @@ This tutorial demonstrates how you can create a hybrid deployment of a model dep
 Model offloading works by defining a [model deployment](../Models/Model-deployment.md) on Beamlit that references a Kubernetes Deployment that is on your own cluster. The is done via the Beamlit operator, which you can interact with using *Kubernetes Custom Resources (CR)*. The operator will:
 
 - create the corresponding resources on Beamlit
-- monitor metric usage for your Deployment
+- monitor metric usage on Prometheus
 - route traffic based on trigger conditions
 
 ### Install the Beamlit operator
 
-The first step is to [install the Beamlit operator](../Models/Cloud-Burst-Network/Install-Beamlit-operator.md) in your cluster. The best way to do this is via the Helm chart (LINK TBD):
+~~The first step is to [install the Beamlit operator](../Models/Cloud-Burst-Network/Install-Beamlit-operator.md) in your cluster. The best way to do this is via the Helm chart (LINK TBD):~~
 
 ```bash
  # Download helm chart
-  helm repo add beamlit-operator https://beamlit.com/beamlit-operator
+  helm repo add beamlit https://beamlit.com/beamlit-operator
 ```
 
 Once the repo is downloaded, install the operator in your cluster:
 
 ```bash
-   # Install Beamlit operator
-  helm install controller . -n beamlit -- create-namespace --full
+   # Download chart and install Beamlit operator
+helm install beamlit-controller oci://ghcr.io/beamlit/beamlit-controller \
+--set beamlitApiToken=<token> \
+--set config.defaultRemoteBackend.authConfig.oauthConfig.clientId=<client-id> \
+--set config.defaultRemoteBackend.authConfig.oauthConfig.clientSecret=<client-secret>
 ```
 
 You can verify that the operator was successfully installed by running:
@@ -46,13 +51,6 @@ You can verify that the operator was successfully installed by running:
 
 ### Make your model overflow
 
-You can offload an entire Kubernetes Deployment on Beamlit. Start by referencing the name of the deployment you are targeting:
-
-```bash
-  # Update your targeted model name
-  X_BEAMLIT_OFFLOADED_SERVICE = <your_deployment>
-```
-
 On Beamlit, a Kubernetes Deployment is mapped to a **ModelDeployment**. These are fully serverless and consume resources only when they are actively processing requests. Offloaded models activate only when a metric reaches a threshold. At all other times, requests go to your Deployment, while the model on Beamlit remains idle.
 
 Create a custom resource (CR) for a ModelDeployment to be remotely applied by the operator, following the template YAML below:
@@ -61,12 +59,12 @@ Create a custom resource (CR) for a ModelDeployment to be remotely applied by th
 
 ```
 
+With this resource, the Beamlit operator will monitor a Prometheus server for the value of the overflow metric. If you want to use Kubernetes’ metrics-server instead, follow [our guide here](../Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric.md).
+
 Create the model deployment by running the following command in your cluster:
 
-```bash
-
-  # Deploy your local model on Beamlit with burst watching
-  kubectl apply xxx
+```
+kubectl apply -f my-deployment.yaml
 ```
 
 A model deployment is now created on Beamlit. It remains in standby mode until the activation metric reaches the threshold. While it does, the model will become active and requests will start being routed to Beamlit, making sure all your consumers are served. 

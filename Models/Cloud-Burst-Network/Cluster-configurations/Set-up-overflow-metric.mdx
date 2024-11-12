@@ -6,6 +6,78 @@ description: 'Offload traffic on Beamlit based on a metric.'
 
 ---
 
-The overflow metric is a customizable infrastructure metric that triggers [model overflow](../Model-overflow.md) when it hits a certain threshold.
+The overflow metric is a customizable infrastructure metric used by the Beamlit operator to trigger [model overflow](../Model-overflow.md) when it hits a certain threshold.
 
-Currently, Beamlit only supports metrics from a self-managed [Prometheus](https://prometheus.io/), evaluated through a [Prometheus query (PromQL)](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+Currently, Beamlit supports two ways to retrieve metrics:
+
+- metrics from a self-managed [Prometheus](https://github.com/prometheus/prometheus), evaluated through a [Prometheus query (PromQL)](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+- metrics from a Kubernetes HPA
+
+## Overview
+
+Setting up the overflow metric is made via the following parameters in the ModelDeployment custom resource: (CHANGE TO YAML?)
+
+```json
+{
+// ...
+"offloadingConfig": {
+	"remoteBackend": {...},
+	"metrics": {...},
+	"behavior": {
+		"percentage": 50
+		}
+	}
+}
+```
+
+where:
+
+- `remoteBackend` is the reference to the remote cluster/backend where your traffic will be offloaded to
+- `metrics` is the overflow metric, based on which the operator will decide whether to trigger traffic offloading
+- `behavior` is the percentage of requests to offload to the remote backend when the overflow metric reaches its threshold
+
+## Set up metric using Prometheus
+
+### Prerequisites
+
+- A Prometheus server (version XXX or later)
+- The Beamlit operator must have the permissions to access the Prometheus service
+- other prerequisites?
+
+### Metric overview
+
+The Beamlit operator can use any metric that is saved in the Prometheus database. 
+
+- what is the format of the metric
+- reference for the overflow parameters: metric, duration, condition to stop overflow
+
+### Examples
+
+For example, to trigger overflow in case of **XXX** :
+
+list examples
+
+## Set up metric using Kubernetes HPA
+
+### Prerequisites
+
+- Kubernetes HorizontalPodAutoscaler (HPA) must be installed on your cluster. The version must be at least xxx
+- Kubernetes metrics-server must be installed on your cluster. The version must be at least xxx
+
+### Metric overview
+
+The Beamlit operator can use any metric that can be expressed in the format of Kubernetes HorizontalPodAutoscaler ([autoscalingv2.MetricSpec](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics)).
+
+For example, with [resource metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics):
+
+```json
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+What else to say?
