@@ -1,109 +1,68 @@
 ---
 
-title: 'Install Beamlit operator'
+title: 'Install Beamlit controller'
 
-description: 'Manage Beamlit resources from your Kubernetes cluster with the Beamlit operator.'
+description: 'Manage Beamlit resources from your Kubernetes cluster with the Beamlit controller.'
 
 ---
+
+<Tip>The Beamlit controller's [GitHub repository](https://github.com/beamlit/beamlit-controller/) provides comprehensive instructions for installing and using the open-source controller. For a step-by-step Helm installation, read the following documentation.</Tip>
+
+The **open-source Beamlit controller** allows to remotely create and control objects (such as models) on a destination cluster. The destination cluster can be [Beamlit Global Inference Network](../Global-Inference-Network.md) or any of your Kubernetes clusters. The Beamlit controller can also **monitor the health** of any AI app deployed in your cluster. A Beamlit gateway (installed in your cluster alongside the controller) [load-balances requests](Model-overflow.md) between your deployment and the one in the destination when needed.
 
 ## Prerequisites
 
 Before you begin, ensure that you have the following:
 
-1. **A Kubernetes Cluster**: A running Kubernetes cluster (version 1.18 or later is recommended). You can use managed services like [Amazon EKS](https://aws.amazon.com/eks/), [Google GKE](https://cloud.google.com/kubernetes-engine), [Azure AKS](https://azure.microsoft.com/services/kubernetes-service/), or set up your own cluster.
-2. **Access Permissions**: Sufficient permissions to install resources in your Kubernetes cluster.
-3. **kubectl**: Installed and configured to interact with your Kubernetes cluster. [Installation Guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
-4. **Helm**: Installed on your local machine. [Installation Guide.](https://helm.sh/docs/intro/install/)
+1. **A Kubernetes Cluster**: A running Kubernetes cluster (version 1.27 or later is recommended). You can use managed services like [Amazon EKS](https://aws.amazon.com/eks/), [Google GKE](https://cloud.google.com/kubernetes-engine), [Azure AKS](https://azure.microsoft.com/services/kubernetes-service/), or set up your own cluster.
+2. **kubectl**: Installed and configured to interact with your Kubernetes cluster. [Installation Guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
-### Create a namespace (Optional)
+1. **Helm**. Version 3.8.0 or later is recommended in order to use [OCI-based registries](https://helm.sh/docs/topics/registries/). Check out the [Installation Guide.](https://helm.sh/docs/intro/install/)
+1. A [service account created in your Beamlit workspace](../../Security/Service-accounts.md), for which you have retrieved the `client ID` and `client secret`
 
-It's a good practice to install the operator in a separate namespace in your cluster. Replace `[namespace]` with your desired namespace name.
-
-```bash
-kubectl create namespace [namespace]
-```
-
-*Example:*
-
-```bash
-kubectl create namespace beamlit-operator
-```
-
----
-
-## Install with Helm
-
-### Add the Helm repository for the Beamlit operator
-
-1. **Add the repository**:
-    
-    ```bash
-    helm repo add beamlit <https://charts.yourdomain.com/ai-platform>
-    ```
-    
-
-1. **Update Helm Repositories**:
-    
-    Fetch the latest charts from all your configured repositories.
-    
-    ```bash
-    helm repo update
-    ```
-    
-
-1. **Verify the repository is Added**:
-    
-    ```bash
-    helm repo list
-    ```
-    
-    You should see `beamlit` in the list.
-    
+## Install the controller with Helm
 
 ### Configure custom values (optional)
 
-The Helm chart comes with default configurations, but you can customize them as needed.
+The Helm chart comes with [default configurations](https://github.com/beamlit/beamlit-controller/blob/main/chart/values.yaml), but you can customize them as needed.
 
 1. **Fetch default `values.yaml`**:
     
     ```bash
-    helm show values [your-repo-name]/[chart-name] > values.yaml
+    wget [https://raw.githubusercontent.com/beamlit/beamlit-controller/refs/heads/main/chart/values.yaml](https://raw.githubusercontent.com/beamlit/beamlit-controller/refs/heads/main/chart/values.yaml?token=GHSAT0AAAAAAC2IZP4DHT72ZONKI75SRY74ZZTSIFQ)
     ```
     
 2. **Edit `values.yaml`**:
     
-    Open `values.yaml` in your preferred text editor and modify the parameters as needed. Common configurations include:
+    Open `values.yaml` in your preferred text editor and modify the parameters as needed. 
     
-    - **Control Plane Endpoint**: URL or IP address where the operator sends data.
-    - **Authentication**: API keys or tokens for secure communication.
-    - **Resource Limits**: CPU and memory allocations.
-    - **Logging Level**: Adjust verbosity for logs.
+    <Warning>`beamlitApiToken` is a required parameter that is the **base64 encoding** of the concatenation of `clientId` and `clientSecret` with a colon in between, like so: `clientId:clientSecret`</Warning>
     
     *Example:*
     
     ```yaml
-    controlPlane:
-      endpoint: "<https://controlplane.yourdomain.com>"
-      apiKey: "your-api-key"
-    
-    resources:
-      limits:
-        cpu: "500m"
-        memory: "256Mi"
-    
-    logging:
-      level: "info"
+    allowedNamespaces:
+      - default
+    config:
+      namespaces: default
+    	defaultRemoteBackend:
+    		authConfig:
+          # -- client-id
+          clientId: "REPLACE_ME"
+          # -- client-secret
+          clientSecret: "REPLACE_ME"
+    beamlitApiToken: "REPLACE_ME"
     ```
     
 
-### Install the operator
+### Install the controller
 
-Once you have configured your settings, proceed to install the operator.
+Once you have configured your settings, proceed to install the controller. It is recommended to create a new namespace for this.
 
 1. **Basic installation (with default `values.yaml`**)
     
     ```bash
-    helm install [release-name] [your-repo-name]/[chart-name] --namespace [namespace]
+    helm install beamlit-controller oci://ghcr.io/beamlit/beamlit-controller-chart
     ```
     
 2. **Installation with custom `values.yaml`**:
@@ -111,71 +70,52 @@ Once you have configured your settings, proceed to install the operator.
     If you've customized the `values.yaml`, use the `-f` flag to apply your configurations.
     
     ```bash
-    helm install [release-name] [your-repo-name]/[chart-name] --namespace [namespace] -f values.yaml
+    helm install beamlit-controller oci://ghcr.io/beamlit/beamlit-controller-chart -f values.yaml
     ```
     
 3. **Verify installation**:
     
     ```bash
-    helm list --namespace [namespace]
+    helm list
     ```
     
 
 ### Verify the installation
 
-Ensure that all components of the operator are running correctly.
+Ensure that all components of the controller are running correctly.
 
 1. **Check pods**:
     
     ```bash
-    kubectl get pods --namespace [namespace]
-    
+    kubectl get pods
     ```
     
-    You should see pods related to your operator in the `Running` state.
-    
-2. **Check services**:
-    
-    ```bash
-    kubectl get services --namespace [namespace]
-    
-    ```
+    You should see pods related to the Beamlit **controller** and **gateway** in the `Running` state.
     
 
 1. **Check logs**:
     
-    To troubleshoot or verify operations, view the logs of the operator pod.
+    To troubleshoot or verify operations, view the logs of the controller pod.
     
     ```bash
-    kubectl logs [pod-name] --namespace [namespace]
-    
+    kubectl logs -l app.kubernetes.io/name=beamlit
     ```
     
 
-### Upgrading the operator
+### Upgrading the controller
 
-To upgrade the operator to a newer version, follow these steps:
+To upgrade the controller to a newer version, follow these steps:
 
-1. **Update Helm repositories**:
+1. **Upgrade the release.** You can refer to this [Helm documentation](https://helm.sh/docs/topics/registries/#other-subcommands) on subcommands:
     
     ```bash
-    helm repo update
-    
-    ```
-    
-
-1. **Upgrade the release**:
-    
-    ```bash
-    helm upgrade [release-name] [your-repo-name]/[chart-name] --namespace [namespace]
-    
+    helm upgrade beamlit-controller oci://ghcr.io/beamlit/beamlit-controller-chart
     ```
     
     If you have a custom `values.yaml`, include the `-f` flag:
     
     ```bash
-    helm upgrade ai-operator ai-platform/operator --namespace ai-operator -f values.yaml
-    
+    helm upgrade beamlit-controller oci://ghcr.io/beamlit/beamlit-controller-chart -f values.yaml
     ```
     
 
@@ -184,40 +124,17 @@ To upgrade the operator to a newer version, follow these steps:
     Check the status of the release to ensure the upgrade was successful.
     
     ```bash
-    helm status [release-name] --namespace [namespace]
-    
+    helm status beamlit-controller
     ```
     
 
-### Uninstalling the Operator
+### Uninstalling the controller
 
-If you need to remove the operator from your cluster, follow these steps:
+If you need to remove the controller from your cluster, run this command:
 
-1. **Uninstall the Helm release**:
-    
-    ```bash
-    helm uninstall [release-name] --namespace [namespace]
-    
-    ```
-    
-2. **Delete the namespace (If created)**:
-    
-    **⚠️ Warning**: This will delete all resources within the namespace.
-    
-    ```bash
-    kubectl delete namespace [namespace]
-    
-    ```
-    
-3. **Remove Helm repository (optional)**:
-    
-    If you no longer need the Helm repository, you can remove it.
-    
-    ```bash
-    helm repo remove [your-repo-name]
-    
-    ```
-    
+```bash
+helm uninstall beamlit-controller
+```
 
 ## Additional Resources
 

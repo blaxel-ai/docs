@@ -47,7 +47,7 @@ The evaluation of authentication/authorization for inference requests is managed
 
 ### Beamlit API
 
-Make a **POST** request to the [inference endpoint](Query-a-model.md) for the model deployment you are requesting:
+Make a **POST** request to the [inference endpoint](Query-a-model.md) for the model deployment you are requesting, making sure to fill in the [authentication token](Query-a-model.md):
 
 ```
 curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
@@ -61,10 +61,16 @@ Read about [the API parameters in the reference](https://docs.beamlit.com/api-re
 
 ### Beamlit CLI
 
-Make an inference request to the model deployment by running the following command:
+The following command will make a default POST request to the model’s *production* deployment (by default), on the base endpoint.
 
 ```bash
 beamlit run your-model --data '{"inputs":"Enter your input here."}'
+```
+
+You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model.md) that your model implements with the option `--path` :
+
+```bash
+beamlit run your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
 ```
 
 Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).

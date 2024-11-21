@@ -1,76 +1,97 @@
 ---
 
-title: 'Set up overflow metric'
+title: 'Set up offloading metric'
 
 description: 'Offload traffic on Beamlit based on a metric.'
 
 ---
 
-The overflow metric is a customizable infrastructure metric used by the Beamlit operator to trigger [model overflow](../Model-overflow.md) when it hits a certain threshold.
+The offloading metric is a customizable infrastructure metric used by the Beamlit controller to trigger [model offloading](../Model-overflow.md) when it hits a certain threshold.
 
 Currently, Beamlit supports two ways to retrieve metrics:
 
-- metrics from a self-managed [Prometheus](https://github.com/prometheus/prometheus), evaluated through a [Prometheus query (PromQL)](https://prometheus.io/docs/prometheus/latest/querying/basics/).
-- metrics from a Kubernetes HPA
+- metrics from a **self-managed [Prometheus](https://github.com/prometheus/prometheus)**, evaluated through a [Prometheus query (PromQL)](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+- metrics from a Kubernetes **metrics-server**
 
 ## Overview
 
-Setting up the overflow metric is made via the following parameters in the ModelDeployment custom resource: (CHANGE TO YAML?)
+Setting up the offloading metric is made via the following parameters in the `ModelDeployment` [custom resource](https://beamlit.github.io/beamlit-controller/crds/crds-docs.html#modeldeployment):
 
-```json
-{
-// ...
-"offloadingConfig": {
-	"remoteBackend": {...},
-	"metrics": {...},
-	"behavior": {
-		"percentage": 50
-		}
-	}
-}
+```yaml
+spec:
+	...
+	offloadingConfig:
+    behavior:
+      percentage: 50
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 50
 ```
 
 where:
 
-- `remoteBackend` is the reference to the remote cluster/backend where your traffic will be offloaded to
-- `metrics` is the overflow metric, based on which the operator will decide whether to trigger traffic offloading
-- `behavior` is the percentage of requests to offload to the remote backend when the overflow metric reaches its threshold
+- `behavior` is the **percentage** of requests to offload to the remote backend when the offloading metric reaches its threshold
+- `metrics` is the **offloading metric**, based on which the controller will decide whether to trigger traffic offloading
 
 ## Set up metric using Prometheus
 
 ### Prerequisites
 
-- A Prometheus server (version XXX or later)
-- The Beamlit operator must have the permissions to access the Prometheus service
-- other prerequisites?
+- A [Prometheus](https://github.com/prometheus/prometheus) server that is either in your Kubernetes cluster, or accessible in your network via URL without authentication.
+- Set up the [Beamlit controller](../Install-Beamlit-operator.md) to monitor your Prometheus service by adding the following configuration in the controller chart’s [*values.yaml*](https://github.com/beamlit/beamlit-controller/blob/main/chart/values.yaml):
+
+```yaml
+config:
+  metricInformer:
+	  type: prometheus
+	  prometheus:
+		  address: my-local-prom:9090
+```
 
 ### Metric overview
 
-The Beamlit operator can use any metric that is saved in the Prometheus database. 
+The Beamlit controller can use any metric that is saved in the Prometheus database, or use any computation on such metrics using PromQL.
 
-- what is the format of the metric
-- reference for the overflow parameters: metric, duration, condition to stop overflow
+`Metrics` is specified by an *External* metric (using [MetricSpec from Kubernetes](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects)). For example:
 
-### Examples
+```yaml
+offloadingConfig:
+    behavior:
+      percentage: 50
+    metrics:
+      - type: External
+			  external:
+			    metric:
+			      name: my_custom_metric_in_prom # Metric name, or PromQL query 
+			      selector:
+				      # Any label you want to match in your metric.
+				      # This only works for a single metric (not a PromQL query).			        
+				      matchLabels: 
+			          my_label: "value"
+			      target:
+				      type: Value
+				      value: 10
+```
 
-For example, to trigger overflow in case of **XXX** :
-
-list examples
-
-## Set up metric using Kubernetes HPA
+## Set up metric using Kubernetes metrics-server
 
 ### Prerequisites
 
-- Kubernetes HorizontalPodAutoscaler (HPA) must be installed on your cluster. The version must be at least xxx
-- Kubernetes metrics-server must be installed on your cluster. The version must be at least xxx
+- Kubernetes [metrics-server](https://github.com/kubernetes-sigs/metrics-server) must be installed on your Kubernetes cluster.
+
+<Tip>Using metrics-server is the default mode of the Beamlit controller.</Tip>
 
 ### Metric overview
 
-The Beamlit operator can use any metric that can be expressed in the format of Kubernetes HorizontalPodAutoscaler ([autoscalingv2.MetricSpec](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics)).
+The Beamlit controller can use any metric that's compatible with the Kubernetes [HorizontalPodAutoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics) (HPA) and accessible through *metrics-server*.
 
-For example, with [resource metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics):
+Metrics are defined using the [Horizontal Pod Autoscaler (HPA) format](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics) for either Resource, Pod, Object, or External metrics. For example, with [Resource metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics):
 
-```json
+```yaml
   metrics:
   - type: Resource
     resource:
@@ -80,4 +101,6 @@ For example, with [resource metrics](https://kubernetes.io/docs/tasks/run-applic
         averageUtilization: 50
 ```
 
-What else to say?
+This will trigger offloading when the average CPU usage gets higher than 50%.
+
+<Tip>Read more about the available parameters for defining metrics and targets on the [Kubernetes HPA documentation](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics).</Tip>

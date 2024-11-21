@@ -44,6 +44,20 @@ components:
           workspace:
             type: string
             description: Workspace name
+    AgentChain:
+      type: object
+      description: Agent chain configuration
+      properties:
+        description:
+          type: string
+          description: Description of the agent in case you want to override the default
+            one
+        enabled:
+          type: boolean
+          description: Whether the agent chain is enabled
+        name:
+          type: string
+          description: The name of the agent to chain to
     AgentConfiguration:
       type: object
       description: Agent configuration, this is a key value storage. In your agent
@@ -64,11 +78,20 @@ components:
           agent:
             type: string
             description: The name of the agent
+          agent_chain:
+            type: array
+            description: Agent chaining configuration
+            items:
+              $ref: '#/components/schemas/AgentChain'
           configuration:
             type: object
             $ref: '#/components/schemas/DeploymentConfigurations'
             description: Agent configuration, this is a key value storage. In your
               agent you can retrieve the value with config[key]
+          description:
+            type: string
+            description: Agent description, very important to have a clear description
+              for your agent if you want to make it work with agent chaining
           enabled:
             type: boolean
             description: Whether the agent deployment is enabled
@@ -77,6 +100,12 @@ components:
             description: The name of the environment
           flavors:
             $ref: '#/components/schemas/Flavors'
+          functions:
+            type: array
+            description: Functions used by the agent, those functions needs to be
+              created before setting it here
+            items:
+              type: string
           labels:
             $ref: '#/components/schemas/Labels'
           llm:
@@ -95,6 +124,27 @@ components:
           store_id:
             type: string
             description: Create from a store registered function
+          workspace:
+            type: string
+            description: The workspace the agent deployment belongs to
+    AgentDeploymentHistory:
+      type: object
+      description: Agent deployment history
+      allOf:
+      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - properties:
+          agent:
+            type: string
+            description: Agent name
+          environment:
+            type: string
+            description: Environment name
+          request_id:
+            type: string
+            description: Request ID
+          status:
+            type: string
+            description: Status
           workspace:
             type: string
             description: The workspace the agent deployment belongs to
@@ -379,6 +429,11 @@ components:
           function:
             type: string
             description: The name of the function
+          kit:
+            type: array
+            description: The kit of the function deployment
+            items:
+              $ref: '#/components/schemas/FunctionKit'
           labels:
             $ref: '#/components/schemas/Labels'
           parameters:
@@ -402,6 +457,23 @@ components:
           workspace:
             type: string
             description: The workspace the function deployment belongs to
+    FunctionKit:
+      type: object
+      description: Function kit
+      properties:
+        description:
+          type: string
+          description: Description of the function kit, very important for the agent
+            to work with your kit
+        name:
+          type: string
+          description: The kit name, very important for the agent to work with your
+            kit
+        parameters:
+          type: array
+          description: Kit parameters, for your kit to be callable with an Agent
+          items:
+            $ref: '#/components/schemas/StoreFunctionParameter'
     FunctionPolicies:
       description: Policies to apply to the model deployment
       items:
@@ -493,8 +565,19 @@ components:
       type: object
       description: Metrics for resources
       properties:
+        agents:
+          description: Metrics for agents
+        functions:
+          description: Metrics for functions
+        inference_per_second_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests per second (RPS), for all models globally
         models:
           description: Metrics for models
+        query_per_second:
+          type: number
+          description: RPS value (in last 24 hours) per location, for all resources
+            globally
     Model:
       type: object
       description: Logical object representing a model, that can be instantiated in
@@ -961,9 +1044,15 @@ components:
         created_at:
           type: string
           description: The date and time when the resource was created
+        created_by:
+          type: string
+          description: The user or service account who created the resource
         updated_at:
           type: string
           description: The date and time when the resource was updated
+        updated_by:
+          type: string
+          description: The user or service account who updated the resource
     StoreAgent:
       type: object
       description: Store agent
@@ -1015,6 +1104,11 @@ components:
       type: object
       description: 'Store configuration for resources (eg: agent, function, etc)'
       properties:
+        available_models:
+          type: array
+          description: Available models for the configuration
+          items:
+            type: string
         description:
           type: string
           description: Store configuration description
@@ -1075,6 +1169,11 @@ components:
           image:
             type: string
             description: Store function image
+          kit:
+            type: array
+            description: Store function kit
+            items:
+              $ref: '#/components/schemas/StoreFunctionKit'
           labels:
             type: object
             description: Store function labels
@@ -1107,6 +1206,23 @@ components:
           description: Store function configuration secret
           type: boolean
       type: object
+    StoreFunctionKit:
+      type: object
+      description: Store function kit
+      properties:
+        description:
+          type: string
+          description: Description of the function kit, very important for the agent
+            to work with your kit
+        name:
+          type: string
+          description: The kit name, very important for the agent to work with your
+            kit
+        parameters:
+          type: array
+          description: Kit parameters, for your kit to be callable with an Agent
+          items:
+            $ref: '#/components/schemas/StoreFunctionParameter'
     StoreFunctionParameter:
       type: object
       description: Store function parameter
@@ -1339,6 +1455,105 @@ paths:
         - agent_deployments:create
         - agent_deployments:update
       summary: Create or update agent deployment by environment name
+      tags:
+      - agents
+  /agents/{agentName}/deployments/{environmentName}/history:
+    get:
+      operationId: ListAgentDeploymentHistory
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AgentDeploymentHistory'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:list
+      tags:
+      - agents
+    parameters:
+    - description: Name of the agent
+      in: path
+      name: agentName
+      required: true
+      schema:
+        type: string
+    - description: Name of the environment
+      in: path
+      name: environmentName
+      required: true
+      schema:
+        type: string
+  /agents/{agentName}/deployments/{environmentName}/history/{requestId}:
+    delete:
+      operationId: DeleteAgentDeploymentHistory
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentHistory'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:delete
+      tags:
+      - agents
+    get:
+      operationId: GetAgentDeploymentHistory
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentHistory'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:get
+      tags:
+      - agents
+    parameters:
+    - description: Name of the agent
+      in: path
+      name: agentName
+      required: true
+      schema:
+        type: string
+    - description: Name of the environment
+      in: path
+      name: environmentName
+      required: true
+      schema:
+        type: string
+    - description: Request ID
+      in: path
+      name: requestId
+      required: true
+      schema:
+        type: string
+    put:
+      operationId: PutAgentDeploymentHistory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDeploymentHistory'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentHistory'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:update
+      summary: Update agent's history by request ID
       tags:
       - agents
   /agents/{agentName}/deployments/{environmentName}/logs:
