@@ -28,6 +28,13 @@
     "name": "Beamlit Console",
     "url": "https://beamlit.com/beta-signup"
   },
+  "anchors": [
+    {
+      "name": "Changelog",
+      "icon": "newspaper",
+      "url": "changelog"
+    }
+  ],
   "tabs": [
     {
       "name": "API Reference",
@@ -43,7 +50,8 @@
     {
       "group": "Get Started",
       "pages": [
-        "Overview"
+        "Overview",
+        "Get-started"
       ]
     },
     {
@@ -68,7 +76,7 @@
       "group": "Authentication API",
       "pages": [
         "cli-reference/beamlit_login",
-        "cli-reference/beamlit_set-workspace",
+        "cli-reference/beamlit_workspaces",
         "cli-reference/beamlit_logout"
       ]
     },
@@ -82,22 +90,19 @@
       "group": "Management API",
       "pages": [
         "cli-reference/beamlit_apply",
-        "cli-reference/beamlit_get-workspace",
-        "cli-reference/beamlit_get-workspaces",
+        "cli-reference/beamlit_metrics",
         "cli-reference/beamlit_get",
         "cli-reference/beamlit_get_environments",
+        "cli-reference/beamlit_get_functions",
         "cli-reference/beamlit_get_locations",
         "cli-reference/beamlit_get_modelproviders",
         "cli-reference/beamlit_get_models",
         "cli-reference/beamlit_get_policies",
-        "cli-reference/beamlit_get_tools",
         "cli-reference/beamlit_delete",
-        "cli-reference/beamlit_delete_environment",
-        "cli-reference/beamlit_delete_location",
+        "cli-reference/beamlit_delete_function",
         "cli-reference/beamlit_delete_model",
         "cli-reference/beamlit_delete_modelprovider",
-        "cli-reference/beamlit_delete_policy",
-        "cli-reference/beamlit_delete_tool"
+        "cli-reference/beamlit_delete_policy"
       ]
     },
     {

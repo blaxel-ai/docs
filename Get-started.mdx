@@ -2,14 +2,85 @@
 
 title: 'Get started'
 
-description: 'Deploy your first AI model in 3 minutes.'
+description: 'Deploy your first AI model worldwide in just 3 minutes.'
 
 ---
 
-Callout: Beamlit also lets you replicate a model deployment from your private Kubernetes cluster. To get started with this method, read this tutorial.
+Beamlit is a serverless cloud platform that enables AI teams to **push and run any AI workload across multiple locations** in a single click. This tutorial demonstrates how to deploy your first AI model on Beamlit.
 
-1. Introduction: what is Beamlit in 2 sentences, what this tutorial will let you do, + callout
-2. Install beamlit CLI
-3. Run beamlit login (with a private key)
-4. Run beamlit serve with a first model
-5. Make an inference with Beamlit CLI or by API
+<Info>Beamlit also lets you replicate a model deployment from your private Kubernetes cluster. To get started with this method, read [this tutorial](Examples/Offload-burst-inferences-from-a-self-hosted-model.md).</Info>
+
+### Install the Beamlit CLI
+
+You can install the [Beamlit CLI](cli-reference.md) using the by running the following 2 commands successively in a terminal:
+
+```bash
+### Tap the Beamlit formula to Homebrew
+brew tap beamlit/beamlit
+
+### Install the Beamlit CLI using Homebrew
+brew install beamlit
+```
+
+### Deploy a model
+
+Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control.md). Then, run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
+
+```bash
+beamlit login your-workspace-slugified-name
+```
+
+Let’s deploy a simple model from HuggingFace (a simple *sentence-transformers* model). Run the following command in the terminal:
+
+```bash
+cat << 'EOF' | beamlit apply -f -
+apiVersion: beamlit.com/v1alpha1
+kind: Model
+metadata:
+  name: my-model
+spec:
+  deployments:
+  - environment: production
+    runtime:
+      model: sentence-transformers/all-MiniLM-L6-v2
+      type: huggingface
+EOF
+```
+
+That’s it! Your model is now **distributed and available** across the entire Beamlit global infrastructure! 🌎 🌏 🌍 [Global Inference Network](Models/Global-Inference-Network.md) significantly speeds up inferences by positioning workloads near your users and smartly routing requests based on your policies.
+
+### Make a first inference
+
+Run a first inference on your model with the following command:
+
+```bash
+beamlit run my-model --data '{"inputs":"What is the encoding for this input?"}'
+```
+
+<Tip>Alternatively, your model is available behind a **global endpoint**. Read [this guide](Models/Query-a-model.md) on how to use it for HTTP requests.</Tip>
+
+### Next steps
+
+You are ready to run AI everywhere with the Beamlit platform! Check out the following guides which may be useful to you:
+
+<Card title="Deploy models" icon="earth-americas" href="/Models/Model-deployment">
+Complete guide for deploying AI models directly on the Global Inference Network.
+</Card>
+
+<Card title="Offload traffic from a private model" icon="server" href="/Models/Cloud-Burst-Network/Model-overflow">
+Complete guide for making a minimal-footprint replica of your own model on Beamlit, for high-availability.
+</Card>
+
+<Card title="Guide for querying models on the Global Inference Network" icon="bolt" href="/Models/Model-deployment">
+Complete guide for querying your deployments on the Global Inference Network.
+</Card>
+
+Or check out the following hands-on examples:
+
+<Card title="Tutorial: deploy a custom model" icon="book-open" href="/Examples/Deploy-a-custom-model-from-HuggingFace" horizontal="true">
+Read our tutorial for deploying a custom fine-tuned model from HuggingFace.
+</Card>
+
+<Card title="Tutorial: offload requests from a self-hosted model" icon="book-open" href="/Examples/Offload-burst-inferences-from-a-self-hosted-model" horizontal="true">
+Read our tutorial for offloading burst traffic from a self-hosted model on your Kubernetes cluster.
+</Card>

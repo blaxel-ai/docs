@@ -8,12 +8,28 @@ description: 'Interact with Beamlit through a command line interface.'
 
 Beamlit CLI is a command line tool to interact with the Beamlit APIs.
 
-## Get started
+## Install
 
-To get started with the CLI, login to Beamlit using the following command:
+<Warning>To install the Beamlit CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Please reach out to [support@beamlit.com](mailto:support@beamlit.com) if you need to use an alternative to Homebrew.</Warning>
+
+Install the Beamlit CLI by running the following two commands successively in a terminal:
 
 ```bash
-beamlit login
+### Tap the Beamlit formula to Homebrew
+brew tap beamlit/beamlit
+```
+
+```bash
+### Install the Beamlit CLI using Homebrew
+brew install beamlit
+```
+
+## Get started
+
+To get started with the CLI, your must first create a [workspace](../Security/Workspace-access-control.md) on the Beamlit console. Then, login to Beamlit using the following command and replacing `your-workspace`:
+
+```bash
+beamlit login your-workspace
 ```
 
 You will be prompted to finish login using either an [API key](../Security/Access-tokens.md), or through your browser.
@@ -21,9 +37,9 @@ You will be prompted to finish login using either an [API key](../Security/Acces
 Set a workspace to use as a context for the session by using the following command:
 
 ```bash
-beamlit workspaces YOUR_WORKSPACE_SLUG
+beamlit workspaces your-workspace
 
-/// Retrieve the list of workspaces you have access to by running:
+### Retrieve the list of workspaces you have access to by running:
 beamlit workspaces
 ```
 
