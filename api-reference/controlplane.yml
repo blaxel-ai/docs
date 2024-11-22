@@ -136,18 +136,60 @@ components:
           agent:
             type: string
             description: Agent name
+          end:
+            type: string
+            description: End time
           environment:
             type: string
             description: Environment name
+          events:
+            type: array
+            description: Events
+            items:
+              $ref: '#/components/schemas/AgentDeploymentHistoryEvent'
           request_id:
             type: string
             description: Request ID
+          start:
+            type: string
+            description: Start time
           status:
             type: string
-            description: Status
+            description: 'Status, eg: running, success, failed'
+          took:
+            type: integer
+            description: Number of milliseconds it took to complete the event
           workspace:
             type: string
             description: The workspace the agent deployment belongs to
+    AgentDeploymentHistoryEvent:
+      type: object
+      description: Agent deployment history event
+      properties:
+        end:
+          type: string
+          description: End time
+        name:
+          type: string
+          description: Name of the function or agent
+        parameters:
+          type: string
+          description: Parameters
+        start:
+          type: string
+          description: Start time
+        status:
+          type: string
+          description: 'Status, eg: running, success, failed'
+        sub_function:
+          type: string
+          description: Function used in kit if a kit was used
+        took:
+          type: integer
+          description: Number of milliseconds it took to complete the event
+        type:
+          type: string
+          description: Type, one of function or agent
     AgentRelease:
       type: object
       description: Agent release, used to deploy a agent from one environment to another
@@ -721,6 +763,9 @@ components:
           config:
             $ref: '#/components/schemas/ProviderConfig'
             description: Additional configuration for the model provider
+          display_name:
+            type: string
+            description: Model provider display name
           labels:
             $ref: '#/components/schemas/Labels'
           name:
@@ -1307,6 +1352,27 @@ paths:
       summary: List all agents
       tags:
       - agents
+    post:
+      operationId: CreateAgent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agents:create
+      summary: Create agent by name
+      tags:
+      - agents
   /agents/{agentName}:
     delete:
       operationId: DeleteAgent
@@ -1346,7 +1412,7 @@ paths:
       schema:
         type: string
     put:
-      operationId: PutAgent
+      operationId: UpdateAgent
       requestBody:
         content:
           application/json:
@@ -1659,7 +1725,7 @@ paths:
         - agent_releases:create
       summary: Create release for a agent from an environment
       tags:
-      - agent_releases
+      - agents
   /authentication_providers/{authenticationProviderName}/models:
     get:
       description: Returns a list of all models for an integration by ID.
@@ -1783,6 +1849,28 @@ paths:
       summary: List environments
       tags:
       - environments
+    post:
+      description: Creates an environment.
+      operationId: CreateEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - environments:create
+      summary: Create environment
+      tags:
+      - environments
   /environments/{environmentName}:
     delete:
       description: Deletes an environment by name.
@@ -1831,8 +1919,8 @@ paths:
       schema:
         type: string
     put:
-      description: Creates or updates an environment by name.
-      operationId: PutEnvironment
+      description: Updates an environment.
+      operationId: UpdateEnvironment
       requestBody:
         content:
           application/json:
@@ -1849,7 +1937,7 @@ paths:
       security:
       - BearerAuth:
         - environments:update
-      summary: Create or Update environment
+      summary: Update environment
       tags:
       - environments
   /environments/{environmentName}/metrics:
@@ -1894,6 +1982,27 @@ paths:
       summary: List all functions
       tags:
       - functions
+    post:
+      operationId: CreateFunction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - functions:create
+      summary: Create function
+      tags:
+      - functions
   /functions/{functionName}:
     delete:
       operationId: DeleteFunction
@@ -1933,7 +2042,7 @@ paths:
       schema:
         type: string
     put:
-      operationId: PutFunction
+      operationId: UpdateFunction
       requestBody:
         content:
           application/json:
@@ -2147,7 +2256,50 @@ paths:
         - function_releases:create
       summary: Create release for a function from an environment
       tags:
-      - function_releases
+      - functions
+  /history/agents:
+    get:
+      description: Get all history for all agents
+      operationId: ListAgentsHistory
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AgentDeploymentHistory'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:list
+      tags:
+      - history
+  /history/agents/{requestId}:
+    get:
+      description: Get all history for a specific request ID from all agents
+      operationId: GetAgentsHistory
+      parameters:
+      - description: Request ID of the agent history
+        in: path
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AgentDeploymentHistory'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_deployment_history:list
+      tags:
+      - history
   /locations:
     get:
       description: Returns a list of all locations available with status.
@@ -2203,6 +2355,28 @@ paths:
       summary: List model providers
       tags:
       - model_providers
+    post:
+      description: Create an integration.
+      operationId: CreateModelProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelProvider'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelProvider'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - model_providers:create
+      summary: Create model provider
+      tags:
+      - model_providers
   /model_providers/{modelProviderName}:
     delete:
       description: Deletes an integration by ID.
@@ -2251,8 +2425,8 @@ paths:
       tags:
       - model_providers
     put:
-      description: Creates or updates an integration by ID.
-      operationId: PutModelProvider
+      description: Update an integration by ID.
+      operationId: UpdateModelProvider
       parameters:
       - description: Name of the model provider
         in: path
@@ -2275,9 +2449,8 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - model_providers:create
         - model_providers:update
-      summary: Create or Update model provider
+      summary: Update model provider
       tags:
       - model_providers
   /models:
@@ -2297,6 +2470,28 @@ paths:
       - BearerAuth:
         - models:list
       summary: List models
+      tags:
+      - models
+    post:
+      description: Creates a model.
+      operationId: CreateModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelWithDeployments'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - models:create
+      summary: Create model
       tags:
       - models
   /models/{modelName}:
@@ -2340,8 +2535,8 @@ paths:
       schema:
         type: string
     put:
-      description: Creates or updates a model by name.
-      operationId: PutModel
+      description: Update a model by name.
+      operationId: UpdateModel
       requestBody:
         content:
           application/json:
@@ -2563,7 +2758,7 @@ paths:
         - model_releases:create
       summary: Release model from an environment
       tags:
-      - model_releases
+      - models
   /policies:
     get:
       description: Returns a list of all policies in the workspace.
@@ -2581,6 +2776,28 @@ paths:
       - BearerAuth:
         - policies:list
       summary: List policies
+      tags:
+      - policies
+    post:
+      description: Creates a policy.
+      operationId: CreatePolicy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - policies:create
+      summary: Create policy
       tags:
       - policies
   /policies/{policyName}:
@@ -2624,8 +2841,8 @@ paths:
       schema:
         type: string
     put:
-      description: Creates or updates a policy by name.
-      operationId: PutPolicy
+      description: Updates a policy.
+      operationId: UpdatePolicy
       requestBody:
         content:
           application/json:
@@ -2642,7 +2859,7 @@ paths:
       security:
       - BearerAuth:
         - policies:update
-      summary: Create or update policy
+      summary: Update policy
       tags:
       - policies
   /profile/invitations:
@@ -2700,7 +2917,7 @@ paths:
         - workspaces:get
       summary: Get workspace service accounts
       tags:
-      - workspaces
+      - service_accounts
     post:
       description: Creates a service account in the workspace.
       operationId: CreateWorkspaceServiceAccount
@@ -2750,7 +2967,7 @@ paths:
         - workspaces:update
       summary: Create workspace service account
       tags:
-      - workspaces
+      - service_accounts
   /service_accounts/{clientId}:
     delete:
       description: Deletes a service account.
@@ -2790,7 +3007,7 @@ paths:
         - workspaces:update
       summary: Delete workspace service account
       tags:
-      - workspaces
+      - service_accounts
     put:
       description: Updates a service account.
       operationId: UpdateWorkspaceServiceAccount
@@ -2842,7 +3059,7 @@ paths:
         - workspaces:update
       summary: Update workspace service account
       tags:
-      - workspaces
+      - service_accounts
   /service_accounts/{clientId}/api_keys:
     get:
       description: Returns a list of all API keys for a service account.
@@ -2861,7 +3078,7 @@ paths:
         - api_key:list
       summary: List API keys for service account
       tags:
-      - workspaces
+      - service_accounts
     parameters:
     - description: Client ID
       in: path
@@ -2897,7 +3114,7 @@ paths:
         - api_key:write
       summary: Create API key for service account
       tags:
-      - workspaces
+      - service_accounts
   /service_accounts/{clientId}/api_keys/{apiKeyId}:
     delete:
       description: Deletes an API key for a service account.
@@ -2910,7 +3127,7 @@ paths:
         - api_key:write
       summary: Delete API key for service account
       tags:
-      - workspaces
+      - service_accounts
     parameters:
     - description: Client ID
       in: path
