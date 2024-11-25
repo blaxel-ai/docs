@@ -1,5 +1,5 @@
 ---
-date: 2024-11-06T14:35:20+01:00
+date: 2024-11-25T14:23:03+01:00
 title: "beamlit"
 slug: beamlit
 ---
@@ -13,6 +13,7 @@ Beamlit CLI is a command line tool to interact with Beamlit APIs.
   -e, --env string         Environment. One of: development,production
   -h, --help               help for beamlit
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```
 
@@ -26,5 +27,5 @@ Beamlit CLI is a command line tool to interact with Beamlit APIs.
 * [beamlit logout](beamlit_logout.md)	 - Logout from Beamlit
 * [beamlit metrics](beamlit_metrics.md)	 - Get metrics for a model deployment
 * [beamlit run](beamlit_run.md)	 - Run inference
-* [beamlit workspaces](beamlit_workspaces.md)	 - List all workspaces with the current workspace highlighted, set optionally a new current workspace
+* [beamlit workspaces](beamlit_workspaces.md)	 - List all workspaces with the current workspace highlighted, set optionally a new current workspace and environment
 
