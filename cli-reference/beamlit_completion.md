@@ -1,5 +1,5 @@
 ---
-date: 2024-11-06T14:35:20+01:00
+date: 2024-11-25T14:23:03+01:00
 title: "beamlit completion"
 slug: beamlit_completion
 ---
@@ -24,6 +24,7 @@ See each sub-command's help for details on how to use the generated script.
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```
 

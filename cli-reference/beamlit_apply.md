@@ -1,5 +1,5 @@
 ---
-date: 2024-11-06T14:35:20+01:00
+date: 2024-11-25T14:23:03+01:00
 title: "beamlit apply"
 slug: beamlit_apply
 ---
@@ -20,6 +20,8 @@ beamlit apply [flags]
 ```
 
 			beamlit apply -f ./my-deployment.yaml
+			# Or using stdin
+			cat file.yaml | beamlit apply -f -
 		
 ```
 
@@ -35,6 +37,7 @@ beamlit apply [flags]
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```
 
