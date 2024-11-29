@@ -106,6 +106,9 @@ components:
               created before setting it here
             items:
               type: string
+          integration_connections:
+            $ref: '#/components/schemas/DeploymentIntegrationConnections'
+            description: The integration connections for the model deployment
           labels:
             $ref: '#/components/schemas/Labels'
           llm:
@@ -233,59 +236,59 @@ components:
       items:
         $ref: '#/components/schemas/Metric'
     AuthenticationProviderModel:
-      type: object
       description: Model obtained from an external authentication provider, such as
         HuggingFace, OpenAI, etc...
       properties:
         created_at:
-          type: string
           description: Provider model created at
+          type: string
         downloads:
-          type: integer
           description: Provider model downloads
-        id:
-          type: string
-          description: Provider model ID
-        library_name:
-          type: string
-          description: Provider model library name
-        likes:
           type: integer
+        id:
+          description: Provider model ID
+          type: string
+        library_name:
+          description: Provider model library name
+          type: string
+        likes:
           description: Provider model likes
+          type: integer
         name:
-          type: string
           description: Provider model name
-        pipeline_tag:
           type: string
+        pipeline_tag:
           description: Provider model pipeline tag
+          type: string
         private:
-          type: boolean
           description: Provider model private
+          type: boolean
         tags:
-          type: array
           description: Provider model tags
           items:
             type: string
+          type: array
         trending_score:
-          type: integer
           description: Provider model trending score
-    AuthenticationProviderOrganization:
+          type: integer
       type: object
+    AuthenticationProviderOrganization:
       description: Organization that hosts models from an external authentication
         provider (HuggingFace, OpenAI, etc...)
       properties:
         avatar_url:
-          type: string
           description: Provider organization avatar URL
+          type: string
         display_name:
-          type: string
           description: Provider organization display name
+          type: string
         id:
-          type: string
           description: Provider organization ID
-        name:
           type: string
+        name:
           description: Provider organization name
+          type: string
+      type: object
     Configuration:
       type: object
       description: Configuration
@@ -335,6 +338,11 @@ components:
         specify if it should be stored in secret manager
       additionalProperties:
         type: string
+    DeploymentIntegrationConnections:
+      type: array
+      items:
+        type: string
+        description: Deployment integration connection
     DeploymentPolicies:
       type: array
       items:
@@ -474,6 +482,9 @@ components:
           function:
             type: string
             description: The name of the function
+          integration_connections:
+            $ref: '#/components/schemas/DeploymentIntegrationConnections'
+            description: The integration connections for the model deployment
           kit:
             type: array
             description: The kit of the function deployment
@@ -546,6 +557,115 @@ components:
         to:
           type: string
           description: Destination environment to which the function is released
+    Integration:
+      allOf:
+      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - properties:
+          config:
+            $ref: '#/components/schemas/IntegrationConfig'
+            description: Additional configuration for the integration
+          display_name:
+            description: Integration display name
+            type: string
+          labels:
+            $ref: '#/components/schemas/Labels'
+          name:
+            description: Integration name
+            type: string
+          secret:
+            $ref: '#/components/schemas/IntegrationSecret'
+            description: Integration secret
+          type:
+            description: Integration type
+            type: string
+          workspace:
+            description: Workspace name
+            type: string
+      description: Model provider
+      type: object
+    IntegrationConfig:
+      description: Integration config
+      type: object
+    IntegrationConnection:
+      type: object
+      description: Integration Connection
+      allOf:
+      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - properties:
+          config:
+            $ref: '#/components/schemas/IntegrationConnectionConfig'
+            description: Additional configuration for the integration
+          display_name:
+            type: string
+            description: Integration connection display name
+          integration:
+            type: string
+            description: Integration type
+          labels:
+            $ref: '#/components/schemas/Labels'
+          name:
+            type: string
+            description: Integration connection name
+          secret:
+            $ref: '#/components/schemas/IntegrationConnectionSecret'
+            description: Integration secret
+          workspace:
+            type: string
+            description: Workspace name
+    IntegrationConnectionConfig:
+      type: object
+      description: Integration config
+    IntegrationConnectionSecret:
+      type: object
+      description: Integration secret
+      properties:
+        api_key:
+          type: string
+          description: The API key to use for the integration
+    IntegrationModel:
+      type: object
+      description: Model obtained from an external authentication provider, such as
+        HuggingFace, OpenAI, etc...
+      properties:
+        created_at:
+          type: string
+          description: Provider model created at
+        downloads:
+          type: integer
+          description: Provider model downloads
+        id:
+          type: string
+          description: Provider model ID
+        library_name:
+          type: string
+          description: Provider model library name
+        likes:
+          type: integer
+          description: Provider model likes
+        name:
+          type: string
+          description: Provider model name
+        pipeline_tag:
+          type: string
+          description: Provider model pipeline tag
+        private:
+          type: boolean
+          description: Provider model private
+        tags:
+          type: array
+          description: Provider model tags
+          items:
+            type: string
+        trending_score:
+          type: integer
+          description: Provider model trending score
+    IntegrationSecret:
+      description: Integration secret
+      properties:
+        api_key:
+          description: The API key to use for the integration
+          type: string
+      type: object
     Labels:
       type: object
       description: Labels
@@ -660,6 +780,9 @@ components:
             description: The hardware flavor(s) on which this model deployment can
               run. This should be a subset of the flavors allowed by the environment
               policies, and should not mix GPU and non-GPU flavors.
+          integration_connections:
+            $ref: '#/components/schemas/DeploymentIntegrationConnections'
+            description: The integration connections for the model deployment
           labels:
             $ref: '#/components/schemas/Labels'
           metric_port:
@@ -960,9 +1083,6 @@ components:
       type: object
       description: Model provider config
       properties:
-        access_token:
-          type: string
-          description: The access token to use for the provider
         filename:
           type: string
           description: The file name to use for the model
@@ -1739,94 +1859,6 @@ paths:
       summary: Create release for a agent from an environment
       tags:
       - agents
-  /authentication_providers/{authenticationProviderName}/models:
-    get:
-      description: Returns a list of all models for an integration by ID.
-      operationId: ListModelsForAuthenticationProvider
-      parameters:
-      - description: Name of the authentication provider
-        in: path
-        name: authenticationProviderName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthenticationProviderModel'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - authentication_providers:list
-      summary: List models for a authentication provider
-      tags:
-      - authentication_providers
-  /authentication_providers/{authenticationProviderName}/models/{modelRepoId}/{modelId}:
-    get:
-      description: Returns a model with a repository for an integration by ID.
-      operationId: GetModelWithRepoForAuthenticationProvider
-      parameters:
-      - description: Name of the authentication provider
-        in: path
-        name: authenticationProviderName
-        required: true
-        schema:
-          type: string
-      - description: Type of the model
-        in: path
-        name: modelRepoId
-        required: true
-        schema:
-          type: string
-      - description: ID of the model
-        in: path
-        name: modelId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthenticationProviderModel'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - authentication_providers:list
-      summary: Get model for a authentication provider
-      tags:
-      - authentication_providers
-  /authentication_providers/{authenticationProviderName}/organizations:
-    get:
-      description: Returns a list of all organizations for an integration by ID.
-      operationId: ListOrganizationsForAuthenticationProvider
-      parameters:
-      - description: Name of the authentication provider
-        in: path
-        name: authenticationProviderName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthenticationProviderOrganization'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - authentication_providers:list
-      summary: List organizations for an authentication provider
-      tags:
-      - authentication_providers
   /configuration:
     get:
       operationId: GetConfiguration
@@ -2313,6 +2345,247 @@ paths:
         - agent_deployment_history:list
       tags:
       - history
+  /integrations/{integrationName}:
+    get:
+      description: Returns integration information by name.
+      operationId: GetIntegration
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integrations connections
+      tags:
+      - integrations
+  /integrations/{integrationName}/connections:
+    get:
+      description: Returns a list of all connections for a integration.
+      operationId: ListIntegrationConnectionsByIntegration
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/IntegrationConnection'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List connections for an integration
+      tags:
+      - integrations
+    parameters:
+    - description: Name of the integration
+      in: path
+      name: integrationName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Create a connection for an integration.
+      operationId: CreateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:create
+      summary: Create integration
+      tags:
+      - integrations
+  /integrations/{integrationName}/connections/{connectionName}:
+    delete:
+      description: Deletes an integration connection by integration name and connection
+        name.
+      operationId: DeleteIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      summary: Delete integration
+      tags:
+      - integrations
+    get:
+      description: Returns an integration connection by integration name and connection
+        name.
+      operationId: GetIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+          description: successful operation
+      summary: Get integration
+      tags:
+      - integrations
+    parameters:
+    - description: Name of the integration
+      in: path
+      name: integrationName
+      required: true
+      schema:
+        type: string
+    - description: Name of the connection
+      in: path
+      name: connectionName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Update an integration connection by integration name and connection
+        name.
+      operationId: UpdateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      summary: Update integration connection
+      tags:
+      - integrations
+  /integrations/{integrationName}/connections/{connectionName}/models:
+    get:
+      description: Returns a list of all models for an integration connection.
+      operationId: ListIntegrationConnectionModels
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integration connection models
+      tags:
+      - integrations
+  /integrations/{integrationName}/connections/{connectionName}/models/*modelId:
+    get:
+      description: Returns a model for an integration connection by ID.
+      operationId: GetIntegrationConnectionModel
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integration connection models
+      tags:
+      - integrations
+  /integrations/{integrationName}/models:
+    get:
+      description: Returns a list of all models for an integration.
+      operationId: ListIntegrationModels
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integration models
+      tags:
+      - integrations
+  /integrations/{integrationName}/models/*modelId:
+    get:
+      description: Returns a model for an integration by ID.
+      operationId: GetIntegrationModel
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: Get integration model
+      tags:
+      - integrations
+  /integrations/connections:
+    get:
+      description: Returns a list of all connections integrations in the workspace.
+      operationId: ListIntegrationConnections
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/IntegrationConnection'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integrations connections
+      tags:
+      - integrations
   /locations:
     get:
       description: Returns a list of all locations available with status.
