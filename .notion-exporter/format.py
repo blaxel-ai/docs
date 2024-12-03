@@ -54,11 +54,15 @@ def rewrite_links(file_path):
   while is_different:
     with open(file_path, 'r', encoding='utf-8') as f:
       content = f.read()
-    # Regex pattern to match the unwanted part
-    pattern = r'(.*)%20([a-f0-9]{32})([\/\.].*)'
 
-    # Replace using regex
+    # Regex pattern to match the unwanted part, being the export id
+    pattern = r'(.*)%20([a-f0-9]{32})([\/\.].*)'
+    # Replace using regex, remove second group containing the export id
     result = re.sub(pattern, r'\1\3', content)
+
+    # Replace .md extensions in links with .mdx, since we changed md to mdx in copy_file
+    link_pattern = r'\((.*?)\.md\)'
+    result = re.sub(link_pattern, r'(\1.mdx)', result)
 
     # Write the modified content back to the file
     if content != result:

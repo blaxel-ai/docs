@@ -57,6 +57,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: notion-export/${{ github.run_id }}
       - name: create pull request
-        run: gh pr create -B main -H notion-export/$GITHUB_RUN_ID --title 'Merge notion export' --body 'Created by Github action'
+        run: |
+          gh pr create \
+            -B main \
+            -H notion-export/$GITHUB_RUN_ID \
+            --reviewer cploujoux \
+            --assignee paulsinai \
+            --title 'Merge notion export' \
+            --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
