@@ -6,7 +6,7 @@ description: 'Get visibility over all inference requests on your models.'
 
 ---
 
-Beamlit stores inference logs for model deployments to give you visibility and troubleshooting abilities. Only model deployments on Beamlit Global Inference Network generate logs. Logs for models you have deployed privately/on-premise are not collected, but logs for inferences that [overflow](../Models/Cloud-Burst-Network/Model-overflow.md) on Beamlit are.
+Beamlit stores inference logs for model deployments to give you visibility and troubleshooting abilities. Only model deployments on Beamlit Global Inference Network generate logs. Logs for models you have deployed privately/on-premise are not collected, but logs for inferences that [overflow](../Models/Cloud-Burst-Network/Model-overflow.mdx) on Beamlit are.
 
 ## Logs overview
 
@@ -19,10 +19,10 @@ Logs about what happens inside the inference runtime while processing an inferen
 
 ### Deployment mode
 
-Depending on [how you are deployed on Global Inference Network](../Models/Global-Inference-Network.md), logs storage and querying will behave differently.
+Depending on [how you are deployed on Global Inference Network](../Models/Global-Inference-Network.mdx), logs storage and querying will behave differently.
 
-- Models that are deployed on Beamlit, either by [direct deployment](../Models/Model-deployment.md) or when [overflowing on Beamlit](../Models/Cloud-Burst-Network/Model-overflow.md), **automatically export inference logs**. They can be [viewed](View-model-logs.md) per specific model deployment.
-- Models that are deployed on your own clusters as an [origin to be offloaded on Beamlit](../Models/Cloud-Burst-Network/Model-overflow.md) **do not export logs**. Please [contact us](mailto:support@beamlit.com) if you would be interested to centralize these logs with Beamlit logs, either on Beamlit or in your cluster.
+- Models that are deployed on Beamlit, either by [direct deployment](../Models/Model-deployment.mdx) or when [overflowing on Beamlit](../Models/Cloud-Burst-Network/Model-overflow.mdx), **automatically export inference logs**. They can be [viewed](View-model-logs.mdx) per specific model deployment.
+- Models that are deployed on your own clusters as an [origin to be offloaded on Beamlit](../Models/Cloud-Burst-Network/Model-overflow.mdx) **do not export logs**. Please [contact us](mailto:support@beamlit.com) if you would be interested to centralize these logs with Beamlit logs, either on Beamlit or in your cluster.
 
 ### Retention duration
 

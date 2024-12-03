@@ -6,7 +6,7 @@ description: 'Offload traffic on Beamlit based on a metric.'
 
 ---
 
-The offloading metric is a customizable infrastructure metric used by the Beamlit controller to trigger [model offloading](../Model-overflow.md) when it hits a certain threshold.
+The offloading metric is a customizable infrastructure metric used by the Beamlit controller to trigger [model offloading](../Model-overflow.mdx) when it hits a certain threshold.
 
 Currently, Beamlit supports two ways to retrieve metrics:
 
@@ -42,7 +42,7 @@ where:
 ### Prerequisites
 
 - A [Prometheus](https://github.com/prometheus/prometheus) server that is either in your Kubernetes cluster, or accessible in your network via URL without authentication.
-- Set up the [Beamlit controller](../Install-Beamlit-operator.md) to monitor your Prometheus service by adding the following configuration in the controller chart’s [*values.yaml*](https://github.com/beamlit/beamlit-controller/blob/main/chart/values.yaml):
+- Set up the [Beamlit controller](../Install-Beamlit-operator.mdx) to monitor your Prometheus service by adding the following configuration in the controller chart’s [*values.yaml*](https://github.com/beamlit/beamlit-controller/blob/main/chart/values.yaml):
 
 ```yaml
 config:

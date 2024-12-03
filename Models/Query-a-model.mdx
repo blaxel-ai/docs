@@ -6,7 +6,7 @@ description: 'Make inference requests on your models.'
 
 ---
 
-Model [deployments](Model-deployment.md) on Beamlit have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network.md) based on the [deployment policies](Model-deployment.md) associated with your model deployment. 
+Model [deployments](Model-deployment.mdx) on Beamlit have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network.mdx) based on the [deployment policies](Model-deployment.mdx) associated with your model deployment. 
 
 ## Inference endpoints
 
@@ -16,7 +16,7 @@ The inference URL looks like this:
 
 `run.beamlit.com/{your-workspace}/models/{your-model}`
 
-There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](Model-deployment.md) and an [environment](../Model-Governance/Environments.md) on which it is deployed. 
+There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](Model-deployment.mdx) and an [environment](../Model-Governance/Environments.mdx) on which it is deployed. 
 
 For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
 
@@ -37,9 +37,9 @@ For example, if you deploy a text generation model that also implements the Chat
 
 ### Endpoint authentication
 
-By default, models deployed on Beamlit aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens.md).
+By default, models deployed on Beamlit aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens.mdx).
 
-The evaluation of authentication/authorization for inference requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control.md).
+The evaluation of authentication/authorization for inference requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control.mdx).
 
 <Info>Making a model publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
 
@@ -47,7 +47,7 @@ The evaluation of authentication/authorization for inference requests is managed
 
 ### Beamlit API
 
-Make a **POST** request to the [inference endpoint](Query-a-model.md) for the model deployment you are requesting, making sure to fill in the [authentication token](Query-a-model.md):
+Make a **POST** request to the [inference endpoint](Query-a-model.mdx) for the model deployment you are requesting, making sure to fill in the [authentication token](Query-a-model.mdx):
 
 ```
 curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
@@ -67,7 +67,7 @@ The following command will make a default POST request to the model’s *product
 beamlit run your-model --data '{"inputs":"Enter your input here."}'
 ```
 
-You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model.md) that your model implements with the option `--path` :
+You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model.mdx) that your model implements with the option `--path` :
 
 ```bash
 beamlit run your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 

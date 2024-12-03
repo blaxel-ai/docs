@@ -111,10 +111,10 @@ components:
             description: The integration connections for the model deployment
           labels:
             $ref: '#/components/schemas/Labels'
-          llm:
+          model:
             type: string
-            description: LLM to use for agent, it should be compatible with function
-              calling
+            description: Model beamlit to use for agent, it should be compatible with
+              function calling
           pod_template:
             type: object
             description: The pod template, should be a valid Kubernetes pod template
@@ -196,6 +196,11 @@ components:
         type:
           type: string
           description: Type, one of function or agent
+    AgentDeployments:
+      type: array
+      items:
+        $ref: '#/components/schemas/AgentDeployment'
+        description: Agent deployments
     AgentRelease:
       type: object
       description: Agent release, used to deploy a agent from one environment to another
@@ -206,6 +211,16 @@ components:
         to:
           type: string
           description: Destination environment to which the agent is released
+    AgentWithDeployments:
+      type: object
+      description: Logical object representing an agent but with deployment definition
+        inside
+      allOf:
+      - $ref: '#/components/schemas/Agent'
+      - properties:
+          deployments:
+            $ref: '#/components/schemas/AgentDeployments'
+            description: Agent deployments
     ApiKey:
       type: object
       description: Long-lived API key for accessing Beamlit
@@ -337,11 +352,21 @@ components:
       description: Deployment configurations key value and also a boolean secret to
         specify if it should be stored in secret manager
       additionalProperties:
-        type: string
+        $ref: '#/components/schemas/DeploymentConfiguration'
+    DeploymentIntegrationConnection:
+      type: object
+      description: Deployment integration connection
+      properties:
+        integration:
+          type: string
+          description: Integration name
+        name:
+          type: string
+          description: Integration connection name
     DeploymentIntegrationConnections:
       type: array
       items:
-        type: string
+        $ref: '#/components/schemas/DeploymentIntegrationConnection'
         description: Deployment integration connection
     DeploymentPolicies:
       type: array
@@ -513,6 +538,11 @@ components:
           workspace:
             type: string
             description: The workspace the function deployment belongs to
+    FunctionDeployments:
+      type: array
+      items:
+        $ref: '#/components/schemas/FunctionDeployment'
+        description: Function deployments
     FunctionKit:
       type: object
       description: Function kit
@@ -557,6 +587,16 @@ components:
         to:
           type: string
           description: Destination environment to which the function is released
+    FunctionWithDeployments:
+      type: object
+      description: Logical object representing a function but with deployment definition
+        inside
+      allOf:
+      - $ref: '#/components/schemas/Function'
+      - properties:
+          deployments:
+            $ref: '#/components/schemas/FunctionDeployments'
+            description: Function deployments
     Integration:
       allOf:
       - $ref: '#/components/schemas/StandardFieldsDynamoDb'
@@ -1491,7 +1531,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Agent'
+              $ref: '#/components/schemas/AgentWithDeployments'
         required: true
       responses:
         "200":
@@ -1550,7 +1590,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Agent'
+              $ref: '#/components/schemas/AgentWithDeployments'
         required: true
       responses:
         "200":
@@ -2033,7 +2073,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Function'
+              $ref: '#/components/schemas/FunctionWithDeployments'
         required: true
       responses:
         "200":
@@ -2092,7 +2132,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Function'
+              $ref: '#/components/schemas/FunctionWithDeployments'
         required: true
       responses:
         "200":

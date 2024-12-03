@@ -18,14 +18,15 @@ bl delete [flags]
 			bl delete -f ./my-resource.yaml
 			# Or using stdin
 			cat file.yaml | beamlit delete -f -
-		
+
 ```
 
 ### Options
 
 ```
-  -f, --file string   Path to YAML file to apply
-  -h, --help          help for delete
+  -f, --filename string   containing the resource to delete.
+  -R, --recursive=false   Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
+  -h, --help              help for delete
 ```
 
 ### Options inherited from parent commands
