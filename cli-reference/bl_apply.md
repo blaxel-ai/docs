@@ -22,14 +22,15 @@ bl apply [flags]
 			bl apply -f ./my-deployment.yaml
 			# Or using stdin
 			cat file.yaml | bl apply -f -
-		
+
 ```
 
 ### Options
 
 ```
-  -f, --file string   Path to YAML file to apply
-  -h, --help          help for apply
+  -f, --filename string   The files that contain the configurations to apply.
+  -R, --recursive=false   Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
+  -h, --help              help for apply
 ```
 
 ### Options inherited from parent commands

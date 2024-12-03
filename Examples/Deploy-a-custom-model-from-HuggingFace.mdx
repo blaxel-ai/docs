@@ -37,7 +37,7 @@ Then, choose a HuggingFace model to deploy using the search tool. You can search
 
 <Info>You can select any model that the integration’s access token has access to.</Info>
 
-Then, move on to the next step. Keep the [environment](../Model-Governance/Environments.md) set to *production* without any additional policy. 
+Then, move on to the next step. Keep the [environment](../Model-Governance/Environments.mdx) set to *production* without any additional policy. 
 
 Give a name, then deploy the model.
 
@@ -68,13 +68,13 @@ That’s it! Your model is deployed and ready to be called using the inference e
 
 ### Call the model
 
-Use your model deployment’s [inference endpoint](../Models/Query-a-model.md) to make an inference request. 
+Use your model deployment’s [inference endpoint](../Models/Query-a-model.mdx) to make an inference request. 
 
 For a model called `My custom model` in workspace `My workspace`, the base URL should look like the following:
 
 `run.beamlit.com/my-workspace/models/my-custom-model`
 
-Call it via an HTTP **POST** request, authenticating yourself with a [bearer token](../Security/Access-tokens.md):
+Call it via an HTTP **POST** request, authenticating yourself with a [bearer token](../Security/Access-tokens.mdx):
 
 ```
 curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
@@ -88,4 +88,4 @@ If your HuggingFace model implements any other endpoint, they will be served on 
 
 `run.beamlit.com/my-workspace/models/my-custom-model/v1/chat/completions`
 
-For further reference, read our documentation about [model deployments](../Models/Model-deployment.md).
+For further reference, read our documentation about [model deployments](../Models/Model-deployment.mdx).

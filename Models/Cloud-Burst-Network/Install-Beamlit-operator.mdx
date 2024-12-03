@@ -8,7 +8,7 @@ description: 'Manage Beamlit resources from your Kubernetes cluster with the Bea
 
 <Tip>The Beamlit controller's [GitHub repository](https://github.com/beamlit/beamlit-controller/) provides comprehensive instructions for installing and using the open-source controller. For a step-by-step Helm installation, read the following documentation.</Tip>
 
-The **open-source Beamlit controller** allows to remotely create and control objects (such as models) on a destination cluster. The destination cluster can be [Beamlit Global Inference Network](../Global-Inference-Network.md) or any of your Kubernetes clusters. The Beamlit controller can also **monitor the health** of any AI app deployed in your cluster. A Beamlit gateway (installed in your cluster alongside the controller) [load-balances requests](Model-overflow.md) between your deployment and the one in the destination when needed.
+The **open-source Beamlit controller** allows to remotely create and control objects (such as models) on a destination cluster. The destination cluster can be [Beamlit Global Inference Network](../Global-Inference-Network.mdx) or any of your Kubernetes clusters. The Beamlit controller can also **monitor the health** of any AI app deployed in your cluster. A Beamlit gateway (installed in your cluster alongside the controller) [load-balances requests](Model-overflow.mdx) between your deployment and the one in the destination when needed.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ Before you begin, ensure that you have the following:
 2. **kubectl**: Installed and configured to interact with your Kubernetes cluster. [Installation Guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 1. **Helm**. Version 3.8.0 or later is recommended in order to use [OCI-based registries](https://helm.sh/docs/topics/registries/). Check out the [Installation Guide.](https://helm.sh/docs/intro/install/)
-1. A [service account created in your Beamlit workspace](../../Security/Service-accounts.md), for which you have retrieved the `client ID` and `client secret`
+1. A [service account created in your Beamlit workspace](../../Security/Service-accounts.mdx), for which you have retrieved the `client ID` and `client secret`
 
 ## Install the controller with Helm
 
