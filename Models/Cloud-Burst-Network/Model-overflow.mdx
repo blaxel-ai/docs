@@ -8,20 +8,20 @@ description: 'Offload burst traffic from your model deployments to Beamlit.'
 
 When you deploy applications on your own clusters, these apps experience diverse and varying traffic throughout the day - but all consumers expect to be served without downtime. If your applications are GPU-accelerated AI workloads, this can result in critical failures due to how time-consuming it is to boot additional worker machines, which often require manual intervention.
 
-In this situation, IT teams like to allow software (think: a model) to overflow on additional clusters. Beamlit provides extensive offloading capabilities so you can use Beamlit’s [Global Inference Network](../Global-Inference-Network.mdx) as a standby computing platform in case of traffic burst or outage.
+In this situation, IT teams like to allow software (think: a model) to overflow on additional clusters. Beamlit provides extensive offloading capabilities so you can use Beamlit’s [Global Inference Network](../Global-Inference-Network) as a standby computing platform in case of traffic burst or outage.
 
 With Beamlit, you can reference your own private Kubernetes cluster as the origin for a **replica of your model on Beamlit**. This defines a **hybrid deployment** between your cluster and Beamlit, where load-balancing is handled automatically based on a triggering metric. It is also possible to define a replica on another one of your own private clusters, so you can effectively federate clusters to others across multiple regions.
 
 In short, there are two supported modes for model offloading:
 
 - **Offload from your own Kubernetes cluster to Beamlit Global Inference Network**: this gives you access to Beamlit’s smart routing of inferences, highly available edge computing regions and complete observability.
-- **Offload between two of your own Kubernetes clusters**: this gives you total control over the execution clusters themselves but requires more upfront work from you (setting up the clusters). This is completely open-source software and can be done at no extra cost using [Beamlit open-source controller](Install-Beamlit-operator.mdx).
+- **Offload between two of your own Kubernetes clusters**: this gives you total control over the execution clusters themselves but requires more upfront work from you (setting up the clusters). This is completely open-source software and can be done at no extra cost using [Beamlit open-source controller](Install-Beamlit-operator).
 
 ### Activating offloading
 
 Offloading is controlled by an **[open-source controller](https://github.com/beamlit/beamlit-controller)** that must be installed in your own Kubernetes cluster. This controller is responsible for remotely creating and controlling the model on the destination cluster, as well as monitoring the health of your app. Meanwhile, a Beamlit gateway (installed alongside the controller) load-balances requests between your deployment and the one in the destination when needed.
 
-Offloading is triggered when a [metric](Cluster-configurations/Set-up-overflow-metric.mdx) (called the *offloading metric*) **hits a certain threshold**, which you can both specify. Once offloading is triggered, the Beamlit controller will automatically route part of the inbound traffic to the destination cluster, using a configurable strategy. This is completely transparent to your application consumers who will call the app through the same way. 
+Offloading is triggered when a [metric](Cluster-configurations/Set-up-overflow-metric) (called the *offloading metric*) **hits a certain threshold**, which you can both specify. Once offloading is triggered, the Beamlit controller will automatically route part of the inbound traffic to the destination cluster, using a configurable strategy. This is completely transparent to your application consumers who will call the app through the same way. 
 
 Offloading state remains until the offloading metric remains out of the threshold zone for a certain buffer duration. When there is not a current active state of offloading (meaning the offloading metric has not hit the threshold), **all** inbound requests go to your own pods on your cluster.
 
@@ -40,9 +40,9 @@ To set up model offloading to Beamlit, you need to **deploy a model on Beamlit**
 
 - A Kubernetes cluster, on which you have a [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) (or StatefulSet, ReplicaSet, DaemonSet) that is your model or AI application you want to offload to Beamlit
 
-- One of the supported [metric servers](Cluster-configurations/Set-up-overflow-metric.mdx), for monitoring the health of your app.
+- One of the supported [metric servers](Cluster-configurations/Set-up-overflow-metric), for monitoring the health of your app.
 
-- Have the Beamlit controller [installed on your cluster](Install-Beamlit-operator.mdx). The controller is fully open-source and allows to manage Beamlit resources in a Kubernetes-native way.
+- Have the Beamlit controller [installed on your cluster](Install-Beamlit-operator). The controller is fully open-source and allows to manage Beamlit resources in a Kubernetes-native way.
 
 This operation uses a CRD ([Custom Resource Definition](https://beamlit.github.io/beamlit-controller/crds/crds-docs.html)) which gets installed at the same time as the controller. You will create a CR (Custom Resource) pointing at your origin Deployment and apply it via the controller to deploy a ‘copy’ of the model on Beamlit.
 
@@ -77,7 +77,7 @@ spec:
             averageUtilization: 50
 ```
 
-The **offloading metric** in the example above is a *resource* metric (CPU utilization) from Kubernetes metrics-server. Read [our guide about how to set up this offloading metric](Cluster-configurations/Set-up-overflow-metric.mdx).
+The **offloading metric** in the example above is a *resource* metric (CPU utilization) from Kubernetes metrics-server. Read [our guide about how to set up this offloading metric](Cluster-configurations/Set-up-overflow-metric).
 
 <Tip>Read our full [reference on ModelDeployment](https://beamlit.github.io/beamlit-controller/crds/crds-docs.html#modeldeployment) for a complete description of all other parameters.</Tip>
 

@@ -8,11 +8,11 @@ description: 'Deploy your first AI model worldwide in just 3 minutes.'
 
 Beamlit is a serverless cloud platform that enables AI teams to **push and run any AI workload across multiple locations** in a single click. This tutorial demonstrates how to deploy your first AI model on Beamlit.
 
-<Info>Beamlit also lets you replicate a model deployment from your private Kubernetes cluster. To get started with this method, read [this tutorial](Examples/Offload-burst-inferences-from-a-self-hosted-model.mdx).</Info>
+<Info>Beamlit also lets you replicate a model deployment from your private Kubernetes cluster. To get started with this method, read [this tutorial](Examples/Offload-burst-inferences-from-a-self-hosted-model).</Info>
 
 ### Install the Beamlit CLI
 
-You can install the [Beamlit CLI](cli-reference.mdx) using the by running the following 2 commands successively in a terminal:
+You can install the [Beamlit CLI](cli-reference) using the by running the following 2 commands successively in a terminal:
 
 ```bash
 ### Tap the Beamlit formula to Homebrew
@@ -24,7 +24,7 @@ brew install beamlit
 
 ### Deploy a model
 
-Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control.mdx). Then, run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
+Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control). Then, run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
 
 ```bash
 beamlit login your-workspace-slugified-name
@@ -47,7 +47,7 @@ spec:
 EOF
 ```
 
-That’s it! 🌎 🌏 🌍 Your model is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network.mdx) significantly speeds up inferences by positioning workloads near your users and smartly routing requests based on your policies.
+That’s it! 🌎 🌏 🌍 Your model is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network) significantly speeds up inferences by positioning workloads near your users and smartly routing requests based on your policies.
 
 ### Make a first inference
 
@@ -57,7 +57,7 @@ Run a first inference on your model with the following command:
 beamlit run my-model --data '{"inputs":"What is the encoding for this input?"}'
 ```
 
-<Tip>Your model is available behind a **global endpoint**. Read [this guide](Models/Query-a-model.mdx) on how to use it for HTTP requests.</Tip>
+<Tip>Your model is available behind a **global endpoint**. Read [this guide](Models/Query-a-model) on how to use it for HTTP requests.</Tip>
 
 ### Next steps
 
