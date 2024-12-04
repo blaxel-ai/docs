@@ -10,19 +10,19 @@ Beamlit APIs allow you to interact with all resources inside of and across your 
 
 ## Get started
 
-Authentication to the Beamlit APIs can either be done using [API keys](../Security/Access-tokens.mdx) created from the Beamlit console, or through a [classic OAuth 2.0 flow](../Security/Access-tokens.mdx).
+Authentication to the Beamlit APIs can either be done using [API keys](../Security/Access-tokens%2013847e47b1ea813cac82ed531bd2356f) created from the Beamlit console, or through a [classic OAuth 2.0 flow](../Security/Access-tokens).
 
-**API keys** allow you to get started quickly. Simply [generate an API key](../Security/Access-tokens.mdx) for your user or service account and use the API key in place of the authorization headers `Api-Key` or `X-Beamlit-Api-Key` in any call to the Beamlit APIs. 
+**API keys** allow you to get started quickly. Simply [generate an API key](../Security/Access-tokens) for your user or service account and use the API key in place of the authorization headers `Api-Key` or `X-Beamlit-Api-Key` in any call to the Beamlit APIs. 
 
 For example, to list models:
 
 ```
-curl 'https://api.beamlit.com/v0/models' \
+curl 'https://api.beamlit.dev/v0/models' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-beamlit-api-key: YOUR-API-KEY'
 ```
 
-To use **short-lived JWTs**, see [the guide on using an OAuth 2.0 flow](../Security/Access-tokens.mdx).
+To use **short-lived JWTs**, see [the guide on using an OAuth 2.0 flow](../Security/Access-tokens).
 
 ## Beamlit APIs
 

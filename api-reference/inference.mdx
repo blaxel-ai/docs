@@ -10,15 +10,15 @@ Whenever you deploy a model on Beamlit, an **inference endpoint** is generated o
 
 The inference URL looks like this:
 
-`run.beamlit.com/{your-workspace}/models/{your-model}`
+`run.beamlit.dev/{your-workspace}/models/{your-model}`
 
-There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](../Models/Model-deployment.mdx) and an [environment](../Model-Governance/Environments.mdx) on which it is deployed. 
+There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
 
 For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
 
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
+- `run.beamlit.dev/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
 
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
+- `run.beamlit.dev/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
 
 If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model is not deployed on the production environment, it will return an error.
 

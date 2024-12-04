@@ -18,7 +18,7 @@ This tutorial demonstrates how you can create a hybrid deployment of a model dep
 
 ## Guide
 
-On a conceptual level, model offloading works by defining a [model deployment](../Models/Model-deployment.mdx) on Beamlit that references a Kubernetes Deployment on your own cluster. The is done **via the open-source [Beamlit controller](https://github.com/beamlit/beamlit-controller).** You can interact with the controller using Kubernetes *Custom Resources (CR)*, in order to:
+On a conceptual level, model offloading works by defining a [model deployment](../Models/Model-deployment) on Beamlit that references a Kubernetes Deployment on your own cluster. The is done **via the open-source [Beamlit controller](https://github.com/beamlit/beamlit-controller).** You can interact with the controller using Kubernetes *Custom Resources (CR)*, in order to:
 
 - create the corresponding resources on Beamlit
 - monitor metrics on Prometheus
@@ -26,7 +26,7 @@ On a conceptual level, model offloading works by defining a [model deployment](.
 
 ### Create a service account
 
-[Service accounts](../Security/Service-accounts.mdx) act as virtual users in your [Beamlit workspace](../Security/Workspace-access-control.mdx), representing external systems that need to control Beamlit resources. The Beamlit controller authenticates using a service account in your workspace.
+[Service accounts](../Security/Service-accounts%2013847e47b1ea8152aac9f45438e91d84) act as virtual users in your [Beamlit workspace](../Security/Workspace-access-control), representing external systems that need to control Beamlit resources. The Beamlit controller authenticates using a service account in your workspace.
 
 Open the Beamlit console. In **Workspace Settings > Service Accounts**, create a new service account. Make sure to retrieve its *client ID* and *client secret*.
 
@@ -97,7 +97,7 @@ spec:
 				      value: 20
 ```
 
-With this resource, the Beamlit controller will monitor a Prometheus server for the value of the offloading metric. If you want to use Kubernetes’ metrics-server instead, follow [our guide here](../Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric.mdx).
+With this resource, the Beamlit controller will monitor a Prometheus server for the value of the offloading metric. If you want to use Kubernetes’ metrics-server instead, follow [our guide here](../Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric).
 
 Create the model deployment by **running the following command** in your cluster:
 
@@ -113,4 +113,4 @@ You can verify when requests are being routed to Beamlit by accessing the Beamli
 
 ![models-offloading.png](Offload-burst-inferences-from-a-self-hosted-model/models-offloading.png)
 
-For further reference, read our documentation about [model offloading](../Models/Cloud-Burst-Network/Model-overflow.mdx).
+For further reference, read our documentation about [model offloading](../Models/Cloud-Burst-Network/Model-overflow).

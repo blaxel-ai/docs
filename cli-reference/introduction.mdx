@@ -37,7 +37,37 @@ brew install beamlit
 
 <Accordion title="Install on Windows" icon="windows”>
 
-Coming soon!
+Install the Beamlit CLI by running the following command in a terminal (alternatives below):
+
+```shell 
+
+curl -fsSL
+
+[https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh](https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh)
+
+| BIN_DIR=$HOME/.local/bin sudo -E sh
+
+```
+
+If you need to use `sudo`, or specify a version, run one of the following commands instead:
+
+```shell 
+
+### With version
+curl -fsSL
+
+[https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh](https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh)
+
+| VERSION=0.16.0 BIN_DIR=$HOME/.local/bin sh
+
+### With Sudo:
+curl -fsSL
+
+[https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh](https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh)
+
+| BIN_DIR=/usr/local/bin sudo -E sh
+
+```
 
 </Accordion>
 
@@ -45,13 +75,13 @@ Coming soon!
 
 ## Get started
 
-To get started with the CLI, your must first create a [workspace](../Security/Workspace-access-control.mdx) on the Beamlit console. Then, login to Beamlit using the following command and replacing `your-workspace`:
+To get started with the CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Beamlit console. Then, login to Beamlit using the following command and replacing `your-workspace`:
 
 ```bash
 beamlit login your-workspace
 ```
 
-You will be prompted to finish login using either an [API key](../Security/Access-tokens.mdx), or through your browser.
+You will be prompted to finish login using either an [API key](../Security/Access-tokens), or through your browser.
 
 Set a workspace to use as a context for the session by using the following command:
 
@@ -79,12 +109,12 @@ beamlit get models
 
 ## See also
 
-- [beamlit apply](https://www.notion.so/beamlit_apply.mdx) - Apply a configuration to a resource by file
-- [beamlit completion](https://www.notion.so/beamlit_completion.mdx) - Generate the autocompletion script for the specified shell
-- [beamlit delete](https://www.notion.so/beamlit_delete.mdx) - Delete a resource
-- [beamlit get](https://www.notion.so/beamlit_get.mdx) - Get a resource
-- [beamlit login](https://www.notion.so/beamlit_login.mdx) - Log in to Beamlit
-- [beamlit logout](https://www.notion.so/beamlit_logout.mdx) - Log out from Beamlit
-- [beamlit metrics](https://www.notion.so/beamlit_metrics.mdx) - Get metrics for a model deployment
-- [beamlit run](https://www.notion.so/beamlit_run.mdx) - Run an inference
-- [beamlit workspaces](https://www.notion.so/beamlit_workspaces.mdx) - List all workspaces with the current workspace highlighted. Optionally set a new current workspace
+- [beamlit apply](https://www.notion.so/beamlit_apply) - Apply a configuration to a resource by file
+- [beamlit completion](https://www.notion.so/beamlit_completion) - Generate the autocompletion script for the specified shell
+- [beamlit delete](https://www.notion.so/beamlit_delete) - Delete a resource
+- [beamlit get](https://www.notion.so/beamlit_get) - Get a resource
+- [beamlit login](https://www.notion.so/beamlit_login) - Log in to Beamlit
+- [beamlit logout](https://www.notion.so/beamlit_logout) - Log out from Beamlit
+- [beamlit metrics](https://www.notion.so/beamlit_metrics) - Get metrics for a model deployment
+- [beamlit run](https://www.notion.so/beamlit_run) - Run an inference
+- [beamlit workspaces](https://www.notion.so/beamlit_workspaces) - List all workspaces with the current workspace highlighted. Optionally set a new current workspace
