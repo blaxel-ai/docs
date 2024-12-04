@@ -62,7 +62,7 @@ def rewrite_links(file_path):
 
     # Replace .md extensions in links with .mdx, since we changed md to mdx in copy_file
     link_pattern = r'\((.*?)\.md\)'
-    result = re.sub(link_pattern, r'(\1.mdx)', result)
+    result = re.sub(link_pattern, r'(\1)', result)
 
     # Write the modified content back to the file
     if content != result:
