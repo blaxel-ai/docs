@@ -353,21 +353,11 @@ components:
         specify if it should be stored in secret manager
       additionalProperties:
         $ref: '#/components/schemas/DeploymentConfiguration'
-    DeploymentIntegrationConnection:
-      type: object
-      description: Deployment integration connection
-      properties:
-        integration:
-          type: string
-          description: Integration name
-        name:
-          type: string
-          description: Integration connection name
     DeploymentIntegrationConnections:
       type: array
       items:
-        $ref: '#/components/schemas/DeploymentIntegrationConnection'
-        description: Deployment integration connection
+        type: string
+        description: Deployment integration connection name
     DeploymentPolicies:
       type: array
       items:
@@ -655,6 +645,9 @@ components:
     IntegrationConnectionConfig:
       type: object
       description: Integration config
+    IntegrationConnectionName:
+      description: Integration connection name
+      type: string
     IntegrationConnectionSecret:
       type: object
       description: Integration secret
@@ -2405,168 +2398,6 @@ paths:
       summary: List integrations connections
       tags:
       - integrations
-  /integrations/{integrationName}/connections:
-    get:
-      description: Returns a list of all connections for a integration.
-      operationId: ListIntegrationConnectionsByIntegration
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/IntegrationConnection'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:list
-      summary: List connections for an integration
-      tags:
-      - integrations
-    parameters:
-    - description: Name of the integration
-      in: path
-      name: integrationName
-      required: true
-      schema:
-        type: string
-    post:
-      description: Create a connection for an integration.
-      operationId: CreateIntegrationConnection
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IntegrationConnection'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IntegrationConnection'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:create
-      summary: Create integration
-      tags:
-      - integrations
-  /integrations/{integrationName}/connections/{connectionName}:
-    delete:
-      description: Deletes an integration connection by integration name and connection
-        name.
-      operationId: DeleteIntegrationConnection
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IntegrationConnection'
-          description: successful operation
-      summary: Delete integration
-      tags:
-      - integrations
-    get:
-      description: Returns an integration connection by integration name and connection
-        name.
-      operationId: GetIntegrationConnection
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Integration'
-          description: successful operation
-      summary: Get integration
-      tags:
-      - integrations
-    parameters:
-    - description: Name of the integration
-      in: path
-      name: integrationName
-      required: true
-      schema:
-        type: string
-    - description: Name of the connection
-      in: path
-      name: connectionName
-      required: true
-      schema:
-        type: string
-    put:
-      description: Update an integration connection by integration name and connection
-        name.
-      operationId: UpdateIntegrationConnection
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IntegrationConnection'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IntegrationConnection'
-          description: successful operation
-      summary: Update integration connection
-      tags:
-      - integrations
-  /integrations/{integrationName}/connections/{connectionName}/models:
-    get:
-      description: Returns a list of all models for an integration connection.
-      operationId: ListIntegrationConnectionModels
-      parameters:
-      - description: Name of the integration
-        in: path
-        name: integrationName
-        required: true
-        schema:
-          type: string
-      - description: Name of the connection
-        in: path
-        name: connectionName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:list
-      summary: List integration connection models
-      tags:
-      - integrations
-  /integrations/{integrationName}/connections/{connectionName}/models/*modelId:
-    get:
-      description: Returns a model for an integration connection by ID.
-      operationId: GetIntegrationConnectionModel
-      parameters:
-      - description: Name of the integration
-        in: path
-        name: integrationName
-        required: true
-        schema:
-          type: string
-      - description: Name of the connection
-        in: path
-        name: connectionName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:list
-      summary: List integration connection models
-      tags:
-      - integrations
   /integrations/{integrationName}/models:
     get:
       description: Returns a list of all models for an integration.
@@ -2624,6 +2455,124 @@ paths:
       - BearerAuth:
         - integrations:list
       summary: List integrations connections
+      tags:
+      - integrations
+    post:
+      description: Create a connection for an integration.
+      operationId: CreateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:create
+      summary: Create integration
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}:
+    delete:
+      description: Deletes an integration connection by integration name and connection
+        name.
+      operationId: DeleteIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      summary: Delete integration
+      tags:
+      - integrations
+    get:
+      description: Returns an integration connection by integration name and connection
+        name.
+      operationId: GetIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+          description: successful operation
+      summary: Get integration
+      tags:
+      - integrations
+    parameters:
+    - description: Name of the integrationconnection
+      in: path
+      name: connectionName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Update an integration connection by integration name and connection
+        name.
+      operationId: UpdateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+      summary: Update integration connection
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/models:
+    get:
+      description: Returns a list of all models for an integration connection.
+      operationId: ListIntegrationConnectionModels
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integration connection models
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/models/*modelId:
+    get:
+      description: Returns a model for an integration connection by ID.
+      operationId: GetIntegrationConnectionModel
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: List integration connection models
       tags:
       - integrations
   /locations:
