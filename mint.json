@@ -75,34 +75,42 @@
     {
       "group": "Authentication API",
       "pages": [
-        "cli-reference/beamlit_login",
-        "cli-reference/beamlit_workspaces",
-        "cli-reference/beamlit_logout"
+        "cli-reference/bl_login",
+        "cli-reference/bl_workspaces",
+        "cli-reference/bl_logout"
       ]
     },
     {
       "group": "Inference API",
       "pages": [
-        "cli-reference/beamlit_run"
+        "cli-reference/bl_run"
       ]
     },
     {
       "group": "Management API",
       "pages": [
-        "cli-reference/beamlit_apply",
-        "cli-reference/beamlit_metrics",
-        "cli-reference/beamlit_get",
-        "cli-reference/beamlit_get_environments",
-        "cli-reference/beamlit_get_functions",
-        "cli-reference/beamlit_get_locations",
-        "cli-reference/beamlit_get_modelproviders",
-        "cli-reference/beamlit_get_models",
-        "cli-reference/beamlit_get_policies",
-        "cli-reference/beamlit_delete",
-        "cli-reference/beamlit_delete_function",
-        "cli-reference/beamlit_delete_model",
-        "cli-reference/beamlit_delete_modelprovider",
-        "cli-reference/beamlit_delete_policy"
+        "cli-reference/bl_apply",
+        "cli-reference/bl_metrics",
+        "cli-reference/bl_get",
+        "cli-reference/bl_get_environments",
+        "cli-reference/bl_get_functions",
+        "cli-reference/bl_get_locations",
+        "cli-reference/bl_get_modelproviders",
+        "cli-reference/bl_get_models",
+        "cli-reference/bl_get_policies",
+        "cli-reference/bl_delete",
+        "cli-reference/bl_delete_function",
+        "cli-reference/bl_delete_model",
+        "cli-reference/bl_delete_modelprovider",
+        "cli-reference/bl_delete_policy"
+      ]
+    },
+    {
+      "group": "Tools",
+      "pages": [
+        "cli-reference/bl_completion",
+        "cli-reference/bl_completion_fish",
+        "cli-reference/bl_completion_powershell"
       ]
     },
     {

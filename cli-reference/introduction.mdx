@@ -78,7 +78,7 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
 To get started with the CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Beamlit console. Then, login to Beamlit using the following command and replacing `your-workspace`:
 
 ```bash
-beamlit login your-workspace
+bl login your-workspace
 ```
 
 You will be prompted to finish login using either an [API key](../Security/Access-tokens), or through your browser.
@@ -86,16 +86,16 @@ You will be prompted to finish login using either an [API key](../Security/Acces
 Set a workspace to use as a context for the session by using the following command:
 
 ```bash
-beamlit workspaces your-workspace
+bl workspaces your-workspace
 
 ### Retrieve the list of workspaces you have access to by running:
-beamlit workspaces
+bl workspaces
 ```
 
 You can now run any command to interact with Beamlit resources in your workspace. For example, to list models:
 
 ```bash
-beamlit get models
+bl get models
 ```
 
 ## **Options**
@@ -106,15 +106,3 @@ beamlit get models
 -w, --workspace string   Specify the Beamlit workspace to work on.
 -e, --env string         Specify the Beamlit environment to work on. One of: development, production
 ```
-
-## See also
-
-- [beamlit apply](https://www.notion.so/beamlit_apply) - Apply a configuration to a resource by file
-- [beamlit completion](https://www.notion.so/beamlit_completion) - Generate the autocompletion script for the specified shell
-- [beamlit delete](https://www.notion.so/beamlit_delete) - Delete a resource
-- [beamlit get](https://www.notion.so/beamlit_get) - Get a resource
-- [beamlit login](https://www.notion.so/beamlit_login) - Log in to Beamlit
-- [beamlit logout](https://www.notion.so/beamlit_logout) - Log out from Beamlit
-- [beamlit metrics](https://www.notion.so/beamlit_metrics) - Get metrics for a model deployment
-- [beamlit run](https://www.notion.so/beamlit_run) - Run an inference
-- [beamlit workspaces](https://www.notion.so/beamlit_workspaces) - List all workspaces with the current workspace highlighted. Optionally set a new current workspace
