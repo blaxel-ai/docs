@@ -27,7 +27,7 @@ brew install beamlit
 Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control). Then, run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
 
 ```bash
-beamlit login your-workspace-slugified-name
+bl login your-workspace-slugified-name
 ```
 
 Let’s deploy **a simple model from HuggingFace** (a simple *sentence-transformers* model). Run the following command in the terminal:
@@ -54,7 +54,7 @@ That’s it! 🌎 🌏 🌍 Your model is now **distributed and available** a
 Run a first inference on your model with the following command:
 
 ```bash
-beamlit run my-model --data '{"inputs":"What is the encoding for this input?"}'
+bl run my-model --data '{"inputs":"What is the encoding for this input?"}'
 ```
 
 <Tip>Your model is available behind a **global endpoint**. Read [this guide](Models/Query-a-model) on how to use it for HTTP requests.</Tip>

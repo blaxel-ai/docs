@@ -64,13 +64,13 @@ Read about [the API parameters in the reference](https://docs.beamlit.com/api-re
 The following command will make a default POST request to the model’s *production* deployment (by default), on the base endpoint.
 
 ```bash
-beamlit run your-model --data '{"inputs":"Enter your input here."}'
+bl run your-model --data '{"inputs":"Enter your input here."}'
 ```
 
 You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model) that your model implements with the option `--path` :
 
 ```bash
-beamlit run your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
+bl run your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
 ```
 
 Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).
