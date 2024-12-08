@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl completion fish"
 slug: bl_completion_fish
 ---

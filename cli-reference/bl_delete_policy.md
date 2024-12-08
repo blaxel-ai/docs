@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl delete policy"
 slug: bl_delete_policy
 ---
@@ -8,7 +7,7 @@ slug: bl_delete_policy
 Delete a Policy
 
 ```
-bl delete policy [flags]
+bl delete policy name [flags]
 ```
 
 ### Options

@@ -1,0 +1,60 @@
+---
+
+title: 'Overview'
+
+description: 'The simplest way to run AI agents.'
+
+---
+
+Agents are AI-powered systems that are able to interact with their consumers, reason, and autonomously take action on the external world via APIs to read or write data. Agents can be **conversational agents** (keeping a human in the loop for initial activation or validation) or **automated agents** (automating machine-to-machine workflows with AI)
+
+- A typical example of conversational agent would be an AI agent for an e-commerce website, assisting consumers with purchases and refunds with a natural language interface.
+- A typical example of automated agent would be a system that retrieves traffic video feeds in real-time, infers the presence of accidents, and if so contacts emergency services by sending a detailed report.
+
+## The Beamlit method
+
+On the high level, agents are built using the 3 following elements:
+
+- **Functions**: these are the tools that the agent can use to interact with the environment. They represent any piece of custom code that can be executed with specific arguments through an API endpoint
+- **Model APIs**: these are the ML models that make inferences as part of the chained AI workflow. They typically represent action models: LLMs that can interact with humans in natural language and decide to use a tool at their disposal, generating the payload to use as the tool input (*function calling*)
+- **Agent orchestration**: this represents the agent’s logic, dictating which functions and models the agent can use, as well as which agents it is allowed to transfer a request to.
+
+Conceptually speaking, an AI agent is built by combining all three of the above elements. Beamlit **provides a SDK** to:
+
+- develop agents using simple developer tools
+- deploy agents on Beamlit’s global infrastructure with one single command
+
+When an agent runs on Beamlit, our technical powerhouse called Global Inference Network automatically runs the agent in a distributed way to make it **highly-available** and served with **critical low latency**.
+
+## Deploy an agent on Beamlit
+
+An agent can be uploaded into Beamlit from a variety of origins.
+
+### Origins
+
+- Using models and functions deployed on Beamlit
+- *From imported files or Github (coming soon!)*
+
+### Action model
+
+You must choose one action model, which will be the reasoning and talking core of the agent. The model must be a model API deployed on Beamlit, either a [custom model deployment](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) or an [external model API](../Models/External-model-apis). 
+
+### Functions
+
+Select one or multiple [functions](../Functions/Overview) to equip your agent with the ability to run custom code. This is optional, in which case your agent will only be able to talk.
+
+### Chaining and multi-agents
+
+Multi-agent systems allow to better specialize each agent, with their specific set of tools and instructions. 
+
+You can chain other agents to an agent on Beamlit. When processing a consumer query, the agent will be able to handover the request to another agent that is chained to it if the action model considers it the best way to address the query.
+
+![image.png](Overview/image.png)
+
+### Environment
+
+Select the environment on which to deploy your agent, just like you would do for a model. Environments give you a dedicated production or development endpoint for your application life-cycle.
+
+<Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
+Learn how to run consumers’ inference requests on your agent. 
+</Card>

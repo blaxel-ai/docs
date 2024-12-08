@@ -1,0 +1,33 @@
+---
+
+title: 'OpenAI integration'
+
+description: 'Connect your agents to LLMs from OpenAI.'
+
+---
+
+The OpenAI integration allows Beamlit users to **call OpenAI models using a Beamlit endpoint** in order to unify access control, credentials and observability management. 
+
+The integration must be set up by an [admin](../Security/Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0) in the Integrations section in the [workspace settings](../Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register an OpenAI access token into your Beamlit workspace settings. The scope of this access token (i.e. the OpenAI resources it is allowed to access) will be the scope that Beamlit has access to.
+
+First, generate an [OpenAI API key](https://platform.openai.com/docs/api-reference/authentication) from [your OpenAI Platform settings](https://platform.openai.com/api-keys). Set this API key in `Read-only` mode.
+
+On Beamlit, in Workspace Settings > OpenAI integration, create a new connection and paste this token into the “Access token” section.
+
+![Screenshot 2024-12-06 at 10.41.25 AM.png](OpenAI/Screenshot_2024-12-06_at_10.41.25_AM.png)
+
+## Connect to an OpenAI model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference an OpenAI model as an [external model API](../Models/External-model-apis).
+
+When creating a model API, select Connect an external model > OpenAI. You can search for any model from the OpenAI catalog.
+
+![Screenshot 2024-12-06 at 10.46.23 AM.png](OpenAI/Screenshot_2024-12-06_at_10.46.23_AM.png)
+
+After the model API is created, you will receive a dedicated global Beamlit endpoint to call the model. Beamlit will forward inference requests to OpenAI, using your OpenAI credentials for authentication and authorization.
+
+<Info>Because your own credentials are used, any inference request on this endpoint will incur potential costs on your OpenAI account, as if you queried the model directly on OpenAI.</Info>

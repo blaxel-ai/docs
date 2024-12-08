@@ -1,14 +1,21 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl run"
 slug: bl_run
 ---
 ## bl run
 
-Run inference
+Run a resource on beamlit
 
 ```
-bl run [model] [flags]
+bl run resource-type resource-name [flags]
+```
+
+### Examples
+
+```
+bl run agent my-agent --data '{"inputs": "Hello, world!"}'
+bl run model my-model --data '{"inputs": "Hello, world!"}'
+bl run function my-function --data '{"query": "4+2"}'
 ```
 
 ### Options
