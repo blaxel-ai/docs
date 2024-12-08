@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl"
 slug: bl
 ---
@@ -26,6 +25,6 @@ Beamlit CLI is a command line tool to interact with Beamlit APIs.
 * [bl login](bl_login.md)	 - Login to Beamlit
 * [bl logout](bl_logout.md)	 - Logout from Beamlit
 * [bl metrics](bl_metrics.md)	 - Get metrics for a model deployment
-* [bl run](bl_run.md)	 - Run inference
+* [bl run](bl_run.md)	 - Run a resource on beamlit
 * [bl workspaces](bl_workspaces.md)	 - List all workspaces with the current workspace highlighted, set optionally a new current workspace and environment
 

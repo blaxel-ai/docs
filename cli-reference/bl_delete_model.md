@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl delete model"
 slug: bl_delete_model
 ---
@@ -8,7 +7,7 @@ slug: bl_delete_model
 Delete a Model
 
 ```
-bl delete model [flags]
+bl delete model name [flags]
 ```
 
 ### Options

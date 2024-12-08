@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl apply"
 slug: bl_apply
 ---
@@ -22,15 +21,15 @@ bl apply [flags]
 			bl apply -f ./my-deployment.yaml
 			# Or using stdin
 			cat file.yaml | bl apply -f -
-
+		
 ```
 
 ### Options
 
 ```
-  -f, --filename string   The files that contain the configurations to apply.
-  -R, --recursive=false   Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
+  -f, --filename string   Path to YAML file to apply
   -h, --help              help for apply
+  -R, --recursive         Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
 ```
 
 ### Options inherited from parent commands

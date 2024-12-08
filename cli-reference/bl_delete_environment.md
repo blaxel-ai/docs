@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl delete environment"
 slug: bl_delete_environment
 ---
@@ -8,7 +7,7 @@ slug: bl_delete_environment
 Delete a Environment
 
 ```
-bl delete environment [flags]
+bl delete environment name [flags]
 ```
 
 ### Options
