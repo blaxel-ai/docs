@@ -425,6 +425,10 @@ components:
       type: object
       description: Metrics for the environment
       properties:
+        inference_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests (in last 24 hours) for the environment
+            globally
         inference_per_second_global:
           $ref: '#/components/schemas/ArrayMetric'
           description: Inference metrics for the environment globally
@@ -587,6 +591,21 @@ components:
           deployments:
             $ref: '#/components/schemas/FunctionDeployments'
             description: Function deployments
+    IncreaseAndRateMetric:
+      type: object
+      description: Metrics for resources
+      properties:
+        inference_global:
+          description: Historical requests for all resources globally
+        inference_per_second_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests per second (RPS), for all resources globally
+        query:
+          description: Number of requests for all resources globally
+        query_per_second:
+          type: number
+          description: RPS value (in last 24 hours) per location, for all resources
+            globally
     Integration:
       allOf:
       - $ref: '#/components/schemas/StandardFieldsDynamoDb'
@@ -704,6 +723,7 @@ components:
       description: Labels
       additionalProperties:
         type: string
+      nullable: true
     Location:
       description: Location availability for policies
       properties:
@@ -762,20 +782,18 @@ components:
     Metrics:
       type: object
       description: Metrics for resources
-      properties:
-        agents:
-          description: Metrics for agents
-        functions:
-          description: Metrics for functions
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for all models globally
-        models:
-          description: Metrics for models
-        query_per_second:
-          type: number
-          description: RPS value (in last 24 hours) per location, for all resources
-            globally
+      allOf:
+      - $ref: '#/components/schemas/IncreaseAndRateMetric'
+      - properties:
+          agents:
+            $ref: '#/components/schemas/IncreaseAndRateMetric'
+            description: Metrics for agents
+          functions:
+            $ref: '#/components/schemas/IncreaseAndRateMetric'
+            description: Metrics for functions
+          models:
+            $ref: '#/components/schemas/IncreaseAndRateMetric'
+            description: Metrics for models
     Model:
       type: object
       description: Logical object representing a model, that can be instantiated in
@@ -1148,6 +1166,17 @@ components:
       description: Metrics for a single resource deployment (eg. model deployment,
         function deployment)
       properties:
+        inference_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        inference_per_region:
+          type: object
+          description: Historical requests (in last 24 hours) per location, for the
+            model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/ArrayMetric'
         inference_per_second_global:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests per second (RPS), for the model deployment
@@ -1159,6 +1188,21 @@ components:
           properties:
             region:
               $ref: '#/components/schemas/ArrayMetric'
+        query_global:
+          type: number
+          description: Number of requests done on the resource for the model deployment
+        query_per_code_global:
+          $ref: '#/components/schemas/QPS'
+          description: Number of requests done on the resource for the model deployment
+        query_per_region:
+          $ref: '#/components/schemas/QPS'
+          description: Number of requests done on the resource for the model deployment
+        query_per_region_per_code:
+          type: object
+          description: Number of requests done on the resource for the model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/QPS'
         query_per_second_global:
           type: number
           description: RPS value (in last 24 hours) for the model deployment globally
@@ -1180,9 +1224,15 @@ components:
       type: object
       description: Metrics for a single resource (eg. model, function)
       properties:
+        inference_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests (in last 24 hours) for the model globally
         inference_per_second_global:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests per second (RPS), for the model globally
+        query_per_region:
+          $ref: '#/components/schemas/QPS'
+          description: Number of requests done on the resource
         query_per_second_per_region:
           $ref: '#/components/schemas/QPS'
           description: RPS value (in last 24 hours) per location, for the model
