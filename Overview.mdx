@@ -8,35 +8,38 @@ sidebarTitle: "Overview"
 
 ---
 
-Beamlit is a **global infrastructure** that gives ML Platform Engineers the tools to deploy and run AI models and agents across multiple regions, ensuring **very low-latency and very high-availability**. 
+Beamlit is a **serverless platform** that gives AI Builders the developer tools and infrastructure to deploy and run AI agents. Beamlit lets you bring your models, functions and agents and runs them globally with **very low-latency and very high-availability.**
 
 This portal provides comprehensive documentation, API references, and CLI instructions to help you operate the platform effectively.
 
 ## Core concepts
 
-Beamlit's architecture is both **serverless** and **distributed**, automatically scaling compute resources without requiring server management. 
+Here are 3 important concepts to get started with Beamlit:
 
-At its core, Beamlit's **Global Inference Network** serves as the backbone, designed to deliver inferences at scale with exceptional availability and minimal latency. This allows for multi-region deployment, enabling AI workloads to run across multiple geographic areas or cloud providers. 
+- **Agents**: AI-powered systems that interact with users, reason independently, and take autonomous actions through APIs to read or write data. They are built using the two other atomic bricks: functions and models.
+- **Functions**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
+- **Model APIs**: ML models that make inferences within the chained AI workflow. They act as action models—LLMs that interact with humans in natural language and can use available tools by generating appropriate input payloads (*function calling*).
 
-For organizations with on-premise setups, Beamlit offers the **Cloud Burst Network** feature. This allows for minimal-footprint deployments with overflow capacity, providing flexibility in resource management. Additionally, Beamlit provides real-time observability, allowing users to monitor and analyze performance metrics for their model deployments.
+When you deploy your agents to Beamlit, they run on a technical backbone called the **Global Inference Network**. The platform's serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Beamlit, and we'll run agent, model and function calls for you—ensuring your users receive excellent service regardless of their location.
 
-Among the important concepts in Beamlit are **models** and **deployments**. Models serve as the foundational logical entities, while deployments represent specific versions of these models implemented in various environments. Environments like development and production function as logical constructs for overseeing the model lifecycle across different stages. Policies play a crucial role in this framework, establishing and enforcing guidelines that govern the deployment process, thus ensuring adherence to organizational standards.
+Global Inference Network ****serves as the powerhouse for the entire Beamlit platform, designed to deliver inferences at scale with exceptional availability and minimal latency. It allows for multi-region deployment, enabling AI workloads to run across multiple geographic areas or cloud providers.
 
-The platform implements advanced security measures, including fine-grained authentication and authorization through Beamlit IAM, ensuring that your AI infrastructure remains protected.
+Beamlit provides all the **developer tools** needed to build and run your agents throughout their lifecycle. When pushed to Beamlit, agents, models, and functions become available as single **global endpoints**. Beamlit not only lets you specify the model APIs and tools an agent uses during development but also **executes those API and tool calls** during agent runtime. Manage your model lifecycle across stages using Beamlit environments such as development and production. 
 
-The platform supports model deployment and management through various methods, including APIs, CLI, console, or Kubernetes operator.
+The platform implements advanced security measures, including fine-grained authentication and authorization through Beamlit IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, console, as well as a Kubernetes operator for IT teams.
 
 ## Documentation structure
 
-Our documentation is organized into the following main sections:
+You might want to start with any of the following articles:
 
 - [**Get started**](Get-started): Deploy your first AI model worldwide in just 3 minutes.
 - [**Examples:**](Examples/Deploy-a-custom-model-from-HuggingFace) Explore real-world use cases and implementation guides.
 - **Product Documentation**
-    - [**Models:**](Models/Model-deployment) Learn about supported model types and deployment strategies.
-    - [**Model Governance:**](Model-Governance/Environments) Understand best practices for managing your models.
-    - [**Observability:**](Observability/View-model-logs) Monitor and optimize your model performance.
-    - [**Security:**](Security/Workspace-access-control) Implement robust security measures for your ML infrastructure.
+    - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
+    - [**Functions**](Functions/Overview): Execute tool calls when requested by your AI agents
+    - [**Model APIs:**](Models/Overview) Learn about supported model types.
     - [**Integrations:**](Integrations/HuggingFace) Discover how Beamlit works with other tools and platforms.
+    - [**Model Governance:**](Model-Governance/Environments) Manage a development and production life-cycle.
+    - [**Security:**](Security/Workspace-access-control) Implement robust security measures for your ML infrastructure.
 - [**API reference:**](https://docs.beamlit.com/api-reference/introduction) Comprehensive guide to Beamlit's APIs.
 - [**CLI reference:**](https://docs.beamlit.com/cli-reference/introduction) Learn how to use Beamlit's command-line interface.

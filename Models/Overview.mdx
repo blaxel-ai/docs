@@ -1,0 +1,24 @@
+---
+
+title: 'Overview'
+
+description: 'Empower your agents with AI models from anywhere.'
+
+---
+
+AI models are the brain of AI agents, as they are able to reason, talk, and generate payloads for the tools that the agent can use. 
+
+There are two ways to approach models on Beamlit: 
+
+- **Using an external model API provider** (e.g. OpenAI, Together, etc.): Beamlit acts as a unified gateway for model APIs, centralizing access credentials, tracing and telemetry. You can achieve this by defining workspace integrations to any major model API provider, and creating gateway endpoints on Beamlit for any of their models.
+- **Bringing your own model**: You can deploy any custom model on Beamlit, allowing you to use fine-tuned SLMs/LLMs or any other kind of AI model. When a model is deployed on Beamlit, you get global API endpoint to call it.
+
+When deploying an agent on Beamlit, you can connect it to a model API based on any of these two methods. 
+
+<Card title="External model APIs" icon="circle-nodes" href="/Models/External-model-endpoints">
+Complete guide for connecting to an external model provider like Anthropic or OpenAI. 
+</Card>
+
+<Card title="Custom model deployment APIs" icon="box" href="/Models/Model-deployment">
+Complete guide for deploying AI models directly on the Global Inference Network.
+</Card>

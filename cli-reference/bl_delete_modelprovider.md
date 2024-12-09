@@ -1,5 +1,4 @@
 ---
-date: 2024-11-29T16:27:20+01:00
 title: "bl delete modelprovider"
 slug: bl_delete_modelprovider
 ---
@@ -8,7 +7,7 @@ slug: bl_delete_modelprovider
 Delete a ModelProvider
 
 ```
-bl delete modelprovider [flags]
+bl delete modelprovider name [flags]
 ```
 
 ### Options

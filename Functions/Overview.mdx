@@ -1,0 +1,34 @@
+---
+
+title: 'Overview'
+
+description: 'Execute custom code to empower your AI agents with tools and actions.'
+
+---
+
+Functions represent **custom code** that can be executed by passing specific input arguments. 
+
+Beamlit runs your code on Global Inference Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Beamlit automates its execution and scaling - providing you with one single globally endpoint to run the function. 
+
+Functions are designed to **equip agents with tools** to interact with the world. When an agent runs on Beamlit, our Global Inference Network accelerates the whole execution behind the scenes, by running the function separately from the action model and agent logic. This ensures minimal latency for your consumers as well as optimal resource utilization. 
+
+## Deploy a function on Beamlit
+
+A function can be uploaded into Beamlit from a variety of origins.
+
+- Using a function from the Beamlit Store
+- *From imported files or Github (coming soon!)*
+
+### Origins
+
+The Beamlit store contains a curated list of functions and tools from the most popular providers that can be deployed out-of-the-box on Beamlit.
+
+Depending on the function you choose, you will need to enter credentials, such as an API key if your tool is using a third-party service provider.
+
+### Environment
+
+Select the environment on which to deploy your agent, just like you would do for a model. Environments give you a dedicated production or development endpoint for your application life-cycle.
+
+<Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run invocation requests on your function. 
+</Card>

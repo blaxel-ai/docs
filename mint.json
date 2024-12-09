@@ -32,7 +32,7 @@
     {
       "name": "Changelog",
       "icon": "newspaper",
-      "url": "changelog"
+      "url": "https://docs.beamlit.com/changelog"
     }
   ],
   "tabs": [
@@ -121,51 +121,77 @@
       ]
     },
     {
-      "group": "Models",
+      "group": "Agents",
       "pages": [
+        "Agents/Overview",
+        "Agents/Query-agents"
+      ]
+    },
+    {
+      "group": "Functions",
+      "pages": [
+        "Agents/Overview",
+        "Agents/Invoke-functions"
+      ]
+    },
+    {
+      "group": "Model APIs",
+      "pages": [
+        "Models/Overview",
+        "Models/External-model-apis",
         "Models/Model-deployment",
-        "Models/Global-Inference-Network",
-        "Models/Query-a-model",
-        {
-          "group": "Cloud Burst Network",
-          "pages": [
-            "Models/Cloud-Burst-Network/Model-overflow",
-            "Models/Cloud-Burst-Network/Install-Beamlit-operator",
-            {
-              "group": "Cluster configurations",
-              "pages": [
-                "Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "group": "Model Governance",
-      "pages": [
-        "Model-Governance/Environments",
-        "Model-Governance/Policies"
-      ]
-    },
-    {
-      "group": "Observability",
-      "pages": [
-        "Observability/View-model-logs"
-      ]
-    },
-    {
-      "group": "Security",
-      "pages": [
-        "Security/Workspace-access-control",
-        "Security/Service-accounts",
-        "Security/Access-tokens"
+        "Models/Query-a-model"
       ]
     },
     {
       "group": "Integrations",
       "pages": [
-        "Integrations/HuggingFace"
+        "Integrations/HuggingFace",
+        "Integrations/OpenAI",
+        "Integrations/Anthropic",
+        "Integrations/MistralAI",
+        "Integrations/Cohere",
+        "Integrations/xAI"
+      ]
+    },
+    {
+      "group": "Administration & security",
+      "pages": [
+        {
+          "group": "Governance",
+          "pages": [
+            "Model-Governance/Environments",
+            "Model-Governance/Policies"
+          ]
+        },
+        "Observability/View-model-logs",
+        {
+          "group": "Workspaces and access control",
+          "pages": [
+            "Security/Workspace-access-control",
+            "Security/Service-accounts"
+          ]
+        },
+        "Security/Access-tokens",
+        {
+          "group": "Infrastructure",
+          "pages": [
+            "Models/Global-Inference-Network",
+            {
+              "group": "Hybrid deployment",
+              "pages": [
+                "Models/Cloud-Burst-Network/Model-overflow",
+                "Models/Cloud-Burst-Network/Install-Beamlit-operator",
+                {
+                  "group": "Cluster configurations",
+                  "pages": [
+                    "Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       ]
     }
   ],

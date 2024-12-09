@@ -1,0 +1,60 @@
+---
+
+title: 'Invoke a function'
+
+description: 'Make invocation requests on your functions.'
+
+---
+
+Function [deployments](../Functions%2015347e47b1ea80eda0e5d4354f5ba238) on Beamlit have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global invocation Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Models/Model-deployment) associated with your function deployment. 
+
+## Invocation endpoints
+
+Whenever you deploy a function on Beamlit, an **invocation endpoint** is generated on Global invocation Network.
+
+The invocation URL looks like this:
+
+```
+
+run.beamlit.dev/{your-workspace}/functions/{your-function}
+
+```
+
+There is one distinct endpoint for each **function deployment,** i.e. for each combination of a [function](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
+
+For example, if you have one version of function “your-function” deployed on the *production* environment and one version deployed on the *development* environment:
+
+- `run.beamlit.dev/{your-workspace}/functions/{your-function}?environment=production` will call the production deployment
+- `run.beamlit.dev/{your-workspace}/functions/{your-function}?environment=development` will call the development deployment
+
+If you do not specify the environment in the invocation request, it will call the *production* environment by default. If the function is not deployed on the production environment, it will return an error.
+
+### Endpoint authentication
+
+By default, functions deployed on Beamlit aren’t public. It is necessary to authenticate all invocation requests, via a [bearer token](../Security/Access-tokens).
+
+The evaluation of authentication/authorization for invocation requests is managed by the Global invocation Network based on the [access given in your workspace](../Security/Workspace-access-control).
+
+<Info>Making a function publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
+
+## Make an invocation request
+
+### Beamlit API
+
+Make a **POST** request to the invocation endpoint for the function deployment you are requesting, making sure to fill in the authentication token:
+
+```
+curl 'https://run.beamlit.dev/YOUR-WORKSPACE/functions/YOUR-function?environment=YOUR-ENVIRONMENT' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
+  -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
+  --data-raw $'{"inputs":"Enter your input here."}'
+```
+
+Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).
+
+### Beamlit console
+
+invocation requests can be made from the Beamlit console from the function deployment’s workbench page.
+
+![image.png](Invoke-functions/image.png)
