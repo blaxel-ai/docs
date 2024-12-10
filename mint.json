@@ -130,8 +130,8 @@
     {
       "group": "Functions",
       "pages": [
-        "Agents/Overview",
-        "Agents/Invoke-functions"
+        "Functions/Overview",
+        "Functions/Invoke-functions"
       ]
     },
     {
