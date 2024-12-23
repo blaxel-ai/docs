@@ -72,12 +72,12 @@ Use your model deployment’s [inference endpoint](../Models/Query-a-model) to m
 
 For a model called `My custom model` in workspace `My workspace`, the base URL should look like the following:
 
-`run.beamlit.dev/my-workspace/models/my-custom-model`
+`run.beamlit.com/my-workspace/models/my-custom-model`
 
 Call it via an HTTP **POST** request, authenticating yourself with a [bearer token](../Security/Access-tokens):
 
 ```
-curl 'https://run.beamlit.dev/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
   -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
@@ -86,6 +86,6 @@ curl 'https://run.beamlit.dev/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-
 
 If your HuggingFace model implements any other endpoint, they will be served on the URL above. For example:
 
-`run.beamlit.dev/my-workspace/models/my-custom-model/v1/chat/completions`
+`run.beamlit.com/my-workspace/models/my-custom-model/v1/chat/completions`
 
 For further reference, read our documentation about [model deployments](../Models/Model-deployment).

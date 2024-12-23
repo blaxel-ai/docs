@@ -4,7 +4,7 @@ components:
       type: object
       description: ACL
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
       - properties:
           id:
             type: string
@@ -29,21 +29,14 @@ components:
             description: Workspace name
     Agent:
       type: object
-      description: Agent parent of AgentDeployment
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          display_name:
-            type: string
-            description: Agent display name
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            type: string
-            description: Agent name
-          workspace:
-            type: string
-            description: Workspace name
+      description: Agent
+      properties:
+        metadata:
+          $ref: '#/components/schemas/EnvironmentMetadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+        status:
+          $ref: '#/components/schemas/CoreStatus'
     AgentChain:
       type: object
       description: Agent chain configuration
@@ -58,83 +51,16 @@ components:
         name:
           type: string
           description: The name of the agent to chain to
-    AgentConfiguration:
-      type: object
-      description: Agent configuration, this is a key value storage. In your agent
-        you can retrieve the value with config[key]
-      properties:
-        secret:
-          type: boolean
-          description: Agent configuration secret
-        value:
-          type: string
-          description: Agent configuration value
-    AgentDeployment:
-      type: object
-      description: Agent deployment configuration
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          agent:
-            type: string
-            description: The name of the agent
-          agent_chain:
-            type: array
-            description: Agent chaining configuration
-            items:
-              $ref: '#/components/schemas/AgentChain'
-          configuration:
-            type: object
-            $ref: '#/components/schemas/DeploymentConfigurations'
-            description: Agent configuration, this is a key value storage. In your
-              agent you can retrieve the value with config[key]
-          description:
-            type: string
-            description: Agent description, very important to have a clear description
-              for your agent if you want to make it work with agent chaining
-          enabled:
-            type: boolean
-            description: Whether the agent deployment is enabled
-          environment:
-            type: string
-            description: The name of the environment
-          flavors:
-            $ref: '#/components/schemas/Flavors'
-          functions:
-            type: array
-            description: Functions used by the agent, those functions needs to be
-              created before setting it here
-            items:
-              type: string
-          integration_connections:
-            $ref: '#/components/schemas/DeploymentIntegrationConnections'
-            description: The integration connections for the model deployment
-          labels:
-            $ref: '#/components/schemas/Labels'
-          model:
-            type: string
-            description: Model beamlit to use for agent, it should be compatible with
-              function calling
-          pod_template:
-            type: object
-            description: The pod template, should be a valid Kubernetes pod template
-          policies:
-            $ref: '#/components/schemas/DeploymentPolicies'
-          runtime:
-            $ref: '#/components/schemas/Runtime'
-          serverless_config:
-            $ref: '#/components/schemas/DeploymentServerlessConfig'
-          store_id:
-            type: string
-            description: Create from a store registered function
-          workspace:
-            type: string
-            description: The workspace the agent deployment belongs to
-    AgentDeploymentHistory:
+    AgentChains:
+      type: array
+      description: Agent chain
+      items:
+        $ref: '#/components/schemas/AgentChain'
+    AgentHistory:
       type: object
       description: Agent deployment history
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
       - properties:
           agent:
             type: string
@@ -149,7 +75,7 @@ components:
             type: array
             description: Events
             items:
-              $ref: '#/components/schemas/AgentDeploymentHistoryEvent'
+              $ref: '#/components/schemas/AgentHistoryEvent'
           request_id:
             type: string
             description: Request ID
@@ -165,7 +91,7 @@ components:
           workspace:
             type: string
             description: The workspace the agent deployment belongs to
-    AgentDeploymentHistoryEvent:
+    AgentHistoryEvent:
       type: object
       description: Agent deployment history event
       properties:
@@ -187,7 +113,7 @@ components:
         status:
           type: string
           description: 'Status, eg: running, success, failed'
-        sub_function:
+        subFunction:
           type: string
           description: Function used in kit if a kit was used
         took:
@@ -196,11 +122,15 @@ components:
         type:
           type: string
           description: Type, one of function or agent
-    AgentDeployments:
-      type: array
-      items:
-        $ref: '#/components/schemas/AgentDeployment'
-        description: Agent deployments
+    AgentMetadata:
+      allOf:
+      - $ref: '#/components/schemas/Metadata'
+      - properties:
+          environment:
+            description: Environment name
+            type: string
+      description: Agent metadata
+      type: object
     AgentRelease:
       type: object
       description: Agent release, used to deploy a agent from one environment to another
@@ -211,23 +141,33 @@ components:
         to:
           type: string
           description: Destination environment to which the agent is released
-    AgentWithDeployments:
+    AgentSpec:
       type: object
-      description: Logical object representing an agent but with deployment definition
-        inside
+      description: Agent specification
       allOf:
-      - $ref: '#/components/schemas/Agent'
+      - $ref: '#/components/schemas/CoreSpec'
       - properties:
-          deployments:
-            $ref: '#/components/schemas/AgentDeployments'
-            description: Agent deployments
+          agentChain:
+            $ref: '#/components/schemas/AgentChains'
+          description:
+            type: string
+            description: Agent description
+          functions:
+            $ref: '#/components/schemas/FunctionsList'
+          model:
+            type: string
+            description: Model name
+          storeId:
+            type: string
+            description: Store id
     ApiKey:
       type: object
       description: Long-lived API key for accessing Beamlit
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
-          api_key:
+          apiKey:
             type: string
             description: Api key
           expires_in:
@@ -250,60 +190,6 @@ components:
       description: Array of metrics
       items:
         $ref: '#/components/schemas/Metric'
-    AuthenticationProviderModel:
-      description: Model obtained from an external authentication provider, such as
-        HuggingFace, OpenAI, etc...
-      properties:
-        created_at:
-          description: Provider model created at
-          type: string
-        downloads:
-          description: Provider model downloads
-          type: integer
-        id:
-          description: Provider model ID
-          type: string
-        library_name:
-          description: Provider model library name
-          type: string
-        likes:
-          description: Provider model likes
-          type: integer
-        name:
-          description: Provider model name
-          type: string
-        pipeline_tag:
-          description: Provider model pipeline tag
-          type: string
-        private:
-          description: Provider model private
-          type: boolean
-        tags:
-          description: Provider model tags
-          items:
-            type: string
-          type: array
-        trending_score:
-          description: Provider model trending score
-          type: integer
-      type: object
-    AuthenticationProviderOrganization:
-      description: Organization that hosts models from an external authentication
-        provider (HuggingFace, OpenAI, etc...)
-      properties:
-        avatar_url:
-          description: Provider organization avatar URL
-          type: string
-        display_name:
-          description: Provider organization display name
-          type: string
-        id:
-          description: Provider organization ID
-          type: string
-        name:
-          description: Provider organization name
-          type: string
-      type: object
     Configuration:
       type: object
       description: Configuration
@@ -316,122 +202,98 @@ components:
           type: array
           description: Countries
           items: {}
+        privateLocations:
+          type: array
+          description: Private locations managed with beamlit operator
+          items: {}
     Continent:
       type: object
       description: Continent
       properties:
-        display_name:
+        displayName:
           type: string
           description: Continent display name
         name:
           type: string
           description: Continent code
+    CoreSpec:
+      type: object
+      description: Core specification
+      properties:
+        configurations:
+          type: object
+          description: Optional configurations for the object
+          properties:
+            key:
+              $ref: '#/components/schemas/SpecConfiguration'
+        enabled:
+          type: boolean
+          description: Enable or disable the agent
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        podTemplate:
+          $ref: '#/components/schemas/PodTemplateSpec'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        privateClusters:
+          $ref: '#/components/schemas/ModelPrivateCluster'
+          description: The private clusters where the model deployment is deployed
+        runtime:
+          $ref: '#/components/schemas/Runtime'
+        serverlessConfig:
+          $ref: '#/components/schemas/ServerlessConfig'
+    CoreStatus:
+      type: object
+      description: Core status
+      properties:
+        deploymentStatus:
+          type: string
+          description: The status of the core, can be CREATED, UPDATED, DELETED, DEPLOYED,
+            DISABLED, or FAILED
     Country:
       type: object
       description: Configuration
       properties:
-        display_name:
+        displayName:
           type: string
           description: Country display name
         name:
           type: string
           description: Country code
-    DeploymentConfiguration:
-      type: object
-      description: Function configuration, this is a key value storage. In your function
-        you can retrieve the value with config[key]
-      properties:
-        secret:
-          type: boolean
-          description: Function configuration secret
-        value:
-          type: string
-          description: Function configuration value
-    DeploymentConfigurations:
-      type: object
-      description: Deployment configurations key value and also a boolean secret to
-        specify if it should be stored in secret manager
-      additionalProperties:
-        $ref: '#/components/schemas/DeploymentConfiguration'
-    DeploymentIntegrationConnections:
-      type: array
-      items:
-        type: string
-        description: Deployment integration connection name
-    DeploymentPolicies:
-      type: array
-      items:
-        type: string
-        description: Policy name
-    DeploymentServerlessConfig:
-      type: object
-      description: Configuration for a serverless deployment
-      properties:
-        last_pod_retention_period:
-          type: string
-          description: The minimum amount of time that the last replica will remain
-            active AFTER a scale-to-zero decision is made
-        max_num_replicas:
-          type: integer
-          description: The maximum number of replicas for the deployment.
-        metric:
-          type: string
-          description: Metric watched to make scaling decisions. Can be "cpu" or "memory"
-            or "rps" or "concurrency"
-        min_num_replicas:
-          type: integer
-          description: The minimum number of replicas for the deployment. Can be 0
-            or 1 (in which case the deployment is always running in at least one location).
-        scale_down_delay:
-          type: string
-          description: The time window which must pass at reduced concurrency before
-            a scale-down decision is applied. This can be useful, for example, to
-            keep containers around for a configurable duration to avoid a cold start
-            penalty if new requests come in.
-        scale_up_minimum:
-          type: integer
-          description: The minimum number of replicas that will be created when the
-            deployment scales up from zero.
-        stable_window:
-          type: string
-          description: The sliding time window over which metrics are averaged to
-            provide the input for scaling decisions
-        target:
-          type: string
-          description: Target value for the watched metric
     Environment:
       type: object
       description: Environment on which deployments will be made (e.g. development,
         production), enforcing multiple policies at once.
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/EnvironmentSpec'
+    EnvironmentMetadata:
+      type: object
+      description: Environment metadata
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/Metadata'
       - properties:
-          display_name:
+          environment:
             type: string
-            description: The display name of the environment
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            type: string
-            description: The name of the environment
-          policies:
-            type: array
-            description: The policies attached to the environment
-            items: {}
-          workspace:
-            type: string
-            description: The workspace the environment belongs to
+            description: Environment name
     EnvironmentMetrics:
       type: object
       description: Metrics for the environment
       properties:
-        inference_global:
+        inferenceGlobal:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests (in last 24 hours) for the environment
             globally
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Inference metrics for the environment globally
+    EnvironmentSpec:
+      type: object
+      description: Environment specification
+      properties:
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
     Flavor:
       type: object
       description: A type of hardware available for deployments
@@ -449,94 +311,14 @@ components:
         $ref: '#/components/schemas/Flavor'
     Function:
       type: object
-      description: Function parent of FunctionDeployment
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          display_name:
-            type: string
-            description: Function display name
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            type: string
-            description: Function name
-          workspace:
-            type: string
-            description: Workspace name
-    FunctionConfiguration:
-      description: Function configuration, this is a key value storage. In your function
-        you can retrieve the value with config[key]
+      description: Function
       properties:
-        secret:
-          description: Function configuration secret
-          type: boolean
-        value:
-          description: Function configuration value
-          type: string
-      type: object
-    FunctionDeployment:
-      type: object
-      description: Function deployment configuration
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          configuration:
-            type: object
-            $ref: '#/components/schemas/DeploymentConfigurations'
-            description: Function configuration, this is a key value storage. In your
-              function you can retrieve the value with config[key]
-          description:
-            type: string
-            description: Function description, very important for the agent function
-              to work with an LLM
-          enabled:
-            type: boolean
-            description: Whether the function deployment is enabled
-          environment:
-            type: string
-            description: The name of the environment
-          flavors:
-            $ref: '#/components/schemas/Flavors'
-          function:
-            type: string
-            description: The name of the function
-          integration_connections:
-            $ref: '#/components/schemas/DeploymentIntegrationConnections'
-            description: The integration connections for the model deployment
-          kit:
-            type: array
-            description: The kit of the function deployment
-            items:
-              $ref: '#/components/schemas/FunctionKit'
-          labels:
-            $ref: '#/components/schemas/Labels'
-          parameters:
-            type: array
-            description: Function parameters, for your function to be callable with
-              Agent
-            items:
-              $ref: '#/components/schemas/StoreFunctionParameter'
-          pod_template:
-            type: object
-            description: The pod template, should be a valid Kubernetes pod template
-          policies:
-            $ref: '#/components/schemas/DeploymentPolicies'
-          runtime:
-            $ref: '#/components/schemas/Runtime'
-          serverless_config:
-            $ref: '#/components/schemas/DeploymentServerlessConfig'
-          store_id:
-            type: string
-            description: Create from a store registered function
-          workspace:
-            type: string
-            description: The workspace the function deployment belongs to
-    FunctionDeployments:
-      type: array
-      items:
-        $ref: '#/components/schemas/FunctionDeployment'
-        description: Function deployments
+        metadata:
+          $ref: '#/components/schemas/EnvironmentMetadata'
+        spec:
+          $ref: '#/components/schemas/FunctionSpec'
+        status:
+          $ref: '#/components/schemas/CoreStatus'
     FunctionKit:
       type: object
       description: Function kit
@@ -554,22 +336,15 @@ components:
           description: Kit parameters, for your kit to be callable with an Agent
           items:
             $ref: '#/components/schemas/StoreFunctionParameter'
-    FunctionPolicies:
-      description: Policies to apply to the model deployment
-      items:
-        description: Policy name
-        type: string
-      type: array
-    FunctionProviderRef:
-      description: Reference to a model provider
-      properties:
-        kind:
-          description: The kind of the model provider, can be Provider
-          type: string
-        name:
-          description: The name of the model provider
-          type: string
+    FunctionMetadata:
       type: object
+      description: Function metadata
+      allOf:
+      - $ref: '#/components/schemas/Metadata'
+      - properties:
+          environment:
+            type: string
+            description: Environment name
     FunctionRelease:
       type: object
       description: Function release, used to deploy a function from one environment
@@ -581,99 +356,82 @@ components:
         to:
           type: string
           description: Destination environment to which the function is released
-    FunctionWithDeployments:
+    FunctionSpec:
       type: object
-      description: Logical object representing a function but with deployment definition
-        inside
+      description: Function specification
       allOf:
-      - $ref: '#/components/schemas/Function'
+      - $ref: '#/components/schemas/CoreSpec'
       - properties:
-          deployments:
-            $ref: '#/components/schemas/FunctionDeployments'
-            description: Function deployments
+          description:
+            type: string
+            description: Function description, very important for the agent function
+              to work with an LLM
+          kit:
+            type: array
+            description: The kit of the function deployment
+            items:
+              $ref: '#/components/schemas/FunctionKit'
+          parameters:
+            type: array
+            description: Function parameters, for your function to be callable with
+              Agent
+            items:
+              $ref: '#/components/schemas/StoreFunctionParameter'
+          storeId:
+            type: string
+            description: Store id
+    FunctionsList:
+      type: array
+      items:
+        type: string
+        description: Function name
     IncreaseAndRateMetric:
       type: object
       description: Metrics for resources
       properties:
-        inference_global:
+        inferenceGlobal:
           description: Historical requests for all resources globally
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for all resources globally
         query:
           description: Number of requests for all resources globally
-        query_per_second:
-          type: number
-          description: RPS value (in last 24 hours) per location, for all resources
-            globally
-    Integration:
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          config:
-            $ref: '#/components/schemas/IntegrationConfig'
-            description: Additional configuration for the integration
-          display_name:
-            description: Integration display name
-            type: string
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            description: Integration name
-            type: string
-          secret:
-            $ref: '#/components/schemas/IntegrationSecret'
-            description: Integration secret
-          type:
-            description: Integration type
-            type: string
-          workspace:
-            description: Workspace name
-            type: string
-      description: Model provider
-      type: object
     IntegrationConfig:
       description: Integration config
       type: object
     IntegrationConnection:
       type: object
       description: Integration Connection
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          config:
-            $ref: '#/components/schemas/IntegrationConnectionConfig'
-            description: Additional configuration for the integration
-          display_name:
-            type: string
-            description: Integration connection display name
-          integration:
-            type: string
-            description: Integration type
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            type: string
-            description: Integration connection name
-          secret:
-            $ref: '#/components/schemas/IntegrationConnectionSecret'
-            description: Integration secret
-          workspace:
-            type: string
-            description: Workspace name
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/IntegrationConnectionSpec'
     IntegrationConnectionConfig:
       type: object
       description: Integration config
-    IntegrationConnectionName:
-      description: Integration connection name
-      type: string
     IntegrationConnectionSecret:
       type: object
       description: Integration secret
       properties:
-        api_key:
+        apiKey:
           type: string
           description: The API key to use for the integration
+    IntegrationConnectionSpec:
+      type: object
+      description: Integration connection specification
+      properties:
+        config:
+          $ref: '#/components/schemas/IntegrationConnectionConfig'
+          description: Additional configuration for the integration
+        integration:
+          type: string
+          description: Integration type
+        secret:
+          $ref: '#/components/schemas/IntegrationConnectionSecret'
+          description: Integration secret
+    IntegrationConnectionsList:
+      type: array
+      items:
+        type: string
+        description: Deployment integration connection name
     IntegrationModel:
       type: object
       description: Model obtained from an external authentication provider, such as
@@ -711,43 +469,6 @@ components:
         trending_score:
           type: integer
           description: Provider model trending score
-    IntegrationSecret:
-      description: Integration secret
-      properties:
-        api_key:
-          description: The API key to use for the integration
-          type: string
-      type: object
-    Labels:
-      type: object
-      description: Labels
-      additionalProperties:
-        type: string
-      nullable: true
-    Location:
-      description: Location availability for policies
-      properties:
-        continent:
-          description: Location continent
-          type: string
-        country:
-          description: Location country
-          type: string
-        flavors:
-          description: Location flavors
-          items:
-            $ref: '#/components/schemas/Flavor'
-          type: array
-        location:
-          description: Location name
-          type: string
-        name:
-          description: Location name
-          type: string
-        status:
-          description: Location status
-          type: string
-      type: object
     LocationResponse:
       type: object
       description: Location availability for policies
@@ -769,6 +490,29 @@ components:
         status:
           type: string
           description: Status of the location
+    Metadata:
+      type: object
+      description: Metadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Model display name
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Model name
+          workspace:
+            type: string
+            description: Workspace name
+    MetadataLabels:
+      type: object
+      description: Labels
+      additionalProperties:
+        type: string
     Metric:
       type: object
       description: Metric
@@ -798,141 +542,41 @@ components:
       type: object
       description: Logical object representing a model, that can be instantiated in
         multiple environments as model deployments
+      properties:
+        metadata:
+          $ref: '#/components/schemas/EnvironmentMetadata'
+        spec:
+          $ref: '#/components/schemas/ModelSpec'
+        status:
+          $ref: '#/components/schemas/CoreStatus'
+    ModelMetadata:
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/Metadata'
       - properties:
-          display_name:
-            type: string
-            description: Model display name
-          labels:
-            $ref: '#/components/schemas/Labels'
-          name:
-            type: string
-            description: Model name
-          workspace:
-            type: string
-            description: The workspace the model belongs to
-    ModelDeployment:
-      type: object
-      description: An instance of a model, deployed in a specific environment
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          enabled:
-            type: boolean
-            description: If false, the model deployment will not be active nor serve
-              requests
           environment:
+            description: Environment name
             type: string
-            description: The name of the environment in which the model deployment
-              is deployed
-          flavors:
-            $ref: '#/components/schemas/Flavors'
-            description: The hardware flavor(s) on which this model deployment can
-              run. This should be a subset of the flavors allowed by the environment
-              policies, and should not mix GPU and non-GPU flavors.
-          integration_connections:
-            $ref: '#/components/schemas/DeploymentIntegrationConnections'
-            description: The integration connections for the model deployment
-          labels:
-            $ref: '#/components/schemas/Labels'
-          metric_port:
-            type: integer
-            description: The port to serve the metrics on
-          model:
-            type: string
-            description: The name of the parent model
-          model_provider_ref:
-            $ref: '#/components/schemas/ModelProviderRef'
-            description: The reference for the origin of the model
-          pod_template:
-            type: object
-            description: The pod template for the deployment. Should be a Kubernetes
-              PodTemplateSpec
-          policies:
-            $ref: '#/components/schemas/DeploymentPolicies'
-            description: The policies that are attached to the model deployment directly
-          runtime:
-            $ref: '#/components/schemas/Runtime'
-            description: Configurations that describe which model is being served
-              and how it is served
-          serverless_config:
-            $ref: '#/components/schemas/DeploymentServerlessConfig'
-            description: The configuration for scaling the model deployment
-          serving_port:
-            type: integer
-            description: The port to serve the model on
-          workspace:
-            type: string
-            description: The workspace the model deployment belongs to
-    ModelDeploymentLog:
-      description: Log for a model deployment
+      description: Model metadata
+      type: object
+    ModelPrivateCluster:
+      type: object
+      description: Private cluster where the model deployment is deployed
       properties:
-        message:
-          description: Content of the log
+        baseUrl:
           type: string
-        timestamp:
-          description: The timestamp of the log
+          description: The base url of the model in the private cluster
+        enabled:
+          type: boolean
+          description: If true, the private cluster is available
+        name:
           type: string
-      type: object
-    ModelDeploymentMetrics:
-      description: Metrics for a single model deployment
-      properties:
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for the model deployment
-            globally
-        inference_per_second_per_region:
-          description: Historical requests per second (RPS) per location, for the
-            model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/ArrayMetric'
-          type: object
-        query_per_second_global:
-          description: RPS value (in last 24 hours) for the model deployment globally
-          type: number
-        query_per_second_per_code_global:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per response status code, for
-            the model deployment globally
-        query_per_second_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per location, for the model deployment
-        query_per_second_per_region_per_code:
-          description: RPS value (in last 24 hours) per response status code per location,
-            for the model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/QPS'
-          type: object
-      type: object
-    ModelDeployments:
-      type: array
-      items:
-        $ref: '#/components/schemas/ModelDeployment'
-        description: Model deployments
-    ModelMetrics:
-      description: Metrics for a single model
-      properties:
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for the model globally
-        query_per_second_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per location, for the model
-      type: object
-    ModelPolicies:
-      description: Policies to apply to the model deployment
-      items:
-        description: Policy name
-        type: string
-      type: array
+          description: The name of the private cluster
     ModelProvider:
       type: object
       description: Model provider
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
           comment:
             type: string
@@ -940,11 +584,11 @@ components:
           config:
             $ref: '#/components/schemas/ProviderConfig'
             description: Additional configuration for the model provider
-          display_name:
+          displayName:
             type: string
             description: Model provider display name
           labels:
-            $ref: '#/components/schemas/Labels'
+            $ref: '#/components/schemas/MetadataLabels'
           name:
             type: string
             description: Model provider name
@@ -954,16 +598,9 @@ components:
           workspace:
             type: string
             description: Workspace name
-    ModelProviderRef:
-      type: object
-      description: Reference to a model provider
-      properties:
-        kind:
-          type: string
-          description: The kind of the model provider, can be Provider
-        name:
-          type: string
-          description: The name of the model provider
+    ModelProviderName:
+      type: string
+      description: Model provider name
     ModelRelease:
       type: object
       description: Model release, used to deploy a model from one environment to another
@@ -974,26 +611,36 @@ components:
         to:
           type: string
           description: Destination environment to which the model is released
-    ModelWithDeployments:
+    ModelSpec:
       type: object
-      description: Logical object representing a model but with deployment definition
-        inside
+      description: Model specification
       allOf:
-      - $ref: '#/components/schemas/Model'
+      - $ref: '#/components/schemas/CoreSpec'
       - properties:
-          deployments:
-            $ref: '#/components/schemas/ModelDeployments'
-            description: Model deployments
+          modelProvider:
+            $ref: '#/components/schemas/ModelProviderName'
+            description: The reference for the origin of the model
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistance
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
     PendingInvitation:
       type: object
       description: Pending invitation in workspace
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
           email:
             type: string
             description: User email
-          invited_by:
+          invitedBy:
             type: string
             description: User sub
           role:
@@ -1018,17 +665,17 @@ components:
         email:
           type: string
           description: User email
-        invited_at:
+        invitedAt:
           type: string
           description: Invitation date
-        invited_by:
+        invitedBy:
           $ref: '#/components/schemas/PendingInvitationRenderInvitedBy'
         role:
           type: string
           description: ACL role
         workspace:
           $ref: '#/components/schemas/PendingInvitationRenderWorkspace'
-        workspace_details:
+        workspaceDetails:
           $ref: '#/components/schemas/PendingInvitationWorkspaceDetails'
     PendingInvitationRenderInvitedBy:
       type: object
@@ -1050,7 +697,7 @@ components:
       type: object
       description: Workspace
       properties:
-        display_name:
+        displayName:
           type: string
           description: Workspace display name
         name:
@@ -1067,45 +714,23 @@ components:
         user_number:
           type: number
           description: Number of users in the workspace
+    PodTemplateSpec:
+      description: Pod template specification
+      type: object
+    PoliciesList:
+      type: array
+      items:
+        type: string
+        description: Policy name
     Policy:
       type: object
       description: Rule that controls how a deployment is made and served (e.g. location
         restrictions)
-      allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
-      - properties:
-          display_name:
-            type: string
-            description: Policy display name
-          flavors:
-            $ref: '#/components/schemas/Flavors'
-            description: Flavors allowed by the policy. If not set, all flavors are
-              allowed.
-          labels:
-            $ref: '#/components/schemas/Labels'
-          locations:
-            $ref: '#/components/schemas/PolicyLocations'
-            description: Locations allowed by the policy. If not set, all locations
-              are allowed.
-          name:
-            type: string
-            description: Policy name
-          resource_types:
-            $ref: '#/components/schemas/PolicyResourceTypes'
-            description: ResourceTypes where the policy is applied. If not set, the
-              policy is applied to all resource types.
-          type:
-            type: string
-            description: Policy type, can be location or flavor
-          workspace:
-            type: string
-            description: The workspace the policy belongs to
-    PolicyGpu:
-      description: Policy GPU
-      items:
-        description: GPU name
-        type: string
-      type: array
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/PolicySpec'
     PolicyLocation:
       type: object
       description: Policy location
@@ -1130,6 +755,75 @@ components:
       description: PolicyResourceTypes is a local type that wraps a slice of PolicyResourceType
       items:
         $ref: '#/components/schemas/PolicyResourceType'
+    PolicySpec:
+      type: object
+      description: Policy specification
+      properties:
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+          description: Flavors allowed by the policy. If not set, all flavors are
+            allowed.
+        locations:
+          $ref: '#/components/schemas/PolicyLocations'
+          description: Locations allowed by the policy. If not set, all locations
+            are allowed.
+        resourceTypes:
+          $ref: '#/components/schemas/PolicyResourceTypes'
+          description: ResourceTypes where the policy is applied. If not set, the
+            policy is applied to all resource types.
+        type:
+          type: string
+          description: Policy type, can be location or flavor
+    PrivateCluster:
+      type: object
+      description: A private cluster where models can be located on.
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          continent:
+            type: string
+            description: The private cluster's continent, used to determine the closest
+              private cluster to serve inference requests based on the user's location
+          country:
+            type: string
+            description: The country where the private cluster is located, used to
+              determine the closest private cluster to serve inference requests based
+              on the user's location
+          displayName:
+            type: string
+            description: The private cluster's display Name
+          healthy:
+            type: boolean
+            description: Whether the private cluster is healthy or not, used to determine
+              if the private cluster is ready to run inference
+          lastHealthCheckTime:
+            type: string
+            description: The private cluster's unique name
+          latitude:
+            type: string
+            description: The private cluster's latitude, used to determine the closest
+              private cluster to serve inference requests based on the user's location
+          longitude:
+            type: string
+            description: The private cluster's longitude, used to determine the closest
+              private cluster to serve inference requests based on the user's location
+          name:
+            type: string
+            description: The name of the private cluster, it must be unique
+          ownedBy:
+            type: string
+            description: The service account (operator) that owns the cluster
+          workspace:
+            type: string
+            description: The workspace the private cluster belongs to
+    PrivateLocation:
+      type: object
+      description: Private location available for policies
+      properties:
+        name:
+          type: string
+          description: Location name
     ProviderConfig:
       type: object
       description: Model provider config
@@ -1151,7 +845,71 @@ components:
         region_code:
           type: number
           description: QPS for location
-    ResourceDeploymentLog:
+    ResourceDeploymentMetrics:
+      description: Metrics for a single resource deployment (eg. model deployment,
+        function deployment)
+      properties:
+        inference_per_second_global:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests per second (RPS), for the model deployment
+            globally
+        inference_per_second_per_region:
+          description: Historical requests per second (RPS) per location, for the
+            model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/ArrayMetric'
+          type: object
+        query_per_second_global:
+          description: RPS value (in last 24 hours) for the model deployment globally
+          type: number
+        query_per_second_per_code_global:
+          $ref: '#/components/schemas/QPS'
+          description: RPS value (in last 24 hours) per response status code, for
+            the model deployment globally
+        query_per_second_per_region:
+          $ref: '#/components/schemas/QPS'
+          description: RPS value (in last 24 hours) per location, for the model deployment
+        query_per_second_per_region_per_code:
+          description: RPS value (in last 24 hours) per response status code per location,
+            for the model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/QPS'
+          type: object
+      type: object
+    ResourceEnvironmentMetrics:
+      type: object
+      description: Metrics for a single resource deployment (eg. model deployment,
+        function deployment)
+      properties:
+        inferenceGlobal:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        inferencePerRegion:
+          type: object
+          description: Historical requests (in last 24 hours) per location, for the
+            model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/ArrayMetric'
+        query_global:
+          type: number
+          description: Number of requests done on the resource for the model deployment
+        queryPerCodeGlobal:
+          $ref: '#/components/schemas/QPS'
+          description: Number of requests done on the resource for the model deployment
+        queryPerRegion:
+          $ref: '#/components/schemas/QPS'
+          description: Number of requests done on the resource for the model deployment
+        queryPerRegionPerCode:
+          type: object
+          description: Number of requests done on the resource for the model deployment
+          properties:
+            region:
+              $ref: '#/components/schemas/QPS'
+    ResourceLog:
       type: object
       description: Log for a resource deployment (eg. model deployment, function deployment)
       properties:
@@ -1161,81 +919,16 @@ components:
         timestamp:
           type: string
           description: The timestamp of the log
-    ResourceDeploymentMetrics:
-      type: object
-      description: Metrics for a single resource deployment (eg. model deployment,
-        function deployment)
-      properties:
-        inference_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests (in last 24 hours) for the model deployment
-            globally
-        inference_per_region:
-          type: object
-          description: Historical requests (in last 24 hours) per location, for the
-            model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/ArrayMetric'
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for the model deployment
-            globally
-        inference_per_second_per_region:
-          type: object
-          description: Historical requests per second (RPS) per location, for the
-            model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/ArrayMetric'
-        query_global:
-          type: number
-          description: Number of requests done on the resource for the model deployment
-        query_per_code_global:
-          $ref: '#/components/schemas/QPS'
-          description: Number of requests done on the resource for the model deployment
-        query_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: Number of requests done on the resource for the model deployment
-        query_per_region_per_code:
-          type: object
-          description: Number of requests done on the resource for the model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/QPS'
-        query_per_second_global:
-          type: number
-          description: RPS value (in last 24 hours) for the model deployment globally
-        query_per_second_per_code_global:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per response status code, for
-            the model deployment globally
-        query_per_second_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per location, for the model deployment
-        query_per_second_per_region_per_code:
-          type: object
-          description: RPS value (in last 24 hours) per response status code per location,
-            for the model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/QPS'
     ResourceMetrics:
       type: object
       description: Metrics for a single resource (eg. model, function)
       properties:
-        inference_global:
+        inferenceGlobal:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests (in last 24 hours) for the model globally
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for the model globally
-        query_per_region:
+        queryPerRegion:
           $ref: '#/components/schemas/QPS'
           description: Number of requests done on the resource
-        query_per_second_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per location, for the model
     Runtime:
       type: object
       description: Set of configurations for a deployment
@@ -1256,69 +949,79 @@ components:
         image:
           type: string
           description: The Docker image for the deployment
+        metricPort:
+          type: integer
+          description: The port to serve the metrics on
         model:
           type: string
           description: The slug name of the origin model. Only used if the deployment
-            is a ModelDeployment
-        readiness_probe:
+            is a Deployment
+        readinessProbe:
           type: object
           description: The readiness probe. Should be a Kubernetes Probe type
         resources:
           type: object
           description: The resources for the deployment. Should be a Kubernetes ResourceRequirements
             type
+        servingPort:
+          type: integer
+          description: The port to serve the model on
         type:
           type: string
           description: The type of origin for the deployment
     ServerlessConfig:
-      description: Configuration for the serverless model deployment
+      type: object
+      description: Configuration for a serverless deployment
       properties:
-        last_pod_retention_period:
-          description: The last pod retention period
+        lastPodRetentionPeriod:
           type: string
-        max_num_replicas:
-          description: The maximum number of replicas
+          description: The minimum amount of time that the last replica will remain
+            active AFTER a scale-to-zero decision is made
+        maxNumReplicas:
           type: integer
+          description: The maximum number of replicas for the deployment.
         metric:
-          description: Metric to scale on, can be "cpu" or "memory" or "rps" or "concurrency"
           type: string
-        min_num_replicas:
-          description: The minimum number of replicas
+          description: Metric watched to make scaling decisions. Can be "cpu" or "memory"
+            or "rps" or "concurrency"
+        minNumReplicas:
           type: integer
-        scale_down_delay:
-          description: The scale down delay
+          description: The minimum number of replicas for the deployment. Can be 0
+            or 1 (in which case the deployment is always running in at least one location).
+        scaleDownDelay:
           type: string
-        scale_up_minimum:
-          description: The scale up minimum
+          description: The time window which must pass at reduced concurrency before
+            a scale-down decision is applied. This can be useful, for example, to
+            keep containers around for a configurable duration to avoid a cold start
+            penalty if new requests come in.
+        scaleUpMinimum:
           type: integer
-        stable_window:
-          description: The stable window
+          description: The minimum number of replicas that will be created when the
+            deployment scales up from zero.
+        stableWindow:
           type: string
+          description: The sliding time window over which metrics are averaged to
+            provide the input for scaling decisions
         target:
-          description: Target value for the metric
           type: string
+          description: Target value for the watched metric
+    SpecConfiguration:
       type: object
-    StandardFieldsDynamoDb:
-      type: object
-      description: Standard fields for Persistance
+      description: Configuration, this is a key value storage. In your object you
+        can retrieve the value with config[key]
       properties:
-        created_at:
+        secret:
+          type: boolean
+          description: ACconfiguration secret
+        value:
           type: string
-          description: The date and time when the resource was created
-        created_by:
-          type: string
-          description: The user or service account who created the resource
-        updated_at:
-          type: string
-          description: The date and time when the resource was updated
-        updated_by:
-          type: string
-          description: The user or service account who updated the resource
+          description: Configuration value
     StoreAgent:
       type: object
       description: Store agent
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
           configuration:
             type: array
@@ -1328,7 +1031,7 @@ components:
           description:
             type: string
             description: Store agent description
-          display_name:
+          displayName:
             type: string
             description: Store agent display name
           image:
@@ -1340,32 +1043,11 @@ components:
           name:
             type: string
             description: Store agent name
-    StoreAgentConfiguration:
-      description: Store agent configuration used to configure your agent directly
-        from beamlit interface
-      properties:
-        description:
-          description: Store function configuration description
-          type: string
-        if:
-          description: 'Conditional rendering for the configuration, example: provider
-            === ''openai'''
-          type: string
-        name:
-          description: Store function configuration name
-          type: string
-        required:
-          description: Store function configuration required
-          type: boolean
-        secret:
-          description: Store function configuration secret
-          type: boolean
-      type: object
     StoreConfiguration:
       type: object
       description: 'Store configuration for resources (eg: agent, function, etc)'
       properties:
-        available_models:
+        availableModels:
           type: array
           description: Available models for the configuration
           items:
@@ -1373,7 +1055,7 @@ components:
         description:
           type: string
           description: Store configuration description
-        display_name:
+        displayName:
           type: string
           description: Store configuration display name
         if:
@@ -1414,7 +1096,8 @@ components:
       type: object
       description: Store function
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
           configuration:
             type: array
@@ -1424,7 +1107,7 @@ components:
           description:
             type: string
             description: Store function description
-          display_name:
+          displayName:
             type: string
             description: Store function display name
           image:
@@ -1446,27 +1129,6 @@ components:
             description: Store function parameters
             items:
               $ref: '#/components/schemas/StoreFunctionParameter'
-    StoreFunctionConfiguration:
-      description: Store function configuration used to configure your function directly
-        from beamlit interface
-      properties:
-        description:
-          description: Store function configuration description
-          type: string
-        if:
-          description: 'Conditional rendering for the configuration, example: provider
-            === ''openai'''
-          type: string
-        name:
-          description: Store function configuration name
-          type: string
-        required:
-          description: Store function configuration required
-          type: boolean
-        secret:
-          description: Store function configuration secret
-          type: boolean
-      type: object
     StoreFunctionKit:
       type: object
       description: Store function kit
@@ -1500,13 +1162,36 @@ components:
         type:
           type: string
           description: Store function parameter type
+    TimeFields:
+      type: object
+      description: Time fields for Persistance
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+    WebsocketChannel:
+      type: object
+      description: WebSocket connection details
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - properties:
+          connection_id:
+            type: string
+            description: Unique connection ID
+          workspace:
+            type: string
+            description: Workspace the connection belongs to
     Workspace:
       type: object
       description: Workspace
       allOf:
-      - $ref: '#/components/schemas/StandardFieldsDynamoDb'
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
       - properties:
-          display_name:
+          displayName:
             type: string
             description: Workspace display name
           labels:
@@ -1515,6 +1200,9 @@ components:
           name:
             type: string
             description: Workspace name
+          writeRegion:
+            type: string
+            description: Workspace write region
     WorkspaceUser:
       type: object
       description: Workspace user
@@ -1553,6 +1241,12 @@ paths:
   /agents:
     get:
       operationId: ListAgents
+      parameters:
+      - description: Environment to filter agents by
+        in: query
+        name: environment
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -1574,7 +1268,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentWithDeployments'
+              $ref: '#/components/schemas/Agent'
         required: true
       responses:
         "200":
@@ -1592,6 +1286,13 @@ paths:
   /agents/{agentName}:
     delete:
       operationId: DeleteAgent
+      parameters:
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -1607,6 +1308,12 @@ paths:
       - agents
     get:
       operationId: GetAgent
+      parameters:
+      - description: Environment to filter agents by
+        in: query
+        name: environment
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -1633,7 +1340,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentWithDeployments'
+              $ref: '#/components/schemas/Agent'
         required: true
       responses:
         "200":
@@ -1648,22 +1355,21 @@ paths:
       summary: Update agent by name
       tags:
       - agents
-  /agents/{agentName}/deployments:
+  /agents/{agentName}/history:
     get:
-      operationId: ListAgentDeployments
+      operationId: ListAgentHistory
       responses:
         "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/AgentDeployment'
+                  $ref: '#/components/schemas/AgentHistory'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
-        - agent_deployments:list
-      summary: List all agent deployments
+        - agent_history:list
       tags:
       - agents
     parameters:
@@ -1673,111 +1379,15 @@ paths:
       required: true
       schema:
         type: string
-  /agents/{agentName}/deployments/{environmentName}:
+  /agents/{agentName}/history/{requestId}:
     delete:
-      operationId: DeleteAgentDeployment
+      operationId: DeleteAgentHistory
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployments:delete
-      summary: Delete agent deployment by environment name
-      tags:
-      - agents
-    get:
-      operationId: GetAgentDeployment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployments:get
-      summary: Get agent deployment by environment name
-      tags:
-      - agents
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
-    put:
-      operationId: PutAgentDeployment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AgentDeployment'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployments:create
-        - agent_deployments:update
-      summary: Create or update agent deployment by environment name
-      tags:
-      - agents
-  /agents/{agentName}/deployments/{environmentName}/history:
-    get:
-      operationId: ListAgentDeploymentHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AgentDeploymentHistory'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:list
-      tags:
-      - agents
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
-  /agents/{agentName}/deployments/{environmentName}/history/{requestId}:
-    delete:
-      operationId: DeleteAgentDeploymentHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentDeploymentHistory'
+                $ref: '#/components/schemas/AgentHistory'
           description: successful operation
       security:
       - BearerAuth:
@@ -1785,13 +1395,13 @@ paths:
       tags:
       - agents
     get:
-      operationId: GetAgentDeploymentHistory
+      operationId: GetAgentHistory
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentDeploymentHistory'
+                $ref: '#/components/schemas/AgentHistory'
           description: successful operation
       security:
       - BearerAuth:
@@ -1805,12 +1415,6 @@ paths:
       required: true
       schema:
         type: string
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
     - description: Request ID
       in: path
       name: requestId
@@ -1818,19 +1422,19 @@ paths:
       schema:
         type: string
     put:
-      operationId: PutAgentDeploymentHistory
+      operationId: PutAgentHistory
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentDeploymentHistory'
+              $ref: '#/components/schemas/AgentHistory'
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentDeploymentHistory'
+                $ref: '#/components/schemas/AgentHistory'
           description: successful operation
       security:
       - BearerAuth:
@@ -1838,19 +1442,13 @@ paths:
       summary: Update agent's history by request ID
       tags:
       - agents
-  /agents/{agentName}/deployments/{environmentName}/logs:
+  /agents/{agentName}/logs:
     get:
-      operationId: GetAgentDeploymentLogs
+      operationId: GetAgentEnvironmentLogs
       parameters:
       - description: Name of the agent
         in: path
         name: agentName
-        required: true
-        schema:
-          type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
         required: true
         schema:
           type: string
@@ -1860,40 +1458,12 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ResourceDeploymentLog'
+                  $ref: '#/components/schemas/ResourceLog'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
         - agent_deployments_logs:read
-      tags:
-      - agents
-  /agents/{agentName}/deployments/{environmentName}/metrics:
-    get:
-      operationId: GetAgentDeploymentMetrics
-      parameters:
-      - description: Name of the agent
-        in: path
-        name: agentName
-        required: true
-        schema:
-          type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourceDeploymentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployments_metrics:read
       tags:
       - agents
   /agents/{agentName}/metrics:
@@ -1904,6 +1474,11 @@ paths:
         in: path
         name: agentName
         required: true
+        schema:
+          type: string
+      - description: Environment to filter agents by
+        in: query
+        name: environment
         schema:
           type: string
       responses:
@@ -2095,6 +1670,12 @@ paths:
   /functions:
     get:
       operationId: ListFunctions
+      parameters:
+      - description: Environment to filter functions by
+        in: query
+        name: environment
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2116,7 +1697,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FunctionWithDeployments'
+              $ref: '#/components/schemas/Function'
         required: true
       responses:
         "200":
@@ -2134,6 +1715,13 @@ paths:
   /functions/{functionName}:
     delete:
       operationId: DeleteFunction
+      parameters:
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2149,6 +1737,12 @@ paths:
       - functions
     get:
       operationId: GetFunction
+      parameters:
+      - description: Environment to filter functions by
+        in: query
+        name: environment
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2175,7 +1769,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FunctionWithDeployments'
+              $ref: '#/components/schemas/Function'
         required: true
       responses:
         "200":
@@ -2190,100 +1784,9 @@ paths:
       summary: Update function by name
       tags:
       - functions
-  /functions/{functionName}/deployments:
+  /functions/{functionName}/logs:
     get:
-      operationId: ListFunctionDeployments
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/FunctionDeployment'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_deployments:list
-      summary: List all function deployments
-      tags:
-      - functions
-    parameters:
-    - description: Name of the function
-      in: path
-      name: functionName
-      required: true
-      schema:
-        type: string
-  /functions/{functionName}/deployments/{environmentName}:
-    delete:
-      operationId: DeleteFunctionDeployment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FunctionDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_deployments:delete
-      summary: Delete function deployment by environment name
-      tags:
-      - functions
-    get:
-      operationId: GetFunctionDeployment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FunctionDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_deployments:get
-      summary: Get function deployment by environment name
-      tags:
-      - functions
-    parameters:
-    - description: Name of the function
-      in: path
-      name: functionName
-      required: true
-      schema:
-        type: string
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
-    put:
-      operationId: PutFunctionDeployment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FunctionDeployment'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FunctionDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_deployments:create
-        - function_deployments:update
-      summary: Create or update function deployment by environment name
-      tags:
-      - functions
-  /functions/{functionName}/deployments/{environmentName}/logs:
-    get:
-      operationId: GetFunctionDeploymentLogs
+      operationId: GetFunctionEnvironmentLogs
       parameters:
       - description: Name of the function
         in: path
@@ -2291,52 +1794,18 @@ paths:
         required: true
         schema:
           type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ResourceDeploymentLog'
+                  $ref: '#/components/schemas/ResourceLog'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
         - function_deployments_logs:read
-      tags:
-      - functions
-  /functions/{functionName}/deployments/{environmentName}/metrics:
-    get:
-      operationId: GetFunctionDeploymentMetrics
-      parameters:
-      - description: Name of the function
-        in: path
-        name: functionName
-        required: true
-        schema:
-          type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourceDeploymentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_deployments_metrics:read
       tags:
       - functions
   /functions/{functionName}/metrics:
@@ -2347,6 +1816,11 @@ paths:
         in: path
         name: functionName
         required: true
+        schema:
+          type: string
+      - description: Environment to filter functions by
+        in: query
+        name: environment
         schema:
           type: string
       responses:
@@ -2395,7 +1869,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/AgentDeploymentHistory'
+                  $ref: '#/components/schemas/AgentHistory'
                 type: array
           description: successful operation
       security:
@@ -2420,7 +1894,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/AgentDeploymentHistory'
+                  $ref: '#/components/schemas/AgentHistory'
                 type: array
           description: successful operation
       security:
@@ -2468,7 +1942,7 @@ paths:
       summary: List integration models
       tags:
       - integrations
-  /integrations/{integrationName}/models/*modelId:
+  /integrations/{integrationName}/models/{modelId}:
     get:
       description: Returns a model for an integration by ID.
       operationId: GetIntegrationModel
@@ -2476,6 +1950,12 @@ paths:
       - description: Name of the integration
         in: path
         name: integrationName
+        required: true
+        schema:
+          type: string
+      - description: Model ID
+        in: path
+        name: modelId
         required: true
         schema:
           type: string
@@ -2553,7 +2033,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Integration'
+                $ref: '#/components/schemas/IntegrationConnection'
           description: successful operation
       summary: Get integration
       tags:
@@ -2605,7 +2085,7 @@ paths:
       summary: List integration connection models
       tags:
       - integrations
-  /integrations/connections/{connectionName}/models/*modelId:
+  /integrations/connections/{connectionName}/models/{modelId}:
     get:
       description: Returns a model for an integration connection by ID.
       operationId: GetIntegrationConnectionModel
@@ -2613,6 +2093,12 @@ paths:
       - description: Name of the connection
         in: path
         name: connectionName
+        required: true
+        schema:
+          type: string
+      - description: Model ID
+        in: path
+        name: modelId
         required: true
         schema:
           type: string
@@ -2635,7 +2121,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Location'
+                  $ref: '#/components/schemas/LocationResponse'
                 type: array
           description: successful operation
       security:
@@ -2782,6 +2268,13 @@ paths:
     get:
       description: Returns a list of all models in the workspace.
       operationId: ListModels
+      parameters:
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2804,7 +2297,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelWithDeployments'
+              $ref: '#/components/schemas/Model'
         required: true
       responses:
         "200":
@@ -2823,6 +2316,13 @@ paths:
     delete:
       description: Deletes a model by name.
       operationId: DeleteModel
+      parameters:
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2839,6 +2339,13 @@ paths:
     get:
       description: Returns a model by name.
       operationId: GetModel
+      parameters:
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -2866,7 +2373,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelWithDeployments'
+              $ref: '#/components/schemas/Model'
         required: true
       responses:
         "200":
@@ -2881,105 +2388,10 @@ paths:
       summary: Create or update model
       tags:
       - models
-  /models/{modelName}/deployments:
-    get:
-      description: Returns a list of all deployments for a model.
-      operationId: ListModelDeployments
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/ModelDeployment'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_deployments:list
-      summary: List model deployments
-      tags:
-      - models
-    parameters:
-    - description: Name of the model
-      in: path
-      name: modelName
-      required: true
-      schema:
-        type: string
-  /models/{modelName}/deployments/{environmentName}:
-    delete:
-      description: Deletes a deployment for a model by name.
-      operationId: DeleteModelDeployment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_deployments:delete
-      summary: Delete model deployment
-      tags:
-      - models
-    get:
-      description: Returns a deployment for a model by name.
-      operationId: GetModelDeployment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_deployments:get
-      summary: Get model deployment
-      tags:
-      - models
-    parameters:
-    - description: Name of the model
-      in: path
-      name: modelName
-      required: true
-      schema:
-        type: string
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
-    put:
-      description: Creates or updates a deployment for a model by name.
-      operationId: PutModelDeployment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModelDeployment'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelDeployment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_deployments:create
-        - model_deployments:update
-      summary: Create or update model deployment
-      tags:
-      - models
-  /models/{modelName}/deployments/{environmentName}/logs:
+  /models/{modelName}/logs:
     get:
       description: Returns logs for a model deployment by name.
-      operationId: GetModelDeploymentLogs
+      operationId: GetModelEnvironmentLogs
       parameters:
       - description: Name of the model
         in: path
@@ -2987,53 +2399,18 @@ paths:
         required: true
         schema:
           type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ModelDeploymentLog'
+                  $ref: '#/components/schemas/ResourceLog'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
         - model_deployments_logs:read
-      tags:
-      - models
-  /models/{modelName}/deployments/{environmentName}/metrics:
-    get:
-      description: Returns metrics for a model deployment by name.
-      operationId: GetModelDeploymentMetrics
-      parameters:
-      - description: Name of the model
-        in: path
-        name: modelName
-        required: true
-        schema:
-          type: string
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelDeploymentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_deployments_metrics:read
       tags:
       - models
   /models/{modelName}/metrics:
@@ -3047,12 +2424,18 @@ paths:
         required: true
         schema:
           type: string
+      - description: Environment of the model
+        in: query
+        name: environment
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelMetrics'
+                $ref: '#/components/schemas/ResourceMetrics'
           description: successful operation
       security:
       - BearerAuth:
@@ -3187,6 +2570,162 @@ paths:
       summary: Update policy
       tags:
       - policies
+  /privateclusters:
+    get:
+      operationId: ListPrivateClusters
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PrivateCluster'
+                type: array
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: workspace not found
+      security:
+      - BearerAuth:
+        - privateclusters:list
+      summary: List all private clusters
+      tags:
+      - privateclusters
+    post:
+      operationId: CreatePrivateCluster
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateCluster'
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+      security:
+      - BearerAuth:
+        - privateclusters:create
+      summary: Create private cluster
+      tags:
+      - privateclusters
+  /privateclusters/{privateClusterName}:
+    delete:
+      operationId: DeletePrivateCluster
+      parameters:
+      - description: Name of the private cluster
+        in: path
+        name: privateClusterName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateCluster'
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+      security:
+      - BearerAuth:
+        - privateclusters:delete
+      summary: Delete private cluster
+      tags:
+      - privateclusters
+    get:
+      operationId: GetPrivateCluster
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateCluster'
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: private cluster not found
+      security:
+      - BearerAuth:
+        - privateclusters:get
+      summary: Get private cluster by name
+      tags:
+      - privateclusters
+    parameters:
+    - description: Name of the private cluster
+      in: path
+      name: privateClusterName
+      required: true
+      schema:
+        type: string
+    put:
+      operationId: UpdatePrivateCluster
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateCluster'
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+      security:
+      - BearerAuth:
+        - privateclusters:update
+      summary: Update private cluster
+      tags:
+      - privateclusters
+  /privateclusters/{privateClusterName}/health:
+    get:
+      operationId: GetPrivateClusterHealth
+      responses:
+        "200":
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+      summary: Get private cluster health
+      tags:
+      - privateclusters
+    parameters:
+    - description: Name of the private cluster
+      in: path
+      name: privateClusterName
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: UpdatePrivateClusterHealth
+      parameters:
+      - description: Name of the private cluster
+        in: path
+        name: privateClusterName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+        "401":
+          description: unauthorized
+        "403":
+          description: Forbidden
+      summary: Update private cluster health
+      tags:
+      - privateclusters
   /profile/invitations:
     get:
       description: Returns a list of all pending invitations in the workspace.
@@ -3400,7 +2939,7 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - api_key:list
+        - apiKey:list
       summary: List API keys for service account
       tags:
       - service_accounts
@@ -3436,7 +2975,7 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - api_key:write
+        - apiKey:write
       summary: Create API key for service account
       tags:
       - service_accounts
@@ -3449,7 +2988,7 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - api_key:write
+        - apiKey:write
       summary: Delete API key for service account
       tags:
       - service_accounts

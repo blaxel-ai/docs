@@ -17,9 +17,9 @@ Authentication to the Beamlit APIs can either be done using [API keys](../Securi
 For example, to list models:
 
 ```
-curl 'https://api.beamlit.dev/v0/models' \
+curl 'https://api.beamlit.com/v0/models' \
   -H 'accept: application/json, text/plain, */*' \
-  -H 'x-beamlit-api-key: YOUR-API-KEY'
+  -H 'X-Beamlit-Api-Key: YOUR-API-KEY'
 ```
 
 To use **short-lived JWTs**, see [the guide on using an OAuth 2.0 flow](../Security/Access-tokens).

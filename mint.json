@@ -20,8 +20,8 @@
   },
   "topbarLinks": [
     {
-      "name": "Support",
-      "url": "mailto:support@beamlit.com"
+      "name": "Changelog",
+      "url": "https://docs.beamlit.com/changelog"
     }
   ],
   "topbarCtaButton": {
@@ -31,7 +31,7 @@
   "anchors": [
     {
       "name": "Changelog",
-      "icon": "newspaper",
+      "icon": "calendar",
       "url": "https://docs.beamlit.com/changelog"
     }
   ],
@@ -124,6 +124,7 @@
       "group": "Agents",
       "pages": [
         "Agents/Overview",
+        "Agents/Develop-an-agent",
         "Agents/Query-agents"
       ]
     },
