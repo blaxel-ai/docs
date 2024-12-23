@@ -44,7 +44,7 @@ To retrieve the token, pass the service account’s *client ID* and *client secr
 
 ```
 curl --request POST \
-  --url https://api.beamlit.dev/v0/oauth/token \
+  --url https://api.beamlit.com/v0/oauth/token \
   --header 'Authorization: Basic base64(CLIENT_ID:CLIENT_SECRET)' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -56,7 +56,7 @@ Alternatively, you can also pass pass the *client ID* and *client secret* in the
 
 ```
 curl --request POST \
-  --url https://api.beamlit.dev/v0/oauth/token \
+  --url https://api.beamlit.com/v0/oauth/token \
   --header 'Content-Type: application/json' \
   --data '{
 	"grant_type":"client_credentials",
@@ -68,7 +68,7 @@ curl --request POST \
 You will retrieve a bearer token valid for 2 hours, which can then be passed in any call to a Beamlit APIs through any of the following headers: `Authorization` ou `X-Beamlit-Authorization`, as such:
 
 ```
-curl 'https://api.beamlit.dev/v0/models' \
+curl 'https://api.beamlit.com/v0/models' \
   -H 'Accept: application/json, text/plain, */*' \
   -H 'X-Beamlit-Authorization: Bearer YOUR_TOKEN'
 ```
@@ -80,7 +80,7 @@ curl 'https://api.beamlit.dev/v0/models' \
 Beamlit implements all **grant types** in the OAuth 2.0 convention, including [client credentials](https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), [authorization code](https://www.oauth.com/oauth2-servers/access-tokens/authorization-code-request/), and [refresh tokens](https://www.oauth.com/oauth2-servers/access-tokens/refreshing-access-tokens/). If you are a developer experienced with OAuth 2.0, you can find the **well-known configuration endpoint** at the following URL:
 
 ```
-https://api.beamlit.dev/v0/.well-known/openid-configuration
+https://api.beamlit.com/v0/.well-known/openid-configuration
 ```
 
 Through the endpoints discoverable in the aforementioned URL, you can implement any authentication flow in your application, and use the retrieved tokens in any of the following headers: `Authorization` ou `X-Beamlit-Authorization` .
@@ -106,7 +106,7 @@ API keys can be used in both the Beamlit APIs and CLI.
 **To authenticate in the APIs**, use the API key in place of the authorization headers `Api-Key` or `X-Beamlit-Api-Key` in any call to the Beamlit APIs. For example, to list models:
 
 ```
-curl 'https://api.beamlit.dev/v0/models' \
+curl 'https://api.beamlit.com/v0/models' \
   -H 'Accept: application/json, text/plain, */*' \
   -H 'X-Beamlit-Api-Key: YOUR-API-KEY'
 ```

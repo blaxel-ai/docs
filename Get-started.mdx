@@ -2,17 +2,15 @@
 
 title: 'Get started'
 
-description: 'Deploy your first AI model worldwide in just 3 minutes.'
+description: 'Deploy your first AI agent worldwide in just 3 minutes.'
 
 ---
 
-Beamlit is a serverless cloud platform that enables AI teams to **push and run any AI workload across multiple locations** in a single click. This tutorial demonstrates how to deploy your first AI model on Beamlit.
-
-<Info>Beamlit also lets you replicate a model deployment from your private Kubernetes cluster. To get started with this method, read [this tutorial](Examples/Offload-burst-inferences-from-a-self-hosted-model).</Info>
+Beamlit is a serverless platform that enables AI teams to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Beamlit.
 
 ### Install the Beamlit CLI
 
-You can install the [Beamlit CLI](cli-reference) using the by running the following 2 commands successively in a terminal:
+If you are a Mac user and have Homebrew installed, you can install the [Beamlit CLI](cli-reference) using the following two commands successively in a terminal:
 
 ```bash
 ### Tap the Beamlit formula to Homebrew
@@ -22,60 +20,88 @@ brew tap beamlit/beamlit
 brew install beamlit
 ```
 
-### Deploy a model
+<Note>If you need to install the Beamlit CLI on Linux or other Mac installers, check out [this article.](cli-reference)</Note>
 
-Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control). Then, run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
+### Create a model API endpoint on Beamlit
+
+Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0). Then use the Beamlit console to create a [model API](Models/Overview). Model APIs allow developers to have a centralized API that unifies credentials management and access to LLM providers. 
+
+Select **OpenAI** > **gpt-4o-mini**, make sure to enter an [OpenAI access token](Integrations/OpenAI) and deploy the endpoint on the *Production* environment.
+
+![Screenshot 2024-12-13 at 4.03.53 PM.png](Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
+
+### Create your first AI agent
+
+Run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
 
 ```bash
 bl login your-workspace-slugified-name
 ```
 
-Let’s deploy **a simple model from HuggingFace** (a simple *sentence-transformers* model). Run the following command in the terminal:
+Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit. You will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) for this.
 
 ```bash
-cat << 'EOF' | beamlit apply -f -
-apiVersion: beamlit.com/v1alpha1
-kind: Model
-metadata:
-  name: my-model
-spec:
-  deployments:
-  - environment: production
-    runtime:
-      model: sentence-transformers/all-MiniLM-L6-v2
-      type: huggingface
-EOF
+bl create-agent-app my-agent
 ```
 
-That’s it! 🌎 🌏 🌍 Your model is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network) significantly speeds up inferences by positioning workloads near your users and smartly routing requests based on your policies.
+Select *gpt-4o-mini* as the model API, choose the *HelloWorld* template, and press Enter to create the repo.
+
+<Tip>You could also just bring your own code and add [Beamlit SDK commands and decorators](Agents/Develop-an-agent) to deploy it. This scaffolded repository gives you everything set up and ready to go from scratch.</Tip>
+
+You can now [develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` and define your functions in `/my-agent/src/functions` (functions in this folder are automatically bound to the main agent). You may use any Python framework you prefer. This boilerplate repository is initialized with:
+
+- A [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) as the core agent logic. This agent can be overridden by passing a custom agent as the `override-agent` parameter to the @agent decorator in */src/agent.py*
+
+- A hello-world tool (a function) that returns a placeholder text string. This function can be customized by changing the code in the `helloworld` function in */src/functions/helloworld.py*, and additional functions can be created in the */src/functions* folder.
+
+### Test and deploy your AI agent
+
+Run the following command to serve your agent locally:
+
+```bash
+cd my-agent && source .venv/bin/activate;
+bl serve --hotreload;
+```
+
+Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
+
+To push to Beamlit on the default *production* environment, run the following command. You’ll need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) on your machine to build the app.
+
+```bash
+bl deploy
+```
+
+That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
 
 ### Make a first inference
 
-Run a first inference on your model with the following command:
+Run a first inference on your Beamlit agent with the following command:
 
 ```bash
-bl run my-model --data '{"inputs":"What is the encoding for this input?"}'
+bl run agent my-agent --data '{"inputs":"Hello world!"}'
 ```
 
-<Tip>Your model is available behind a **global endpoint**. Read [this guide](Models/Query-a-model) on how to use it for HTTP requests.</Tip>
+<Tip>Your agent is available behind a **global endpoint**. Read [this guide](Agents/Query-agents) on how to use it for HTTP requests.</Tip>
+
+You can also run inference requests on your agent (or each function or model API) from the Beamlit console by using the workbench.
 
 ### Next steps
 
 You are ready to run AI everywhere with the Beamlit platform! Check out the following guides which may be useful to you:
 
-<Card title="Deploy models" icon="earth-americas" href="/Models/Model-deployment">
-Complete guide for deploying AI models directly on the Global Inference Network.
+<Card title="Deploy agents" icon="earth-americas" href="/Agents/Overview">
+Complete guide for deploying AI agents on Beamlit.
 </Card>
 
-<Card title="Offload traffic from a private model" icon="server" href="/Models/Cloud-Burst-Network/Model-overflow">
-Complete guide for making a minimal-footprint replica of your own model on Beamlit, for high-availability.
+<Card title="Manage environment policies" icon="server" href="/Model-Governance/Overview">
+Complete guide for managing deployment and routing policies on the Global Inference Network.
 </Card>
 
-<Card title="Guide for querying models on the Global Inference Network" icon="bolt" href="/Models/Model-deployment">
-Complete guide for querying your deployments on the Global Inference Network.
+<Card title="Guide for querying agents" icon="bolt" href="/Agents/Query-agents">
+Complete guide for querying your AI agents on the Global Inference Network.
 </Card>
 
-Or check out the following hands-on examples:
+Or check out the following hands-on examples for alternative use cases:
 
 <Card title="Tutorial: deploy a custom model" icon="book-open" href="/Examples/Deploy-a-custom-model-from-HuggingFace" horizontal="true">
 Read our tutorial for deploying a custom fine-tuned model from HuggingFace.

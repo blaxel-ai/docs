@@ -14,15 +14,15 @@ Whenever you deploy a model on Beamlit, an **inference endpoint** is generated o
 
 The inference URL looks like this:
 
-`run.beamlit.dev/{your-workspace}/models/{your-model}`
+`run.beamlit.com/{your-workspace}/models/{your-model}`
 
 There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
 
 For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
 
-- `run.beamlit.dev/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
+- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
 
-- `run.beamlit.dev/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
+- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
 
 If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model is not deployed on the production environment, it will return an error.
 
@@ -32,8 +32,8 @@ The URL above hosts your model and can be called directly in most cases. However
 
 For example, if you deploy a text generation model that also implements the ChatCompletions API:
 
-- calling `run.beamlit.dev/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
-- calling `run.beamlit.dev/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate response based on a list of messages
+- calling `run.beamlit.com/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
+- calling `run.beamlit.com/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate response based on a list of messages
 
 ### Endpoint authentication
 
@@ -50,7 +50,7 @@ The evaluation of authentication/authorization for inference requests is managed
 Make a **POST** request to the [inference endpoint](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f) for the model deployment you are requesting, making sure to fill in the [authentication token](Query-a-model):
 
 ```
-curl 'https://run.beamlit.dev/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
   -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
@@ -64,13 +64,13 @@ Read about [the API parameters in the reference](https://docs.beamlit.com/api-re
 The following command will make a default POST request to the model’s *production* deployment (by default), on the base endpoint.
 
 ```bash
-bl run your-model --data '{"inputs":"Enter your input here."}'
+bl run model your-model --data '{"inputs":"Enter your input here."}'
 ```
 
 You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model) that your model implements with the option `--path` :
 
 ```bash
-bl run your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
+bl run model your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
 ```
 
 Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).

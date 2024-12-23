@@ -16,7 +16,7 @@ The inference URL looks like this:
 
 ```
 
-run.beamlit.dev/{your-workspace}/agents/{your-agent}
+run.beamlit.com/{your-workspace}/agents/{your-agent}
 
 ```
 
@@ -24,8 +24,8 @@ There is one distinct endpoint for each **agent deployment,** i.e. for each comb
 
 For example, if you have one version of agent “your-agent” deployed on the *production* environment and one version deployed on the *development* environment:
 
-- `run.beamlit.dev/{your-workspace}/agents/{your-agent}?environment=production` will call the production deployment
-- `run.beamlit.dev/{your-workspace}/agents/{your-agent}?environment=development` will call the development deployment
+- `run.beamlit.com/{your-workspace}/agents/{your-agent}?environment=production` will call the production deployment
+- `run.beamlit.com/{your-workspace}/agents/{your-agent}?environment=development` will call the development deployment
 
 If you do not specify the environment in the inference request, it will call the *production* environment by default. If the agent is not deployed on the production environment, it will return an error.
 
@@ -44,7 +44,7 @@ The evaluation of authentication/authorization for inference requests is managed
 Make a **POST** request to the inference endpoint for the agent deployment you are requesting, making sure to fill in the authentication token:
 
 ```
-curl 'https://run.beamlit.dev/YOUR-WORKSPACE/agents/YOUR-agent?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.beamlit.com/YOUR-WORKSPACE/agents/YOUR-AGENT?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
   -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
@@ -52,6 +52,16 @@ curl 'https://run.beamlit.dev/YOUR-WORKSPACE/agents/YOUR-agent?environment=YOUR-
 ```
 
 Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).
+
+### Beamlit CLI
+
+The following command will make a default POST request to the agent’s *production* deployment (by default), on the base endpoint.
+
+```bash
+bl run agent your-agent --data '{"inputs":"Enter your input here."}'
+```
+
+Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).
 
 ### Beamlit console
 

@@ -16,7 +16,7 @@ The invocation URL looks like this:
 
 ```
 
-run.beamlit.dev/{your-workspace}/functions/{your-function}
+run.beamlit.com/{your-workspace}/functions/{your-function}
 
 ```
 
@@ -24,8 +24,8 @@ There is one distinct endpoint for each **function deployment,** i.e. for each c
 
 For example, if you have one version of function “your-function” deployed on the *production* environment and one version deployed on the *development* environment:
 
-- `run.beamlit.dev/{your-workspace}/functions/{your-function}?environment=production` will call the production deployment
-- `run.beamlit.dev/{your-workspace}/functions/{your-function}?environment=development` will call the development deployment
+- `run.beamlit.com/{your-workspace}/functions/{your-function}?environment=production` will call the production deployment
+- `run.beamlit.com/{your-workspace}/functions/{your-function}?environment=development` will call the development deployment
 
 If you do not specify the environment in the invocation request, it will call the *production* environment by default. If the function is not deployed on the production environment, it will return an error.
 
@@ -44,7 +44,7 @@ The evaluation of authentication/authorization for invocation requests is manage
 Make a **POST** request to the invocation endpoint for the function deployment you are requesting, making sure to fill in the authentication token:
 
 ```
-curl 'https://run.beamlit.dev/YOUR-WORKSPACE/functions/YOUR-function?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.beamlit.com/YOUR-WORKSPACE/functions/YOUR-function?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
   -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
@@ -52,6 +52,16 @@ curl 'https://run.beamlit.dev/YOUR-WORKSPACE/functions/YOUR-function?environment
 ```
 
 Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).
+
+### Beamlit CLI
+
+The following command will make a default POST request to the function’s *production* deployment (by default), on the base endpoint.
+
+```bash
+bl run function your-function --data '{"inputs":"Enter your input here."}'
+```
+
+Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).
 
 ### Beamlit console
 
