@@ -65,7 +65,7 @@ curl --request POST \
 }'
 ```
 
-You will retrieve a bearer token valid for 2 hours, which can then be passed in any call to a Beamlit APIs through any of the following headers: `Authorization` ou `X-Beamlit-Authorization`, as such:
+You will retrieve a bearer token valid for 2 hours, which can then be passed in any call to a Beamlit APIs through any of the following headers: `Authorization` or `X-Beamlit-Authorization`, as such:
 
 ```
 curl 'https://api.beamlit.com/v0/models' \
@@ -83,7 +83,7 @@ Beamlit implements all **grant types** in the OAuth 2.0 convention, including [c
 https://api.beamlit.com/v0/.well-known/openid-configuration
 ```
 
-Through the endpoints discoverable in the aforementioned URL, you can implement any authentication flow in your application, and use the retrieved tokens in any of the following headers: `Authorization` ou `X-Beamlit-Authorization` .
+Through the endpoints discoverable in the aforementioned URL, you can implement any authentication flow in your application, and use the retrieved tokens in any of the following headers: `Authorization` or `X-Beamlit-Authorization` .
 
 ## API keys
 
@@ -103,12 +103,12 @@ For production-grade access to workspace resources that should be independent of
 
 API keys can be used in both the Beamlit APIs and CLI. 
 
-**To authenticate in the APIs**, use the API key in place of the authorization headers `Api-Key` or `X-Beamlit-Api-Key` in any call to the Beamlit APIs. For example, to list models:
+**To authenticate in the APIs**, use the API key as an authorization bearer in the headers `Authorization` or `X-Beamlit-Authorization` in any call to the Beamlit APIs. For example, to list models:
 
 ```
 curl 'https://api.beamlit.com/v0/models' \
   -H 'Accept: application/json, text/plain, */*' \
-  -H 'X-Beamlit-Api-Key: YOUR-API-KEY'
+  -H 'Authorization: Bearer YOUR-API-KEY'
 ```
 
 **To authenticate in the CLI,** use the `beamlit login` command. You will be asked to authenticate using one of two methods: via the Beamlit console (OAuth 2.0 device mode), or **via an API key**. Choose the latter, and you will be prompted to enter the API key generated for your user or service account.

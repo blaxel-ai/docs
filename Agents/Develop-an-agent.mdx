@@ -20,7 +20,7 @@ Beamlit’s development paradigm is designed to have a minimal footprint on your
 
 Here is a high-level presentation of how agents can be built and deployed using Beamlit:
 
-1. (Optional) **Initialize a new project by creating a local git repository**. This will contain your agent's logic, custom functions, and API connections. For quick setup, use [Beamlit CLI](../cli-reference) command `bl create-agent-app`, which creates a pre-scaffolded local repository ready for developing and deploying your agent on Beamlit.
+1. **Initialize a new project by creating a local git repository**. This will contain your agent's logic, custom functions, and API connections, as well as all required Python dependencies. For quick setup, use [Beamlit CLI](../cli-reference) command `bl create-agent-app`, which creates a pre-scaffolded local repository ready for developing and deploying your agent on Beamlit.
 2. **Develop and test your agent iteratively in a local environment**. 
     1. Develop your agent logic using an agentic framework (like LangChain) or any custom Python code. Write your own functions. Use Beamlit SDK decorators on your core agent and functions to specify the resources to run on Beamlit.
     2. Use the Beamlit CLI command `bl serve` to serve your agent on your local machine and get an endpoint for inference requests. The execution workflow—including agent logic, functions, and model API calls—is broken down and sandboxed exactly as it would be when deployed on Beamlit.
@@ -33,8 +33,8 @@ Here is a high-level presentation of how agents can be built and deployed using 
 
 In order to deploy a custom AI agent on Beamlit, the following file is required in your repository:
 
-- **agent.py**: this file must contain a `main` *async* function that runs your agent.
-    - This `default.main` function is the one served by default but you can override the module to serve, by using the flag `bl serve --module your-function-path`
+- [**agent.py](http://agent.py) (or src/agent.py)**: this file must contain a `main` *async* function that runs your agent.
+    - This `agent.main` function is the one served by default but you can override the module to serve, by using the flag `bl serve --module your-function-path`
     - Flag the agent’s main function with the `@agent` decorator so it can be deployed on Beamlit (see details down below)
 
 Some folders are optional but designed to handle specific parts of the agent code on Beamlit:
@@ -42,6 +42,8 @@ Some folders are optional but designed to handle specific parts of the agent cod
 - **src/functions**: all files listed in this folder will be interpreted as custom tools that will all be made available to the agent automatically when serving or deploying the agent. The tool function itself is identified with the `@function` decorator.
 
 ### Quickstart
+
+<Warning>It is required to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) to use the following command.</Warning>
 
 You can quickly initialize a new project from scratch by using the CLI command  `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. By default, this command creates a boilerplate agent that has:
 
@@ -97,6 +99,8 @@ bl serve --remote
 
 ### Deploy on development
 
+<Warning>You need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) and running on your machine to build the app.</Warning>
+
 You can deploy the agent in order to make the `agent.py` main function **callable on a global endpoint**. Deploying on [Beamlit’s *development* environment](../Model-Governance/Environments) gives a separated endpoint to carry out tests.
 
 Run the following command to deploy a local agent to the development environment on Beamlit:
@@ -106,6 +110,8 @@ bl deploy --env development
 ```
 
 ### Deploy on production
+
+<Warning>You need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) on your machine to build the app.</Warning>
 
 You can deploy the agent in order to make the `agent.py` main function **callable on a global endpoint**. When deploying to [Beamlit's *production* environment](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd), you get a dedicated production endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
