@@ -1172,6 +1172,15 @@ components:
         updatedAt:
           type: string
           description: The date and time when the resource was updated
+    TraceIdsResponse:
+      description: Response containing trace IDs
+      properties:
+        trace_ids:
+          description: List of trace IDs
+          items:
+            type: string
+          type: array
+      type: object
     WebsocketChannel:
       type: object
       description: WebSocket connection details
@@ -1517,6 +1526,34 @@ paths:
       summary: Create release for a agent from an environment
       tags:
       - agents
+  /agents/{agentName}/traces:
+    get:
+      operationId: GetAgentTraceIds
+      parameters:
+      - description: Name of the agent
+        in: path
+        name: agentName
+        required: true
+        schema:
+          type: string
+      - description: Environment to filter agents by
+        in: query
+        name: environment
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceIdsResponse'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - agent_traces:read
+      summary: Get agent trace IDs
+      tags:
+      - agents
   /configuration:
     get:
       operationId: GetConfiguration
@@ -1857,6 +1894,34 @@ paths:
       - BearerAuth:
         - function_releases:create
       summary: Create release for a function from an environment
+      tags:
+      - functions
+  /functions/{functionName}/traces:
+    get:
+      operationId: GetFunctionTraceIds
+      parameters:
+      - description: Name of the function
+        in: path
+        name: functionName
+        required: true
+        schema:
+          type: string
+      - description: Environment to filter function by
+        in: query
+        name: environment
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceIdsResponse'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - function_traces:read
+      summary: Get function trace IDs
       tags:
       - functions
   /history/agents:
@@ -2467,6 +2532,34 @@ paths:
       summary: Release model from an environment
       tags:
       - models
+  /models/{modelName}/traces:
+    get:
+      operationId: GetModelTraceIds
+      parameters:
+      - description: Name of the model
+        in: path
+        name: modelName
+        required: true
+        schema:
+          type: string
+      - description: Environment to filter models by
+        in: query
+        name: environment
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceIdsResponse'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - model_traces:read
+      summary: Get model trace IDs
+      tags:
+      - models
   /policies:
     get:
       description: Returns a list of all policies in the workspace.
@@ -3075,6 +3168,101 @@ paths:
       required: true
       schema:
         type: string
+  /traces:
+    get:
+      operationId: GetTraceIds
+      parameters:
+      - in: query
+        name: workloadId
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: workloadType
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: environment
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: startTime
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: endTime
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: OK
+      security:
+      - BearerAuth:
+        - member
+      summary: Get trace IDs
+  /traces/{traceId}:
+    get:
+      operationId: GetTrace
+      parameters:
+      - in: path
+        name: traceId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: OK
+      security:
+      - BearerAuth:
+        - member
+      summary: Get trace by ID
+  /traces/{traceId}/logs:
+    get:
+      operationId: GetTraceLogs
+      parameters:
+      - in: path
+        name: traceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: spanId
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: OK
+      security:
+      - BearerAuth:
+        - member
+      summary: Get trace logs
   /users:
     get:
       description: Returns a list of all users in the workspace.
