@@ -1,53 +1,55 @@
 ---
 
-title: 'Query a model'
+title: 'Query a model API'
 
-description: 'Make inference requests on your models.'
+description: 'Make inference requests on your model APIs.'
 
 ---
 
-Model [deployments](Model-deployment%2013847e47b1ea8103a274c27cff3de584) on Beamlit have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](Model-deployment) associated with your model deployment. 
+Model APIs on Beamlit have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](External-model-apis) associated with your model API. 
 
 ## Inference endpoints
 
-Whenever you deploy a model on Beamlit, an **inference endpoint** is generated on Global Inference Network.
+Whenever you deploy a model API on Beamlit, an **inference endpoint** is generated on Global Inference Network.
 
 The inference URL looks like this:
 
-`run.beamlit.com/{your-workspace}/models/{your-model}`
+```http Query model API
 
-There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
+run.beamlit.com/{your-workspace}/models/{your-model}
 
-For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
+```
+
+There is one distinct endpoint for each **model API deployment,** i.e. for each combination of a [model API](External-model-apis%2015347e47b1ea8079a352f047992b94ee) and an [environment](../Model-Governance/Environments) in which it is deployed. 
+
+For example, if you have one version of model API “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
 
 - `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
 
 - `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
 
-If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model is not deployed on the production environment, it will return an error.
+If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model API is not deployed on the production environment, it will return an error.
 
 ### Specific API endpoints in your model
 
-The URL above hosts your model and can be called directly in most cases. However your model may **implement additional endpoints.** These sub-endpoints will be hosted on this URL.
+The URL above calls your model and can be called directly. However your model may **implement additional endpoints.** These sub-endpoints will be hosted on this URL.
 
-For example, if you deploy a text generation model that also implements the ChatCompletions API:
+For example, if you are calling a text generation model that also implements the ChatCompletions API:
 
 - calling `run.beamlit.com/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
 - calling `run.beamlit.com/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate response based on a list of messages
 
 ### Endpoint authentication
 
-By default, models deployed on Beamlit aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
+It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens%2013847e47b1ea813cac82ed531bd2356f). The evaluation of authentication/authorization for inference requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-The evaluation of authentication/authorization for inference requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
-
-<Info>Making a model publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
+<Info>Making a workload publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
 
 ## Make an inference request
 
 ### Beamlit API
 
-Make a **POST** request to the [inference endpoint](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f) for the model deployment you are requesting, making sure to fill in the [authentication token](Query-a-model):
+Make a **POST** request to the [inference endpoint](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
 
 ```
 curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
@@ -61,7 +63,7 @@ Read about [the API parameters in the reference](https://docs.beamlit.com/api-re
 
 ### Beamlit CLI
 
-The following command will make a default POST request to the model’s *production* deployment (by default), on the base endpoint.
+The following command will make a default POST request to the model API’s *production* deployment (by default), on the base endpoint.
 
 ```bash
 bl run model your-model --data '{"inputs":"Enter your input here."}'
@@ -77,6 +79,6 @@ Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-re
 
 ### Beamlit console
 
-Inference requests can be made from the Beamlit console from the model deployment’s **Playground** page.
+Inference requests can be made from the Beamlit console from the model API’s **Playground** page.
 
 ![workbench.png](Query-a-model/workbench.png)

@@ -6,20 +6,40 @@ description: 'Run inferences on your Beamlit deployments.'
 
 ---
 
-Whenever you deploy a model on Beamlit, an **inference endpoint** is generated on Global Inference Network.
+Whenever you deploy a workload on Beamlit, an **inference endpoint** is generated on Global Inference Network, the infrastructure powerhouse that hosts it.
 
-The inference URL looks like this:
+The inference API URL depends on the type of workload ([agent](../Agents/Overview%2015347e47b1ea807bbba6d269c01e633d), [model API](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [function](../Functions/Overview)) you are trying to request:
 
-`run.beamlit.com/{your-workspace}/models/{your-model}`
+<CodeGroup>
 
-There is one distinct endpoint for each **model deployment,** i.e. for each combination of a [model](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
+```http Query agent
 
-For example, if you have one version of model “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
+run.beamlit.com/{your-workspace}/agents/{your-agent}
+
+```
+
+```http Query model API
+
+run.beamlit.com/{your-workspace}/models/{your-model}
+
+```
+
+```http Query function
+
+run.beamlit.com/{your-workspace}/functions/{your-function}
+
+```
+
+</CodeGroup>
+
+There is one distinct endpoint for each **deployment,** i.e. for each combination of an object and an [environment](../Model-Governance/Environments) in which it is deployed. 
+
+For example, if you have one version of model API “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
 
 - `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
 
 - `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
 
-If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model is not deployed on the production environment, it will return an error.
+If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model API is not deployed on the production environment, it will return an error.
 
-<Card title="Product documentation" icon="earth-americas" href="/Models/Query-a-model" > Read our product guide on querying a model. </Card>
+<Card title="Product documentation" icon="earth-americas" href="/Models/Query-agents" > Read our product guide on querying an agent. </Card>
