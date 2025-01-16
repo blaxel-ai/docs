@@ -8,21 +8,76 @@ description: 'Deploy your first AI agent worldwide in just 3 minutes.'
 
 Beamlit is a serverless platform that enables AI teams to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Beamlit.
 
-### Install the Beamlit CLI
+<Steps titleSize="h3”>
 
-If you are a Mac user and have Homebrew installed, you can install the [Beamlit CLI](cli-reference) using the following two commands successively in a terminal:
+<Step title="Install the Beamlit CLI">
 
-```bash
+<AccordionGroup>
+
+<Accordion title="Install on Mac" icon="apple">
+
+<Warning>To install the Beamlit CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Please reach out to [support@beamlit.com](mailto:support@beamlit.com) if you need to use an alternative to Homebrew.</Warning>
+
+Install the Beamlit CLI by running the two following commands successively in a terminal:
+
+```shell 
+
 ### Tap the Beamlit formula to Homebrew
+
 brew tap beamlit/beamlit
+
+```
+
+```shell 
 
 ### Install the Beamlit CLI using Homebrew
 brew install beamlit
+
 ```
 
-<Note>If you need to install the Beamlit CLI on Linux or other Mac installers, check out [this article.](cli-reference)</Note>
+</Accordion>
 
-### Create a model API endpoint on Beamlit
+<Accordion title="Install on Linux" icon="linux">
+
+Install the Beamlit CLI by running the following command in a terminal (alternatives below):
+
+```shell 
+
+curl -fsSL
+
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
+
+| BINDIR=$HOME/.local/bin sudo -E sh
+
+```
+
+If you need to use `sudo`, or specify a version, run one of the following commands instead:
+
+```shell 
+
+### With version
+curl -fsSL
+
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
+
+| VERSION=0.16.0 BINDIR=$HOME/.local/bin sh
+
+### With Sudo:
+curl -fsSL
+
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
+
+| BINDIR=/usr/local/bin sudo -E sh
+
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+</Step>
+
+<Step title="Create a model API endpoint">
 
 Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0). Then use the Beamlit console to create a [model API](Models/Overview). Model APIs allow developers to have a centralized API that unifies credentials management and access to LLM providers. 
 
@@ -30,7 +85,9 @@ Select **OpenAI** > **gpt-4o-mini**, make sure to enter an [OpenAI access token]
 
 ![Screenshot 2024-12-13 at 4.03.53 PM.png](Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
 
-### Create your first AI agent
+</Step>
+
+<Step title="Create your first AI agent">
 
 Run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
 
@@ -54,7 +111,9 @@ You can now [develop](Agents/Develop-an-agent) your agent's core logic in `/my-a
 
 - A hello-world tool (a function) that returns a placeholder text string. This function can be customized by changing the code in the `helloworld` function in */src/functions/helloworld.py*, and additional functions can be created in the */src/functions* folder.
 
-### Test and deploy your AI agent
+</Step>
+
+<Step title="Test and deploy your AI agent">
 
 Run the following command to serve your agent locally:
 
@@ -73,7 +132,9 @@ bl deploy
 
 That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
 
-### Make a first inference
+</Step>
+
+<Step title="Make a first inference">
 
 Run a first inference on your Beamlit agent with the following command:
 
@@ -85,9 +146,13 @@ bl run agent my-agent --data '{"inputs":"Hello world!"}'
 
 You can also run inference requests on your agent (or each function or model API) from the Beamlit console by using the Playground on the console.
 
+</Step>
+
+</Steps>
+
 ## Next steps
 
-You are ready to run AI everywhere with the Beamlit platform! Check out the following guides which may be useful to you:
+You are ready to run AI with Beamlit! Here’s a curated list of guides which may be helpful for you to make the most of the Beamlit platform, but feel free to explore the product on your own! 
 
 <Card title="Deploy agents" icon="earth-americas" href="/Agents/Overview">
 Complete guide for deploying AI agents on Beamlit.
@@ -100,3 +165,9 @@ Complete guide for managing deployment and routing policies on the Global Infere
 <Card title="Guide for querying agents" icon="bolt" href="/Agents/Query-agents">
 Complete guide for querying your AI agents on the Global Inference Network.
 </Card>
+
+## Any question?
+
+Although we designed this documentation to be as comprehensive as possible, you are welcome to contact [**support@beamlit.com**](mailto:support@beamlit.com) with any questions or feedback you have.
+
+Want to deploy Beamlit on-prem? [**Schedule a call**](mailto:support@beamlit.com) with us.
