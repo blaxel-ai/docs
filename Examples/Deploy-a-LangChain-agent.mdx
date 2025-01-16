@@ -48,14 +48,12 @@ custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
 
 ```
 
-Note that this code references a custom tool from another folder: `customfuncs.helloworld.helloworld`. By default, this function **will not** be deployed as a separate component. See below for instructions on deploying it in its own sandboxed environment.
-
-Make sure you have a function that handles an execution of the agent: it will serve as the default entry point during serving and deployment.
+Note that this code references a custom tool from another folder: `customfuncs.helloworld.helloworld`. By default, this function **will not** be deployed as a separate component. See next section for instructions on deploying it in its own sandboxed environment.
 
 The next step is to use [the Beamlit SDK](../Agents/Develop-an-agent) to specify which function should be deployed on Beamlit. You'll need two key elements:
 
-- Create a main async function to handle agent execution—this will be your default entry point for serving and deployment.
-- Add the `@agent` decorator to designate your main agent function for Beamlit serving.
+- Create a **main async function** to handle agent execution—this will be your default entry point for serving and deployment.
+- Add the **`@agent` decorator** to designate your main agent function for Beamlit serving.
 
 Here's an example showing the main async function:
 
@@ -96,10 +94,9 @@ async def main(
 
 Read [our reference for the main agent function to serve](../Agents/Develop-an-agent).
 
-Here’s an example with the Beamlit decorator:
+Then, here’s an example adding the Beamlit decorator:
 
 ```python agent.py {1,11}
-
 from beamlit.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -162,8 +159,7 @@ async def helloworld(query: str):
 
 Now, add the `@function` decorator to specify the default entry point for serving and deployment of the function.
 
-```python src/functions/helloworld.py {1,3}
-
+```python src/functions/helloworld.py {1-3}
 from beamlit.functions import function
 
 @function()
@@ -178,7 +174,6 @@ async def helloworld(query: str):
 Functions placed in the `src/functions/` folder will be deployed as custom functions and automatically become available to the agent during execution. The final step is to remove the hardcoded tool binding from the main agent file:
 
 ```python agent.py {8}
-
 from beamlit.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -224,7 +219,6 @@ Then create a [model API](../Models/Overview) using your integration, and **depl
 Finally, configure your agent to use the model API in the code of your main agent file:
 
 ```python agent.py {8}
-
 from beamlit.agents import agent
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -290,7 +284,7 @@ bl run agent my-agent --data '{"inputs":"Hello world!"}'
 
 You can also run inference requests on your agent (or each function or model API) from the Beamlit console by using the Playground on the console.
 
-### Next steps
+## Next steps
 
 You are ready to run AI everywhere with the Beamlit platform! Check out the following guides which may be useful to you:
 
