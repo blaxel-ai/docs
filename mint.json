@@ -83,7 +83,9 @@
     {
       "group": "Developer API",
       "pages": [
-        "cli-reference/bl_run"
+        "cli-reference/bl_create-agent-app",
+        "cli-reference/bl_serve",
+        "cli-reference/bl_deploy"
       ]
     },
     {
@@ -98,14 +100,18 @@
         "cli-reference/bl_apply",
         "cli-reference/bl_metrics",
         "cli-reference/bl_get",
+        "cli-reference/bl_get_agents",
         "cli-reference/bl_get_environments",
         "cli-reference/bl_get_functions",
+        "cli-reference/bl_get_integrationconnections",
         "cli-reference/bl_get_locations",
         "cli-reference/bl_get_modelproviders",
         "cli-reference/bl_get_models",
         "cli-reference/bl_get_policies",
         "cli-reference/bl_delete",
+        "cli-reference/bl_delete_agent",
         "cli-reference/bl_delete_function",
+        "cli-reference/bl_delete_integrationconnection",
         "cli-reference/bl_delete_model",
         "cli-reference/bl_delete_modelprovider",
         "cli-reference/bl_delete_policy"
@@ -116,14 +122,14 @@
       "pages": [
         "cli-reference/bl_completion",
         "cli-reference/bl_completion_fish",
-        "cli-reference/bl_completion_powershell"
+        "cli-reference/bl_completion_powershell",
+        "cli-reference/bl_version"
       ]
     },
     {
       "group": "Examples",
       "pages": [
-        "Examples/Deploy-a-custom-model-from-HuggingFace",
-        "Examples/Offload-burst-inferences-from-a-self-hosted-model"
+        "/Examples/Deploy-a-LangChain-agent"
       ]
     },
     {
