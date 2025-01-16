@@ -1209,7 +1209,7 @@ components:
           name:
             type: string
             description: Workspace name
-          writeRegion:
+          region:
             type: string
             description: Workspace write region
     WorkspaceUser:

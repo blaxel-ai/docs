@@ -2,11 +2,11 @@
 
 title: 'Global Inference Network'
 
-description: 'Run serverless AI models and agents close to your consumers.'
+description: 'The Beamlit powerhouse to securely run AI at scale.'
 
 ---
 
-The *Global Inference Network* makes up the entire backbone of Beamlit. It is a globally distributed infrastructure, on which ML teams can push serverless AI workloads across multiple clusters and locations.
+The *Global Inference Network* makes up the entire backbone of Beamlit. It is a globally distributed infrastructure, on which ML teams can push serverless AI agents across multiple clusters and locations.
 
 The purpose of the Global Inference Network is to serve inferences at scale, in a highly available and low-latency manner, to end-users from anywhere. The smart network securely routes requests to the best compute infrastructure based on the deployment policies you enforce, and optimizing for configurable strategies for routing, load-balancing and failover. 
 
@@ -24,48 +24,7 @@ From a high-level perspective, the Global Inference Network can operate in sever
 
 ![image.png](Global-Inference-Network/image.png)
 
-- **Mode 1: Fully managed Beamlit deployment.** Directly deploy a model on Beamlit to make it available on the Global Inference Network. Consumers have a fully serverless endpoint to access the models. Read [our guide on how to deploy models on Beamlit](Model-deployment).
-- **Mode 2: Global hybrid deployment.** Attach your private clusters to the Global Inference Network through the Beamlit controller, and federate multi-region deployments behind our global networking system. Please contact us if you want to set up this option.
-- **Mode 3: Offload on Beamlit**. This mode allows for **minimal footprint** on your stack and is fully transparent for your consumers. Through a Beamlit controller, you can reference Kubernetes deployments from your own private cluster and offload them to Beamlit Global Inference Network based on conditions, for e.g. in case of sudden traffic burst. Read [our guide on how to make your models overflow on Beamlit](Cloud-Burst-Network/Model-overflow).
+- **Mode 1: Fully managed Beamlit deployment.** Directly deploy an agent on Beamlit to make it available on the Global Inference Network. Consumers have a fully serverless endpoint to access the agents. Read [our guide on how to deploy agents on Beamlit](../Agents).
+- **Mode 2: Global hybrid deployment.** Attach your private clusters to the Global Inference Network through the Beamlit controller, and federate multi-region deployments behind our global networking system. This mode is part of our Enterprise offering, contact us at [support@beamlit.com](mailto:support@beamlit.com) for more information.
+- **Mode 3: Offload on Beamlit**. This mode allows for **minimal footprint** on your stack and is fully transparent for your consumers. Through a Beamlit controller, you can reference Kubernetes deployments from your own private cluster and offload them to Beamlit Global Inference Network based on conditions, for e.g. in case of sudden traffic burst. This mode is part of our Enterprise offering, contact us at [support@beamlit.com](mailto:support@beamlit.com) for more information.
 - **Mode 4: On-prem Replication**. Through a Beamlit controller, you can reference Kubernetes deployments from your own private cluster and offload them to another of your private cluster in case of traffic burst. This mode entirely relies on open-source software. Read more on the [Github page for the open-source Beamlit controller](https://github.com/beamlit/beamlit-controller).
-
-### Deploying models on the Global Inference Network
-
-When it comes to models on Beamlit, there are essentially two core features you will be interested in: deploying models and running inferences on models.
-
-Read the following guides for how to deploy on Beamlit:
-
-<Card title="Guide for deploying directly on the Global Inference Network" icon="earth-americas" href="/Models/Model-deployment" horizontal="true">
-For aforementioned modes 1 & 2.
-</Card>
-
-<Card title="Guide for minimal-footprint deployment of your own model" icon="server" href="/Models/Cloud-Burst-Network/Model-overflow" horizontal="true">
-For aforementioned modes 3 & 4.
-</Card>
-
-Read the following guide for how to run inferences on Beamlit.
-
-<Card title="Guide for querying models on the Global Inference Network" icon="bolt" href="/Models/Model-deployment" horizontal="true">
-How to run inferences on your Beamlit deployments.
-</Card>
-
-Obviously, Beamlit is a complete enterprise-ready platform and has many additional features to operate the full life-cycle of AI workloads in production with total compliance and security.
-
-- [Environments](../Model-Governance/Environments) allow you to manage a development/production life-cycle on Beamlit
-- [Deployment policies](../Model-Governance/Policies) allow you to enforce rules and strategies for your entire organization regarding the deployment of models, such as allowed or restricted locations, hardware, or routing and failover strategies.
-- Set up fine-grained authentication and authorization through [Beamlit IAM](../Security/Workspace-access-control), and evaluate inference permissions at edge in the Global Inference Network
-- Centralize [inference logs and metrics](../Observability/View-model-logs) for AI workloads deployed across multiple locations
-
-### Configuring the Global Inference Network
-
-Beamlit is designed for modern IT and ML teams who want a reliable cloud platform to run AI workloads. We try to automate most of the painful stuff that no one wants to do, while letting you take the wheel where we know you will want to. 
-
-In other words, the Global Inference Network is fully pre-configured to let you get started fast and efficiently, but remains very flexible to tweak it to your use case.  
-
-On the **execution plane**, you can bring your own Kubernetes clusters and attach them to the Global Inference Network. This lets you control the underlying compute infrastructure while benefitting from Beamlit’s connectivity layer to orchestrate workloads over many private locations.
-
-Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if you want to set up this option
-
-On the **data plane**, you can program Beamlit’s network layer through policies. Enforce authentication of inference requests, and manage firewall, load balancing and failover rules.
-
-Read [our guide about how to set up deployment policies](../Model-Governance/Policies).

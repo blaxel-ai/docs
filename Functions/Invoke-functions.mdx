@@ -6,7 +6,7 @@ description: 'Make invocation requests on your functions.'
 
 ---
 
-Function [deployments](../Functions%2015347e47b1ea80eda0e5d4354f5ba238) on Beamlit have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global invocation Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Models/Model-deployment) associated with your function deployment. 
+Function [deployments](Overview%2015347e47b1ea8038813fef14c49dfd5e) on Beamlit have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global invocation Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your function deployment. 
 
 ## Invocation endpoints
 
@@ -14,13 +14,13 @@ Whenever you deploy a function on Beamlit, an **invocation endpoint** is generat
 
 The invocation URL looks like this:
 
-```
+```http Query function
 
 run.beamlit.com/{your-workspace}/functions/{your-function}
 
 ```
 
-There is one distinct endpoint for each **function deployment,** i.e. for each combination of a [function](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) and an [environment](../Model-Governance/Environments) on which it is deployed. 
+There is one distinct endpoint for each **function deployment,** i.e. for each combination of a [function](Overview%2015347e47b1ea8038813fef14c49dfd5e) and an [environment](../Model-Governance/Environments) on which it is deployed. 
 
 For example, if you have one version of function “your-function” deployed on the *production* environment and one version deployed on the *development* environment:
 

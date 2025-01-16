@@ -8,7 +8,7 @@ description: 'Create and enforce fine-grained deployment rules.'
 
 Policies are used to program how and where your workloads are deployed on Beamlit. Policies can be defined as code, allowing for easy programming and customization of your [Global Inference Network](../Models/Global-Inference-Network).
 
-Policies apply to the entities they are attached to. They can be attached to individual [model deployments](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584), or to a whole [environment](Environments) to enforce them across your workspace.
+Policies apply to the entities they are attached to. They can be attached to individual model API/function/agent deployments, or to a whole [environment](Environments) to enforce them across your workspace.
 
 ## Policies overview
 
@@ -61,7 +61,7 @@ Refer to [our reference on policy flavors](Policies) below for more information.
 
 You can restrict the scope of objects affected by a policy through **targets**. This is particularly useful when you want to attach a policy to an environment without impacting all resources that depend on it.
 
-Targets specify the resource types the policy should influence. For instance, if you want to enforce the use of specific GPUs in the *production* environment for models, but allow functions to run on CPU, you can define a target on *models* for that policy.
+Targets specify the resource types the policy should influence. For instance, if you want to enforce the use of specific GPUs in the *production* environment for agents, but allow functions to run on CPU, you can define a target on *agents* for that policy.
 
 By default, a policy without a specified target applies to all resource types.
 
@@ -73,11 +73,11 @@ Read [our complete reference on policies](https://docs.beamlit.com/api-reference
 
 ## Attach a policy
 
-Attaching a policy to a workload enforces it on the workload. Policies can be attached either to [**environments**](Environments%2013847e47b1ea81ac9677d81f847741bd), or to specific [**model deployments**](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) (provided they [do not collide](Policies) with the environment-level policies).
+Attaching a policy to a workload enforces it on the workload. Policies can be attached either to [**environments**](Environments%2013847e47b1ea81ac9677d81f847741bd), or to specific model API/function/agent deployments (provided they [do not collide](Policies) with the environment-level policies).
 
 ### Attaching multiple policies
 
-When attaching **multiple policies** to a resource, it's crucial to understand their combined effect. This effect varies depending on whether you're attaching multiple policies to the same workload (e.g., one environment, or one model deployment), or applying policies to a workload that already inherits policies from its linked environment. 
+When attaching **multiple policies** to a resource, it's crucial to understand their combined effect. This effect varies depending on whether you're attaching multiple policies to the same workload (e.g., one environment, or one deployment), or applying policies to a workload that already inherits policies from its linked environment. 
 
 **If you are attaching multiple policies to the same resource.**
 
@@ -114,9 +114,9 @@ A platform admin can thus apply policies at the environment level, ensuring they
 
 This is because as mentioned above, combining of policies at environment-level and policies at deployment-level has the following result:
 
-### Attaching a policy to a model deployment
+### Attaching a policy to a deployment
 
-Attaching a policy to a model deployment directly **enforces it on this specific model deployment,** provided it is in the scope of the [target](Policies) of the policy.
+Attaching a policy to a workload directly **enforces it on this specific deployment,** provided it is in the scope of the [target](Policies) of the policy.
 
 If the deployment is already inheriting policies from its environment, the resulting effect is [as described above](Policies). You will not be able to allow more options than what is restricted at environment level.
 
@@ -138,5 +138,3 @@ Below is the list of official names to build policies.
 | eu | continent | Europe |
 | na | continent | North America |
 | us | country | United States |
-| fr | country | France |
-|  |  |  |

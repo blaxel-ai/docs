@@ -8,11 +8,11 @@ description: 'Run any custom AI agent on Beamlit.'
 
 You can **bring agents developed in any framework** (LangChain, CrewAI, or any custom framework in Python) and deploy them on Beamlit by integrating a few lines of the Beamlit SDK and leveraging our other developer tools (the [Beamlit CLI](../cli-reference), GitHub action, etc.).
 
-To run your agent on Beamlit, you must package it by **using the Beamlit SDK** so Beamlit to identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Beamlit to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
+To run your agent on Beamlit, you must package it by **using the Beamlit SDK** so Beamlit can identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Beamlit to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
 
 <Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.p</Tip>
 
-## Summary of the development/deployment process
+## Overview of the development/deployment process
 
 Beamlit’s development paradigm is designed to have a minimal footprint on your usual development process. Your custom code remains platform-agnostic: you can deploy it on Beamlit or through traditional methods like Docker containers on VMs or Kubernetes clusters. When you deploy on Beamlit (CLI command `bl deploy`), Beamlit runs a specialized build process that integrates your code with its [Global Inference Network](../Models/Global-Inference-Network) features.
 
@@ -31,15 +31,21 @@ Here is a high-level presentation of how agents can be built and deployed using 
 
 ### Overview
 
-In order to deploy a custom AI agent on Beamlit, the following file is required in your repository:
+To deploy a custom AI agent on Beamlit, you need the following file in your repository:
 
-- [**agent.py](http://agent.py) (or src/agent.py)**: this file must contain a `main` *async* function that runs your agent.
-    - This `agent.main` function is the one served by default but you can override the module to serve, by using the flag `bl serve --module your-function-path`
-    - Flag the agent’s main function with the `@agent` decorator so it can be deployed on Beamlit (see details down below)
+- [**agent.py](http://agent.py) (or src/agent.py)**: This file must contain an *async* `main` function that runs your agent. The `agent.main` function serves as the default entry point during serving and deployment.
+    - You can specify a different module to serve using the flag `bl serve --module your-function-path.your-function-name`
+    - The function accepts these positional arguments, which Beamlit passes when a request is made to your deployed agent:
+        - *agent*: The core agent algorithm. By default, it uses a [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
+        - *model*: The [LLM chat API](../Models/Overview) that powers the agent. By default, it uses the model API specified during agent creation, **passed in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
+        - *functions*: The [functions](../Functions/Overview) available for tool calling. By default, it uses the functions from the `src/functions` folder, **passed in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
+        - *request*: The [FastAPI](https://fastapi.tiangolo.com/) Request that triggers the agent's execution.
+
+Mark your agent's main function with the `@agent` decorator to enable deployment on Beamlit. You can override the default argument values that Beamlit passes upon requesting the agent **by using the decorator parameters** (see below).
 
 Some folders are optional but designed to handle specific parts of the agent code on Beamlit:
 
-- **src/functions**: all files listed in this folder will be interpreted as custom tools that will all be made available to the agent automatically when serving or deploying the agent. The tool function itself is identified with the `@function` decorator.
+- **src/functions**: all files listed in this folder will be interpreted as custom tools that will all be made available to the agent automatically when serving or deploying the agent. The tool’s Python function itself is identified with the `@function` decorator.
 
 ### Quickstart
 
@@ -53,23 +59,24 @@ You can quickly initialize a new project from scratch by using the CLI command  
 
 ## The @agent decorator
 
-The @agent decorator identifies the main function that handles your core agent logic such as how to handle queries and responses, tool calls and such.
+The `@agent` decorator identifies the main function that handles your core agent logic such as how to handle queries and responses, tool calls and such.
 
 ```python
 @agent()
-async def main(agent, chat_model, tools, body, headers=None, query_params=None, **_):
+async def main(agent, model, functions, request, **_):
 	# Your main agent logic
 	...
 ```
 
 Inside the decorator, you can pass several parameters:
 
-- **agent**: this can be either the Beamlit SDK’s `Agent` object or equivalent dict, and allows to specify all the parameters for the deployment of your agent on Beamlit. Examples include:
+- **`agent`**: this can be either the Beamlit SDK’s `Agent` object or equivalent dict, and allows to specify all the parameters for the deployment of your agent on Beamlit. Examples include:
     - `metadata.name`: the name of the agent on Beamlit
     - `spec.description`: the description of the agent on Beamlit
     - `spec.model`: the name of a model API deployed in your Beamlit workspace, to use as core chat model for the agent
-- **override_chat_model**: You can query directly an LLM provider instead of routing the query via Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/).
-- **override_agent**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent function.
+- **`override_model`**: You can query directly an LLM provider instead of routing the query via Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/).
+- **`override_agent`**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent instance.
+- **`remote_functions`**: You can pass on additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit
 
 ## Deploy an agent
 

@@ -81,6 +81,12 @@
       ]
     },
     {
+      "group": "Developer API",
+      "pages": [
+        "cli-reference/bl_run"
+      ]
+    },
+    {
       "group": "Inference API",
       "pages": [
         "cli-reference/bl_run"
@@ -159,15 +165,14 @@
       "group": "Administration & security",
       "pages": [
         {
-          "group": "Governance",
+          "group": "Policies governance",
           "pages": [
             "Model-Governance/Environments",
             "Model-Governance/Policies"
           ]
         },
-        "Observability/View-model-logs",
         {
-          "group": "Workspaces and access control",
+          "group": "Workspaces and permissions",
           "pages": [
             "Security/Workspace-access-control",
             "Security/Service-accounts"

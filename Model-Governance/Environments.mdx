@@ -12,8 +12,8 @@ By bundling deployment policies, environments ensure that all workloads deployed
 
 Currently, Beamlit provides all workspaces with two different environments: **production** and **development**. 
 
-- They are created without any [policy](Policies): by default, models deployed in these environments won’t have any deployment restrictions.
-- They allow for a development/production release lifecycle: each environment provides a specific inference endpoint for models deployed within it.
+- They are created without any [policy](Policies): by default, workloads deployed in these environments won’t have any deployment restrictions.
+- They allow for a development/production release lifecycle: each environment provides a specific inference endpoint for workloads deployed within it.
 
 <Info>Please reach out to us at [support@beamlit.com](mailto:support@beamlit.com) if you would like to use more than two environments.</Info>
 
@@ -37,28 +37,24 @@ For example, let’s say you attach the following three policies on environment 
 - Asia only: Continent is Asia *(type of policy: location)*
 - T4 only: GPU is T4 *(type of policy: gpu)*
 
-Then, all models deployed in ‘development’ will run **necessarily on T4 accelerators**, which are on **any** location that is either in the US or in any country in Asia. 
+Then, all workloads deployed in ‘development’ will run **necessarily on T4 accelerators**, which are on **any** location that is either in the US or in any country in Asia. 
 
-## **Deploying models to an environment**
+## **Deploying workloads to an environment**
 
-### Deploying a model
+### Deploying a workload
 
-When [deploying a model](../Models/Model-deployment), you can choose an environment on which to deploy it. When a model is deployed in an environment, this produces a “*model deployment*”.
+When deploying a function, agent or model API, you can choose an environment on which to deploy it. When an object is deployed in an environment, this produces a “*deployment*” of this object.
 
-If you don’t specify an environment when deploying a model, the model is deployed in the *production* environment by default.
+If you don’t specify an environment when deploying a workload, the workload is deployed in the *production* environment by default.
 
-Read our [complete reference for deploying models](https://docs.beamlit.com/api-reference/models/create-or-update-model-deployment). You can also use the Beamlit console, APIs or CLI for this.
+### Rolling out a deployment to a new environment
 
-### Rolling out a model deployment to a new environment
+Deployments can be **released** to a new environment. This replaces the deployment that was initially on the new target environment, and keeps the origin deployment intact.
 
-Model deployments can be **released** to a new environment. This replaces the model that was initially on the new target environment, and keeps the origin model deployment intact.
+For example, for Agent XYZ:
 
-For example, for Model XYZ:
-
-1. Let’s say you have version A of the model running on the *production* environment (this is the  production deployment), and version B of the model running on the *development* environment (this is the development deployment). Each version can be called through the [respective model deployment endpoint](../Models/Query-a-model) allowing to test version B while version A still runs.
+1. Let’s say you have version A of the agent running on the *production* environment (this is the  production deployment), and version B of the agent running on the *development* environment (this is the development deployment). Each version can be called through the [respective agent deployment endpoint](../Agents/Query-agents) allowing to test version B while version A still runs.
 2. Once version B is tested and ready, you [release](../Models/Model-deployment) the *development deployment* on the *production* environment.
 3. Now: version B runs on the *production* environment, and version B also runs on the *development* environment. Version A can no longer be called.
-4. You [replace](../Models/Model-deployment) the *development* deployment with version C of the model. 
-5. Now: version B runs on the *production* environment, and version C runs on the *development* environment. 
-
-![release.png](Environments/release.png)
+4. You [replace](../Models/Model-deployment) the *development* deployment with version C of the agent. 
+5. Now: version B runs on the *production* environment, and version C runs on the *development* environment.
