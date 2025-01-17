@@ -47,22 +47,18 @@ Beamlit provides all the **developer tools** needed to build and run your agents
 
 ## The Beamlit powerhouse
 
-When you deploy your agents to Beamlit, they run on a technical backbone called the **Global Inference Network**. The platform's serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Beamlit, and we'll run agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
+When you deploy your agents to Beamlit, they run on a technical backbone called the **Global Inference Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Beamlit, and we'll run the agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
 
-Global Inference Network serves as the powerhouse for the entire Beamlit platform, designed to deliver inferences at scale with exceptional availability and minimal latency. It allows for multi-region deployment, enabling AI workloads to run across multiple geographic areas or cloud providers.
+Global Inference Network serves as the powerhouse for the entire Beamlit platform, and is natively **distributed** in order to optimize for ultra-low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
 
 The platform implements advanced security measures, including fine-grained authentication and authorization through Beamlit IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, console, as well as a Kubernetes operator for IT teams.
-
-Beamlit is a cloud-native infrastructure platform that is natively **serverless**. Any AI workload pushed to Beamlit is ran in response to requests without requiring provisioning or management of serving/inference servers or hardware. It automatically scales compute resources and you pay only for the compute time used.
-
-Beamlit is also natively **distributed.** By default, all workloads (such an AI model processing inference requests for example) run across multiple execution locations, that can span over multiple geographic areas or cloud providers, in order to optimize for ultra-low-latency or other strategies. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
 
 ## Documentation structure
 
 You might want to start with any of the following articles:
 
 - [**Get started**](Get-started): Deploy your first AI agent in just 3 minutes.
-- [**Examples:**](https://www.notion.so/Deploy-a-custom-model-from-HuggingFace-13847e47b1ea81298984d90b74995b0c?pvs=21) Explore real-world use cases and implementation guides.
+- [**Examples:**](Examples/Deploy-a-LangChain-agent) Explore real-world use cases and implementation guides.
 - **Product Documentation**
     - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
     - [**Functions**](Functions/Overview): Execute tool calls when requested by your AI agents
