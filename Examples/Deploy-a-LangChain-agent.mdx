@@ -226,7 +226,7 @@ from langgraph.prebuilt import create_react_agent
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=[], checkpointer=memory)
 
-@agent(agent={"spec": {"model": "gpt-4o-mini",},}, override_agent=custom_agent)
+@agent(agent={"spec": {"model": "your-model-name-on-beamlit",},}, override_agent=custom_agent)
 async def main(
     agent: Union[None, CompiledGraph],
     chat_model: Union[None, BaseChatModel],
