@@ -95,7 +95,7 @@ Model APIs allow developers to have a centralized API that unifies credentials m
 
 <Step title="Create your first AI agent">
 
-Run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
+Run the following command in a terminal to login to Beamlit. 
 
 ```bash
 bl login your-workspace-slug
@@ -128,7 +128,7 @@ To push to Beamlit on the default *production* environment, run the following co
 bl deploy
 ```
 
-That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](Models/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
+Your agent is available behind a **global endpoint**  🌎 . Read [this guide](Agents/Query-agents) on how to use it for HTTP requests.
 
 </Step>
 
@@ -139,10 +139,6 @@ Run a first inference on your Beamlit agent with the following command:
 ```bash
 bl run agent my-agent --data '{"inputs":"Hello world!"}'
 ```
-
-<Tip>Your agent is available behind a **global endpoint**. Read [this guide](Agents/Query-agents) on how to use it for HTTP requests.</Tip>
-
-You can also run inference requests on your agent (or each function or model API) from the Beamlit console by using the Playground on the console.
 
 </Step>
 
