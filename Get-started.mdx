@@ -12,6 +12,10 @@ description: 'Deploy your first AI agent worldwide in just 3 minutes.'
 
 Beamlit is a serverless platform that enables AI teams to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Beamlit.
 
+## Quickstart
+
+Welcome there! 👋 Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control). 
+
 <Steps>
 
 <Step title="Install the Beamlit CLI">
@@ -83,9 +87,7 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
 
 <Step title="Create a model API endpoint">
 
-Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0). Then use the Beamlit console to create a [model API](Models/Overview). Model APIs allow developers to have a centralized API that unifies credentials management and access to LLM providers. 
-
-Select **OpenAI** > **gpt-4o-mini**, make sure to enter an [OpenAI access token](Integrations/OpenAI) and deploy the endpoint on the *Production* environment.
+Model APIs allow developers to have a centralized API that unifies credentials management and access to LLM providers. Use the Beamlit console to [create a model API](Models/Overview) and deploy the endpoint on the *Production* environment.
 
 ![Screenshot 2024-12-13 at 4.03.53 PM.png](Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
 
@@ -96,7 +98,7 @@ Select **OpenAI** > **gpt-4o-mini**, make sure to enter an [OpenAI access token]
 Run the following command in a terminal to login to Beamlit. Use the **Device** mode to authenticate via your browser.
 
 ```bash
-bl login your-workspace-slugified-name
+bl login your-workspace-slug
 ```
 
 Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit. You will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) for this.
@@ -105,15 +107,7 @@ Let’s initialize a first app. The following command creates a **pre-scaffolded
 bl create-agent-app my-agent
 ```
 
-Select *gpt-4o-mini* as the model API, choose the *Hello-world* template, and press Enter to create the repo.
-
-<Tip>You could also just bring your own code and add [Beamlit SDK commands and decorators](Agents/Develop-an-agent) and required dependencies to deploy it. This scaffolded repository gives you everything set up and ready to go from scratch.</Tip>
-
-You can now [develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` and define your functions in `/my-agent/src/functions` (functions in this folder are automatically bound to the main agent). You may use any Python framework you prefer. This boilerplate repository is initialized with:
-
-- A [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) as the core agent logic. This agent can be overridden by passing a custom agent as the `override-agent` parameter to the @agent decorator in */src/agent.py*
-
-- A hello-world tool (a function) that returns a placeholder text string. This function can be customized by changing the code in the `helloworld` function in */src/functions/helloworld.py*, and additional functions can be created in the */src/functions* folder.
+You can now [use the Beamlit SDK to develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` and define your functions in `/my-agent/src/functions` — functions in this folder are automatically bound to the main agent. 
 
 </Step>
 
