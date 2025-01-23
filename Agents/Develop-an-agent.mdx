@@ -33,15 +33,15 @@ Here is a high-level presentation of how agents can be built and deployed using 
 
 To deploy a custom AI agent on Beamlit, you need the following file in your repository:
 
-- [**agent.py](http://agent.py) (or src/agent.py)**: This file must contain an *async* `main` function that runs your agent. The `agent.main` function serves as the default entry point during serving and deployment.
+- **agent.py (or src/agent.py)**: This file must contain an *async* `main` function that runs your agent. The `agent.main` function serves as the default entry point during serving and deployment.
     - You can specify a different module to serve using the flag `bl serve --module your-function-path.your-function-name`
-    - The function accepts these positional arguments, which Beamlit passes when a request is made to your deployed agent:
-        - *agent*: The core agent algorithm. By default, it uses a [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
-        - *model*: The [LLM chat API](../Models/Overview) that powers the agent. By default, it uses the model API specified during agent creation, **passed in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
-        - *functions*: The [functions](../Functions/Overview) available for tool calling. By default, it uses the functions from the `src/functions` folder, **passed in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
+    - The function accepts these arguments, which Beamlit passes when a request is made to your deployed agent:
         - *request*: The [FastAPI](https://fastapi.tiangolo.com/) Request that triggers the agent's execution.
+        - *agent*: (Optional) The core agent algorithm. By default, it uses a [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
+        - *model*: (Optional) The [LLM chat API](../Models/Overview) that powers the agent. By default, it uses the model API specified during agent creation, **passed in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
+        - *functions*: (Optional) The [functions](../Functions/Overview) available for tool calling. By default, it uses the functions from the `src/functions` folder, **passed in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
 
-Mark your agent's main function with the `@agent` decorator to enable deployment on Beamlit. You can override the default argument values that Beamlit passes upon requesting the agent **by using the decorator parameters** (see below).
+**Mark your agent's main function with the `@agent` decorator to serve it with Beamlit. You can override the default argument values that Beamlit passes upon requesting the agent by using the decorator parameters** (see below).
 
 Some folders are optional but designed to handle specific parts of the agent code on Beamlit:
 
@@ -63,7 +63,7 @@ The `@agent` decorator identifies the main function that handles your core agent
 
 ```python
 @agent()
-async def main(agent, model, functions, request, **_):
+async def main(request, agent, model, functions, **_):
 	# Your main agent logic
 	...
 ```
@@ -74,9 +74,39 @@ Inside the decorator, you can pass several parameters:
     - `metadata.name`: the name of the agent on Beamlit
     - `spec.description`: the description of the agent on Beamlit
     - `spec.model`: the name of a model API deployed in your Beamlit workspace, to use as core chat model for the agent
-- **`override_model`**: You can query directly an LLM provider instead of routing the query via Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/).
-- **`override_agent`**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent instance.
+- **`override_model`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/). When the deployed agent receives a request, Beamlit will pass this as the `model` argument to the agent's `main()` function.
+- **`override_agent`**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent instance. When the deployed agent receives a request, Beamlit will pass this as the `agent` argument to the agent's `main()` function.
 - **`remote_functions`**: You can pass on additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit
+
+When developing custom agents, you may also need to retrieve instantiated model APIs and functions in your code. The following section shows you how to.
+
+## Retrieve existing functions and model APIs
+
+### Get functions
+
+You can use [functions](../Functions/Overview) defined both in your code and deployed on Beamlit by calling `get_functions()`. This function returns a list of tools **in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
+
+```python
+from beamlit.functions import get_functions
+
+functions = get_functions(warning=False)
+```
+
+By default, this returns the list of functions **defined in the local folder** `src/functions/`. You can pass several parameters:
+
+- **`remote_functions`**: to retrieve additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit
+
+### Get model APIs
+
+You can use model APIs deployed on Beamlit by calling `get_chat_model()`. This function returns a model API **in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
+
+```python
+from beamlit.agents import get_chat_model
+
+model, _, _ = get_chat_model("model-name-on-beamlit")
+```
+
+<Note>See an example of [how to use the Beamlit SDK to develop and deploy a custom LangChain agent](../Examples/Deploy-a-LangChain-agent) in 5 minutes.</Note>
 
 ## Deploy an agent
 
