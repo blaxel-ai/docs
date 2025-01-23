@@ -6,7 +6,9 @@ description: 'Deploy your first LangChain AI agent on Beamlit.'
 
 ---
 
-This tutorial shows how to deploy a custom [LangChain](https://python.langchain.com/docs/introduction/) AI agent directly from your IDE using the Beamlit CLI. Your agent will typically include these key components:
+This tutorial shows how to deploy a custom [LangChain](https://python.langchain.com/docs/introduction/) AI agent directly from your IDE using the Beamlit CLI. 
+
+Your agent will typically include these key components:
 
 - A **core agent logic algorithm** → Beamlit will deploy this as an [Agent](../Agents/Overview)
 - A **set of tools that the agent can use** → Beamlit will deploy these in sandboxed environments as [Functions](../Functions/Overview)
@@ -40,7 +42,7 @@ Add or import the script files containing your LangChain agent. Here's an exampl
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-from customfuncs.helloworld import helloworld
+from customfunctions.helloworld import helloworld
 
 chat = ChatOpenAI()
 memory = MemorySaver()
@@ -48,7 +50,7 @@ custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
 
 ```
 
-Note that this code references a custom tool from another folder: `customfuncs.helloworld.helloworld`. By default, this function **will not** be deployed as a separate component. See next section for instructions on deploying it in its own sandboxed environment.
+Note that this code references a custom tool from another folder that we assume you developed too: `customfunctions.helloworld.helloworld`. By default, this function **would not** be deployed as a separate component. See next section for instructions on deploying it in its own sandboxed environment to trace request usage.
 
 The next step is to use [the Beamlit SDK](../Agents/Develop-an-agent) to specify which function should be deployed on Beamlit. You'll need two key elements:
 
@@ -57,27 +59,19 @@ The next step is to use [the Beamlit SDK](../Agents/Develop-an-agent) to specify
 
 Here's an example showing the main async function:
 
-```python agent.py {11-31}
+```python agent.py {11-23}
 
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-from customfuncs.helloworld import helloworld
+from customfunctions.helloworld import helloworld
 
 chat = ChatOpenAI()
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
 
-async def main(
-    agent: Union[None, CompiledGraph],
-    chat_model: Union[None, BaseChatModel],
-    tools: list[BaseTool],
-    request: Request,
-    **_,
-):
+async def main(request: Request):
     body = await request.json()
-    if len(tools) > 0:
-        agent.bind_tools(tools)
     agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     if body.get("inputs"):
         body["input"] = body["inputs"]
@@ -85,7 +79,7 @@ async def main(
     agent_body = {"messages": [("user", body["input"])]}
     responses = []
 
-    async for chunk in agent.astream(agent_body, config=agent_config):
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
         responses.append(chunk)
     content = responses[-1]
     return content["agent"]["messages"][-1].content
@@ -101,23 +95,15 @@ from beamlit.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-from customfuncs.helloworld import helloworld
+from customfunctions.helloworld import helloworld
 
 chat = ChatOpenAI()
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
 
 @agent(override_agent=custom_agent)
-async def main(
-    agent: Union[None, CompiledGraph],
-    chat_model: Union[None, BaseChatModel],
-    tools: list[BaseTool],
-    request: Request,
-    **_,
-):
+async def main(request: Request):
     body = await request.json()
-    if len(tools) > 0:
-        agent.bind_tools(tools)
     agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     if body.get("inputs"):
         body["input"] = body["inputs"]
@@ -125,7 +111,7 @@ async def main(
     agent_body = {"messages": [("user", body["input"])]}
     responses = []
 
-    async for chunk in agent.astream(agent_body, config=agent_config):
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
         responses.append(chunk)
     content = responses[-1]
     return content["agent"]["messages"][-1].content
@@ -139,11 +125,11 @@ At this time:
 - your agent is ready to be deployed on Beamlit
 - functions (tool calls) and model APIs **are not ready** to be deployed on separate sandboxed environments.
 
-For production deployments of AI agents, it's recommended to use a microservices architecture where each component runs independently in its own environment. **Beamlit helps you cross this last mile with just a few lines of code.**
+To get total observability and traceability on the requests of your agent, it's recommended to use a microservices-like architecture where each component runs independently in its own environment. **Beamlit helps you cross this last mile with just a few lines of code.**
 
 ### Sandbox the tool call execution
 
-To deploy your tool on Beamlit, simply place the main function's file in the `src/functions/` folder.
+To deploy your tool on Beamlit, the simplest way is to place the main function's file in the `src/functions/` folder.
 
 Here’s an example with the helloworld custom tool from the previous code snippets:
 
@@ -171,29 +157,23 @@ async def helloworld(query: str):
 
 ```
 
-Functions placed in the `src/functions/` folder will be deployed as custom functions and automatically become available to the agent during execution. The final step is to remove the hardcoded tool binding from the main agent file:
+Functions placed in the `src/functions/` folder will automatically be deployed as custom functions and can be made available to the agent during execution by calling `get_functions()` . The final step is to update the tool binding from the main agent file:
 
-```python agent.py {8}
+```python agent.py {2,8,10}
 from beamlit.agents import agent
+from beamlit.functions import get_functions
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
 chat = ChatOpenAI()
+functions = get_functions(warning=False)
 memory = MemorySaver()
-custom_agent = create_react_agent(chat, tools=[], checkpointer=memory)
+custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
 
 @agent(override_agent=custom_agent)
-async def main(
-    agent: Union[None, CompiledGraph],
-    chat_model: Union[None, BaseChatModel],
-    tools: list[BaseTool],
-    request: Request,
-    **_,
-):
+async def main(request: Request):
     body = await request.json()
-    if len(tools) > 0:
-        agent.bind_tools(tools)
     agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     if body.get("inputs"):
         body["input"] = body["inputs"]
@@ -201,12 +181,14 @@ async def main(
     agent_body = {"messages": [("user", body["input"])]}
     responses = []
 
-    async for chunk in agent.astream(agent_body, config=agent_config):
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
         responses.append(chunk)
     content = responses[-1]
     return content["agent"]["messages"][-1].content
 
 ```
+
+Read [our reference for get_functions()](../Agents/Develop-an-agent).
 
 ### Sandbox the model API call
 
@@ -216,27 +198,23 @@ Then create a [model API](../Models/Overview) using your integration, and **depl
 
 ![Screenshot 2024-12-13 at 4.03.53 PM.png](../Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
 
-Finally, configure your agent to use the model API in the code of your main agent file:
+Model APIs can be made available to the agent during execution by calling `get_chat_model()` :
 
-```python agent.py {8}
+```python agent.py {3,7}
 from beamlit.agents import agent
+from beamlit.functions import get_functions
+from beamlit.functions import get_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
+chat, _, _ = get_chat_model("your-model-name-on-beamlit")
+functions = get_functions(warning=False)
 memory = MemorySaver()
-custom_agent = create_react_agent(chat, tools=[], checkpointer=memory)
+custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
 
-@agent(agent={"spec": {"model": "your-model-name-on-beamlit",},}, override_agent=custom_agent)
-async def main(
-    agent: Union[None, CompiledGraph],
-    chat_model: Union[None, BaseChatModel],
-    tools: list[BaseTool],
-    request: Request,
-    **_,
-):
+@agent(override_agent=custom_agent)
+async def main(request: Request):
     body = await request.json()
-    if len(tools) > 0:
-        agent.bind_tools(tools)
     agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     if body.get("inputs"):
         body["input"] = body["inputs"]
@@ -244,7 +222,7 @@ async def main(
     agent_body = {"messages": [("user", body["input"])]}
     responses = []
 
-    async for chunk in agent.astream(agent_body, config=agent_config):
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
         responses.append(chunk)
     content = responses[-1]
     return content["agent"]["messages"][-1].content
