@@ -21,7 +21,9 @@ bl get functions [flags]
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
+      --watch              After listing/getting the requested object, watch for changes.
   -w, --workspace string   Specify the workspace name
 ```
 

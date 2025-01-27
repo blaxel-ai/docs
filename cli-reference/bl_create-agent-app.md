@@ -17,7 +17,7 @@ bl create-agent-app directory [flags]
 ### Examples
 
 ```
-bl create-agent-app
+bl create-agent-app my-agent-app
 ```
 
 ### Options
@@ -31,6 +31,7 @@ bl create-agent-app
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```

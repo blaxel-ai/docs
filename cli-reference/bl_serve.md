@@ -26,7 +26,7 @@ bl serve [flags]
   -h, --help            help for serve
   -H, --host string     Bind socket to this port. If 0, an available port will be picked (default "0.0.0.0")
       --hotreload       Watch for changes in the project
-  -m, --module string   Module to serve, can be an agent or a function (default "agent.main")
+  -m, --module string   Module to serve, can be an agent or a function
   -p, --port int        Bind socket to this host (default 1338)
   -r, --remote          Serve the project remotely. It will use functions deployed on beamlit cloud
 ```
@@ -36,6 +36,7 @@ bl serve [flags]
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```

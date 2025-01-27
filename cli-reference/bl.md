@@ -12,6 +12,7 @@ Beamlit CLI is a command line tool to interact with Beamlit APIs.
   -e, --env string         Environment. One of: development,production
   -h, --help               help for bl
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```
@@ -26,7 +27,6 @@ Beamlit CLI is a command line tool to interact with Beamlit APIs.
 * [bl get](bl_get.md)	 - Get a resource
 * [bl login](bl_login.md)	 - Login to Beamlit
 * [bl logout](bl_logout.md)	 - Logout from Beamlit
-* [bl metrics](bl_metrics.md)	 - Get metrics for a model deployment
 * [bl run](bl_run.md)	 - Run a resource on beamlit
 * [bl serve](bl_serve.md)	 - Serve a beamlit project
 * [bl version](bl_version.md)	 - Get the version of the CLI

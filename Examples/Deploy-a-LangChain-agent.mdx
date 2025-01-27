@@ -59,8 +59,9 @@ The next step is to use [the Beamlit SDK](../Agents/Develop-an-agent) to specify
 
 Here's an example showing the main async function:
 
-```python agent.py {11-23}
+```python agent.py {2,12-24}
 
+from fastapi import Request
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -90,7 +91,8 @@ Read [our reference for the main agent function to serve](../Agents/Develop-an-a
 
 Then, here’s an example adding the Beamlit decorator:
 
-```python agent.py {1,11}
+```python agent.py {2,12}
+from fastapi import Request
 from beamlit.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -101,7 +103,7 @@ chat = ChatOpenAI()
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
 
-@agent(override_agent=custom_agent)
+@agent(override_agent=custom_agent, agent={"metadata": {"name": "my-agent"}})
 async def main(request: Request):
     body = await request.json()
     agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
@@ -159,7 +161,8 @@ async def helloworld(query: str):
 
 Functions placed in the `src/functions/` folder will automatically be deployed as custom functions and can be made available to the agent during execution by calling `get_functions()` . The final step is to update the tool binding from the main agent file:
 
-```python agent.py {2,8,10}
+```python agent.py {3,9,11}
+from fastapi import Request
 from beamlit.agents import agent
 from beamlit.functions import get_functions
 from langchain_openai import ChatOpenAI
@@ -196,14 +199,15 @@ Use the [Beamlit console](https://app.beamlit.com) to create the corresponding *
 
 Then create a [model API](../Models/Overview) using your integration, and **deploy** it. Here’s an example from the Beamlit console using an OpenAI model:
 
-![Screenshot 2024-12-13 at 4.03.53 PM.png](../Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
+![Screenshot 2024-12-13 at 4.03.53 PM.png](Deploy-a-LangChain-agent/Screenshot_2024-12-13_at_4.03.53_PM.png)
 
 Model APIs can be made available to the agent during execution by calling `get_chat_model()` :
 
-```python agent.py {3,7}
+```python agent.py {4,8}
+from fastapi import Request
 from beamlit.agents import agent
 from beamlit.functions import get_functions
-from beamlit.functions import get_chat_model
+from beamlit.agents.chat import get_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
@@ -236,13 +240,13 @@ At this time: your agent, functions and model API are ready to be deployed on Be
 Run the following command to serve your agent locally:
 
 ```bash
-cd my-agent && source .venv/bin/activate;
+cd my-agent;
 bl serve --hotreload;
 ```
 
 Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
 
-To push to Beamlit on the default *production* environment, run the following command. You’ll need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) and running on your machine to build the app.
+To push to Beamlit on the default *production* environment, run the following command. Beamlit will handle the build and deployment:
 
 ```bash
 bl deploy

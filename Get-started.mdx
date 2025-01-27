@@ -16,6 +16,8 @@ Beamlit is a serverless platform that enables AI teams to **push and run any AI 
 
 Welcome there! 👋 Make sure you have created an account on Beamlit, and created a first [workspace](Security/Workspace-access-control). 
 
+<Tip>Upon creating a workspace, Beamlit automatically adds a sandbox connection to a model API to get you started. Model APIs provide developers with a centralized interface that simplifies credential management and LLM provider access.</Tip>
+
 <Steps>
 
 <Step title="Install the Beamlit CLI">
@@ -50,33 +52,49 @@ brew install beamlit
 Install the Beamlit CLI by running the following command in a terminal (alternatives below):
 
 ```shell 
-
-curl -fsSL
-
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
-
-| BINDIR=$HOME/.local/bin sudo -E sh
-
+curl -fsSL \
+[https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh](https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh) \
+| BINDIR=$HOME/.local/bin sh
 ```
 
 If you need to use `sudo`, or specify a version, run one of the following commands instead:
 
 ```shell 
-
 ### With version
-curl -fsSL
-
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
-
-| VERSION=0.16.0 BINDIR=$HOME/.local/bin sh
+curl -fsSL \
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+| VERSION=0.36.0 BINDIR=$HOME/.local/bin sh
 
 ### With Sudo:
-curl -fsSL
-
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
-
+curl -fsSL \
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
+```
 
+</Accordion>
+
+<Accordion title="Install with cURL" icon="code">
+
+Install the Beamlit CLI by running the following command in a terminal (alternatives below):
+
+```shell 
+curl -fsSL \
+[https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh](https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh) \
+| BINDIR=$HOME/.local/bin sh
+```
+
+If you need to use `sudo`, or specify a version, run one of the following commands instead:
+
+```shell 
+### With version
+curl -fsSL \
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+| VERSION=0.36.0 BINDIR=$HOME/.local/bin sh
+
+### With Sudo:
+curl -fsSL \
+https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+| BINDIR=/usr/local/bin sudo -E sh
 ```
 
 </Accordion>
@@ -85,21 +103,20 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh
 
 </Step>
 
-<Step title="Create a model API endpoint">
+<Step title="Login">
 
-Model APIs allow developers to have a centralized API that unifies credentials management and access to LLM providers. Use the Beamlit console to [create a model API](Models/Overview) and deploy the endpoint on the *Production* environment.
-
-![Screenshot 2024-12-13 at 4.03.53 PM.png](Get-started/Screenshot_2024-12-13_at_4.03.53_PM.png)
-
-</Step>
-
-<Step title="Create your first AI agent">
-
+<Accordion title="Login to Beamlit via the CLI.">
 Run the following command in a terminal to login to Beamlit. 
 
 ```bash
 bl login your-workspace-slug
 ```
+
+</Accordion>
+
+</Step>
+
+<Step title="Create your first AI agent">
 
 Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit. You will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) for this.
 
@@ -116,13 +133,13 @@ You can now [use the Beamlit SDK to develop](Agents/Develop-an-agent) your agent
 Run the following command to serve your agent locally:
 
 ```bash
-cd my-agent && source .venv/bin/activate;
+cd my-agent;
 bl serve --hotreload;
 ```
 
 Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
 
-To push to Beamlit on the default *production* environment, run the following command. You’ll need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) and running on your machine to build the app.
+To push to Beamlit on the default *production* environment, run the following command. Beamlit will handle the build and deployment:
 
 ```bash
 bl deploy
@@ -162,6 +179,6 @@ Complete guide for querying your AI agents on the Global Inference Network.
 
 ## Any question?
 
-Although we designed this documentation to be as comprehensive as possible, you are welcome to contact [**support@beamlit.com**](mailto:support@beamlit.com) with any questions or feedback you have.
+Although we designed this documentation to be as comprehensive as possible, you are welcome to contact [**support@beamlit.com**](mailto:support@beamlit.com) or the community on [Discord](https://discord.gg/9fu69KEg) with any questions or feedback you have.
 
 Want to deploy Beamlit on-prem? [**Schedule a call**](mailto:support@beamlit.com) with us.
