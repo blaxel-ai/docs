@@ -31,12 +31,15 @@ components:
       type: object
       description: Agent
       properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/EnvironmentMetadata'
         spec:
           $ref: '#/components/schemas/AgentSpec'
         status:
-          $ref: '#/components/schemas/CoreStatus'
+          type: string
+          description: Agent status
     AgentChain:
       type: object
       description: Agent chain configuration
@@ -157,6 +160,8 @@ components:
           model:
             type: string
             description: Model name
+          repository:
+            $ref: '#/components/schemas/Repository'
           storeId:
             type: string
             description: Store id
@@ -216,6 +221,27 @@ components:
         name:
           type: string
           description: Continent code
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        message:
+          type: string
+          description: Event message
+        status:
+          type: string
+          description: Event status
+        time:
+          type: string
+          description: Event time
+        type:
+          type: string
+          description: Event type
+    CoreEvents:
+      type: array
+      description: Core events
+      items:
+        $ref: '#/components/schemas/CoreEvent'
     CoreSpec:
       type: object
       description: Core specification
@@ -242,16 +268,11 @@ components:
           description: The private clusters where the model deployment is deployed
         runtime:
           $ref: '#/components/schemas/Runtime'
+        sandbox:
+          type: boolean
+          description: Sandbox mode
         serverlessConfig:
           $ref: '#/components/schemas/ServerlessConfig'
-    CoreStatus:
-      type: object
-      description: Core status
-      properties:
-        deploymentStatus:
-          type: string
-          description: The status of the core, can be CREATED, UPDATED, DELETED, DEPLOYED,
-            DISABLED, or FAILED
     Country:
       type: object
       description: Configuration
@@ -313,12 +334,15 @@ components:
       type: object
       description: Function
       properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/EnvironmentMetadata'
         spec:
           $ref: '#/components/schemas/FunctionSpec'
         status:
-          $ref: '#/components/schemas/CoreStatus'
+          type: string
+          description: Function status
     FunctionKit:
       type: object
       description: Function kit
@@ -385,14 +409,41 @@ components:
       items:
         type: string
         description: Function name
-    IncreaseAndRateMetric:
+    HistogramBucket:
       type: object
+      description: Histogram bucket
+      properties:
+        count:
+          type: integer
+          description: Count
+        end:
+          type: number
+          description: End
+        start:
+          type: number
+          description: Start
+    HistogramStats:
+      type: object
+      description: Histogram stats
+      properties:
+        average:
+          type: number
+          description: Average request duration
+        p50:
+          type: number
+          description: P50 request duration
+        p90:
+          type: number
+          description: P90 request duration
+        p99:
+          type: number
+          description: P99 request duration
+    IncreaseAndRateMetric:
       description: Metrics for resources
       properties:
         inferenceGlobal:
           description: Historical requests for all resources globally
-        query:
-          description: Number of requests for all resources globally
+      type: object
     IntegrationConfig:
       description: Integration config
       type: object
@@ -424,6 +475,9 @@ components:
         integration:
           type: string
           description: Integration type
+        sandbox:
+          type: boolean
+          description: Sandbox mode
         secret:
           $ref: '#/components/schemas/IntegrationConnectionSecret'
           description: Integration secret
@@ -469,6 +523,54 @@ components:
         trending_score:
           type: integer
           description: Provider model trending score
+    IntegrationRepository:
+      type: object
+      description: Integration repository
+      properties:
+        id:
+          type: string
+          description: Repository ID
+        name:
+          type: string
+          description: Repository name
+        organization:
+          type: string
+          description: Repository owner
+        url:
+          type: string
+          description: Repository URL
+    LastNRequestsMetric:
+      type: object
+      description: Last N requests
+      properties:
+        date:
+          type: string
+          description: Timestamp
+        environment:
+          type: string
+          description: Environment
+        workloadType:
+          type: string
+          description: Workload type
+        workspace:
+          type: string
+          description: Workspace
+    LatencyMetric:
+      type: object
+      description: Latency metrics
+      properties:
+        globalHistogram:
+          $ref: '#/components/schemas/HistogramBucket'
+          description: Global histogram
+        globalStats:
+          $ref: '#/components/schemas/HistogramStats'
+          description: Global stats
+        histogramPerCode:
+          $ref: '#/components/schemas/HistogramBucket'
+          description: Histogram per code
+        statsPerCode:
+          $ref: '#/components/schemas/HistogramStats'
+          description: Stats per code
     LocationResponse:
       type: object
       description: Location availability for policies
@@ -517,38 +619,57 @@ components:
       type: object
       description: Metric
       properties:
+        rate:
+          type: integer
+          description: Metric value
+        requestTotal:
+          type: integer
+          description: Metric value
         timestamp:
           type: string
           description: Metric timestamp
-        value:
-          type: string
-          description: Metric value
     Metrics:
       type: object
       description: Metrics for resources
-      allOf:
-      - $ref: '#/components/schemas/IncreaseAndRateMetric'
-      - properties:
-          agents:
-            $ref: '#/components/schemas/IncreaseAndRateMetric'
-            description: Metrics for agents
-          functions:
-            $ref: '#/components/schemas/IncreaseAndRateMetric'
-            description: Metrics for functions
-          models:
-            $ref: '#/components/schemas/IncreaseAndRateMetric'
-            description: Metrics for models
+      properties:
+        agents:
+          description: Metrics for agents
+        functions:
+          description: Metrics for functions
+        inferenceGlobal:
+          type: array
+          description: Historical requests for all resources globally
+          items: {}
+        models:
+          type: object
+          description: Metrics for models
+        requestTotal:
+          type: number
+          description: Number of requests for all resources globally
+        requestTotalPerCode:
+          type: object
+          description: Number of requests for all resources globally per code
+        rps:
+          type: number
+          description: Number of requests per second for all resources globally
+        rpsPerCode:
+          type: object
+          description: Number of requests per second for all resources globally per
+            code
     Model:
       type: object
       description: Logical object representing a model, that can be instantiated in
         multiple environments as model deployments
       properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/EnvironmentMetadata'
         spec:
           $ref: '#/components/schemas/ModelSpec'
         status:
-          $ref: '#/components/schemas/CoreStatus'
+          type: string
+          description: Model status
     ModelMetadata:
       allOf:
       - $ref: '#/components/schemas/Metadata'
@@ -571,36 +692,6 @@ components:
         name:
           type: string
           description: The name of the private cluster
-    ModelProvider:
-      type: object
-      description: Model provider
-      allOf:
-      - $ref: '#/components/schemas/TimeFields'
-      - $ref: '#/components/schemas/OwnerFields'
-      - properties:
-          comment:
-            type: string
-            description: Model provider description
-          config:
-            $ref: '#/components/schemas/ProviderConfig'
-            description: Additional configuration for the model provider
-          displayName:
-            type: string
-            description: Model provider display name
-          labels:
-            $ref: '#/components/schemas/MetadataLabels'
-          name:
-            type: string
-            description: Model provider name
-          type:
-            type: string
-            description: Model provider type
-          workspace:
-            type: string
-            description: Workspace name
-    ModelProviderName:
-      type: string
-      description: Model provider name
     ModelRelease:
       type: object
       description: Model release, used to deploy a model from one environment to another
@@ -616,10 +707,7 @@ components:
       description: Model specification
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
-      - properties:
-          modelProvider:
-            $ref: '#/components/schemas/ModelProviderName'
-            description: The reference for the origin of the model
+      - {}
     OwnerFields:
       type: object
       description: Owner fields for Persistance
@@ -825,26 +913,89 @@ components:
           type: string
           description: Location name
     ProviderConfig:
-      type: object
       description: Model provider config
       properties:
         filename:
-          type: string
           description: The file name to use for the model
+          type: string
         presigned_url:
-          type: array
           description: The presigned URLs to upload the model to
           items: {}
+          type: array
         runtime:
           $ref: '#/components/schemas/Runtime'
-    QPS:
       type: object
+    QPS:
       description: Query per second per element, can be per response status code (e.g.
         200, 400) or per location
       properties:
         region_code:
-          type: number
           description: QPS for location
+          type: number
+      type: object
+    Quotas:
+      description: Workspace quotas
+    Repository:
+      type: object
+      description: Repository
+      properties:
+        type:
+          type: string
+          description: Repository type
+        url:
+          type: string
+          description: Repository URL
+    RequestDurationOverTimeMetric:
+      type: object
+      description: Request duration over time metric
+      properties:
+        average:
+          type: number
+          description: Average request duration
+        p50:
+          type: number
+          description: P50 request duration
+        p90:
+          type: number
+          description: P90 request duration
+        p99:
+          type: number
+          description: P99 request duration
+        timestamp:
+          type: string
+          description: Timestamp
+    RequestDurationOverTimeMetrics:
+      type: object
+      description: Request duration over time metrics
+      properties:
+        requestDurationOverTime:
+          $ref: '#/components/schemas/RequestDurationOverTimeMetric'
+    RequestTotalByOriginMetric:
+      type: object
+      description: Request total by origin metric
+      properties:
+        requestTotalByOrigin:
+          type: object
+          description: Request total by origin
+        requestTotalByOriginAndCode:
+          type: object
+          description: Request total by origin and code
+    RequestTotalMetric:
+      type: object
+      description: Metrics for request total
+      properties:
+        requestTotal:
+          type: number
+          description: Number of requests for all resources globally
+        requestTotalPerCode:
+          type: object
+          description: Number of requests for all resources globally per code
+        rps:
+          type: number
+          description: Number of requests per second for all resources globally
+        rpsPerCode:
+          type: object
+          description: Number of requests for all resources globally
     ResourceDeploymentMetrics:
       description: Metrics for a single resource deployment (eg. model deployment,
         function deployment)
@@ -887,28 +1038,43 @@ components:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests (in last 24 hours) for the model deployment
             globally
-        inferencePerRegion:
-          type: object
-          description: Historical requests (in last 24 hours) per location, for the
-            model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/ArrayMetric'
-        query_global:
+        lastNRequests:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        latency:
+          $ref: '#/components/schemas/LatencyMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        requestDurationOverTime:
+          $ref: '#/components/schemas/RequestDurationOverTimeMetrics'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        requestTotal:
           type: number
-          description: Number of requests done on the resource for the model deployment
-        queryPerCodeGlobal:
-          $ref: '#/components/schemas/QPS'
-          description: Number of requests done on the resource for the model deployment
-        queryPerRegion:
-          $ref: '#/components/schemas/QPS'
-          description: Number of requests done on the resource for the model deployment
-        queryPerRegionPerCode:
+          description: Number of requests for the resource globally
+        requestTotalByOrigin:
+          $ref: '#/components/schemas/RequestTotalByOriginMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        requestTotalPerCode:
           type: object
-          description: Number of requests done on the resource for the model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/QPS'
+          description: Number of requests for the resource globally per code
+        rps:
+          type: number
+          description: Number of requests per second for the resource globally
+        rpsPerCode:
+          type: object
+          description: Number of requests per second for the resource globally per
+            code
+        tokenRate:
+          $ref: '#/components/schemas/TokenRateMetrics'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
+        tokenTotal:
+          $ref: '#/components/schemas/TokenTotalMetric'
+          description: Historical requests (in last 24 hours) for the model deployment
+            globally
     ResourceLog:
       type: object
       description: Log for a resource deployment (eg. model deployment, function deployment)
@@ -920,7 +1086,6 @@ components:
           type: string
           description: The timestamp of the log
     ResourceMetrics:
-      type: object
       description: Metrics for a single resource (eg. model, function)
       properties:
         inferenceGlobal:
@@ -929,6 +1094,7 @@ components:
         queryPerRegion:
           $ref: '#/components/schemas/QPS'
           description: Number of requests done on the resource
+      type: object
     Runtime:
       type: object
       description: Set of configurations for a deployment
@@ -1172,6 +1338,57 @@ components:
         updatedAt:
           type: string
           description: The date and time when the resource was updated
+    TokenRateMetric:
+      type: object
+      description: Token rate metric
+      properties:
+        model:
+          type: string
+          description: Model ID
+        timestamp:
+          type: string
+          description: Timestamp
+        tokenTotal:
+          type: number
+          description: Total tokens
+        trend:
+          type: number
+          description: Trend
+    TokenRateMetrics:
+      type: object
+      description: Token rate metrics
+      properties:
+        tokenRate:
+          $ref: '#/components/schemas/TokenRateMetric'
+          description: Token rate
+        tokenRateInput:
+          $ref: '#/components/schemas/TokenRateMetric'
+          description: Token rate input
+        tokenRateOutput:
+          $ref: '#/components/schemas/TokenRateMetric'
+          description: Token rate output
+    TokenTotalMetric:
+      type: object
+      description: Token total metric
+      properties:
+        averageTokenInputPerRequest:
+          type: number
+          description: Average input token per request
+        averageTokenOutputPerRequest:
+          type: number
+          description: Average output token per request
+        averageTokenPerRequest:
+          type: number
+          description: Average token per request
+        tokenInput:
+          type: number
+          description: Total input tokens
+        tokenOutput:
+          type: number
+          description: Total output tokens
+        tokenTotal:
+          type: number
+          description: Total tokens
     TraceIdsResponse:
       description: Response containing trace IDs
       properties:
@@ -1209,9 +1426,14 @@ components:
           name:
             type: string
             description: Workspace name
+          quotas,omitempty:
+            $ref: '#/components/schemas/Quotas'
+            description: Workspace quotas
           region:
             type: string
             description: Workspace write region
+    WorkspaceQuotas:
+      description: Workspace quotas
     WorkspaceUser:
       type: object
       description: Workspace user
@@ -2212,123 +2434,6 @@ paths:
       summary: Get metrics for a workspace
       tags:
       - metrics
-  /model_providers:
-    get:
-      description: Returns a list of all integrations in the workspace.
-      operationId: ListModelProviders
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/ModelProvider'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_providers:list
-      summary: List model providers
-      tags:
-      - model_providers
-    post:
-      description: Create an integration.
-      operationId: CreateModelProvider
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModelProvider'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelProvider'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_providers:create
-      summary: Create model provider
-      tags:
-      - model_providers
-  /model_providers/{modelProviderName}:
-    delete:
-      description: Deletes an integration by ID.
-      operationId: DeleteModelProvider
-      parameters:
-      - description: Name of the model provider
-        in: path
-        name: modelProviderName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelProvider'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_providers:delete
-      summary: Delete model provider
-      tags:
-      - model_providers
-    get:
-      description: Returns an integration by ID.
-      operationId: GetModelProvider
-      parameters:
-      - description: Name of the model provider
-        in: path
-        name: modelProviderName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelProvider'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_providers:get
-      summary: Get model provider
-      tags:
-      - model_providers
-    put:
-      description: Update an integration by ID.
-      operationId: UpdateModelProvider
-      parameters:
-      - description: Name of the model provider
-        in: path
-        name: modelProviderName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModelProvider'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelProvider'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_providers:update
-      summary: Update model provider
-      tags:
-      - model_providers
   /models:
     get:
       description: Returns a list of all models in the workspace.
@@ -3566,6 +3671,30 @@ paths:
       - BearerAuth:
         - workspaces:leave
       summary: Leave workspace
+      tags:
+      - workspaces
+  /workspaces/{workspaceName}/quotas:
+    put:
+      description: Send a request to update quotas for a workspace.
+      operationId: WorkspaceQuotasRequest
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceQuotas'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - workspaces:update
+      summary: Request workspace quotas
       tags:
       - workspaces
 security:

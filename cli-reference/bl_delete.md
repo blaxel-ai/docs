@@ -33,6 +33,7 @@ bl delete [flags]
 ```
   -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
+  -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
   -w, --workspace string   Specify the workspace name
 ```
@@ -45,6 +46,5 @@ bl delete [flags]
 * [bl delete function](bl_delete_function.md)	 - Delete a Function
 * [bl delete integrationconnection](bl_delete_integrationconnection.md)	 - Delete a IntegrationConnection
 * [bl delete model](bl_delete_model.md)	 - Delete a Model
-* [bl delete modelprovider](bl_delete_modelprovider.md)	 - Delete a ModelProvider
 * [bl delete policy](bl_delete_policy.md)	 - Delete a Policy
 

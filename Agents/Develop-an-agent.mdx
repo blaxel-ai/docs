@@ -23,8 +23,8 @@ Here is a high-level presentation of how agents can be built and deployed using 
 1. **Initialize a new project by creating a local git repository**. This will contain your agent's logic, custom functions, and API connections, as well as all required Python dependencies. For quick setup, use [Beamlit CLI](../cli-reference) command `bl create-agent-app`, which creates a pre-scaffolded local repository ready for developing and deploying your agent on Beamlit.
 2. **Develop and test your agent iteratively in a local environment**. 
     1. Develop your agent logic using an agentic framework (like LangChain) or any custom Python code. Write your own functions. Use Beamlit SDK decorators on your core agent and functions to specify the resources to run on Beamlit.
-    2. Use the Beamlit CLI command `bl serve` to serve your agent on your local machine and get an endpoint for inference requests. The execution workflow—including agent logic, functions, and model API calls—is broken down and sandboxed exactly as it would be when deployed on Beamlit.
-3. **Deploy your agent in the *development* environment**. This is the staging phase, when you test your agent in a dedicated environment. Use the Beamlit CLI command `bl serve --remote --hotreload` to build and deploy your agent on Beamlit’s [development environment](../Model-Governance/Environments), and automatically push any local update (hot reload).
+    2. Use the Beamlit CLI command `bl serve` to serve your agent on your local machine and get an endpoint for inference requests. The execution workflow—including agent logic, functions, and model API calls—is broken down and sandboxed exactly as it would be when served on Beamlit.
+3. **Deploy your agent in the *development* environment**. Use the Beamlit CLI command `bl deploy --env development` to build and deploy your agent on Beamlit’s [development environment](../Model-Governance/Environments).
 4. **Promote your agent to the *production* environment**. Use the Beamlit CLI command `bl deploy --env production` to build and deploy your agent on Beamlit’s [production environment](../Model-Governance/Environments).
 
 ## Beamlit agent file structure
@@ -63,7 +63,7 @@ The `@agent` decorator identifies the main function that handles your core agent
 
 ```python
 @agent()
-async def main(request, agent, model, functions, **_):
+async def main(request, agent):
 	# Your main agent logic
 	...
 ```
@@ -74,9 +74,32 @@ Inside the decorator, you can pass several parameters:
     - `metadata.name`: the name of the agent on Beamlit
     - `spec.description`: the description of the agent on Beamlit
     - `spec.model`: the name of a model API deployed in your Beamlit workspace, to use as core chat model for the agent
-- **`override_model`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/). When the deployed agent receives a request, Beamlit will pass this as the `model` argument to the agent's `main()` function.
 - **`override_agent`**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent instance. When the deployed agent receives a request, Beamlit will pass this as the `agent` argument to the agent's `main()` function.
+- **`override_model`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/). When the deployed agent receives a request, Beamlit will pass this as the `model` argument to the agent's `main()` function.
 - **`remote_functions`**: You can pass on additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit
+
+### Example
+
+Here's an example that demonstrates overriding the default *agent* object.
+
+```python
+from fastapi import Request
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+from beamlit.agents import agent
+from customfunctions.helloworld import helloworld
+
+chat = ChatOpenAI()
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
+
+@agent(override_agent=custom_agent)
+async def main(request: Request, agent):
+	# Your main agent logic
+	...
+```
 
 When developing custom agents, you may also need to retrieve instantiated model APIs and functions in your code. The following section shows you how to.
 
@@ -88,8 +111,11 @@ You can use [functions](../Functions/Overview) defined both in your code and dep
 
 ```python
 from beamlit.functions import get_functions
+from langgraph.prebuilt import create_react_agent
 
 functions = get_functions(warning=False)
+
+custom_agent = create_react_agent(chat, tools=functions)
 ```
 
 By default, this returns the list of functions **defined in the local folder** `src/functions/`. You can pass several parameters:
@@ -101,9 +127,11 @@ By default, this returns the list of functions **defined in the local folder** `
 You can use model APIs deployed on Beamlit by calling `get_chat_model()`. This function returns a model API **in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
 
 ```python
-from beamlit.agents import get_chat_model
+from beamlit.agents.chat import get_chat_model
 
 model, _, _ = get_chat_model("model-name-on-beamlit")
+
+custom_agent = create_react_agent(model, tools=[])
 ```
 
 <Note>See an example of [how to use the Beamlit SDK to develop and deploy a custom LangChain agent](../Examples/Deploy-a-LangChain-agent) in 5 minutes.</Note>
@@ -128,19 +156,15 @@ bl serve
 
 Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Beamlit. Add the flag `--hotreload`  to get live changes.
 
-Run the following command to serve the [functions](../Functions/Overview) of the agents on Beamlit (while the main agent code stays local):
-
 ```bash
-bl serve --remote
+bl serve --hotreload
 ```
 
 ### Deploy on development
 
-<Warning>You need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) and running on your machine to build the app.</Warning>
-
 You can deploy the agent in order to make the `agent.py` main function **callable on a global endpoint**. Deploying on [Beamlit’s *development* environment](../Model-Governance/Environments) gives a separated endpoint to carry out tests.
 
-Run the following command to deploy a local agent to the development environment on Beamlit:
+Run the following command to build and deploy a local agent to the *development* environment on Beamlit:
 
 ```bash
 bl deploy --env development
@@ -148,11 +172,9 @@ bl deploy --env development
 
 ### Deploy on production
 
-<Warning>You need to [have *Docker* installed](https://docs.docker.com/get-started/get-docker/) on your machine to build the app.</Warning>
-
 You can deploy the agent in order to make the `agent.py` main function **callable on a global endpoint**. When deploying to [Beamlit's *production* environment](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd), you get a dedicated production endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
-Run the following command to deploy a local agent to the development environment on Beamlit:
+Run the following command to build and deploy a local agent to the *production* environment on Beamlit:
 
 ```bash
 bl deploy --env production
