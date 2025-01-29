@@ -211,7 +211,7 @@ from beamlit.agents.chat import get_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
-chat, _, _ = get_chat_model("your-model-name-on-beamlit")
+chat = get_chat_model("your-model-name-on-beamlit")
 functions = get_functions(warning=False)
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
