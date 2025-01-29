@@ -129,7 +129,7 @@ You can use model APIs deployed on Beamlit by calling `get_chat_model()`. This f
 ```python
 from beamlit.agents.chat import get_chat_model
 
-model, _, _ = get_chat_model("model-name-on-beamlit")
+model = get_chat_model("model-name-on-beamlit")
 
 custom_agent = create_react_agent(model, tools=[])
 ```

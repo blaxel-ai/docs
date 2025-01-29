@@ -455,9 +455,18 @@ components:
           $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/IntegrationConnectionSpec'
+    IntegrationConnectionCloudflareConfig:
+      type: object
+      properties:
+        accountId,omitempty:
+          type: string
+          description: The account ID to use for the integration
     IntegrationConnectionConfig:
       type: object
       description: Integration config
+      allOf:
+      - $ref: '#/components/schemas/IntegrationConnectionCloudflareConfig'
+      - {}
     IntegrationConnectionSecret:
       type: object
       description: Integration secret
@@ -834,6 +843,28 @@ components:
       description: PolicyLocations is a local type that wraps a slice of Location
       items:
         $ref: '#/components/schemas/PolicyLocation'
+    PolicyMaxTokens:
+      type: object
+      description: PolicyMaxTokens is a local type that wraps a slice of PolicyMaxTokens
+      properties:
+        granularity:
+          type: string
+          description: Granularity
+        input:
+          type: integer
+          description: Input
+        output:
+          type: integer
+          description: Output
+        ratioInputOverOutput:
+          type: integer
+          description: RatioInputOverOutput
+        step:
+          type: integer
+          description: Step
+        total:
+          type: integer
+          description: Total
     PolicyResourceType:
       type: string
       description: PolicyResourceType is a type of resource, e.g. model, function,
@@ -855,10 +886,17 @@ components:
           $ref: '#/components/schemas/PolicyLocations'
           description: Locations allowed by the policy. If not set, all locations
             are allowed.
+        maxTokens:
+          $ref: '#/components/schemas/PolicyMaxTokens'
+          description: Max token allowed by the policy. If not set, no max token is
+            allowed.
         resourceTypes:
           $ref: '#/components/schemas/PolicyResourceTypes'
           description: ResourceTypes where the policy is applied. If not set, the
             policy is applied to all resource types.
+        sandbox:
+          type: boolean
+          description: Sandbox mode
         type:
           type: string
           description: Policy type, can be location or flavor
@@ -1082,6 +1120,9 @@ components:
         message:
           type: string
           description: Content of the log
+        severity:
+          type: integer
+          description: Severity of the log
         timestamp:
           type: string
           description: The timestamp of the log
@@ -3701,7 +3742,7 @@ security:
 - BearerAuth:
   - admin
 servers:
-- description: Beamlit dev control Plane
-  url: https://api.beamlit.dev/v0
-- description: Beamlit dev inference
-  url: https://run.beamlit.dev
+- description: Beamlit Control Plane
+  url: https://api.beamlit.com/v0
+- description: Beamlit Inference
+  url: https://run.beamlit.com
