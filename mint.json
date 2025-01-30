@@ -210,7 +210,7 @@
   "analytics": {
     "posthog": {
       "apiKey": "phc_HGJ7t7Qa8cJJilL0CONU5se4vM6jU6nKFCuoCC9LSha",
-      "apiHost": "https://events.beamlit.dev",
+      "apiHost": "https://events.beamlit.com",
       "personProfiles": "identified_only"
     }
   }
