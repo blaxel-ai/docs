@@ -1,0 +1,59 @@
+---
+
+title: 'Deploy agents'
+
+description: 'Ship your custom AI agents on Beamlit in a few clicks.'
+
+---
+
+To run your agent on Beamlit, you must package it by **using the Beamlit SDK** so Beamlit can identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Beamlit to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
+
+<Info>Read [this guide first](Develop-an-agent) on how to use the Beamlit SDK to develop a custom agent to deploy.</Info>
+
+## Deploy an agent
+
+An agent can be uploaded into Beamlit from a variety of origins.
+
+- **Using the Beamlit CLI** to deploy a custom agent: this method is detailed on this page below.
+- **From our pre-built template**: you can use the Beamlit web console to assemble an agent using models and functions already deployed on Beamlit. It will use a default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
+- *From a Github repository (coming soon!)*
+
+### Serve locally
+
+You can serve the agent locally in order to make the `agent.py` / `agent.ts` main function available on a local endpoint. 
+
+Run the following command to serve the agent:
+
+```bash
+bl serve
+```
+
+Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Beamlit. Add the flag `--hotreload`  to get live changes.
+
+```bash
+bl serve --hotreload
+```
+
+### Deploy on development
+
+You can deploy the agent in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. Deploying on [Beamlit’s *development* environment](../Model-Governance/Environments) gives a separated endpoint to carry out tests.
+
+Run the following command to build and deploy a local agent to the *development* environment on Beamlit:
+
+```bash
+bl deploy --env development
+```
+
+### Deploy on production
+
+You can deploy the agent in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. When deploying to [Beamlit's *production* environment](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd), you get a dedicated production endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+
+Run the following command to build and deploy a local agent to the *production* environment on Beamlit:
+
+```bash
+bl deploy --env production
+```
+
+<Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
+Learn how to run consumers’ inference requests on your agent. 
+</Card>
