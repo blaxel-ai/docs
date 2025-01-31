@@ -10,13 +10,13 @@ description: 'Deploy your first AI agent worldwide in just 3 minutes.'
 <img src="/img/general/functions-dark.png" />
 </Frame>
 
-[Beamlit](https://app.beamlit.com/) is a serverless platform that enables AI teams to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Beamlit.
+[Beamlit](https://app.beamlit.com/) is a serverless platform that enables developers to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Beamlit.
 
 ## Quickstart
 
 Welcome there! 👋 Make sure you have created an account on Beamlit (here → [https://app.beamlit.com/](https://app.beamlit.com/)), and created a first [workspace](Security/Workspace-access-control). 
 
-<Tip>Upon creating a workspace, Beamlit automatically adds a sandbox connection to a model API to get you started. Model APIs provide developers with a centralized interface that simplifies credential management and LLM provider access.</Tip>
+<Tip>Upon creating a workspace, Beamlit automatically adds a sandbox connection to a model API to get you started. [Model APIs](Models/Overview) provide developers with a centralized interface that simplifies credential management and LLM provider access.</Tip>
 
 <Steps>
 
@@ -118,13 +118,13 @@ bl login your-workspace-slug
 
 <Step title="Create your first AI agent">
 
-Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit. You will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) for this.
+Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit. In Python, you will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.
 
 ```bash
 bl create-agent-app my-agent
 ```
 
-You can now [use the Beamlit SDK to develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` and define your functions in `/my-agent/src/functions` — functions in this folder are automatically bound to the main agent. 
+You can now [use the Beamlit SDK to develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` (or `/my-agent/src/agent.ts`) and define your functions in `/my-agent/src/functions` — functions in this folder are automatically bound to the main agent. 
 
 </Step>
 

@@ -136,7 +136,14 @@
       "group": "Agents",
       "pages": [
         "Agents/Overview",
-        "Agents/Develop-an-agent",
+        {
+          "group": "Develop an agent",
+          "pages": [
+            "Agents/Develop-an-agent",
+            "Agents/Develop-an-agent-ts",
+            "Agents/Develop-an-agent-py"
+          ]
+        },
         "Agents/Query-agents"
       ]
     },
@@ -159,12 +166,13 @@
     {
       "group": "Integrations",
       "pages": [
-        "Integrations/HuggingFace",
+        "Integrations",
         "Integrations/OpenAI",
         "Integrations/Anthropic",
         "Integrations/MistralAI",
         "Integrations/Cohere",
-        "Integrations/xAI"
+        "Integrations/xAI",
+        "Integrations/HuggingFace"
       ]
     },
     {

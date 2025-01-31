@@ -2,19 +2,21 @@
 
 title: 'Integrations'
 
+sidebarTitle: "Overview"
+
 description: 'Create agents that connect to private systems, LLMs, SaaS, databases, and APIs.'
 
 ---
 
-**Beamlit Integrations** enable you to equip your agents with tools that access various external APIs, private networks and AI services. This unified interface allows you to **manage access control, credentials, and observability** across different providers and systems from a single platform.
+**Beamlit Integrations** enable you to equip your [agents](Agents/Overview) with tools that access various external APIs, private networks and AI services. This unified interface allows you to **manage access control, credentials, and observability** across different providers and systems from a single platform.
 
-Beamlit supports integration with leading LLM providers like OpenAI and Anthropic, as well as custom model deployment through HuggingFace, giving you powerful AI capabilities with minimal setup.
-
-All integrations must be configured by a workspace admin in the Integrations section of the workspace settings before they can be used by team members.
+Beamlit supports integration with leading LLM providers like OpenAI and Anthropic, APIs and SaaS for agents’ tools like Slack or GitHub, as well as custom model deployment through HuggingFace. All integrations must be configured by a [workspace admin](Security/Workspace-access-control) in the Integrations section of the workspace settings before they can be used by team members.
 
 ## All integrations
 
 ### LLM APIs
+
+These integrations allow to connect your agents to LLMs from top providers, while controlling access and cost.
 
 [OpenAI](Integrations/OpenAI)
 
@@ -26,6 +28,22 @@ All integrations must be configured by a workspace admin in the Integrations sec
 
 [xAI](Integrations/xAI)
 
+### Tools and APIs
+
+These integrations allow to equip your agents with tools to access APIs, SaaS and databases.
+
+- **Brave Search**
+- **Google Maps**
+- **GitHub**
+- **Slack**
+- **AWS SES**
+- **Cloudflare**
+- **PostgreSQL**
+- **AWS S3**
+- **Dall-E**
+
 ### Custom models (Enterprise plan only)
+
+These integrations allow to automatically deploy custom models from top providers on Beamlit.
 
 [HuggingFace](Integrations/HuggingFace)
