@@ -172,7 +172,8 @@
         "Integrations/MistralAI",
         "Integrations/Cohere",
         "Integrations/xAI",
-        "Integrations/HuggingFace"
+        "Integrations/HuggingFace",
+        "Integrations/Azure-AI-Foundry"
       ]
     },
     {
