@@ -27,6 +27,50 @@ components:
           workspace:
             type: string
             description: Workspace name
+    Account:
+      type: object
+      description: Account
+      allOf:
+      - $ref: '#/components/schemas/Metadata'
+      - $ref: '#/components/schemas/AccountSpec'
+      - properties:
+          metadata: {}
+          spec: {}
+    AccountMetadata:
+      type: object
+      description: AccountMetadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          id:
+            type: string
+            description: Account id
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+    AccountSpec:
+      type: object
+      description: AccountSpec
+      properties:
+        address:
+          type: object
+          description: Billing address
+        admins:
+          type: array
+          description: Admins
+          items: {}
+        currency:
+          type: string
+          description: Currency
+        owner:
+          type: string
+          description: Owner
+        status:
+          type: string
+          description: Status
+        tax_id:
+          type: string
+          description: Tax ID
     Agent:
       type: object
       description: Agent
@@ -125,15 +169,6 @@ components:
         type:
           type: string
           description: Type, one of function or agent
-    AgentMetadata:
-      allOf:
-      - $ref: '#/components/schemas/Metadata'
-      - properties:
-          environment:
-            description: Environment name
-            type: string
-      description: Agent metadata
-      type: object
     AgentRelease:
       type: object
       description: Agent release, used to deploy a agent from one environment to another
@@ -195,6 +230,37 @@ components:
       description: Array of metrics
       items:
         $ref: '#/components/schemas/Metric'
+    BillingAddress:
+      type: object
+      description: BillingAddress
+      properties:
+        city:
+          type: string
+          description: City
+        country:
+          type: string
+          description: Country
+        firstName:
+          type: string
+          description: First name
+        lastName:
+          type: string
+          description: Last name
+        phoneNumber:
+          type: string
+          description: Phone number
+        postalCode:
+          type: string
+          description: Postal code
+        state:
+          type: string
+          description: State/Province/Region
+        street1:
+          type: string
+          description: Street 1
+        street2:
+          type: string
+          description: Street 2
     Configuration:
       type: object
       description: Configuration
@@ -360,15 +426,6 @@ components:
           description: Kit parameters, for your kit to be callable with an Agent
           items:
             $ref: '#/components/schemas/StoreFunctionParameter'
-    FunctionMetadata:
-      type: object
-      description: Function metadata
-      allOf:
-      - $ref: '#/components/schemas/Metadata'
-      - properties:
-          environment:
-            type: string
-            description: Environment name
     FunctionRelease:
       type: object
       description: Function release, used to deploy a function from one environment
@@ -438,15 +495,6 @@ components:
         p99:
           type: number
           description: P99 request duration
-    IncreaseAndRateMetric:
-      description: Metrics for resources
-      properties:
-        inferenceGlobal:
-          description: Historical requests for all resources globally
-      type: object
-    IntegrationConfig:
-      description: Integration config
-      type: object
     IntegrationConnection:
       type: object
       description: Integration Connection
@@ -455,25 +503,6 @@ components:
           $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/IntegrationConnectionSpec'
-    IntegrationConnectionCloudflareConfig:
-      properties:
-        accountId,omitempty:
-          description: The account ID to use for the integration
-          type: string
-      type: object
-    IntegrationConnectionConfig:
-      allOf:
-      - $ref: '#/components/schemas/IntegrationConnectionCloudflareConfig'
-      - {}
-      description: Integration config
-      type: object
-    IntegrationConnectionSecret:
-      description: Integration secret
-      properties:
-        apiKey:
-          description: The API key to use for the integration
-          type: string
-      type: object
     IntegrationConnectionSpec:
       type: object
       description: Integration connection specification
@@ -500,12 +529,18 @@ components:
       description: Model obtained from an external authentication provider, such as
         HuggingFace, OpenAI, etc...
       properties:
+        author:
+          type: string
+          description: Provider model author
         created_at:
           type: string
           description: Provider model created at
         downloads:
           type: integer
           description: Provider model downloads
+        endpoint:
+          type: string
+          description: Model endpoint URL
         id:
           type: string
           description: Provider model ID
@@ -515,15 +550,15 @@ components:
         likes:
           type: integer
           description: Provider model likes
+        model_private:
+          type: string
+          description: Is the model private
         name:
           type: string
           description: Provider model name
         pipeline_tag:
           type: string
           description: Provider model pipeline tag
-        private:
-          type: boolean
-          description: Provider model private
         tags:
           type: array
           description: Provider model tags
@@ -679,15 +714,6 @@ components:
         status:
           type: string
           description: Model status
-    ModelMetadata:
-      allOf:
-      - $ref: '#/components/schemas/Metadata'
-      - properties:
-          environment:
-            description: Environment name
-            type: string
-      description: Model metadata
-      type: object
     ModelPrivateCluster:
       type: object
       description: Private cluster where the model deployment is deployed
@@ -812,8 +838,8 @@ components:
           type: number
           description: Number of users in the workspace
     PodTemplateSpec:
-      description: Pod template specification
       type: object
+      description: Pod template specification
     PoliciesList:
       type: array
       items:
@@ -950,27 +976,6 @@ components:
         name:
           type: string
           description: Location name
-    ProviderConfig:
-      description: Model provider config
-      properties:
-        filename:
-          description: The file name to use for the model
-          type: string
-        presigned_url:
-          description: The presigned URLs to upload the model to
-          items: {}
-          type: array
-        runtime:
-          $ref: '#/components/schemas/Runtime'
-      type: object
-    QPS:
-      description: Query per second per element, can be per response status code (e.g.
-        200, 400) or per location
-      properties:
-        region_code:
-          description: QPS for location
-          type: number
-      type: object
     Quotas:
       description: Workspace quotas
     Repository:
@@ -1034,39 +1039,6 @@ components:
         rpsPerCode:
           type: object
           description: Number of requests for all resources globally
-    ResourceDeploymentMetrics:
-      description: Metrics for a single resource deployment (eg. model deployment,
-        function deployment)
-      properties:
-        inference_per_second_global:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests per second (RPS), for the model deployment
-            globally
-        inference_per_second_per_region:
-          description: Historical requests per second (RPS) per location, for the
-            model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/ArrayMetric'
-          type: object
-        query_per_second_global:
-          description: RPS value (in last 24 hours) for the model deployment globally
-          type: number
-        query_per_second_per_code_global:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per response status code, for
-            the model deployment globally
-        query_per_second_per_region:
-          $ref: '#/components/schemas/QPS'
-          description: RPS value (in last 24 hours) per location, for the model deployment
-        query_per_second_per_region_per_code:
-          description: RPS value (in last 24 hours) per response status code per location,
-            for the model deployment
-          properties:
-            region:
-              $ref: '#/components/schemas/QPS'
-          type: object
-      type: object
     ResourceEnvironmentMetrics:
       type: object
       description: Metrics for a single resource deployment (eg. model deployment,
@@ -1126,16 +1098,6 @@ components:
         timestamp:
           type: string
           description: The timestamp of the log
-    ResourceMetrics:
-      description: Metrics for a single resource (eg. model, function)
-      properties:
-        inferenceGlobal:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests (in last 24 hours) for the model globally
-        queryPerRegion:
-          $ref: '#/components/schemas/QPS'
-          description: Number of requests done on the resource
-      type: object
     Runtime:
       type: object
       description: Set of configurations for a deployment
@@ -1148,6 +1110,10 @@ components:
           type: array
           description: The command to run the deployment
           items: {}
+        endpointName:
+          type: string
+          description: Endpoint Name of the model. In case of hf_private_endpoint,
+            it is the endpoint name. In case of hf_public_endpoint, it is not used.
         envs:
           type: array
           description: The environment variables to set in the deployment. Should
@@ -1161,8 +1127,10 @@ components:
           description: The port to serve the metrics on
         model:
           type: string
-          description: The slug name of the origin model. Only used if the deployment
-            is a Deployment
+          description: The slug name of the origin model at HuggingFace.
+        organization:
+          type: string
+          description: The organization of the model
         readinessProbe:
           type: object
           description: The readiness probe. Should be a Kubernetes Probe type
@@ -1175,7 +1143,8 @@ components:
           description: The port to serve the model on
         type:
           type: string
-          description: The type of origin for the deployment
+          description: The type of origin for the deployment (hf_private_endpoint,
+            hf_public_endpoint)
     ServerlessConfig:
       type: object
       description: Configuration for a serverless deployment
@@ -1431,14 +1400,8 @@ components:
           type: number
           description: Total tokens
     TraceIdsResponse:
-      description: Response containing trace IDs
-      properties:
-        trace_ids:
-          description: List of trace IDs
-          items:
-            type: string
-          type: array
       type: object
+      description: Trace IDs response
     WebsocketChannel:
       type: object
       description: WebSocket connection details
@@ -1458,6 +1421,9 @@ components:
       - $ref: '#/components/schemas/TimeFields'
       - $ref: '#/components/schemas/OwnerFields'
       - properties:
+          accountId:
+            type: string
+            description: Workspace account id
           displayName:
             type: string
             description: Workspace display name
@@ -1473,8 +1439,6 @@ components:
           region:
             type: string
             description: Workspace write region
-    WorkspaceQuotas:
-      description: Workspace quotas
     WorkspaceUser:
       type: object
       description: Workspace user
@@ -1510,6 +1474,123 @@ info:
   version: 0.0.1
 openapi: 3.0.3
 paths:
+  /accounts:
+    get:
+      description: Returns a list of all accounts.
+      operationId: ListAccounts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Account'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - accounts:list
+      summary: List accounts
+      tags:
+      - accounts
+    post:
+      description: Creates an account.
+      operationId: CreateAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - accounts:create
+      summary: Create account
+  /accounts/{accountId}:
+    delete:
+      description: Deletes an account by name.
+      operationId: DeleteAccount
+      parameters:
+      - description: Name of the account
+        in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: Account successfully deleted
+        "404":
+          description: Account not found
+      security:
+      - BearerAuth:
+        - accounts:delete
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      description: Returns an account by name.
+      operationId: GetAccount
+      parameters:
+      - description: Name of the account
+        in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - accounts:get
+      summary: Get account by name
+      tags:
+      - accounts
+    put:
+      description: Updates an account by name.
+      operationId: UpdateAccount
+      parameters:
+      - description: Name of the account
+        in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - accounts:update
+      summary: Update account
+      tags:
+      - accounts
   /agents:
     get:
       operationId: ListAgents
@@ -1758,7 +1839,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceMetrics'
+                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
           description: successful operation
       security:
       - BearerAuth:
@@ -2128,7 +2209,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceMetrics'
+                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
           description: successful operation
       security:
       - BearerAuth:
@@ -2393,6 +2474,26 @@ paths:
       summary: Update integration connection
       tags:
       - integrations
+  /integrations/connections/{connectionName}/endpointConfigurations:
+    get:
+      description: Returns a list of all endpoint configurations for a model.
+      operationId: GetIntegrationConnectionModelEndpointConfigurations
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: Get integration connection model endpoint configurations
+      tags:
+      - integrations
   /integrations/connections/{connectionName}/models:
     get:
       description: Returns a list of all models for an integration connection.
@@ -2436,7 +2537,27 @@ paths:
       security:
       - BearerAuth:
         - integrations:list
-      summary: List integration connection models
+      summary: Get integration model endpoint configurations
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/organizations:
+    get:
+      description: Returns a list of all organizations for an integration connection.
+      operationId: ListIntegrationConnectionOrganizations
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - BearerAuth:
+        - integrations:list
+      summary: Get integration connection organizations
       tags:
       - integrations
   /locations:
@@ -2646,7 +2767,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceMetrics'
+                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
           description: successful operation
       security:
       - BearerAuth:
@@ -3730,7 +3851,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceQuotas'
+                $ref: '#/components/schemas/Quotas'
           description: successful operation
       security:
       - BearerAuth:

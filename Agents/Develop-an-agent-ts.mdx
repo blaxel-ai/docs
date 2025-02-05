@@ -8,7 +8,7 @@ description: 'Use the Beamlit SDK to develop and run a custom agent in TypeScrip
 
 You can **bring agents developed in TypeScript in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Beamlit by integrating a few lines of the Beamlit SDK and leveraging our other developer tools (the [Beamlit CLI](../cli-reference), GitHub action, etc.).
 
-<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.p</Tip>
+<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
 ## Beamlit agent file structure
 
@@ -20,7 +20,7 @@ To deploy a custom AI agent on Beamlit, you need the following file in your repo
     - You can specify a different module to serve using the flag `bl serve --module your-function-path.your-function-name`
     - The function accepts these arguments, which Beamlit passes when a request is made to your deployed agent:
         - *request*: The [Fastify](https://fastify.dev/) Request that triggers the agent's execution.
-        - *args*: (Optional) The core agent algorithm. By default, it uses a [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html).
+        - *args*: (Optional) Argument object containing the core agent algorithm. By default, it uses a [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html).
 
 **Mark your agent's main function with Beamlit’s `wrapAgent` wrapper to serve it. You can override the default argument values that Beamlit passes upon requesting the agent by using the wrapper parameters** (see below).
 
@@ -58,7 +58,7 @@ Inside the wrapper, you can pass an object of options:
     - `spec.description`: the description of the agent on Beamlit
     - `spec.model`: the name of a model API deployed in your Beamlit workspace, to use as core chat model for the agent
 - **`overrideAgent`**: You can override the default [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html) by passing any custom agent instance. When the deployed agent receives a request, Beamlit will pass this as an argument to the agent's handler function.
-- **`overrideModel`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [ChatModel object from LangChain](https://js.langchain.com/docs/integrations/chat/). When the deployed agent receives a request, Beamlit will pass this as the *llm* to the default LangChain ReAct agent. This is used as a more granular alternative to `overrideAgent`.
+- **`overrideModel`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [BaseChatModel object from LangChain](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html). When the deployed agent receives a request, Beamlit will pass this as the *llm* to the default LangChain ReAct agent. This is used as a more granular alternative to `overrideAgent`.
 - **`remoteFunctions`**: You can pass on additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit. This is used as a more granular alternative to `overrideAgent`.
 
 ### Example
@@ -107,7 +107,7 @@ When developing custom agents, you may also need to retrieve instantiated model 
 
 ### Get model APIs
 
-You can use model APIs deployed on Beamlit by calling `getChatModel()`. This function returns a model API **in LangChain format [*ChatModel*](https://js.langchain.com/docs/integrations/chat/)**
+You can use model APIs deployed on Beamlit by calling `getChatModel()`. This function returns a model API **in LangChain format** [BaseChatModel](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html)
 
 ```tsx
 import { getChatModel } from '@beamlit/sdk';
@@ -120,7 +120,7 @@ const customAgent = createReactAgent({ llm: chat, tools: [] });
 
 ### Get functions
 
-You can use [functions](../Functions/Overview) defined both in your code and deployed on Beamlit by calling `getFunctions()`. This function returns a list of tools **in LangChain format** [BaseToolkit](https://v03.api.js.langchain.com/classes/_langchain_core.tools.BaseToolkit.html)**.**
+You can use [functions](../Functions/Overview) defined both in your code and deployed on Beamlit by calling `getFunctions()`. This function returns a list of tools **in LangChain format** [StructuredTool](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)**.**
 
 ```tsx
 import { getFunctions } from "@beamlit/sdk";
