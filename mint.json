@@ -179,7 +179,9 @@
         "Integrations/Cohere",
         "Integrations/xAI",
         "Integrations/HuggingFace",
-        "Integrations/Azure-AI-Foundry"
+        "Integrations/Azure-AI-Foundry",
+        "Integrations/Google-Maps",
+        "Integrations/Gmail"
       ]
     },
     {
