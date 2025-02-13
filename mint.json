@@ -26,7 +26,7 @@
   ],
   "topbarCtaButton": {
     "name": "Beamlit Console",
-    "url": "https://beamlit.com/beta-signup"
+    "url": "https://app.beamlit.com"
   },
   "anchors": [
     {
@@ -91,7 +91,8 @@
     {
       "group": "Inference API",
       "pages": [
-        "cli-reference/bl_run"
+        "cli-reference/bl_run",
+        "cli-reference/bl_chat"
       ]
     },
     {
@@ -159,7 +160,6 @@
       "pages": [
         "Models/Overview",
         "Models/External-model-apis",
-        "Models/Model-deployment",
         "Models/Query-a-model"
       ]
     },
@@ -178,10 +178,12 @@
         "Integrations/MistralAI",
         "Integrations/Cohere",
         "Integrations/xAI",
+        "Integrations/DeepSeek",
         "Integrations/HuggingFace",
         "Integrations/Azure-AI-Foundry",
         "Integrations/Google-Maps",
-        "Integrations/Gmail"
+        "Integrations/Gmail",
+        "Integrations/Pactory"
       ]
     },
     {

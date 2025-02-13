@@ -19,17 +19,24 @@ Functions are designed to **equip agents with tools** to interact with the world
 A function can be uploaded into Beamlit from a variety of origins.
 
 - Using a function from the Beamlit Store
-- *From imported files or Github (coming soon!)*
+- From a custom code
+- *From Github (coming soon!)*
 
-### Origins
+### Deploy from the Beamlit store
 
-The Beamlit store contains a curated list of functions and tools from the most popular providers that can be deployed out-of-the-box on Beamlit.
+The Beamlit store contains a curated list of functions and tools from the most popular providers that can be **deployed out-of-the-box on Beamlit**. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP).
 
 Depending on the function you choose, you will need to enter credentials as an [integration](../Integrations), such as an API key if your tool is using a third-party service provider.
 
+### Deploy from custom code
+
+You can deploy **any custom Python or TypeScript code** as a serverless function on Beamlit. 
+
+The easiest way to deploy a function is to deploy it as part of an agent application. [Read more about developing and deploying custom agents and functions here](../Agents/Develop-an-agent). 
+
 ### Environment
 
-Select the environment on which to deploy your agent, just like you would do for a model. Environments give you a dedicated production or development endpoint for your application life-cycle.
+Select the environment on which to deploy your workload. Environments give you a dedicated production or development endpoint for your application life-cycle. A function or model API that is deployed in an environment can only be used by agents in the same environment.
 
 <Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run invocation requests on your function. 
