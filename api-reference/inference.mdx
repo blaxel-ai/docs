@@ -14,19 +14,58 @@ The inference API URL depends on the type of workload ([agent](../Agents/Overvie
 
 ```http Query agent
 
-run.beamlit.com/{your-workspace}/agents/{your-agent}
+POST run.beamlit.com/{your-workspace}/agents/{your-agent}
 
 ```
 
 ```http Query model API
 
-run.beamlit.com/{your-workspace}/models/{your-model}
+POST run.beamlit.com/{your-workspace}/models/{your-model}
 
 ```
 
 ```http Query function
 
-run.beamlit.com/{your-workspace}/functions/{your-function}
+POST run.beamlit.com/{your-workspace}/functions/{your-function}
+
+```
+
+</CodeGroup>
+
+Showing the full request, with the input payload:
+
+<CodeGroup>
+
+```http Query agent
+
+curl -X POST "https://run.beamlit.com/{your-workspace}/agents/{your-agent}" \
+-H 'Content-Type: application/json' \
+-H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"inputs":"Hello, world!"}'
+
+```
+
+```http Query model API (example on a chat completion model)
+curl -X POST "run.beamlit.com/{your-workspace}/models/{your-model}/chat/completions" \
+-H 'Content-Type: application/json' \
+-H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"messages":[{"role":"user","content":"Hello!"}]}'
+
+```
+
+```http Query function (pre-built functions)
+curl -X POST "run.beamlit.com/{your-workspace}/functions/{your-function}/tools/call" \
+-H 'Content-Type: application/json' \
+-H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"name":"brave_web_search","arguments":{"query":"current weather in San Francisco"}}'
+
+```
+
+```http Query function (custom functions)
+curl -X POST "run.beamlit.com/{your-workspace}/functions/{your-function}/tools/call" \
+-H 'Content-Type: application/json' \
+-H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-d $'{"inputs":"Enter your input here."}'
 
 ```
 

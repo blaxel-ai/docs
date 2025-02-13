@@ -19,14 +19,19 @@ This is done in a two step process:
 
 ![Screenshot 2024-12-05 at 6.59.49 PM.png](External-model-apis/c36458c0-c3e5-48bd-988a-62213d7dd489.png)
 
-You can then query the model using its [dedicated global inference endpoint](Query-a-model). Any call to this endpoint will be passed to the underlying provider
+You can then query the model using its [dedicated global inference endpoint](Query-a-model). Any call to this endpoint will be passed to the underlying provider.
+
+### Environment
+
+Select the environment on which to deploy your workload. Environments give you a dedicated production or development endpoint for your application life-cycle. A function or model API that is deployed in an environment can only be used by agents in the same environment.
 
 ## Provider reference
 
 The following providers are available:
 
-- OpenAI
-- Anthropic
-- Mistral AI
-- Cohere
-- xAI
+- [OpenAI](../Integrations/OpenAI)
+- [Anthropic](../Integrations/Anthropic)
+- [Mistral AI](../Integrations/MistralAI)
+- [Cohere](../Integrations/Cohere)
+- [xAI](../Integrations/xAI)
+- [DeepSeek](../Integrations/DeepSeek)

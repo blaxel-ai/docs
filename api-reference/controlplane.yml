@@ -27,50 +27,6 @@ components:
           workspace:
             type: string
             description: Workspace name
-    Account:
-      type: object
-      description: Account
-      allOf:
-      - $ref: '#/components/schemas/Metadata'
-      - $ref: '#/components/schemas/AccountSpec'
-      - properties:
-          metadata: {}
-          spec: {}
-    AccountMetadata:
-      type: object
-      description: AccountMetadata
-      allOf:
-      - $ref: '#/components/schemas/TimeFields'
-      - $ref: '#/components/schemas/OwnerFields'
-      - properties:
-          id:
-            type: string
-            description: Account id
-          labels:
-            $ref: '#/components/schemas/MetadataLabels'
-    AccountSpec:
-      type: object
-      description: AccountSpec
-      properties:
-        address:
-          type: object
-          description: Billing address
-        admins:
-          type: array
-          description: Admins
-          items: {}
-        currency:
-          type: string
-          description: Currency
-        owner:
-          type: string
-          description: Owner
-        status:
-          type: string
-          description: Status
-        tax_id:
-          type: string
-          description: Tax ID
     Agent:
       type: object
       description: Agent
@@ -98,6 +54,10 @@ components:
         name:
           type: string
           description: The name of the agent to chain to
+        prompt:
+          type: string
+          description: Prompt of the agent in case you want to override the default
+            one
     AgentChains:
       type: array
       description: Agent chain
@@ -189,12 +149,18 @@ components:
             $ref: '#/components/schemas/AgentChains'
           description:
             type: string
-            description: Agent description
+            description: Description, small description computed from the prompt
           functions:
             $ref: '#/components/schemas/FunctionsList'
+          knowledgebase:
+            type: string
+            description: Knowledgebase Name
           model:
             type: string
             description: Model name
+          prompt:
+            type: string
+            description: Prompt, describe what your agent does
           repository:
             $ref: '#/components/schemas/Repository'
           storeId:
@@ -230,37 +196,6 @@ components:
       description: Array of metrics
       items:
         $ref: '#/components/schemas/Metric'
-    BillingAddress:
-      type: object
-      description: BillingAddress
-      properties:
-        city:
-          type: string
-          description: City
-        country:
-          type: string
-          description: Country
-        firstName:
-          type: string
-          description: First name
-        lastName:
-          type: string
-          description: Last name
-        phoneNumber:
-          type: string
-          description: Phone number
-        postalCode:
-          type: string
-          description: Postal code
-        state:
-          type: string
-          description: State/Province/Region
-        street1:
-          type: string
-          description: Street 1
-        street2:
-          type: string
-          description: Street 2
     Configuration:
       type: object
       description: Configuration
@@ -583,6 +518,61 @@ components:
         url:
           type: string
           description: Repository URL
+    Knowledgebase:
+      type: object
+      description: Knowledgebase
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/EnvironmentMetadata'
+        spec:
+          $ref: '#/components/schemas/KnowledgebaseSpec'
+        status:
+          type: string
+          description: Knowledgebase status
+    KnowledgebaseRelease:
+      type: object
+      description: Knowledgebase release, used to deploy a function from one environment
+        to another
+      properties:
+        from:
+          type: string
+          description: Origin environment from which the function is released
+        to:
+          type: string
+          description: Destination environment to which the function is released
+    KnowledgebaseSpec:
+      type: object
+      description: Knowledgebase specification
+      properties:
+        collectionName:
+          type: string
+          description: Collection name
+        embeddingModel:
+          type: string
+          description: Embedding model
+        embeddingModelType:
+          type: string
+          description: Embedding model type
+        enabled:
+          type: boolean
+          description: Enable or disable the agent
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        options:
+          type: object
+          description: Options specific to the knowledge base
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        sandbox:
+          type: boolean
+          description: Sandbox mode
+    KnowledgebasesList:
+      type: array
+      items:
+        type: string
+        description: Knowledgebase name
     LastNRequestsMetric:
       type: object
       description: Last N requests
@@ -976,8 +966,6 @@ components:
         name:
           type: string
           description: Location name
-    Quotas:
-      description: Workspace quotas
     Repository:
       type: object
       description: Repository
@@ -1219,6 +1207,9 @@ components:
           name:
             type: string
             description: Store agent name
+          prompt:
+            type: string
+            description: Store agent prompt, this is to define what the agent does
     StoreConfiguration:
       type: object
       description: 'Store configuration for resources (eg: agent, function, etc)'
@@ -1433,9 +1424,6 @@ components:
           name:
             type: string
             description: Workspace name
-          quotas,omitempty:
-            $ref: '#/components/schemas/Quotas'
-            description: Workspace quotas
           region:
             type: string
             description: Workspace write region
@@ -1474,123 +1462,6 @@ info:
   version: 0.0.1
 openapi: 3.0.3
 paths:
-  /accounts:
-    get:
-      description: Returns a list of all accounts.
-      operationId: ListAccounts
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Account'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - accounts:list
-      summary: List accounts
-      tags:
-      - accounts
-    post:
-      description: Creates an account.
-      operationId: CreateAccount
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Account'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - accounts:create
-      summary: Create account
-  /accounts/{accountId}:
-    delete:
-      description: Deletes an account by name.
-      operationId: DeleteAccount
-      parameters:
-      - description: Name of the account
-        in: path
-        name: accountId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-          description: Account successfully deleted
-        "404":
-          description: Account not found
-      security:
-      - BearerAuth:
-        - accounts:delete
-      summary: Delete account
-      tags:
-      - accounts
-    get:
-      description: Returns an account by name.
-      operationId: GetAccount
-      parameters:
-      - description: Name of the account
-        in: path
-        name: accountId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - accounts:get
-      summary: Get account by name
-      tags:
-      - accounts
-    put:
-      description: Updates an account by name.
-      operationId: UpdateAccount
-      parameters:
-      - description: Name of the account
-        in: path
-        name: accountId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Account'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - accounts:update
-      summary: Update account
-      tags:
-      - accounts
   /agents:
     get:
       operationId: ListAgents
@@ -2331,52 +2202,6 @@ paths:
       summary: List integrations connections
       tags:
       - integrations
-  /integrations/{integrationName}/models:
-    get:
-      description: Returns a list of all models for an integration.
-      operationId: ListIntegrationModels
-      parameters:
-      - description: Name of the integration
-        in: path
-        name: integrationName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:list
-      summary: List integration models
-      tags:
-      - integrations
-  /integrations/{integrationName}/models/{modelId}:
-    get:
-      description: Returns a model for an integration by ID.
-      operationId: GetIntegrationModel
-      parameters:
-      - description: Name of the integration
-        in: path
-        name: integrationName
-        required: true
-        schema:
-          type: string
-      - description: Model ID
-        in: path
-        name: modelId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: successful operation
-      security:
-      - BearerAuth:
-        - integrations:list
-      summary: Get integration model
-      tags:
-      - integrations
   /integrations/connections:
     get:
       description: Returns a list of all connections integrations in the workspace.
@@ -2540,26 +2365,127 @@ paths:
       summary: Get integration model endpoint configurations
       tags:
       - integrations
-  /integrations/connections/{connectionName}/organizations:
+  /knowledgebases:
     get:
-      description: Returns a list of all organizations for an integration connection.
-      operationId: ListIntegrationConnectionOrganizations
+      description: Returns a list of all knowledgebases in the workspace.
+      operationId: ListKnowledgebases
       parameters:
-      - description: Name of the connection
-        in: path
-        name: connectionName
-        required: true
+      - description: Environment to filter functions by
+        in: query
+        name: environment
         schema:
           type: string
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Knowledgebase'
+                type: array
           description: successful operation
       security:
       - BearerAuth:
-        - integrations:list
-      summary: Get integration connection organizations
+        - knowledgebases:list
+      summary: List knowledgebases
       tags:
-      - integrations
+      - knowledgebases
+    post:
+      description: Creates an knowledgebase.
+      operationId: CreateKnowledgebase
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Knowledgebase'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Knowledgebase'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - environments:create
+      summary: Create environment
+      tags:
+      - knowledgebases
+  /knowledgebases/{knowledgebaseName}:
+    delete:
+      description: Deletes an knowledgebase by Name.
+      operationId: DeleteKnowledgebase
+      parameters:
+      - description: Environment to filter knowledgebases by
+        in: query
+        name: environment
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Knowledgebase'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - environments:delete
+      summary: Delete environment
+      tags:
+      - knowledgebases
+    get:
+      description: Returns an knowledgebase by Name.
+      operationId: GetKnowledgebase
+      parameters:
+      - description: Environment to filter functions by
+        in: query
+        name: environment
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Knowledgebase'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - knowledgebases:get
+      summary: Get knowledgebase
+      tags:
+      - knowledgebases
+    parameters:
+    - description: Name of the knowledgebase
+      in: path
+      name: knowledgebaseName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates an knowledgebase.
+      operationId: UpdateKnowledgebase
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Knowledgebase'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Knowledgebase'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - knowledgebases:update
+      summary: Update knowledgebase
+      tags:
+      - knowledgebases
   /locations:
     get:
       description: Returns a list of all locations available with status.
@@ -3833,30 +3759,6 @@ paths:
       - BearerAuth:
         - workspaces:leave
       summary: Leave workspace
-      tags:
-      - workspaces
-  /workspaces/{workspaceName}/quotas:
-    put:
-      description: Send a request to update quotas for a workspace.
-      operationId: WorkspaceQuotasRequest
-      parameters:
-      - description: Name of the workspace
-        in: path
-        name: workspaceName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Quotas'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - workspaces:update
-      summary: Request workspace quotas
       tags:
       - workspaces
 security:
