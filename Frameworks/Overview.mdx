@@ -6,14 +6,14 @@ description: 'Ship agents in any Python/TypeScript framework on Beamlit.'
 
 ---
 
-Beamlit is not tied to a specific framework but rather supports a **range of the most popular AI agent frameworks**, optimizing how your agent builds and runs no matter how you coded it. Note that in addition to supported frameworks, Beamlit also supports a wide range of [integrations](../Integrations), allowing you to connect your agents with many systems at runtime. This section covers development frameworks used to create the agent.
+Beamlit is not tied to a specific framework but rather supports a **range of the most popular AI agent frameworks**, optimizing how your agent builds and runs no matter how you coded it. 
 
-Beamlit’s development paradigm is designed to have a minimal footprint on your usual development process. Your custom code remains platform-agnostic: you can deploy it on Beamlit or through traditional methods like Docker containers on VMs or Kubernetes clusters. When you deploy on Beamlit (CLI command `bl deploy`), Beamlit runs a specialized build process that integrates your code with its [Global Inference Network](../Models/Global-Inference-Network) features.
+Beamlit's platform-agnostic design lets you deploy your code either on Beamlit or through traditional methods like Docker containers. When deploying on Beamlit, your agent goes through a specialized build process that enables it to access Beamlit features through SDK commands in its code.
 
-As such, you can build your agentic applications with anything from LangChain to pure TypeScript, and deploy them with minimal upfront configuration. Learn how to [get started with Beamlit](../Get-started) or clone one of [our example repos](https://github.com/beamlit/templates/tree/main) to your favorite git provider and deploy it on Beamlit.
+As such, you can build your agentic applications with anything from [LangChain](https://www.langchain.com/) to pure TypeScript or Python, and deploy them with minimal upfront setup. Learn how to [get started with Beamlit](../Get-started) or clone one of [our example repos](https://github.com/beamlit/templates/tree/main) to your favorite git provider and deploy it on Beamlit.
 
 <CardGroup cols={2}>
-<Card title="LangChain" icon="crow" href="/Agents/LangChain">
+<Card title="LangChain" icon="crow" href="/Frameworks/LangChain">
 Build and deploy LangChain agents on Beamlit.
 </Card>
 <Card title="CrewAI" icon="c" href="/Frameworks/CrewAI">
@@ -49,7 +49,7 @@ Learn more about deploying your preferred framework on Beamlit with the followin
 <Card title="Read about our deployment features" icon="earth-americas" href="/Agents/Develop-an-agent">
 See how Beamlit can help you bootstrap and deploy your AI agents.
 </Card>
-<Card title="Explore our template gallery" icon="up-right-from-square" href="[https://github.com/beamlit/templates/tree/main](https://github.com/beamlit/templates/tree/main)">
+<Card title="Explore our template gallery" icon="up-right-from-square" href="https://github.com/beamlit/templates/tree/main">
 Browse agents in popular frameworks and deploy them with Beamlit.
 </Card>
 </CardGroup>

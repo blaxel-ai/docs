@@ -59,15 +59,15 @@
       ]
     },
     {
-      "group": "Overview",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
       "group": "Templates & Cookbooks",
       "pages": [
         "Examples/Templates-and-Cookbooks"
+      ]
+    },
+    {
+      "group": "Overview",
+      "pages": [
+        "api-reference/introduction"
       ]
     },
     {
