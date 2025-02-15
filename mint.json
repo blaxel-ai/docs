@@ -37,6 +37,10 @@
   ],
   "tabs": [
     {
+      "name": "Templates & Cookbooks",
+      "url": "Examples/Templates-and-Cookbooks"
+    },
+    {
       "name": "API Reference",
       "openapi": "/api-reference/controlplane.yml",
       "url": "api-reference"
@@ -58,6 +62,12 @@
       "group": "Overview",
       "pages": [
         "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "Templates & Cookbooks",
+      "pages": [
+        "Examples/Templates-and-Cookbooks"
       ]
     },
     {
@@ -134,6 +144,14 @@
       ]
     },
     {
+      "group": "Frameworks",
+      "pages": [
+        "/Frameworks/Overview",
+        "/Frameworks/LangChain",
+        "/Frameworks/CrewAI"
+      ]
+    },
+    {
       "group": "Agents",
       "pages": [
         "Agents/Overview",
@@ -146,7 +164,8 @@
           ]
         },
         "Agents/Deploy-an-agent",
-        "Agents/Query-agents"
+        "Agents/Query-agents",
+        "Agents/Integrate-in-apps"
       ]
     },
     {
