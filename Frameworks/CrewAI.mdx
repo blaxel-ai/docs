@@ -6,13 +6,13 @@ description: 'Learn how to leverage Beamlit with CrewAI.'
 
 ---
 
-CrewAI is a framework for orchestrating autonomous AI agents — enabling you to create AI teams where each agent has specific roles, tools, and goals, working together to accomplish complex tasks. You can deploy your CrewAI scripts to Beamlit with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
+[CrewAI](https://www.crewai.com/) is a framework for orchestrating autonomous AI agents — enabling you to create AI teams where each agent has specific roles, tools, and goals, working together to accomplish complex tasks. You can deploy your CrewAI scripts to Beamlit with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
 
 ## Get started with CrewAI on Beamlit
 
 If you already have a CrewAI agentic application, adapt your code with [Beamlit SDK commands](../Agents/Develop-an-agent) to use Beamlit features at deployment and runtime. All commands in this section will be referred to in Python syntax.
 
-1. open your CrewAI folder and add a folder agent.py with the following code. Import the **main function that is the entry point** for your CrewAI agentic workflow. This code wraps the execution of the CrewAI code with the Beamlit SDK to serve the agent. Don’t forget to add all necessary API keys for the execution of your agentic system. 
+1- open your CrewAI folder and add a folder agent.py with the following code. Import the **main function that is the entry point** for your CrewAI agentic workflow. This code wraps the execution of the CrewAI code with the Beamlit SDK to serve the agent. Don’t forget to add all necessary API keys for the execution of your agentic system. 
 
 ```python
 from beamlit.agents import agent
@@ -25,7 +25,7 @@ async def main(request: Request):
     return run(await request.json())
 ```
 
-1. Update the pyproject.toml file with the beamlit dependency and set Python version ≥ 3.12.
+2- Update the pyproject.toml file with the beamlit dependency and set Python version ≥ 3.12.
 
 ```python
 requires-python = ">=3.12,<=3.13"
@@ -34,7 +34,7 @@ dependencies = [
 ]
 ```
 
-1. Serve locally and deploy the agent as described in [this documentation](../Agents/Deploy-an-agent).
+3- Serve locally and deploy the agent as described in [this documentation](../Agents/Deploy-an-agent).
 
 ## Use Beamlit features with CrewAI
 
