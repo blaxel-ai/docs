@@ -1,0 +1,36 @@
+---
+
+title: 'LangChain'
+
+description: 'Learn how to leverage Beamlit with LangChain and LangGraph.'
+
+---
+
+LangChain is a composable framework to build LLM applications. It can be combined with LangGraph is a stateful, orchestration framework that brings added control to agent workflows. You can deploy your LangChain or LangGraph projects to Beamlit with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
+
+## Get started with LangChain on Beamlit
+
+To get started with LangChain/LangGraph on Beamlit:
+
+- if you already have a LangChain or LangGraph agent, adapt your code with [Beamlit SDK commands](../Agents/Develop-an-agent) to use Beamlit features at deployment and runtime
+- clone one of our LangChain [example templates](https://github.com/beamlit/templates/tree/main) and deploy it by connecting to your git provider via the Beamlit console.
+- initialize an example project in LangChain by using Beamlit CLI command `bl create-agent-app` and deploy it using `bl deploy`
+
+<Card title="Explore our template gallery" icon="up-right-from-square" href="[https://github.com/beamlit/templates/tree/main](https://github.com/beamlit/templates/tree/main)">
+Browse LangChain agents and deploy them with Beamlit.
+</Card>
+
+## Use Beamlit features with LangChain
+
+Since Beamlit SDK commands use LangGraph format by default when no framework is specified, these commands integrate seamlessly with the LangChain ecosystem. All commands in this section will be referred to in Python syntax. 
+
+- `get_chat_model()`:  returns a [model API](../Models/Overview) **i**n LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)
+- `get_functions()`: returns a list of [tools](../Functions/Overview) in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).
+
+## To go further
+
+Learn more about deploying LangChain and LangGraph agents on Beamlit with the following resources:
+
+<Card title="Deploy a LangChain agent" icon="bolt" href="/Examples/Deploy-a-LangChain-agent">
+Complete guide for deploying a LangChain AI agent on Beamlit.
+</Card>

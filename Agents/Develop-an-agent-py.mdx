@@ -6,7 +6,7 @@ description: 'Use the Beamlit SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can **bring agents developed in Python in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Beamlit by integrating a few lines of the Beamlit SDK and leveraging our other developer tools (the [Beamlit CLI](../cli-reference), GitHub action, etc.).
+You can **bring agents developed in Python in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Beamlit by integrating a few lines of the Beamlit SDK and leveraging our other developer tools ([Beamlit CLI](../cli-reference), GitHub action, etc.).
 
 <Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
@@ -34,7 +34,7 @@ Some folders are optional but designed to handle specific parts of the agent cod
 
 <Warning>It is required to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) to use the following command.</Warning>
 
-You can quickly initialize a new project from scratch by using the CLI command  `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. By default, this command creates a boilerplate agent that has:
+You can quickly initialize a new project from scratch by using CLI command  `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. By default, this command creates a boilerplate agent that has:
 
 - A [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) as the core agent logic. This agent can be overridden by passing a custom agent as the `override-agent` parameter to the @agent decorator in */src/agent.py*
 

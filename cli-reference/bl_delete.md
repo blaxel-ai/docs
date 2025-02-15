@@ -31,7 +31,6 @@ bl delete [flags]
 ### Options inherited from parent commands
 
 ```
-  -e, --env string         Environment. One of: development,production
   -o, --output string      Output format. One of: pretty,yaml,json,table
   -u, --utc                Enable UTC timezone
   -v, --verbose            Enable verbose output
@@ -42,7 +41,6 @@ bl delete [flags]
 
 * [bl](bl.md)	 - Beamlit CLI is a command line tool to interact with Beamlit APIs.
 * [bl delete agent](bl_delete_agent.md)	 - Delete a Agent
-* [bl delete environment](bl_delete_environment.md)	 - Delete a Environment
 * [bl delete function](bl_delete_function.md)	 - Delete a Function
 * [bl delete integrationconnection](bl_delete_integrationconnection.md)	 - Delete a IntegrationConnection
 * [bl delete model](bl_delete_model.md)	 - Delete a Model

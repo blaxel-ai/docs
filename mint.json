@@ -145,6 +145,7 @@
             "Agents/Develop-an-agent-py"
           ]
         },
+        "Agents/Deploy-an-agent",
         "Agents/Query-agents"
       ]
     },
