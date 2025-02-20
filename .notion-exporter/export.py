@@ -1,6 +1,6 @@
 import os
 
-from python_notion_exporter import ExportType, NotionExporter, ViewExportType
+from notion_exporter import ExportType, NotionExporter, ViewExportType
 
 notion_token = os.getenv("NOTION_TOKEN")
 notion_file_token = os.getenv("NOTION_FILE_TOKEN")
