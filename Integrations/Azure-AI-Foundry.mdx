@@ -6,7 +6,7 @@ description: 'Connect your agents to LLMs deployed in Azure AI Inference, Azure 
 
 ---
 
-The Azure AI Foundry integration allows Beamlit users to **call models deployments from [Azure AI Foundry](https://learn.microsoft.com/en-us/azure/ai-studio/what-is-ai-studio) services** (Azure AI Inference, Azure OpenAI Service, and Azure AI Services) through a Beamlit endpoint that unifies access control, credentials and observability management. 
+The Azure AI Foundry integration allows Blaxel users to **call models deployments from [Azure AI Foundry](https://learn.microsoft.com/en-us/azure/ai-studio/what-is-ai-studio) services** (Azure AI Inference, Azure OpenAI Service, and Azure AI Services) through a Blaxel endpoint that unifies access control, credentials and observability management. 
 
 There are 2 types of integrations related to this service:
 
@@ -19,7 +19,7 @@ The integration must be set up by an [admin](../Security/Workspace-access-contro
 
 ### Set up the integration
 
-In order to use this integration, you must register an Azure AI Inference endpoint and access key into your Beamlit workspace settings. 
+In order to use this integration, you must register an Azure AI Inference endpoint and access key into your Blaxel workspace settings. 
 
 First, go to the [Azure AI Foundry console](https://ai.azure.com/build/overview), and open your project. Select the “Azure AI Inference” capability, and retrieve both:
 
@@ -28,7 +28,7 @@ First, go to the [Azure AI Foundry console](https://ai.azure.com/build/overview)
 
 ![azure1.png](Azure-AI-Foundry/azure1.png)
 
-On Beamlit, in Workspace Settings > Azure AI Inference integration, create a new connection and paste the endpoint and the Access token there.
+On Blaxel, in Workspace Settings > Azure AI Inference integration, create a new connection and paste the endpoint and the Access token there.
 
 ![Screenshot 2025-01-31 at 2.29.05 PM.png](Azure-AI-Foundry/Screenshot_2025-01-31_at_2.29.05_PM.png)
 
@@ -42,7 +42,7 @@ When creating a model API, select “Azure AI Inference”. Then, input the **na
 
 ![azure3.png](Azure-AI-Foundry/azure3.png)
 
-After the model API is created, you will receive a dedicated global Beamlit endpoint to call the model. Beamlit will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
 
 <Info>Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Azure account, as if you queried the model directly on Azure.</Info>
 
@@ -50,7 +50,7 @@ After the model API is created, you will receive a dedicated global Beamlit endp
 
 ### Set up the integration & connect to a model
 
-In order to use this integration, you must register an Azure endpoint and access token into your Beamlit workspace settings. 
+In order to use this integration, you must register an Azure endpoint and access token into your Blaxel workspace settings. 
 
 <Warning>The difference with most other model API integrations is that the integration will be tied to your model.</Warning>
 
@@ -61,16 +61,16 @@ First, go to the [Azure AI Foundry console](https://ai.azure.com/build/overview)
 
 ![azure4.png](Azure-AI-Foundry/azure4.png)
 
-On Beamlit, in Workspace Settings > Azure Marketplace integration, create a new connection and paste this token into the “Access token” section.
+On Blaxel, in Workspace Settings > Azure Marketplace integration, create a new connection and paste this token into the “Access token” section.
 
 ![image.png](Azure-AI-Foundry/image.png)
 
 Once you’ve set up the integration in the workspace, any workspace member can use it to connect to the model as an [external model API](../Models/External-model-apis).
 
-When creating a model API, select Azure Marketplace, input the name of the endpoint as you want it on Beamlit, and finish creating the model.
+When creating a model API, select Azure Marketplace, input the name of the endpoint as you want it on Blaxel, and finish creating the model.
 
 ![image.png](Azure-AI-Foundry/image%201.png)
 
-After the model API is created, you will receive a dedicated global Beamlit endpoint to call the model. Beamlit will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
 
 <Info>Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Azure account, as if you queried the model directly on Azure.</Info>

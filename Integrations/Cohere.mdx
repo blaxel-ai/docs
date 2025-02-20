@@ -6,15 +6,15 @@ description: 'Connect your agents to LLMs from Cohere.'
 
 ---
 
-The Cohere integration allows Beamlit users to **call Cohere models using a Beamlit endpoint** in order to unify access control, credentials and observability management. 
+The Cohere integration allows Blaxel users to **call Cohere models using a Blaxel endpoint** in order to unify access control, credentials and observability management. 
 
 The integration must be set up by an [admin](../Security/Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0) in the Integrations section in the [workspace settings](../Security/Workspace-access-control).
 
 ## Set up the integration
 
-In order to use this integration, you must register a Cohere access token into your Beamlit workspace settings. First, generate a [Cohere API key](https://docs.cohere.com/v2/docs/rate-limits) from [the Cohere platform](https://dashboard.cohere.com/api-keys). 
+In order to use this integration, you must register a Cohere access token into your Blaxel workspace settings. First, generate a [Cohere API key](https://docs.cohere.com/v2/docs/rate-limits) from [the Cohere platform](https://dashboard.cohere.com/api-keys). 
 
-On Beamlit, in Workspace Settings > Cohere integration, create a new connection and paste this token into the “API key” section.
+On Blaxel, in Workspace Settings > Cohere integration, create a new connection and paste this token into the “API key” section.
 
 ![Screenshot 2024-12-06 at 2.13.40 PM.png](Cohere/Screenshot_2024-12-06_at_2.13.40_PM.png)
 
@@ -26,6 +26,6 @@ When creating a model API, select Cohere. You can search for any model from the 
 
 ![Screenshot 2024-12-06 at 2.14.58 PM.png](Cohere/Screenshot_2024-12-06_at_2.14.58_PM.png)
 
-After the model API is created, you will receive a dedicated global Beamlit endpoint to call the model. Beamlit will forward inference requests to Cohere, using your Cohere credentials for authentication and authorization.
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Cohere, using your Cohere credentials for authentication and authorization.
 
 <Info>Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Cohere account, as if you queried the model directly on Cohere.</Info>

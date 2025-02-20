@@ -2,11 +2,11 @@
 
 title: 'Integrate in your apps'
 
-description: 'Integrate and use Beamlit agents in your applications and communication platforms.'
+description: 'Integrate and use Blaxel agents in your applications and communication platforms.'
 
 ---
 
-An agent deployed on Beamlit can be consumed through various downstream applications, including web apps and front-end UIs. 
+An agent deployed on Blaxel can be consumed through various downstream applications, including web apps and front-end UIs. 
 
 ## Integrate in your application
 
@@ -22,7 +22,7 @@ Use these code snippets to integrate your agent in your JavaScript, TypeScript o
 <CodeGroup>
 
 ```javascript JavaScript
-const response = await fetch("https://run.beamlit.com/YOUR-WORKSPACE/agents/YOUR-AGENT", {
+const response = await fetch("https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -40,7 +40,7 @@ console.log(data);
 
 ```typescript TypeScript
 
-const response = await fetch("https://run.beamlit.com/YOUR-WORKSPACE/agents/YOUR-AGENT", {
+const response = await fetch("https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -60,7 +60,7 @@ console.log(data);
 import requests
 
 response = requests.post(
-    "https://run.beamlit.com/YOUR-WORKSPACE/agents/YOUR-AGENT",
+    "https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT",
     headers={
         "Content-Type": "application/json",
         "Authorization": "Bearer <YOUR_API_KEY>"

@@ -2,21 +2,75 @@
 
 title: 'Deploy agents'
 
-description: 'Ship your custom AI agents on Beamlit in a few clicks.'
+description: 'Ship your custom AI agents on Blaxel in a few clicks.'
 
 ---
 
-To run your agent on Beamlit, you must package it by **using the Beamlit SDK** so Beamlit can identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Beamlit to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
+An agent can be uploaded into Blaxel from a variety of origins.
 
-<Info>Read [this guide first](Develop-an-agent) on how to use the Beamlit SDK to develop a custom agent to deploy.</Info>
+- **From our pre-built template**: you can use the Blaxel web console to assemble an agent using models and functions already deployed on Blaxel. It will use a default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
+- **Using Blaxel CLI** to deploy a [custom agent](Develop-an-agent): this method is detailed down below on this page.
+- From a **GitHub** repository
 
-## Deploy an agent
+## Deployment life-cycle
 
-An agent can be uploaded into Beamlit from a variety of origins.
+### Deploying an agent
 
-- **Using Beamlit CLI** to deploy a custom agent: this method is detailed on this page below.
-- **From our pre-built template**: you can use the Beamlit web console to assemble an agent using models and functions already deployed on Beamlit. It will use a default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
-- *From a Github repository (coming soon!)*
+Deploying an agent will create the associated agent deployment. At this time: 
+
+- it is [reachable](Query-agents) through a specific endpoint
+- it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
+- its status can be monitored either on the console or using the CLI/APIs
+
+Deploy an agent by running the following [CLI](https://docs.blaxel.ai/cli-reference/bl_apply) command:
+
+```
+bl apply -f ./my-agent-deployment.yaml
+```
+
+Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
+
+### Managing revisions
+
+As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+
+![image.png](Deploy-an-agent/image.png)
+
+Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
+
+- **rollback a deployment** to its exact state from an earlier date
+- create a revision without immediate deployment to **prepare for a future release**
+- implement progressive rollout strategies, such as **canary deployments**
+
+Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
+
+Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
+
+![image.png](Deploy-an-agent/image%201.png)
+
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
+
+### Executions and inference requests
+
+**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents%2015447e47b1ea802f88bbd4bb180bf101). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Policies).
+
+Read more about [querying agents in this documentation](Query-agents).
+
+### Deactivating an agent deployment
+
+Any agent deployment can be deactivated at any time. When deactivated, it will **no longer be reachable** through the inference endpoint and will stop consuming resources. 
+
+Agents can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/agents/update-agent-by-name) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
+
+![deactivate-deployment.png](Deploy-an-agent/deactivate-deployment.png)
+
+## Deploy an agent from code
+
+This section assumes you have developed an agent locally, as explained [in this documentation](Develop-an-agent), and are ready to deploy it. 
+
+To run your agent on Blaxel, you must package it by **using the Blaxel SDK** so Blaxel can identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Blaxel to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
+
+<Info>Read [this guide first](Develop-an-agent) on how to use the Blaxel SDK to develop a custom agent to deploy.</Info>
 
 ### Serve locally
 
@@ -28,31 +82,49 @@ Run the following command to serve the agent:
 bl serve
 ```
 
-Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Beamlit. Add the flag `--hotreload`  to get live changes.
+Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Blaxel. Add the flag `--hotreload`  to get live changes.
 
 ```bash
 bl serve --hotreload
 ```
 
-### Deploy on development
-
-You can deploy the agent in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. Deploying on [Beamlit’s *development* environment](../Model-Governance/Environments) gives a separated endpoint to carry out tests.
-
-Run the following command to build and deploy a local agent to the *development* environment on Beamlit:
-
-```bash
-bl deploy --env development
-```
-
 ### Deploy on production
 
-You can deploy the agent in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. When deploying to [Beamlit's *production* environment](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd), you get a dedicated production endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the agent in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
-Run the following command to build and deploy a local agent to the *production* environment on Beamlit:
+Run the following command to build and deploy a local agent on Blaxel:
 
 ```bash
-bl deploy --env production
+bl deploy
 ```
+
+## Agent deployment reference
+
+### Model
+
+You must choose one action model, which will be the reasoning and talking core of the agent. The model must be a [model API](../Models/Overview) referenced on Blaxel.
+
+Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
+
+### Functions
+
+Select one or multiple [functions](../Functions/Overview) to equip your agent with the ability to run custom code. This is optional, in which case your agent will only be able to talk.
+
+### Chaining and multi-agents
+
+Multi-agent systems allow to better specialize each agent, with their specific set of tools and instructions. 
+
+You can chain other agents to an agent on Blaxel. When processing a consumer query, the agent will be able to handover the request to another agent that is chained to it if the action model considers it the best way to address the query.
+
+![image.png](Deploy-an-agent/image%202.png)
+
+### Policies
+
+ [Policies](../Model-Governance/Policies) can be optionally attached to an agent deployment directly. 
+
+### Resources
+
+Select the memory size to allocate to the execution of the agent.
 
 <Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
 Learn how to run consumers’ inference requests on your agent. 

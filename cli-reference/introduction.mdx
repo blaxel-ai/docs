@@ -2,11 +2,11 @@
 
 title: 'Overview'
 
-description: 'Interact with Beamlit through a command line interface.'
+description: 'Interact with Blaxel through a command line interface.'
 
 ---
 
-Beamlit CLI is a command line tool to interact with the Beamlit APIs.
+Blaxel CLI is a command line tool to interact with the Blaxel APIs.
 
 ## Install
 
@@ -14,18 +14,18 @@ Beamlit CLI is a command line tool to interact with the Beamlit APIs.
 
 <Accordion title="Install on Mac" icon="apple">
 
-<Warning>To install Beamlit CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Please reach out to [support@beamlit.com](mailto:support@beamlit.com) if you need to use an alternative to Homebrew.</Warning>
+<Warning>To install Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Please reach out to [support@blaxel.ai](mailto:support@blaxel.ai) if you need to use an alternative to Homebrew.</Warning>
 
-Install Beamlit CLI by running the two following commands successively in a terminal:
+Install Blaxel CLI by running the two following commands successively in a terminal:
 
 ```shell 
 
-brew tap beamlit/beamlit
+brew tap beamlit/blaxel
 
 ```
 
 ```shell 
-brew install beamlit
+brew install blaxel
 
 ```
 
@@ -33,7 +33,7 @@ brew install beamlit
 
 <Accordion title="Install on Linux" icon="linux">
 
-Install Beamlit CLI by running the following command in a terminal (alternatives below):
+Install Blaxel CLI by running the following command in a terminal (alternatives below):
 
 ```shell 
 curl -fsSL \
@@ -61,7 +61,7 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
 
 <Accordion title="Install with cURL" icon="code">
 
-Install Beamlit CLI by running the following command in a terminal (alternatives below):
+Install Blaxel CLI by running the following command in a terminal (alternatives below):
 
 ```shell 
 curl -fsSL \
@@ -87,11 +87,27 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
 
 </Accordion>
 
+<Accordion title="Install on Windows" icon="windows">
+
+For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
+
+ 
+
+First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
+
+- Opening PowerShell as Administrator
+- Running: `wsl --install -d Ubuntu-20.04`
+- Restarting the computer
+- From the Microsoft Store, install the Ubuntu app
+- Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
+
+</Accordion>
+
 </AccordionGroup>
 
 ## Get started
 
-To get started with Beamlit CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Beamlit console. Then, login to Beamlit using the following command and replacing `your-workspace`:
+To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using the following command and replacing `your-workspace`:
 
 ```bash
 bl login your-workspace
@@ -108,7 +124,7 @@ bl workspaces your-workspace
 bl workspaces
 ```
 
-You can now run any command to interact with Beamlit resources in your workspace. For example, to list agents:
+You can now run any command to interact with Blaxel resources in your workspace. For example, to list agents:
 
 ```bash
 bl get agents
@@ -117,9 +133,8 @@ bl get agents
 ## **Options**
 
 ```
--h, --help               Get the help for beamlit
--w, --workspace string   Specify the Beamlit workspace to work on.
--e, --env string         Specify the Beamlit environment to work on. One of: development, production
+-h, --help               Get the help for Blaxel
+-w, --workspace string   Specify the Blaxel workspace to work on.
 -o, --output string      Output format. One of: pretty, yaml, json, table
 -v, --verbose            Enable verbose output
 ```

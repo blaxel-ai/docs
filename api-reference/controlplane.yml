@@ -34,7 +34,7 @@ components:
         events:
           $ref: '#/components/schemas/CoreEvents'
         metadata:
-          $ref: '#/components/schemas/EnvironmentMetadata'
+          $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/AgentSpec'
         status:
@@ -63,82 +63,6 @@ components:
       description: Agent chain
       items:
         $ref: '#/components/schemas/AgentChain'
-    AgentHistory:
-      type: object
-      description: Agent deployment history
-      allOf:
-      - $ref: '#/components/schemas/TimeFields'
-      - properties:
-          agent:
-            type: string
-            description: Agent name
-          end:
-            type: string
-            description: End time
-          environment:
-            type: string
-            description: Environment name
-          events:
-            type: array
-            description: Events
-            items:
-              $ref: '#/components/schemas/AgentHistoryEvent'
-          request_id:
-            type: string
-            description: Request ID
-          start:
-            type: string
-            description: Start time
-          status:
-            type: string
-            description: 'Status, eg: running, success, failed'
-          took:
-            type: integer
-            description: Number of milliseconds it took to complete the event
-          workspace:
-            type: string
-            description: The workspace the agent deployment belongs to
-    AgentHistoryEvent:
-      type: object
-      description: Agent deployment history event
-      properties:
-        end:
-          type: string
-          description: End time
-        error:
-          type: string
-          description: Error message
-        name:
-          type: string
-          description: Name of the function or agent
-        parameters:
-          type: string
-          description: Parameters
-        start:
-          type: string
-          description: Start time
-        status:
-          type: string
-          description: 'Status, eg: running, success, failed'
-        subFunction:
-          type: string
-          description: Function used in kit if a kit was used
-        took:
-          type: integer
-          description: Number of milliseconds it took to complete the event
-        type:
-          type: string
-          description: Type, one of function or agent
-    AgentRelease:
-      type: object
-      description: Agent release, used to deploy a agent from one environment to another
-      properties:
-        from:
-          type: string
-          description: Origin environment from which the agent is released
-        to:
-          type: string
-          description: Destination environment to which the agent is released
     AgentSpec:
       type: object
       description: Agent specification
@@ -168,7 +92,7 @@ components:
             description: Store id
     ApiKey:
       type: object
-      description: Long-lived API key for accessing Beamlit
+      description: Long-lived API key for accessing Blaxel
       allOf:
       - $ref: '#/components/schemas/TimeFields'
       - $ref: '#/components/schemas/OwnerFields'
@@ -210,7 +134,7 @@ components:
           items: {}
         privateLocations:
           type: array
-          description: Private locations managed with beamlit operator
+          description: Private locations managed with blaxel operator
           items: {}
     Continent:
       type: object
@@ -229,6 +153,9 @@ components:
         message:
           type: string
           description: Event message
+        revision:
+          type: string
+          description: RevisionID link to the event
         status:
           type: string
           description: Event status
@@ -267,6 +194,8 @@ components:
         privateClusters:
           $ref: '#/components/schemas/ModelPrivateCluster'
           description: The private clusters where the model deployment is deployed
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
         runtime:
           $ref: '#/components/schemas/Runtime'
         sandbox:
@@ -284,38 +213,20 @@ components:
         name:
           type: string
           description: Country code
-    Environment:
+    Entrypoint:
       type: object
-      description: Environment on which deployments will be made (e.g. development,
-        production), enforcing multiple policies at once.
+      description: Entrypoint of the artifact
       properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          $ref: '#/components/schemas/EnvironmentSpec'
-    EnvironmentMetadata:
-      type: object
-      description: Environment metadata
-      allOf:
-      - $ref: '#/components/schemas/Metadata'
-      - properties:
-          environment:
-            type: string
-            description: Environment name
-    EnvironmentMetrics:
-      type: object
-      description: Metrics for the environment
-      properties:
-        inferenceGlobal:
-          $ref: '#/components/schemas/ArrayMetric'
-          description: Historical requests (in last 24 hours) for the environment
-            globally
-    EnvironmentSpec:
-      type: object
-      description: Environment specification
-      properties:
-        policies:
-          $ref: '#/components/schemas/PoliciesList'
+        args:
+          type: array
+          description: Args of the entrypoint
+          items: {}
+        command:
+          type: string
+          description: Command of the entrypoint
+        env:
+          type: object
+          description: Env of the entrypoint
     Flavor:
       type: object
       description: A type of hardware available for deployments
@@ -331,6 +242,19 @@ components:
       description: Types of hardware available for deployments
       items:
         $ref: '#/components/schemas/Flavor'
+    Form:
+      type: object
+      description: Form of the artifact
+      properties:
+        config:
+          type: object
+          description: Config of the artifact
+        oauth,omitempty:
+          type: object
+          description: OAuth of the artifact
+        secrets:
+          type: object
+          description: Secrets of the artifact
     Function:
       type: object
       description: Function
@@ -338,7 +262,7 @@ components:
         events:
           $ref: '#/components/schemas/CoreEvents'
         metadata:
-          $ref: '#/components/schemas/EnvironmentMetadata'
+          $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/FunctionSpec'
         status:
@@ -361,17 +285,6 @@ components:
           description: Kit parameters, for your kit to be callable with an Agent
           items:
             $ref: '#/components/schemas/StoreFunctionParameter'
-    FunctionRelease:
-      type: object
-      description: Function release, used to deploy a function from one environment
-        to another
-      properties:
-        from:
-          type: string
-          description: Origin environment from which the function is released
-        to:
-          type: string
-          description: Destination environment to which the function is released
     FunctionSpec:
       type: object
       description: Function specification
@@ -525,23 +438,12 @@ components:
         events:
           $ref: '#/components/schemas/CoreEvents'
         metadata:
-          $ref: '#/components/schemas/EnvironmentMetadata'
+          $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/KnowledgebaseSpec'
         status:
           type: string
           description: Knowledgebase status
-    KnowledgebaseRelease:
-      type: object
-      description: Knowledgebase release, used to deploy a function from one environment
-        to another
-      properties:
-        from:
-          type: string
-          description: Origin environment from which the function is released
-        to:
-          type: string
-          description: Destination environment to which the function is released
     KnowledgebaseSpec:
       type: object
       description: Knowledgebase specification
@@ -565,6 +467,8 @@ components:
           description: Options specific to the knowledge base
         policies:
           $ref: '#/components/schemas/PoliciesList'
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
         sandbox:
           type: boolean
           description: Sandbox mode
@@ -580,9 +484,6 @@ components:
         date:
           type: string
           description: Timestamp
-        environment:
-          type: string
-          description: Environment
         workloadType:
           type: string
           description: Workload type
@@ -626,6 +527,54 @@ components:
         status:
           type: string
           description: Status of the location
+    MCPDefinition:
+      type: object
+      description: Definition of an MCP from the MCP Hub
+      properties:
+        categories:
+          type: array
+          description: Categories of the artifact
+          items: {}
+        coming_soon:
+          type: boolean
+          description: If the artifact is coming soon
+        description:
+          type: string
+          description: Description of the artifact
+        displayName:
+          type: string
+          description: Display name of the artifact
+        enterprise:
+          type: boolean
+          description: If the artifact is enterprise
+        entrypoint:
+          type: object
+          description: Entrypoint of the artifact
+        form:
+          type: object
+          description: Form of the artifact
+        icon:
+          type: string
+          description: Icon of the artifact
+        integration:
+          type: string
+          description: Integration of the artifact
+        longDescription:
+          type: string
+          description: Long description of the artifact
+        name:
+          type: string
+          description: Name of the artifact
+        url:
+          type: string
+          description: URL of the artifact
+    MemoryAllocationMetric:
+      type: object
+      description: Metrics for memory allocation
+      properties:
+        totalAllocation:
+          type: number
+          description: Total memory allocation in GB-seconds
     Metadata:
       type: object
       description: Metadata
@@ -692,13 +641,12 @@ components:
             code
     Model:
       type: object
-      description: Logical object representing a model, that can be instantiated in
-        multiple environments as model deployments
+      description: Logical object representing a model
       properties:
         events:
           $ref: '#/components/schemas/CoreEvents'
         metadata:
-          $ref: '#/components/schemas/EnvironmentMetadata'
+          $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/ModelSpec'
         status:
@@ -717,22 +665,23 @@ components:
         name:
           type: string
           description: The name of the private cluster
-    ModelRelease:
-      type: object
-      description: Model release, used to deploy a model from one environment to another
-      properties:
-        from:
-          type: string
-          description: Origin environment from which the model is released
-        to:
-          type: string
-          description: Destination environment to which the model is released
     ModelSpec:
       type: object
       description: Model specification
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
       - {}
+    OAuth:
+      type: object
+      description: OAuth of the artifact
+      properties:
+        scope:
+          type: array
+          description: Scope of the OAuth
+          items: {}
+        type:
+          type: string
+          description: Type of the OAuth
     OwnerFields:
       type: object
       description: Owner fields for Persistance
@@ -1027,7 +976,20 @@ components:
         rpsPerCode:
           type: object
           description: Number of requests for all resources globally
-    ResourceEnvironmentMetrics:
+    ResourceLog:
+      type: object
+      description: Log for a resource deployment (eg. model deployment, function deployment)
+      properties:
+        message:
+          type: string
+          description: Content of the log
+        severity:
+          type: integer
+          description: Severity of the log
+        timestamp:
+          type: string
+          description: The timestamp of the log
+    ResourceMetrics:
       type: object
       description: Metrics for a single resource deployment (eg. model deployment,
         function deployment)
@@ -1044,6 +1006,9 @@ components:
           $ref: '#/components/schemas/LatencyMetric'
           description: Historical requests (in last 24 hours) for the model deployment
             globally
+        memoryAllocation:
+          $ref: '#/components/schemas/MemoryAllocationMetric'
+          description: Memory allocation metrics for the resource
         requestDurationOverTime:
           $ref: '#/components/schemas/RequestDurationOverTimeMetrics'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -1073,19 +1038,53 @@ components:
           $ref: '#/components/schemas/TokenTotalMetric'
           description: Historical requests (in last 24 hours) for the model deployment
             globally
-    ResourceLog:
+    RevisionConfiguration:
       type: object
-      description: Log for a resource deployment (eg. model deployment, function deployment)
+      description: Revision configuration
       properties:
-        message:
+        active:
           type: string
-          description: Content of the log
-        severity:
+          description: Active revision id
+        canary:
+          type: string
+          description: Canary revision id
+        canaryPercent:
           type: integer
-          description: Severity of the log
-        timestamp:
+          description: Canary revision percent
+        previousActive:
           type: string
-          description: The timestamp of the log
+          description: Previous active revision id
+        traffic:
+          type: integer
+          description: Traffic percentage
+    RevisionMetadata:
+      type: object
+      description: Revision metadata
+      properties:
+        active:
+          type: boolean
+          description: Is the revision active
+        canary:
+          type: boolean
+          description: Is the revision canary
+        createdAt:
+          type: string
+          description: Revision created at
+        createdBy:
+          type: string
+          description: Revision created by
+        id:
+          type: string
+          description: Revision ID
+        previousActive:
+          type: boolean
+          description: Is the revision previous active
+        status:
+          type: string
+          description: Status of the revision
+        trafficPercent:
+          type: integer
+          description: Percent of traffic to the revision
     Runtime:
       type: object
       description: Set of configurations for a deployment
@@ -1098,18 +1097,25 @@ components:
           type: array
           description: The command to run the deployment
           items: {}
+        cpu:
+          type: integer
+          description: The CPU for the deployment in cores, only available for private
+            cluster
         endpointName:
           type: string
           description: Endpoint Name of the model. In case of hf_private_endpoint,
             it is the endpoint name. In case of hf_public_endpoint, it is not used.
         envs:
           type: array
-          description: The environment variables to set in the deployment. Should
-            be a list of Kubernetes EnvVar types
+          description: The env variables to set in the deployment. Should be a list
+            of Kubernetes EnvVar types
           items: {}
         image:
           type: string
           description: The Docker image for the deployment
+        memory:
+          type: integer
+          description: The memory for the deployment in MB
         metricPort:
           type: integer
           description: The port to serve the metrics on
@@ -1119,16 +1125,12 @@ components:
         organization:
           type: string
           description: The organization of the model
-        readinessProbe:
-          type: object
-          description: The readiness probe. Should be a Kubernetes Probe type
-        resources:
-          type: object
-          description: The resources for the deployment. Should be a Kubernetes ResourceRequirements
-            type
         servingPort:
           type: integer
           description: The port to serve the model on
+        startupProbe:
+          type: object
+          description: The readiness probe. Should be a Kubernetes Probe type
         type:
           type: string
           description: The type of origin for the deployment (hf_private_endpoint,
@@ -1137,38 +1139,16 @@ components:
       type: object
       description: Configuration for a serverless deployment
       properties:
-        lastPodRetentionPeriod:
-          type: string
-          description: The minimum amount of time that the last replica will remain
-            active AFTER a scale-to-zero decision is made
-        maxNumReplicas:
-          type: integer
-          description: The maximum number of replicas for the deployment.
-        metric:
-          type: string
-          description: Metric watched to make scaling decisions. Can be "cpu" or "memory"
-            or "rps" or "concurrency"
-        minNumReplicas:
+        maxScale:
           type: integer
           description: The minimum number of replicas for the deployment. Can be 0
             or 1 (in which case the deployment is always running in at least one location).
-        scaleDownDelay:
-          type: string
-          description: The time window which must pass at reduced concurrency before
-            a scale-down decision is applied. This can be useful, for example, to
-            keep containers around for a configurable duration to avoid a cold start
-            penalty if new requests come in.
-        scaleUpMinimum:
+        minScale:
           type: integer
-          description: The minimum number of replicas that will be created when the
-            deployment scales up from zero.
-        stableWindow:
-          type: string
-          description: The sliding time window over which metrics are averaged to
-            provide the input for scaling decisions
-        target:
-          type: string
-          description: Target value for the watched metric
+          description: The maximum number of replicas for the deployment.
+        timeout:
+          type: integer
+          description: The timeout for the deployment in seconds
     SpecConfiguration:
       type: object
       description: Configuration, this is a key value storage. In your object you
@@ -1458,19 +1438,13 @@ components:
       scheme: bearer
       type: http
 info:
-  title: Beamlit Control Plane
+  title: Blaxel Control Plane
   version: 0.0.1
 openapi: 3.0.3
 paths:
   /agents:
     get:
       operationId: ListAgents
-      parameters:
-      - description: Environment to filter agents by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -1510,13 +1484,6 @@ paths:
   /agents/{agentName}:
     delete:
       operationId: DeleteAgent
-      parameters:
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -1532,12 +1499,6 @@ paths:
       - agents
     get:
       operationId: GetAgent
-      parameters:
-      - description: Environment to filter agents by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -1579,96 +1540,9 @@ paths:
       summary: Update agent by name
       tags:
       - agents
-  /agents/{agentName}/history:
+  /agents/{agentName}/revisions:
     get:
-      operationId: ListAgentHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AgentHistory'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_history:list
-      tags:
-      - agents
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-  /agents/{agentName}/history/{requestId}:
-    delete:
-      operationId: DeleteAgentHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentHistory'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:delete
-      tags:
-      - agents
-    get:
-      operationId: GetAgentHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentHistory'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:get
-      tags:
-      - agents
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-    - description: Request ID
-      in: path
-      name: requestId
-      required: true
-      schema:
-        type: string
-    put:
-      operationId: PutAgentHistory
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AgentHistory'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentHistory'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:update
-      summary: Update agent's history by request ID
-      tags:
-      - agents
-  /agents/{agentName}/logs:
-    get:
-      operationId: GetAgentEnvironmentLogs
+      operationId: ListAgentRevisions
       parameters:
       - description: Name of the agent
         in: path
@@ -1682,91 +1556,13 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ResourceLog'
+                  $ref: '#/components/schemas/RevisionMetadata'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
-        - agent_deployments_logs:read
-      tags:
-      - agents
-  /agents/{agentName}/metrics:
-    get:
-      operationId: GetAgentMetrics
-      parameters:
-      - description: Name of the agent
-        in: path
-        name: agentName
-        required: true
-        schema:
-          type: string
-      - description: Environment to filter agents by
-        in: query
-        name: environment
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_metrics:read
-      summary: Get agent metrics
-      tags:
-      - agents
-  /agents/{agentName}/release:
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-    post:
-      operationId: CreateAgentRelease
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentRelease'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_releases:create
-      summary: Create release for a agent from an environment
-      tags:
-      - agents
-  /agents/{agentName}/traces:
-    get:
-      operationId: GetAgentTraceIds
-      parameters:
-      - description: Name of the agent
-        in: path
-        name: agentName
-        required: true
-        schema:
-          type: string
-      - description: Environment to filter agents by
-        in: query
-        name: environment
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TraceIdsResponse'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_traces:read
-      summary: Get agent trace IDs
+        - agents:list
+      summary: List all agent revisions
       tags:
       - agents
   /configuration:
@@ -1785,149 +1581,9 @@ paths:
       summary: List all configurations
       tags:
       - configurations
-  /environments:
-    get:
-      description: Returns a list of all environments in the workspace.
-      operationId: ListEnvironments
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Environment'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments:list
-      summary: List environments
-      tags:
-      - environments
-    post:
-      description: Creates an environment.
-      operationId: CreateEnvironment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Environment'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments:create
-      summary: Create environment
-      tags:
-      - environments
-  /environments/{environmentName}:
-    delete:
-      description: Deletes an environment by name.
-      operationId: DeleteEnvironment
-      parameters:
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments:delete
-      summary: Delete environment
-      tags:
-      - environments
-    get:
-      description: Returns an environment by name.
-      operationId: GetEnvironment
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments:get
-      summary: Get environment
-      tags:
-      - environments
-    parameters:
-    - description: Name of the environment
-      in: path
-      name: environmentName
-      required: true
-      schema:
-        type: string
-    put:
-      description: Updates an environment.
-      operationId: UpdateEnvironment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Environment'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments:update
-      summary: Update environment
-      tags:
-      - environments
-  /environments/{environmentName}/metrics:
-    get:
-      description: Returns metrics for an environment by name.
-      operationId: GetEnvironmentMetrics
-      parameters:
-      - description: Name of the environment
-        in: path
-        name: environmentName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - environments_metrics:get
-      summary: Get environment metrics
-      tags:
-      - environments
   /functions:
     get:
       operationId: ListFunctions
-      parameters:
-      - description: Environment to filter functions by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -1967,13 +1623,6 @@ paths:
   /functions/{functionName}:
     delete:
       operationId: DeleteFunction
-      parameters:
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -1989,12 +1638,6 @@ paths:
       - functions
     get:
       operationId: GetFunction
-      parameters:
-      - description: Environment to filter functions by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2036,9 +1679,10 @@ paths:
       summary: Update function by name
       tags:
       - functions
-  /functions/{functionName}/logs:
+  /functions/{functionName}/revisions:
     get:
-      operationId: GetFunctionEnvironmentLogs
+      description: Returns revisions for a function by name.
+      operationId: ListFunctionRevisions
       parameters:
       - description: Name of the function
         in: path
@@ -2051,137 +1695,15 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/ResourceLog'
+                $ref: '#/components/schemas/RevisionMetadata'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
-        - function_deployments_logs:read
+        - models:list
+      summary: List function revisions
       tags:
       - functions
-  /functions/{functionName}/metrics:
-    get:
-      operationId: GetFunctionMetrics
-      parameters:
-      - description: Name of the function
-        in: path
-        name: functionName
-        required: true
-        schema:
-          type: string
-      - description: Environment to filter functions by
-        in: query
-        name: environment
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_metrics:read
-      summary: Get function metrics
-      tags:
-      - functions
-  /functions/{functionName}/release:
-    parameters:
-    - description: Name of the function
-      in: path
-      name: functionName
-      required: true
-      schema:
-        type: string
-    post:
-      operationId: CreateFunctionRelease
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FunctionRelease'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_releases:create
-      summary: Create release for a function from an environment
-      tags:
-      - functions
-  /functions/{functionName}/traces:
-    get:
-      operationId: GetFunctionTraceIds
-      parameters:
-      - description: Name of the function
-        in: path
-        name: functionName
-        required: true
-        schema:
-          type: string
-      - description: Environment to filter function by
-        in: query
-        name: environment
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TraceIdsResponse'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - function_traces:read
-      summary: Get function trace IDs
-      tags:
-      - functions
-  /history/agents:
-    get:
-      description: Get all history for all agents
-      operationId: ListAgentsHistory
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AgentHistory'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:list
-      tags:
-      - history
-  /history/agents/{requestId}:
-    get:
-      description: Get all history for a specific request ID from all agents
-      operationId: GetAgentsHistory
-      parameters:
-      - description: Request ID of the agent history
-        in: path
-        name: requestId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AgentHistory'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - agent_deployment_history:list
-      tags:
-      - history
   /integrations/{integrationName}:
     get:
       description: Returns integration information by name.
@@ -2369,12 +1891,6 @@ paths:
     get:
       description: Returns a list of all knowledgebases in the workspace.
       operationId: ListKnowledgebases
-      parameters:
-      - description: Environment to filter functions by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2408,20 +1924,14 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - environments:create
-      summary: Create environment
+        - knowledgebases:create
+      summary: Create knowledgebase
       tags:
       - knowledgebases
   /knowledgebases/{knowledgebaseName}:
     delete:
       description: Deletes an knowledgebase by Name.
       operationId: DeleteKnowledgebase
-      parameters:
-      - description: Environment to filter knowledgebases by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2431,19 +1941,13 @@ paths:
           description: successful operation
       security:
       - BearerAuth:
-        - environments:delete
-      summary: Delete environment
+        - knowledgebases:delete
+      summary: Delete knowledgebase
       tags:
       - knowledgebases
     get:
       description: Returns an knowledgebase by Name.
       operationId: GetKnowledgebase
-      parameters:
-      - description: Environment to filter functions by
-        in: query
-        name: environment
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2486,6 +1990,31 @@ paths:
       summary: Update knowledgebase
       tags:
       - knowledgebases
+  /knowledgebases/{knowledgebaseName}/revisions:
+    get:
+      description: Returns revisions for a knowledgebase by name.
+      operationId: ListKnowledgebaseRevisions
+      parameters:
+      - description: Name of the knowledgebase
+        in: path
+        name: knowledgebaseName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - models:list
+      summary: List knowledgebase revisions
+      tags:
+      - knowledgebases
   /locations:
     get:
       description: Returns a list of all locations available with status.
@@ -2505,34 +2034,25 @@ paths:
       summary: List locations
       tags:
       - locations
-  /metrics:
+  /mcp/hub:
     get:
-      description: Returns metrics for the workspace's deployments.
-      operationId: GetMetrics
+      operationId: ListMCPHubDefinitions
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metrics'
+                items:
+                  $ref: '#/components/schemas/MCPDefinition'
+                type: array
           description: successful operation
       security:
       - BearerAuth:
-        - metrics:get
-      summary: Get metrics for a workspace
-      tags:
-      - metrics
+        - mcphub:list
   /models:
     get:
       description: Returns a list of all models in the workspace.
       operationId: ListModels
-      parameters:
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: false
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2574,13 +2094,6 @@ paths:
     delete:
       description: Deletes a model by name.
       operationId: DeleteModel
-      parameters:
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2597,13 +2110,6 @@ paths:
     get:
       description: Returns a model by name.
       operationId: GetModel
-      parameters:
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: false
-        schema:
-          type: string
       responses:
         "200":
           content:
@@ -2646,10 +2152,10 @@ paths:
       summary: Create or update model
       tags:
       - models
-  /models/{modelName}/logs:
+  /models/{modelName}/revisions:
     get:
-      description: Returns logs for a model deployment by name.
-      operationId: GetModelEnvironmentLogs
+      description: Returns revisions for a model by name.
+      operationId: ListModelRevisions
       parameters:
       - description: Name of the model
         in: path
@@ -2662,95 +2168,13 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/ResourceLog'
+                $ref: '#/components/schemas/RevisionMetadata'
                 type: array
           description: successful operation
       security:
       - BearerAuth:
-        - model_deployments_logs:read
-      tags:
-      - models
-  /models/{modelName}/metrics:
-    get:
-      description: Returns metrics for a model by name.
-      operationId: GetModelMetrics
-      parameters:
-      - description: Name of the model
-        in: path
-        name: modelName
-        required: true
-        schema:
-          type: string
-      - description: Environment of the model
-        in: query
-        name: environment
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourceEnvironmentMetrics'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_metrics:read
-      summary: Get model metrics
-      tags:
-      - models
-  /models/{modelName}/release:
-    parameters:
-    - description: Name of the model
-      in: path
-      name: modelName
-      required: true
-      schema:
-        type: string
-    post:
-      description: Make a release for a model from an environment to another.
-      operationId: ReleaseModel
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModelRelease'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_releases:create
-      summary: Release model from an environment
-      tags:
-      - models
-  /models/{modelName}/traces:
-    get:
-      operationId: GetModelTraceIds
-      parameters:
-      - description: Name of the model
-        in: path
-        name: modelName
-        required: true
-        schema:
-          type: string
-      - description: Environment to filter models by
-        in: query
-        name: environment
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TraceIdsResponse'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - model_traces:read
-      summary: Get model trace IDs
+        - models:list
+      summary: List model revisions
       tags:
       - models
   /policies:
@@ -3361,101 +2785,6 @@ paths:
       required: true
       schema:
         type: string
-  /traces:
-    get:
-      operationId: GetTraceIds
-      parameters:
-      - in: query
-        name: workloadId
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: workloadType
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: environment
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: limit
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: startTime
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: endTime
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: object
-          description: OK
-      security:
-      - BearerAuth:
-        - member
-      summary: Get trace IDs
-  /traces/{traceId}:
-    get:
-      operationId: GetTrace
-      parameters:
-      - in: path
-        name: traceId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: object
-          description: OK
-      security:
-      - BearerAuth:
-        - member
-      summary: Get trace by ID
-  /traces/{traceId}/logs:
-    get:
-      operationId: GetTraceLogs
-      parameters:
-      - in: path
-        name: traceId
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: spanId
-        required: false
-        schema:
-          type: string
-      - in: query
-        name: limit
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: object
-          description: OK
-      security:
-      - BearerAuth:
-        - member
-      summary: Get trace logs
   /users:
     get:
       description: Returns a list of all users in the workspace.
@@ -3765,7 +3094,7 @@ security:
 - BearerAuth:
   - admin
 servers:
-- description: Beamlit Control Plane
-  url: https://api.beamlit.com/v0
-- description: Beamlit Inference
-  url: https://run.beamlit.com
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai

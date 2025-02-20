@@ -2,29 +2,29 @@
 
 title: 'Develop agents in TypeScript'
 
-description: 'Use the Beamlit SDK to develop and run a custom agent in TypeScript.'
+description: 'Use the Blaxel SDK to develop and run a custom agent in TypeScript.'
 
 ---
 
-You can **bring agents developed in TypeScript in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Beamlit by integrating a few lines of the Beamlit SDK and leveraging our other developer tools ([Beamlit CLI](../cli-reference), GitHub action, etc.).
+You can **bring agents developed in TypeScript in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference), GitHub action, etc.).
 
 <Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
-## Beamlit agent file structure
+## Blaxel agent file structure
 
 ### Overview
 
-To deploy a custom AI agent on Beamlit, you need the following file in your repository:
+To deploy a custom AI agent on Blaxel, you need the following file in your repository:
 
 - **agent.ts (or src/agent.ts)**: This file must contain an *async* function that runs your agent. This function serves as the default entry point during serving and deployment.
     - You can specify a different module to serve using the flag `bl serve --module your-function-path.your-function-name`
-    - The function accepts these arguments, which Beamlit passes when a request is made to your deployed agent:
+    - The function accepts these arguments, which Blaxel passes when a request is made to your deployed agent:
         - *request*: The [Fastify](https://fastify.dev/) Request that triggers the agent's execution.
         - *args*: (Optional) Argument object containing the core agent algorithm. By default, it uses a [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html).
 
-**Mark your agent's main function with Beamlit’s `wrapAgent` wrapper to serve it. You can override the default argument values that Beamlit passes upon requesting the agent by using the wrapper parameters** (see below).
+**Mark your agent's main function with Blaxel’s `wrapAgent` wrapper to serve it. You can override the default argument values that Blaxel passes upon requesting the agent by using the wrapper parameters** (see below).
 
-Some folders are optional but designed to handle specific parts of the agent code on Beamlit:
+Some folders are optional but designed to handle specific parts of the agent code on Blaxel:
 
 - **src/functions**: all files listed in this folder will be interpreted as custom tools that will all be made available to the agent automatically when serving or deploying the agent. The tool’s main TypeScript function itself is identified with the `wrapFunction` wrapper.
 
@@ -42,7 +42,7 @@ You can quickly initialize a new project from scratch by using CLI command  `bl 
 The `wrapAgent` decorator identifies the main function that handles your core agent logic such as how to handle queries and responses, tool calls and such.
 
 ```tsx
-import { wrapAgent } from "@beamlit/sdk";
+import { wrapAgent } from "@blaxel/sdk";
 
 export const agent = wrapAgent(async (request, args) => { ... }, {
   agent: {
@@ -53,13 +53,46 @@ export const agent = wrapAgent(async (request, args) => { ... }, {
 
 Inside the wrapper, you can pass an object of options:
 
-- **`agent`**: this can be either the Beamlit SDK’s `Agent` object or equivalent dict, and allows to specify all the parameters for the deployment of your agent on Beamlit. Examples include:
-    - `metadata.name`: the name of the agent on Beamlit
-    - `spec.description`: the description of the agent on Beamlit
-    - `spec.model`: the name of a model API deployed in your Beamlit workspace, to use as core chat model for the agent
-- **`overrideAgent`**: You can override the default [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html) by passing any custom agent instance. When the deployed agent receives a request, Beamlit will pass this as an argument to the agent's handler function.
-- **`overrideModel`**: You can query an LLM provider directly instead of routing through Beamlit by passing a [BaseChatModel object from LangChain](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html). When the deployed agent receives a request, Beamlit will pass this as the *llm* to the default LangChain ReAct agent. This is used as a more granular alternative to `overrideAgent`.
-- **`remoteFunctions`**: You can pass on additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit. This is used as a more granular alternative to `overrideAgent`.
+- **`agent`**: this can be either the Blaxel SDK’s `Agent` object or equivalent dict, and allows to specify all the parameters for the deployment of your agent on Blaxel. Examples include:
+    - `metadata.name`: the name of the agent on Blaxel
+    - `spec.description`: the description of the agent on Blaxel
+    - `spec.model`: the name of a model API deployed in your Blaxel workspace, to use as core chat model for the agent
+- **`overrideAgent`**: You can override the default [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html) by passing any custom agent instance. When the deployed agent receives a request, Blaxel will pass this as an argument to the agent's handler function.
+- **`overrideModel`**: You can query an LLM provider directly instead of routing through Blaxel by passing a [BaseChatModel object from LangChain](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html). When the deployed agent receives a request, Blaxel will pass this as the *llm* to the default LangChain ReAct agent. This is used as a more granular alternative to `overrideAgent`.
+- **`remoteFunctions`**: You can pass on additional Blaxel [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Blaxel. This is used as a more granular alternative to `overrideAgent`.
+
+### Managing secrets
+
+You can add secrets to your code using `$secrets.KEY_NAME`. When you run the `bl deploy` command, Blaxel will attempt to retrieve the secret values and export them:
+
+- if the key exists in your environment variables, Blaxel will use that value
+- if not, you'll be prompted to enter the secret value in the terminal
+
+```python
+  const handleRequest = async (request: FastifyRequest, args: AgentType) => {
+  ...
+  }
+  
+  return wrapAgent(handleRequest, {
+    agent: {
+      metadata: {
+        name: "test-thread2",
+      },
+      spec: {
+        runtime: {
+          envs: [
+            {
+              name: "OPENAI_API_KEY",
+              value: "$secrets.API_KEY",
+            },
+          ],
+        },
+      },
+    },
+  };
+```
+
+![Screenshot 2025-02-15 at 7.04.07 PM.png](Develop-an-agent-ts/Screenshot_2025-02-15_at_7.04.07_PM.png)
 
 ### Example
 
@@ -69,7 +102,7 @@ Here's an example that demonstrates overriding the default *agent* object.
 import { FastifyRequest } from 'fastify';
 import { ChatOpenAI } from '@langchain/openai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { wrapAgent } from '@beamlit/sdk';
+import { wrapAgent } from '@blaxel/sdk';
 import helloworld from './customfunctions/helloworld';
 
 // Initialize the chat model
@@ -107,23 +140,23 @@ When developing custom agents, you may also need to retrieve instantiated model 
 
 ### Get model APIs
 
-You can use model APIs deployed on Beamlit by calling `getChatModel()`. This function returns a model API **in LangChain format** [BaseChatModel](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html)
+You can use model APIs deployed on Blaxel by calling `getChatModel()`. This function returns a model API **in LangChain format** [BaseChatModel](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html)
 
 ```tsx
-import { getChatModel } from '@beamlit/sdk';
+import { getChatModel } from '@blaxel/sdk';
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 
-const chat = await getChatModel("model-name-on-beamlit");
+const chat = await getChatModel("model-name-on-Blaxel");
 
 const customAgent = createReactAgent({ llm: chat, tools: [] });
 ```
 
 ### Get functions
 
-You can use [functions](../Functions/Overview) defined both in your code and deployed on Beamlit by calling `getFunctions()`. This function returns a list of tools **in LangChain format** [StructuredTool](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)**.**
+You can use [functions](../Functions/Overview) defined both in your code and deployed on Blaxel by calling `getFunctions()`. This function returns a list of tools **in LangChain format** [StructuredTool](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)**.**
 
 ```tsx
-import { getFunctions } from "@beamlit/sdk";
+import { getFunctions } from "@blaxel/sdk";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 
 const functions = await getFunctions();
@@ -133,10 +166,34 @@ const customAgent = createReactAgent({ llm: chat, tools: functions });
 
 By default, this returns the list of functions **defined in the local folder** `src/functions/`. You can pass several parameters:
 
-- **`remoteFunctions`**: to retrieve additional Beamlit [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Beamlit
+- **`remoteFunctions`**: to retrieve additional Blaxel [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Blaxel
 
-<Note>See an example of [how to use the Beamlit SDK to develop and deploy a custom LangChain agent](../Examples/Deploy-a-LangChain-agent) in 5 minutes.</Note>
+### Manage threads for sessions
+
+To simulate multi-turn conversations, agent consumers can generate a thread ID and include it in the agent request using either the `X-Blaxel-Thread-Id` or `Thread-Id` header. You can access this thread by calling `getDefaultThread()` in your agent code.
+
+```tsx
+import { getDefaultThread } from "@blaxel/sdk";
+
+const handleRequest = async (request: FastifyRequest, args: AgentType) => {
+  const { agent } = args;
+  const body = (await request.body) as InputType;
+  const input = body.inputs || body.input || "";
+  
+  const thread_id = getDefaultThread(request) || uuidv4();
+
+  const stream = await agent.stream(
+    { messages: [new HumanMessage(input)] },
+    { configurable: { thread_id } }
+  );
+  
+ ...
+ 
+}
+```
+
+<Note>See an example of [how to use the Blaxel SDK to develop and deploy a custom LangChain agent](../Examples/Deploy-a-LangChain-agent) in 5 minutes.</Note>
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
-Learn how to deploy your custom AI agents on Beamlit as a serverless endpoint. 
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint. 
 </Card>

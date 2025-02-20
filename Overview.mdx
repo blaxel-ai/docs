@@ -1,17 +1,17 @@
 ---
 
-title: 'Beamlit Documentation'
+title: 'Blaxel Documentation'
 
-description: 'Welcome to Beamlit!'
+description: 'Welcome to Blaxel!'
 
 sidebarTitle: "Overview"
 
 ---
 
-Beamlit is a **serverless platform** that gives AI Builders the dev tools and infrastructure to build and deploy **AI agents**. Beamlit lets you bring your own model APIs, functions and agents code (in Python or TypeScript) and runs them securely with low-latency and high-availability.
+Blaxel is a **serverless platform** that gives AI Builders the dev tools and infrastructure to build and deploy **AI agents**. Blaxel lets you bring your own model APIs, functions and agents code (in Python or TypeScript) and runs them securely with low-latency and high-availability.
 
 <Frame>
-<img src="/img/general/home-dark.png" />
+<img src="/img/general/overview-with-map.png" />
 </Frame>
 
 At its core, an *AI agent* is any software that leverages generative AI models to take autonomous actions in the real world—whether by interacting with humans or using APIs to read and write data. Some examples of agents include:
@@ -21,7 +21,7 @@ At its core, an *AI agent* is any software that leverages generative AI models t
 - **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured data from sources, uses an LLM to turn this raw data into structured data, and insert it back into a database
 - **Automated agents** that automate machine-to-machine workflows with AI: for example a system that retrieves traffic video feeds in real-time, detects the presence of accidents, and if so contacts emergency services automatically by generating and sending a detailed report.
 
-Beamlit provides developer tools for running such production-grade multi-agents **in** **sandboxed environments** ; and offers infrastructure to run these agents on a global network that makes them **resilient** and ensures **secure interactions with your private systems**, wherever they are.
+Blaxel provides developer tools for running such production-grade multi-agents **in** **sandboxed environments** ; and offers infrastructure to run these agents on a global network that makes them **resilient** and ensures **secure interactions with your private systems**, wherever they are.
 
 This portal provides comprehensive documentation, API references, and CLI instructions to help you operate the platform effectively.
 
@@ -35,27 +35,27 @@ Here's how a typical agent development process works: you and your team create a
 - *Your agent requires proper credentials to access any private systems the tool call might use*
 - *You must verify the consumer's identity and ensure they have appropriate permissions to use the tool and access related private systems*
 
-Due to the essentially connected nature of agents, these connectivity and networking problems are often what prevent companies to move to production with agents. Beamlit automatically takes care of that for you.
+Due to the essentially connected nature of agents, these connectivity and networking problems are often what prevent companies to move to production with agents. Blaxel automatically takes care of that for you.
 
-### The Beamlit method
+### The Blaxel method
 
-Beamlit is a serverless platform that runs your AI agents. You can develop these agents in Python or TypeScript using any framework—be it LangChain, CrewAI, or your own custom code. 
+Blaxel is a serverless platform that runs your AI agents. You can develop these agents in Python or TypeScript using any framework—be it LangChain, CrewAI, or your own custom code. 
 
-The most important concept to get started are the three types of workload that you can deploy on Beamlit:
+The most important concept to get started are the three types of workload that you can deploy on Blaxel:
 
 - **Agents**: The core orchestration layer of an agentic AI application. It is the entry point to an AI-powered systems that can interact with users, reason independently, and take autonomous actions through APIs to read or write data. *Agents* are built using the two other atomic bricks: *functions* and *models*.
 - **Functions**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
 - **Model APIs**: ML models that make inferences within the chained AI workflow. They act as action models—LLMs that interact with humans in natural language and can use available tools by generating appropriate input payloads (*function calling*).
 
-Beamlit provides all the **developer tools** needed to build and run your agents throughout their lifecycle. When pushed to Beamlit, agents, models, and functions become available as single **global endpoints**. Beamlit lets you set the model APIs and tools an agent uses during development, but also **executes those API and tool calls** during agent runtime. You can manage your model lifecycle across stages using Beamlit environments such as development and production, in order to iterate on prompts and code, and ship and rollback as needed. 
+Blaxel provides all the **developer tools** needed to build and run your agents throughout their lifecycle. When pushed to Blaxel, agents, models, and functions become available as single **global endpoints**. Blaxel lets you set the model APIs and tools an agent uses during development, but also **executes those API and tool calls** during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
 
-## The Beamlit powerhouse
+## The Blaxel powerhouse
 
-When you deploy your agents to Beamlit, they run on a technical backbone called the **Global Inference Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Beamlit, and we'll run the agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
+When you deploy your agents to Blaxel, they run on a technical backbone called the **Global Inference Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Blaxel, and we'll run the agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
 
-Global Inference Network serves as the powerhouse for the entire Beamlit platform, and is natively **distributed** in order to optimize for ultra-low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
+Global Inference Network serves as the powerhouse for the entire Blaxel platform, and is natively **distributed** in order to optimize for ultra-low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
 
-The platform implements advanced security measures, including fine-grained authentication and authorization through Beamlit IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, console, as well as a Kubernetes operator for IT teams.
+The platform implements advanced security measures, including fine-grained authentication and authorization through Blaxel IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, console, as well as a Kubernetes operator for IT teams.
 
 ## Documentation structure
 
@@ -64,11 +64,12 @@ You might want to start with any of the following articles:
 - [**Get started**](Get-started): Deploy your first AI agent in just 3 minutes.
 - [**Examples:**](Examples/Deploy-a-LangChain-agent) Explore real-world use cases and implementation guides.
 - **Product Documentation**
+    - [**Frameworks**](Frameworks/Overview): Discover the agent frameworks supported by Blaxel
     - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
     - [**Functions**](Functions/Overview): Execute tool calls when requested by your AI agents
     - [**Model APIs:**](Models/Overview) Learn about supported model types.
-    - [**Integrations:**](Integrations/HuggingFace) Discover how Beamlit works with other tools and platforms.
-    - [**Policies Governance**:](Model-Governance/Environments) Manage a development and production life-cycle.
+    - [**Integrations:**](Integrations/HuggingFace) Discover how Blaxel works with other tools, frameworks, and platforms.
+    - [**Policies Governance**](Model-Governance/Policies%2013847e47b1ea817daa5bcd58129a9bdb)[:](Model-Governance/Environments) Manage your AI deployment strategies.
     - [**Security:**](Security/Workspace-access-control) Implement robust security measures for your AI infrastructure.
-- [**API reference:**](https://docs.beamlit.com/api-reference/introduction) Comprehensive guide to Beamlit's APIs.
-- [**CLI reference:**](https://docs.beamlit.com/cli-reference/introduction) Learn how to use Beamlit's command-line interface.
+- [**API reference:**](https://docs.blaxel.ai/api-reference/introduction) Comprehensive guide to Blaxel's APIs.
+- [**CLI reference:**](https://docs.blaxel.ai/cli-reference/introduction) Learn how to use Blaxel's command-line interface.

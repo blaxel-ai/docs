@@ -10,34 +10,58 @@ description: 'Execute custom code to empower your AI agents with tools and actio
 
 Functions represent **custom code** that can be executed by passing specific input arguments. 
 
-Beamlit runs your code on Global Inference Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Beamlit automates its execution and scaling - providing you with one single globally endpoint to run the function. 
+Blaxel runs your code on Global Inference Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its execution and scaling - providing you with one single globally endpoint to run the function. 
 
-Functions are designed to **equip agents with tools** to interact with the world. When an agent runs on Beamlit, our Global Inference Network accelerates the whole execution behind the scenes, by running the function separately from the action model and agent logic. This ensures minimal latency for your consumers as well as optimal resource utilization. 
+Functions are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, our Global Inference Network accelerates the whole execution behind the scenes, by running the function separately from the action model and agent logic. This ensures minimal latency for your consumers as well as optimal resource utilization. 
 
-## Deploy a function on Beamlit
+## Deploy a function on Blaxel
 
-A function can be uploaded into Beamlit from a variety of origins.
+A function can be uploaded into Blaxel from a variety of origins.
 
-- Using a function from the Beamlit Store
+- Using a function from the Blaxel Store
 - From a custom code
-- *From Github (coming soon!)*
+- *From GitHub (coming soon!)*
 
-### Deploy from the Beamlit store
+### Deploy from the Blaxel store
 
-The Beamlit store contains a curated list of functions and tools from the most popular providers that can be **deployed out-of-the-box on Beamlit**. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP).
+The Blaxel store contains a curated list of functions and tools from the most popular providers that can be **deployed out-of-the-box on Blaxel**. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP).
 
 Depending on the function you choose, you will need to enter credentials as an [integration](../Integrations), such as an API key if your tool is using a third-party service provider.
 
 ### Deploy from custom code
 
-You can deploy **any custom Python or TypeScript code** as a serverless function on Beamlit. 
+You can deploy **any custom Python or TypeScript code** as a serverless function on Blaxel. 
 
 The easiest way to deploy a function is to deploy it as part of an agent application. [Read more about developing and deploying custom agents and functions here](../Agents/Develop-an-agent). 
 
-### Environment
+### Manage revisions
 
-Select the environment on which to deploy your workload. Environments give you a dedicated production or development endpoint for your application life-cycle. A function or model API that is deployed in an environment can only be used by agents in the same environment.
+As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+
+![image.png](Overview/image.png)
+
+Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
+
+- **rollback a deployment** to its exact state from an earlier date
+- create a revision without immediate deployment to **prepare for a future release**
+- implement progressive rollout strategies, such as **canary deployments**
+
+Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
+
+Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
+
+![image.png](../Agents/Deploy-an-agent/image%201.png)
+
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
 <Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run invocation requests on your function. 
 </Card>
+
+We're sad to see you go. Please fill out the form below to request deleting your Blaxel account.
+
+This action is DEFINITIVE and cannot be reversed. It will erase all records of your account and associated resources from Blaxel, including but not restricted to: workspaces, agents, and other deployments.
+
+We're sad to see you go. Please fill out the form below to request deletion of your Blaxel account.
+
+This action is permanent and cannot be reversed. It will erase all records of your account and associated resources from Blaxel, including workspaces, agents, and deployments.
