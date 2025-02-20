@@ -2,15 +2,15 @@
 
 title: 'External model APIs'
 
-description: 'Control & secure access to AI models from top providers behind Beamit Global Inference Network.'
+description: 'Control & secure access to AI models from top providers behind Blaxel Global Inference Network.'
 
 ---
 
-You can query any LLM or other generative AI model from top API providers via Beamlit, in order to benefit from a **unified layer of access control and telemetry,** especially when running whole AI agents. 
+You can query any LLM or other generative AI model from top API providers via Blaxel, in order to benefit from a **unified layer of access control and telemetry,** especially when running whole AI agents. 
 
-## Creating a model endpoint on Beamlit
+## Creating a model endpoint on Blaxel
 
-Adding model endpoints from external providers on Beamlit gives you single endpoints to call the model on the same base URL, rather than calling each provider separately. Beamlit handles the authentication, authorization and monitoring automatically for you.
+Adding model endpoints from external providers on Blaxel gives you single endpoints to call the model on the same base URL, rather than calling each provider separately. Blaxel handles the authentication, authorization and monitoring automatically for you.
 
 This is done in a two step process:
 
@@ -20,10 +20,6 @@ This is done in a two step process:
 ![Screenshot 2024-12-05 at 6.59.49 PM.png](External-model-apis/c36458c0-c3e5-48bd-988a-62213d7dd489.png)
 
 You can then query the model using its [dedicated global inference endpoint](Query-a-model). Any call to this endpoint will be passed to the underlying provider.
-
-### Environment
-
-Select the environment on which to deploy your workload. Environments give you a dedicated production or development endpoint for your application life-cycle. A function or model API that is deployed in an environment can only be used by agents in the same environment.
 
 ## Provider reference
 

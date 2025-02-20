@@ -21,18 +21,18 @@
   "topbarLinks": [
     {
       "name": "Changelog",
-      "url": "https://docs.beamlit.com/changelog"
+      "url": "https://docs.blaxel.ai/changelog"
     }
   ],
   "topbarCtaButton": {
-    "name": "Beamlit Console",
-    "url": "https://app.beamlit.com"
+    "name": "Blaxel Console",
+    "url": "https://app.blaxel.ai"
   },
   "anchors": [
     {
       "name": "Changelog",
       "icon": "calendar",
-      "url": "https://docs.beamlit.com/changelog"
+      "url": "https://docs.blaxel.ai/changelog"
     }
   ],
   "tabs": [
@@ -209,13 +209,7 @@
     {
       "group": "Administration & security",
       "pages": [
-        {
-          "group": "Policies governance",
-          "pages": [
-            "Model-Governance/Environments",
-            "Model-Governance/Policies"
-          ]
-        },
+        "Model-Governance/Policies",
         {
           "group": "Workspaces and permissions",
           "pages": [
@@ -227,20 +221,7 @@
         {
           "group": "Infrastructure",
           "pages": [
-            "Models/Global-Inference-Network",
-            {
-              "group": "Hybrid deployment",
-              "pages": [
-                "Models/Cloud-Burst-Network/Model-overflow",
-                "Models/Cloud-Burst-Network/Install-Beamlit-operator",
-                {
-                  "group": "Cluster configurations",
-                  "pages": [
-                    "Models/Cloud-Burst-Network/Cluster-configurations/Set-up-overflow-metric"
-                  ]
-                }
-              ]
-            }
+            "Models/Global-Inference-Network"
           ]
         }
       ]
@@ -249,7 +230,7 @@
   "analytics": {
     "posthog": {
       "apiKey": "phc_HGJ7t7Qa8cJJilL0CONU5se4vM6jU6nKFCuoCC9LSha",
-      "apiHost": "https://events.beamlit.com",
+      "apiHost": "https://events.blaxel.ai",
       "personProfiles": "identified_only"
     }
   }

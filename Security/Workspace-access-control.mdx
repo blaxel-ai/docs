@@ -6,9 +6,9 @@ description: 'Control authentication and authorization over all resources in you
 
 ---
 
-All resources on Beamlit are logically regrouped in a **workspace,** which is the highest possible level of tenancy. Your organization will usually operate within one single workspace, but it is not necessarily the case when dealing with multiple business units or end-clients for example.
+All resources on Blaxel are logically regrouped in a **workspace,** which is the highest possible level of tenancy. Your organization will usually operate within one single workspace, but it is not necessarily the case when dealing with multiple business units or end-clients for example.
 
-Users can be either [team members](Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0), or [service accounts](Service-accounts) that represent external systems that can operate Beamlit (typically, a [Beamlit operator](https://www.notion.so/13847e47b1ea81dab2eefb5694f621ef?pvs=21)). They are added to a workspace with certain permissions on the workspace resources inherited from their role.
+Users can be either [team members](Workspace-access-control%2013847e47b1ea8151bd43efeccf5defe0), or [service accounts](Service-accounts) that represent external systems that can operate Blaxel. They are added to a workspace with certain permissions on the workspace resources inherited from their role.
 
 ## User roles
 
@@ -16,7 +16,7 @@ There are two roles that a user or service account can have in a workspace: **ad
 
 Admins have **complete access** in the workspace, on all workspace resources. They can also modify all workspace settings, including inviting other team members. More specifically, admins have all the permissions that members have, in addition to:
 
-- creating and editing policies and environments
+- creating and editing policies
 - inviting and removing users
 - changing user’s permissions
 - adding and removing integrations
@@ -32,7 +32,6 @@ Members can view the workspace settings but not edit them. They are also able to
 They have read-only access on the following resources:
 
 - [policies](../Model-Governance/Policies)
-- [environments](../Model-Governance/Environments)
 
 ## Invite a member
 
@@ -40,10 +39,10 @@ Admins can invite team members via their email address. They will be prompted fo
 
 ![Screenshot 2024-10-15 at 5.22.37 PM.png](Workspace-access-control/Screenshot_2024-10-15_at_5.22.37_PM.png)
 
-The invitee will receive an email to allow them to accept the invitation on Beamlit console. They will not be able to access workspace resources until they have manually accepted the invitation. If the user doesn’t have a Beamlit account already, they will be asked to signup first.
+The invitee will receive an email to allow them to accept the invitation on Blaxel console. They will not be able to access workspace resources until they have manually accepted the invitation. If the user doesn’t have a Blaxel account already, they will be asked to signup first.
 
 Invitations to other workspaces are visible from your Profile.
 
 ## Delete a workspace
 
-Admins can delete a workspace on Beamlit console from the workspace settings. **This action cannot be undone**.
+Admins can delete a workspace on Blaxel console from the workspace settings. **This action cannot be undone**.

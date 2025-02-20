@@ -6,29 +6,19 @@ description: 'Make inference requests on your model APIs.'
 
 ---
 
-Model APIs on Beamlit have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](External-model-apis) associated with your model API. 
+Model APIs on Blaxel have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Inference Network](Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your model API. 
 
 ## Inference endpoints
 
-Whenever you deploy a model API on Beamlit, an **inference endpoint** is generated on Global Inference Network.
+Whenever you deploy a model API on Blaxel, an **inference endpoint** is generated on Global Inference Network.
 
 The inference URL looks like this:
 
 ```http Query model API
 
-POST run.beamlit.com/{your-workspace}/models/{your-model}
+POST run.blaxel.ai/{your-workspace}/models/{your-model}
 
 ```
-
-There is one distinct endpoint for each **model API deployment,** i.e. for each combination of a [model API](External-model-apis%2015347e47b1ea8079a352f047992b94ee) and an [environment](../Model-Governance/Environments) in which it is deployed. 
-
-For example, if you have one version of model API “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
-
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
-
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
-
-If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model API is not deployed on the production environment, it will return an error.
 
 ### Specific API endpoints in your model
 
@@ -36,49 +26,49 @@ The URL above calls your model and can be called directly. However your model ma
 
 For example, if you are calling a text generation model that also implements the ChatCompletions API:
 
-- calling `run.beamlit.com/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
-- calling `run.beamlit.com/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate response based on a list of messages
+- calling `run.blaxel.ai/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
+- calling `run.blaxel.ai/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate response based on a list of messages
 
 ### Endpoint authentication
 
 It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens%2013847e47b1ea813cac82ed531bd2356f). The evaluation of authentication/authorization for inference requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making a workload publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
+<Info>Making a workload publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 
 ## Make an inference request
 
-### Beamlit API
+### Blaxel API
 
 Make a **POST** request to the [inference endpoint](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
 
 ```
-curl 'https://run.beamlit.com/YOUR-WORKSPACE/models/YOUR-MODEL?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.blaxel.ai/YOUR-WORKSPACE/models/YOUR-MODEL' \
   -H 'accept: application/json, text/plain, */*' \
-  -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
-  -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
+  -H 'x-Blaxel-authorization: Bearer YOUR-TOKEN' \
+  -H 'x-Blaxel-workspace: YOUR-WORKSPACE' \
   --data-raw $'{"inputs":"Enter your input here."}'
 ```
 
-Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).
+Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/inference).
 
-### Beamlit CLI
+### Blaxel CLI
 
-The following command will make a default POST request to the model API’s *production* deployment (by default), on the base endpoint.
+The following command will make a default POST request to the model API.
 
 ```bash
 bl run model your-model --data '{"inputs":"Enter your input here."}'
 ```
 
-You can call another deployment with the option `--env` , and you can call [specific API endpoints](Query-a-model) that your model implements with the option `--path` :
+You can call [specific API endpoints](Query-a-model) that your model implements with the option `--path` :
 
 ```bash
-bl run model your-model --env development --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
+bl run model your-model --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
 ```
 
-Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).
+Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-reference/bl_run).
 
-### Beamlit console
+### Blaxel console
 
-Inference requests can be made from the Beamlit console from the model API’s **Playground** page.
+Inference requests can be made from the Blaxel console from the model API’s **Playground** page.
 
 ![workbench.png](Query-a-model/workbench.png)

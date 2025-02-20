@@ -10,11 +10,11 @@ description: 'Manage deployments throughout your development life-cycle'
 
 The development and production lifecycle is a critical process in software development that encompasses the journey from initial coding to final deployment and ongoing maintenance. This lifecycle includes key phases such as development, where new features are created and bugs are fixed; testing, which ensures software quality and functionality; staging, where final checks are performed in a production-like environment; and production, where the software goes live for end-users. Throughout this cycle, teams utilize version control, CI/CD pipelines, and automated testing to maintain code quality and streamline transitions between phases. Understanding and optimizing this lifecycle is crucial for organizations aiming to deliver high-quality software efficiently in today's fast-paced digital landscape.
 
-## Managing Development and Production Lifecycle with Models on Beamlit
+## Managing Development and Production Lifecycle with Models on Blaxel
 
 ### Introduction
 
-Managing the development and production lifecycle of models on Beamlit involves several key stages and concepts. This guide will walk you through the process of deploying, updating, and maintaining your models across different environments.
+Managing the development and production lifecycle of models on Blaxel involves several key stages and concepts. This guide will walk you through the process of deploying, updating, and maintaining your models across different environments.
 
 ### Key Concepts
 
@@ -27,13 +27,13 @@ Managing the development and production lifecycle of models on Beamlit involves 
 
 ### 1. Initial Deployment
 
-To deploy a model on Beamlit:
+To deploy a model on Blaxel:
 
 1. Choose a model origin (file upload or HuggingFace)
 2. Select an appropriate runtime
 3. Choose the target environment
 4. Set any additional policies
-5. Use the Beamlit CLI command
+5. Use the Blaxel CLI command
 
 ### 2. Updating Model Versions
 
@@ -42,13 +42,13 @@ As you iterate on your model:
 1. Use the blue-green deployment paradigm
 2. Update the model file, inference runtime, or policies
 3. Use the CLI command
-4. Alternatively, use the Beamlit console for updates
+4. Alternatively, use the Blaxel console for updates
 
 ### 3. Releasing to Production
 
 To move a model from development to production:
 
-1. Use the "releasing" feature in Beamlit
+1. Use the "releasing" feature in Blaxel
 2. Choose the origin (e.g., development) and destination (e.g., production) environments
 3. Decide whether to release deployment-level policies
 4. Use the CLI command
@@ -59,7 +59,7 @@ Manage active deployments:
 
 1. Deactivate models to stop endpoint accessibility and resource consumption
 2. Reactivate models as needed
-3. Use the Beamlit console, API, or CLI for these operations
+3. Use the Blaxel console, API, or CLI for these operations
 
 ### Best Practices
 
@@ -76,8 +76,8 @@ For on-premise deployments with overflow capacity:
 
 - Set up minimal-footprint deployments using Cloud Burst Network
 - Reference models deployed on private infrastructure
-- Allow overflow to Beamlit during unexpected burst traffic
+- Allow overflow to Blaxel during unexpected burst traffic
 
 ### Conclusion
 
-Effectively managing the development and production lifecycle of models on Beamlit involves understanding the platform's concepts, utilizing its deployment features, and following best practices for updates and releases. By leveraging Beamlit's serverless and distributed architecture, you can efficiently manage your AI models from development to production.
+Effectively managing the development and production lifecycle of models on Blaxel involves understanding the platform's concepts, utilizing its deployment features, and following best practices for updates and releases. By leveraging Blaxel's serverless and distributed architecture, you can efficiently manage your AI models from development to production.

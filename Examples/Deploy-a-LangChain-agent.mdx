@@ -2,24 +2,24 @@
 
 title: 'Deploy a LangChain agent'
 
-description: 'Deploy your first LangChain AI agent on Beamlit.'
+description: 'Deploy your first LangChain AI agent on Blaxel.'
 
 ---
 
-This tutorial shows how to deploy a custom [LangChain](https://python.langchain.com/docs/introduction/) AI agent directly from your IDE using Beamlit CLI. 
+This tutorial shows how to deploy a custom [LangChain](https://python.langchain.com/docs/introduction/) AI agent directly from your IDE using Blaxel CLI. 
 
 Your agent will typically include these key components:
 
-- A **core agent logic algorithm** → Beamlit will deploy this as an [Agent](../Agents/Overview)
-- A **set of tools that the agent can use** → Beamlit will deploy these in sandboxed environments as [Functions](../Functions/Overview)
-- A **chat model that powers the agent** → Beamlit can request a [Beamlit model API](../Models/Overview) upon LLM calling.
+- A **core agent logic algorithm** → Blaxel will deploy this as an [Agent](../Agents/Overview)
+- A **set of tools that the agent can use** → Blaxel will deploy these in sandboxed environments as [Functions](../Functions/Overview)
+- A **chat model that powers the agent** → Blaxel can request a [Blaxel model API](../Models/Overview) upon LLM calling.
 
-When the main agent runs, Beamlit orchestrates everything in secure, sandboxed environments, providing complete traceability of all requests and production-grade scalability.
+When the main agent runs, Blaxel orchestrates everything in secure, sandboxed environments, providing complete traceability of all requests and production-grade scalability.
 
 ## **Prerequisites**
 
-- A Beamlit workspace
-- [Beamlit CLI installed](../cli-reference/introduction) on your machine and [logged in](https://docs.beamlit.com/cli-reference/bl_login) to your workspace
+- A Blaxel workspace
+- [Blaxel CLI installed](../cli-reference/introduction) on your machine and [logged in](https://docs.blaxel.ai/cli-reference/bl_login) to your workspace
 
 ## **Guide**
 
@@ -27,7 +27,7 @@ When the main agent runs, Beamlit orchestrates everything in secure, sandboxed e
 
 <Warning>In Python, you will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
 
-Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Beamlit.
+Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
 
 ```bash
 bl create-agent-app my-agent
@@ -64,10 +64,10 @@ Work in progress
 
 Note that this code references a custom tool from another folder that we assume you developed too: `customfunctions.helloworld.helloworld`. By default, this function **would not** be deployed as a separate component. See next section for instructions on deploying it in its own sandboxed environment to trace request usage.
 
-The next step is to use [the Beamlit SDK](../Agents/Develop-an-agent) to specify which function should be deployed on Beamlit. You'll need two key elements:
+The next step is to use [the Blaxel SDK](../Agents/Develop-an-agent) to specify which function should be deployed on Blaxel. You'll need two key elements:
 
 - Create a **main async function** to handle agent execution—this will be your default entry point for serving and deployment.
-- Add the **`@agent` decorator** to designate your main agent function for Beamlit serving.
+- Add the **`@agent` decorator** to designate your main agent function for Blaxel serving.
 
 Here's an example showing the main async function:
 
@@ -111,13 +111,13 @@ Work in progress
 
 Read [our reference for the main agent function to serve](../Agents/Develop-an-agent).
 
-Then, here’s an example adding the Beamlit decorator:
+Then, here’s an example adding the Blaxel decorator:
 
 <CodeGroup>
 
 ```python agent.py (Python) {2,12}
 from fastapi import Request
-from beamlit.agents import agent
+from blaxel.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -156,14 +156,14 @@ Read [our reference for @agent decorator](../Agents/Develop-an-agent).
 
 At this time: 
 
-- your agent is ready to be deployed on Beamlit
+- your agent is ready to be deployed on Blaxel
 - functions (tool calls) and model APIs **are not ready** to be deployed on separate sandboxed environments.
 
-To get total observability and traceability on the requests of your agent, it's recommended to use a microservices-like architecture where each component runs independently in its own environment. **Beamlit helps you cross this last mile with just a few lines of code.**
+To get total observability and traceability on the requests of your agent, it's recommended to use a microservices-like architecture where each component runs independently in its own environment. **Blaxel helps you cross this last mile with just a few lines of code.**
 
 ### Sandbox the tool call execution
 
-To deploy your tool on Beamlit, the simplest way is to place the main function's file in the `src/functions/` folder.
+To deploy your tool on Blaxel, the simplest way is to place the main function's file in the `src/functions/` folder.
 
 Here’s an example with the helloworld custom tool from the previous code snippets:
 
@@ -192,7 +192,7 @@ Now, add the `@function` decorator to specify the default entry point for servin
 <CodeGroup>
 
 ```python src/functions/helloworld.py (Python) {1-3}
-from beamlit.functions import function
+from blaxel.functions import function
 
 @function()
 async def helloworld(query: str):
@@ -217,8 +217,8 @@ Functions placed in the `src/functions/` folder will automatically be deployed a
 
 ```python agent.py (Python) {3,9,11}
 from fastapi import Request
-from beamlit.agents import agent
-from beamlit.functions import get_functions
+from blaxel.agents import agent
+from blaxel.functions import get_functions
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -257,9 +257,9 @@ Read [our reference for get_functions()](../Agents/Develop-an-agent).
 
 ### Sandbox the model API call
 
-Use the [Beamlit console](https://app.beamlit.com) to create the corresponding **integration connection** to your LLM provider, using one of the supported [integrations](../Integrations/OpenAI).
+Use the [Blaxel console](https://app.blaxel.ai) to create the corresponding **integration connection** to your LLM provider, using one of the supported [integrations](../Integrations/OpenAI).
 
-Then create a [model API](../Models/Overview) using your integration, and **deploy** it. Here’s an example from the Beamlit console using an OpenAI model:
+Then create a [model API](../Models/Overview) using your integration, and **deploy** it. Here’s an example from the Blaxel console using an OpenAI model:
 
 ![Screenshot 2024-12-13 at 4.03.53 PM.png](Deploy-a-LangChain-agent/Screenshot_2024-12-13_at_4.03.53_PM.png)
 
@@ -269,13 +269,13 @@ Model APIs can be made available to the agent during execution by calling `get_c
 
 ```python agent.py (Python) {4,8}
 from fastapi import Request
-from beamlit.agents import agent
-from beamlit.functions import get_functions
-from beamlit.agents.chat import get_chat_model
+from blaxel.agents import agent
+from blaxel.functions import get_functions
+from blaxel.agents.chat import get_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
-chat = get_chat_model("your-model-name-on-beamlit")
+chat = get_chat_model("your-model-name-on-blaxel")
 functions = get_functions(warning=False)
 memory = MemorySaver()
 custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
@@ -305,7 +305,7 @@ Work in progress
 
 </CodeGroup>
 
-At this time: your agent, functions and model API are ready to be deployed on Beamlit in sandboxed environments.
+At this time: your agent, functions and model API are ready to be deployed on Blaxel in sandboxed environments.
 
 ### Test and deploy your AI agent
 
@@ -318,17 +318,17 @@ bl serve --hotreload;
 
 Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
 
-To push to Beamlit on the default *production* environment, run the following command. Beamlit will handle the build and deployment:
+To push to Blaxel, run the following command. Blaxel will handle the build and deployment:
 
 ```bash
 bl deploy
 ```
 
-That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Beamlit global infrastructure! [Global Inference Network](../Models/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
+That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Blaxel global infrastructure! [Global Inference Network](../Models/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
 
 ### Make a first inference
 
-Run a first inference on your Beamlit agent with the following command:
+Run a first inference on your Blaxel agent with the following command:
 
 ```bash
 bl run agent my-agent --data '{"inputs":"Hello world!"}'
@@ -336,20 +336,20 @@ bl run agent my-agent --data '{"inputs":"Hello world!"}'
 
 <Tip>Your agent is available behind a **global endpoint**. Read [this guide](../Agents/Query-agents) on how to use it for HTTP requests.</Tip>
 
-You can also run inference requests on your agent (or each function or model API) from the Beamlit console by using the Playground on the console.
+You can also run inference requests on your agent (or each function or model API) from the Blaxel console by using the Playground on the console.
 
 ## Next steps
 
-You are ready to run AI with Beamlit! Here’s a curated list of guides which may be helpful for you to make the most of the Beamlit platform, but feel free to explore the product on your own! 
+You are ready to run AI with Blaxel! Here’s a curated list of guides which may be helpful for you to make the most of the Blaxel platform, but feel free to explore the product on your own! 
 
 <Card title="Deploy agents" icon="earth-americas" href="/Agents/Overview">
-Complete guide for deploying AI agents on Beamlit.
+Complete guide for deploying AI agents on Blaxel.
 </Card>
 
-<Card title="Manage environment policies" icon="server" href="/Model-Governance/Overview">
-Complete guide for managing deployment and routing policies on the Global Inference Network.
-</Card>
-
-<Card title="Guide for querying agents" icon="bolt" href="/Agents/Query-agents">
+<Card title="Integrate and query agents" icon="bolt" href="/Agents/Query-agents">
 Complete guide for querying your AI agents on the Global Inference Network.
+</Card>
+
+<Card title="Manage policies" icon="server" href="/Model-Governance/Policies">
+Complete guide for managing deployment and routing policies on the Global Inference Network.
 </Card>

@@ -6,63 +6,58 @@ description: 'Make inference requests on your agents.'
 
 ---
 
-Agent [deployments](Overview%2015347e47b1ea807bbba6d269c01e633d) on Beamlit have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
+Agent [deployments](Overview%2015347e47b1ea807bbba6d269c01e633d) on Blaxel have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
 
 ## Inference endpoints
 
-Whenever you deploy an agent on Beamlit, an **inference endpoint** is generated on Global inference Network.
+Whenever you deploy an agent on Blaxel, an **inference endpoint** is generated on Global inference Network.
 
 The inference URL looks like this:
 
 ```http Query agent
 
-POST run.beamlit.com/{your-workspace}/agents/{your-agent}
+POST run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 ```
 
-There is one distinct endpoint for each **agent deployment,** i.e. for each combination of a [agent](Overview%2015347e47b1ea807bbba6d269c01e633d) and an [environment](../Model-Governance/Environments) on which it is deployed. 
-
-For example, if you have one version of agent “your-agent” deployed on the *production* environment and one version deployed on the *development* environment:
-
-- `run.beamlit.com/{your-workspace}/agents/{your-agent}?environment=production` will call the production deployment
-- `run.beamlit.com/{your-workspace}/agents/{your-agent}?environment=development` will call the development deployment
-
-If you do not specify the environment in the inference request, it will call the *production* environment by default. If the agent is not deployed on the production environment, it will return an error.
-
 ### Endpoint authentication
 
-By default, agents deployed on Beamlit aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
+By default, agents deployed on Blaxel aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
 
 The evaluation of authentication/authorization for inference requests is managed by the Global inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making an agent publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
+<Info>Making an agent publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
+
+### Manage sessions
+
+To simulate multi-turn conversations, you can include a thread ID in your agent request header. You'll need to generate this ID and pass it using either `X-Blaxel-Thread-Id` or `Thread-Id`. Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
 
 ## Make an inference request
 
-### Beamlit API
+### Blaxel API
 
 Make a **POST** request to the inference endpoint for the agent deployment you are requesting, making sure to fill in the authentication token:
 
 ```
-curl 'https://run.beamlit.com/YOUR-WORKSPACE/agents/YOUR-AGENT?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
-  -H 'x-beamlit-authorization: Bearer YOUR-TOKEN' \
-  -H 'x-beamlit-workspace: YOUR-WORKSPACE' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \
+  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
   --data-raw $'{"inputs":"Enter your input here."}'
 ```
 
-Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).
+Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/inference).
 
-### Beamlit CLI
+### Blaxel CLI
 
-The following command will make a default POST request to the agent’s *production* deployment (by default), on the base endpoint.
+The following command will make a default POST request to the agent.
 
 ```bash
 bl run agent your-agent --data '{"inputs":"Enter your input here."}'
 ```
 
-Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).
+Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-reference/bl_run).
 
-### Beamlit console
+### Blaxel console
 
-Inference requests can be made from the Beamlit console from the agent deployment’s **Playground** page.
+Inference requests can be made from the Blaxel console from the agent deployment’s **Playground** page.

@@ -6,151 +6,149 @@ description: 'Make invocation requests on your functions.'
 
 ---
 
-Function [deployments](Overview%2015347e47b1ea8038813fef14c49dfd5e) on Beamlit have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global Inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your function deployment. 
+Function [deployments](Overview%2015347e47b1ea8038813fef14c49dfd5e) on Blaxel have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global Inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your function deployment. 
 
 When an [agent](../Agents/Overview) requests a function execution, it uses the same invocation endpoint routed through the Global Inference Network.
 
 ## Invocation endpoints
 
-Whenever you deploy a function on Beamlit, an **invocation endpoint** is generated on Global Inference Network.
+When you deploy a function on Blaxel, an invocation endpoint is generated on Global Inference Network. The **protocol used for communication depends on the type of function**: pre-built functions use WebSockets, while custom functions use HTTPS.
 
-The invocation URL looks like this:
+The invocation endpoint looks like this:
 
-```http Query function
+```markdown Query function
 
-POST run.beamlit.com/{your-workspace}/functions/{your-function}
+run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-FUNCTION}
 
 ```
-
-There is one distinct endpoint for each **function deployment,** i.e. for each combination of a [function](Overview%2015347e47b1ea8038813fef14c49dfd5e) and an [environment](../Model-Governance/Environments) on which it is deployed. 
-
-For example, if you have one version of function “your-function” deployed on the *production* environment and one version deployed on the *development* environment:
-
-- `run.beamlit.com/{your-workspace}/functions/{your-function}?environment=production` will call the production deployment
-- `run.beamlit.com/{your-workspace}/functions/{your-function}?environment=development` will call the development deployment
-
-If you do not specify the environment in the invocation request, it will call the *production* environment by default. If the function is not deployed on the production environment, it will return an error.
 
 ### Endpoint authentication
 
-By default, functions deployed on Beamlit aren’t public. It is necessary to authenticate all invocation requests, via a [bearer token](../Security/Access-tokens).
+By default, functions deployed on Blaxel aren’t public. It is necessary to authenticate all invocation requests, via a [bearer token](../Security/Access-tokens).
 
 The evaluation of authentication/authorization for invocation requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making a function publicly available is not yet available. Please contact us at [support@beamlit.com](mailto:support@beamlit.com) if this is something that you need today.</Info>
+<Info>Making a function publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 
 ## Make an invocation request
 
-Using this endpoint to make invocation requests is done differently depending whether the function is a **pre-built Beamlit function** or if it is your **custom function**.
+### Blaxel API
 
-### Beamlit API
+Using this endpoint to make invocation requests is done differently depending whether the function is one of your **custom functions** or if it is a **pre-built Blaxel function.**
 
-**Custom functions** can be invoked by calling the root endpoint. Make a **POST** request to the invocation endpoint for the function deployment you are requesting, making sure to fill in the authentication token:
+**Custom functions** can be invoked by calling the root endpoint using the **HTTPS protocol**. Make a *POST* request to the invocation endpoint for the function deployment you are requesting, making sure to fill in the authentication token:
 
 ```bash
-curl 'https://run.beamlit.com/YOUR-WORKSPACE/functions/YOUR-function?environment=YOUR-ENVIRONMENT' \
+curl 'https://run.blaxel.ai/YOUR-WORKSPACE/functions/YOUR-function' \
   -H 'accept: application/json, text/plain, */*' \
-  -H 'X-Beamlit-Authorization: Bearer YOUR-TOKEN' \
-  -H 'X-Beamlit-Workspace: YOUR-WORKSPACE' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \
+  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
   --data-raw $'{"inputs":"Enter your input here."}'
 ```
 
-<Info>Read about [the API parameters in the reference](https://docs.beamlit.com/api-reference/inference).</Info>
+<Info>Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/inference).</Info>
 
-**Pre-built functions** are Model Context Protocol (MCP) servers deployed on Beamlit. They provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These functions offer two endpoints:
+**Pre-built functions** are [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) servers deployed on Blaxel. They provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These functions can be interacted using WebSocket protocol. 
 
-- `/tools/list` An endpoint that **lists the available tools** and their schemas, allowing consumers (you or agents) to discover the function’s capabilities.
-- `/tools/call` A POST endpoint that lets consumers **execute individual tools**. It requires a payload with two keys:
+They offer two methods:
+
+- `tools/list` A method that **lists the available tools** and their schemas, allowing consumers (you or agents) to discover the function’s capabilities.
+- `tools/call` A method that lets consumers **execute individual tools**. It requires params with two keys:
     - `name`: the name of the tool to run, obtained from the listing endpoint above
     - `arguments`: an object with the key and values of input parameters for the execution, obtained from the listing endpoint above
 
-Example of `/tools/list` GET request on a Brave Search toolkit (make sure to fill in the authentication token).
+Example of `tools/list` outbound message on a Brave Search toolkit (make sure to fill in the authentication token).
 
-```bash
-curl -X GET "https://run.beamlit.com/YOUR-WORKSPACE/functions/web-search/tools/list" \
-  -H 'Content-Type: application/json' \
-  -H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>"
+```json
+{
+	"method":"tools/list",
+	"jsonrpc":"2.0",
+	"id":1
+}
 ```
 
 This one returns two tools in the function: ***brave_web_search*** and ***brave_local_search***.
 
 ```json
-// Returns the following payload
-
 {
-  "tools": [
-    {
-      "name": "brave_web_search",
-      "description": "Performs a web search using the Brave Search API, ideal for general queries, news, articles, and online content. Use this for broad information gathering, recent events, or when you need diverse web sources. Supports pagination, content filtering, and freshness controls. Maximum 20 results per request, with offset for pagination. ",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query (max 400 chars, 50 words)"
-          },
-          "count": {
-            "type": "number",
-            "description": "Number of results (1-20, default 10)",
-            "default": 10
-          },
-          "offset": {
-            "type": "number",
-            "description": "Pagination offset (max 9, default 0)",
-            "default": 0
-          }
-        },
-        "required": [
-          "query"
+    "result": {
+        "tools": [
+            {
+                "name": "blaxel_web_search",
+                "description": "Performs a web search using the Brave Search API, ideal for general queries, news, articles, and online content. Use this for broad information gathering, recent events, or when you need diverse web sources. Supports pagination, content filtering, and freshness controls. Maximum 20 results per request, with offset for pagination. ",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "count": {
+                            "type": "number"
+                        },
+                        "offset": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+            },
+            {
+                "name": "blaxel_local_search",
+                "description": "Searches for local businesses and places using Brave's Local Search API. Best for queries related to physical locations, businesses, restaurants, services, etc. Returns detailed information including:\n- Business names and addresses\n- Ratings and review counts\n- Phone numbers and opening hours\nUse this when the query implies 'near me' or mentions specific locations. Automatically falls back to web search if no local results are found.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "count": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+            }
         ]
-      }
     },
-    {
-      "name": "brave_local_search",
-      "description": "Searches for local businesses and places using Brave's Local Search API. Best for queries related to physical locations, businesses, restaurants, services, etc. Returns detailed information including:\n- Business names and addresses\n- Ratings and review counts\n- Phone numbers and opening hours\nUse this when the query implies 'near me' or mentions specific locations. Automatically falls back to web search if no local results are found.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Local search query (e.g. 'pizza near Central Park')"
-          },
-          "count": {
-            "type": "number",
-            "description": "Number of results (1-20, default 5)",
-            "default": 5
-          }
-        },
-        "required": [
-          "query"
-        ]
-      }
-    }
-  ]
+    "jsonrpc": "2.0",
+    "id": "1"
 }
 ```
 
-Example of `/tools/call` POST request on the ***brave_web_search*** tool (make sure to fill in the authentication token).
+Example of `tools/call` outbound message on the ***brave_web_search*** tool.
 
-```bash
-curl -X POST "https://run.beamlit.com/YOUR-WORKSPACE/functions/web-search/tools/call" \
-  -H 'Content-Type: application/json' \
-  -H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
-  -d '{"name":"brave_web_search","arguments":{"query":"current weather in San Francisco"}}'
+```json
+{
+	"jsonrpc":"2.0",
+	"id":2,
+	"method":"tools/call",
+	"params":{
+		"name":"blaxel_web_search",
+		"arguments":{
+			"query":"What is the current weather in NYC?",
+			"count":1,
+			"offset":1
+			}
+		}
+}
 ```
 
-### Beamlit CLI
+### Blaxel CLI
 
-The following command will make a default POST request to the function’s *production* deployment (by default), on the base endpoint.
+The following command is **only compatible with custom functions** and will make a default POST request to the function’s deployment (by default), on the base endpoint.
 
 ```bash
 bl run function your-function --data '{"inputs":"Enter your input here."}'
 ```
 
-<Info>Read about [the CLI parameters in the reference](https://docs.beamlit.com/cli-reference/beamlit_run).</Info>
+<Info>Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-reference/bl_run).</Info>
 
-### Beamlit console
+At the moment, pre-built Blaxel functions cannot be invoked via Blaxel CLI.
 
-invocation requests can be made from the Beamlit console from the function deployment’s **Playground** page.
+### Blaxel console
+
+invocation requests can be made from the Blaxel console from the function deployment’s **Playground** page.
 
 ![image.png](Invoke-functions/image.png)

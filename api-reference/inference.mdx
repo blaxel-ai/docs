@@ -2,11 +2,11 @@
 
 title: 'Inference API'
 
-description: 'Run inferences on your Beamlit deployments.'
+description: 'Run inferences on your Blaxel deployments.'
 
 ---
 
-Whenever you deploy a workload on Beamlit, an **inference endpoint** is generated on Global Inference Network, the infrastructure powerhouse that hosts it.
+Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Inference Network, the [infrastructure powerhouse](../Models/Global-Inference-Network) that hosts it.
 
 The inference API URL depends on the type of workload ([agent](../Agents/Overview%2015347e47b1ea807bbba6d269c01e633d), [model API](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [function](../Functions/Overview)) you are trying to request:
 
@@ -14,19 +14,19 @@ The inference API URL depends on the type of workload ([agent](../Agents/Overvie
 
 ```http Query agent
 
-POST run.beamlit.com/{your-workspace}/agents/{your-agent}
+POST run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 ```
 
 ```http Query model API
 
-POST run.beamlit.com/{your-workspace}/models/{your-model}
+POST run.blaxel.ai/{your-workspace}/models/{your-model}
 
 ```
 
-```http Query function
+```markdown Query function
 
-POST run.beamlit.com/{your-workspace}/functions/{your-function}
+run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-FUNCTION}
 
 ```
 
@@ -38,47 +38,51 @@ Showing the full request, with the input payload:
 
 ```http Query agent
 
-curl -X POST "https://run.beamlit.com/{your-workspace}/agents/{your-agent}" \
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
 -H 'Content-Type: application/json' \
--H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d '{"inputs":"Hello, world!"}'
 
 ```
 
 ```http Query model API (example on a chat completion model)
-curl -X POST "run.beamlit.com/{your-workspace}/models/{your-model}/chat/completions" \
+curl -X POST "run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
 -H 'Content-Type: application/json' \
--H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d '{"messages":[{"role":"user","content":"Hello!"}]}'
 
 ```
 
-```http Query function (pre-built functions)
-curl -X POST "run.beamlit.com/{your-workspace}/functions/{your-function}/tools/call" \
+```http Query function (custom functions only)
+curl -X POST "run.blaxel.ai/{your-workspace}/functions/{your-function}/tools/call" \
 -H 'Content-Type: application/json' \
--H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
--d '{"name":"brave_web_search","arguments":{"query":"current weather in San Francisco"}}'
-
-```
-
-```http Query function (custom functions)
-curl -X POST "run.beamlit.com/{your-workspace}/functions/{your-function}/tools/call" \
--H 'Content-Type: application/json' \
--H "X-Beamlit-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d $'{"inputs":"Enter your input here."}'
 
 ```
 
 </CodeGroup>
 
-There is one distinct endpoint for each **deployment,** i.e. for each combination of an object and an [environment](../Model-Governance/Environments) in which it is deployed. 
+### Manage sessions
 
-For example, if you have one version of model API “your-model” deployed on the *production* environment and one version deployed on the *development* environment:
+To simulate multi-turn conversations, you can include a thread ID in your agent request header. You'll need to generate this ID and pass it using either `X-Blaxel-Thread-Id` or `Thread-Id`. Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
 
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=production` will call the production deployment
+This is only available for agent requests.
 
-- `run.beamlit.com/{your-workspace}/models/{your-model}?environment=development` will call the development deployment
+```http Query agent with thread ID
 
-If you do not specify the environment in the inference request, it will call the *production* environment by default. If the model API is not deployed on the production environment, it will return an error.
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
+-H 'Content-Type: application/json' \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Thread-Id: <THREAD_ID>" \
+-d '{"inputs":"Hello, world!"}'
+
+```
+
+### Invoke pre-built functions
+
+**Pre-built functions** are [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) servers deployed on Blaxel. They provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These functions can be interacted using WebSocket protocol. 
+
+Read more about [how to call pre-built functions in this documentation](../Functions/Invoke-functions).
 
 <Card title="Product documentation" icon="earth-americas" href="/Models/Query-agents" > Read our product guide on querying an agent. </Card>

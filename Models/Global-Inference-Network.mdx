@@ -2,11 +2,11 @@
 
 title: 'Global Inference Network'
 
-description: 'The Beamlit powerhouse to securely run AI at scale.'
+description: 'The Blaxel powerhouse to securely run AI at scale.'
 
 ---
 
-The *Global Inference Network* makes up the entire backbone of Beamlit. It is a globally distributed infrastructure, on which ML teams can push serverless AI agents across multiple clusters and locations.
+The *Global Inference Network* makes up the entire backbone of Blaxel. It is a globally distributed infrastructure, on which ML teams can push serverless AI agents across multiple clusters and locations.
 
 The purpose of the Global Inference Network is to serve inferences at scale, in a highly available and low-latency manner, to end-users from anywhere. The smart network securely routes requests to the best compute infrastructure based on the deployment policies you enforce, and optimizing for configurable strategies for routing, load-balancing and failover. 
 
@@ -14,17 +14,17 @@ On the technical level, the Global Inference Network is made of two planes: exec
 
 ### Overview of how Global Inference Network works
 
-The Global Inference Network is a **very flexible and configurable infrastructure** built for IT and ML teams. Both the execution plane and data plane can be configured and managed through other services of the Beamlit platform, [as detailed below](Global-Inference-Network).
+The Global Inference Network is a **very flexible and configurable infrastructure** built for IT and ML teams. Both the execution plane and data plane can be configured and managed through other services of the Blaxel platform, [as detailed below](Global-Inference-Network).
 
-The data plane routes all requests between end-users (consumers of your AI applications) and execution locations, as well as between workloads themselves—for example, in agentic workflows. Designed and optimized by Beamlit for tomorrow’s AI, the Network is laser-focused on minimizing latency for AI deployments.
+The data plane routes all requests between end-users (consumers of your AI applications) and execution locations, as well as between workloads themselves—for example, in agentic workflows. Designed and optimized by Blaxel for tomorrow’s AI, the Network is laser-focused on minimizing latency for AI deployments.
 
-The execution plane encompasses all physical locations where AI workloads run in response to consumers' requests. These can be managed by Beamlit or provided by you.
+The execution plane encompasses all physical locations where AI workloads run in response to consumers' requests. These can be managed by Blaxel or provided by you.
 
 From a high-level perspective, the Global Inference Network can operate in several modes, each tailored to your specific deployment strategy.
 
 ![image.png](Global-Inference-Network/image.png)
 
-- **Mode 1: Fully managed Beamlit deployment.** Directly deploy an agent on Beamlit to make it available on the Global Inference Network. Consumers have a fully serverless endpoint to access the agents. Read [our guide on how to deploy agents on Beamlit](../Agents).
-- **Mode 2: Global hybrid deployment.** Attach your private clusters to the Global Inference Network through the Beamlit controller, and federate multi-region deployments behind our global networking system. This mode is part of our Enterprise offering, contact us at [support@beamlit.com](mailto:support@beamlit.com) for more information.
-- **Mode 3: Offload on Beamlit**. This mode allows for **minimal footprint** on your stack and is fully transparent for your consumers. Through a Beamlit controller, you can reference Kubernetes deployments from your own private cluster and offload them to Beamlit Global Inference Network based on conditions, for e.g. in case of sudden traffic burst. This mode is part of our Enterprise offering, contact us at [support@beamlit.com](mailto:support@beamlit.com) for more information.
-- **Mode 4: On-prem Replication**. Through a Beamlit controller, you can reference Kubernetes deployments from your own private cluster and offload them to another of your private cluster in case of traffic burst. This mode entirely relies on open-source software. Read more on the [Github page for the open-source Beamlit controller](https://github.com/beamlit/beamlit-controller).
+- **Mode 1: Fully managed Blaxel deployment.** Directly deploy an agent on Blaxel to make it available on the Global Inference Network. Consumers have a fully serverless endpoint to access the agents. Read [our guide on how to deploy agents on Blaxel](../Agents).
+- **Mode 2: Global hybrid deployment.** Attach your private clusters to the Global Inference Network through the Blaxel controller, and federate multi-region deployments behind our global networking system. This mode is part of our Enterprise offering, contact us at [support@blaxel.ai](mailto:support@blaxel.ai) for more information.
+- **Mode 3: Offload on Blaxel**. This mode allows for **minimal footprint** on your stack and is fully transparent for your consumers. Through a Blaxel controller, you can reference Kubernetes deployments from your own private cluster and offload them to Blaxel Global Inference Network based on conditions, for e.g. in case of sudden traffic burst. This mode is part of our Enterprise offering, contact us at [support@blaxel.ai](mailto:support@blaxel.ai) for more information.
+- **Mode 4: On-prem Replication**. Through a Blaxel controller, you can reference Kubernetes deployments from your own private cluster and offload them to another of your private cluster in case of traffic burst. This mode entirely relies on open-source software. Read more on the [Github page for the open-source Blaxel controller](https://github.com/beamlit/bl-controller).
