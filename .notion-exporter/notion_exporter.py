@@ -168,13 +168,38 @@ class NotionExporter:
                 }
             }
         )
-        response = requests.request(
-            "POST", url, headers=self.query_headers, data=payload, timeout=180
-        )
-        try:
-            return response.json()["taskId"]
-        except:
-            print("ERROR when exporting", response.text, "URL", url)
+
+        # Add retry logic for handling timeouts
+        max_retries = 3
+        retry_delay = 5  # seconds
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.request(
+                    "POST", url, headers=self.query_headers, data=payload, timeout=300
+                )
+                response.raise_for_status()  # Raise exception for 4XX/5XX responses
+                return response.json()["taskId"]
+            except requests.exceptions.Timeout:
+                logging.warning(f"Timeout occurred when exporting page {page_id}. Attempt {attempt+1}/{max_retries}")
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    logging.error(f"Failed to export page {page_id} after {max_retries} attempts due to timeout")
+                    return None
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Request error when exporting page {page_id}: {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+                else:
+                    logging.error(f"Failed to export page {page_id} after {max_retries} attempts")
+                    return None
+            except (KeyError, json.JSONDecodeError) as e:
+                logging.error(f"Error parsing response for page {page_id}: {str(e)}")
+                logging.error(f"Response text: {response.text}")
+                return None
 
     def _get_status(self, task_id: str) -> dict:
         """
@@ -222,6 +247,9 @@ class NotionExporter:
         """
         name, id = page_details
         task_id = self._export(id)
+
+        if task_id is None:
+            return {"state": "failure", "name": name, "error": "Failed to initiate export task"}
 
         status, state, error, pages_exported = self._wait_for_export_completion(
             task_id=task_id
