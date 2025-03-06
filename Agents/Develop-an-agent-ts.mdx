@@ -37,6 +37,8 @@ You can quickly initialize a new project from scratch by using CLI command  `bl 
 - A [LangChain ReAct agent](https://v03.api.js.langchain.com/functions/langchain.agents.createReactAgent.html) as the core agent logic. This agent can be overridden by passing a custom agent as `overrideAgent` in the options of the wrapAgent in */src/agent.ts*
 - A hello-world tool (a function) that returns a placeholder text string. This function can be customized by changing the code in the `helloworld` function in */src/functions/helloworld.ts*, and additional functions can be created in the */src/functions* folder.
 
+An option is available to turn the default *hello-world* agent into a **voice agent** when creating a new TypeScript agent app.
+
 ## The wrapAgent higher-order function
 
 The `wrapAgent` decorator identifies the main function that handles your core agent logic such as how to handle queries and responses, tool calls and such.
