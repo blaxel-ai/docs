@@ -249,7 +249,7 @@ components:
         config:
           type: object
           description: Config of the artifact
-        oauth,omitempty:
+        oauth:
           type: object
           description: OAuth of the artifact
         secrets:
@@ -280,11 +280,75 @@ components:
           type: string
           description: The kit name, very important for the agent to work with your
             kit
-        parameters:
+        schema:
+          $ref: '#/components/schemas/FunctionSchema'
+    FunctionSchema:
+      type: object
+      description: Function schema
+      properties:
+        allOf:
           type: array
-          description: Kit parameters, for your kit to be callable with an Agent
+          description: List of schemas that this schema extends
+          items: {}
+        anyOf:
+          type: array
+          description: List of possible schemas, any of which this schema could be
+          items: {}
+        description:
+          type: string
+          description: Description of the schema
+        enum:
+          type: array
+          description: Enum values
           items:
-            $ref: '#/components/schemas/StoreFunctionParameter'
+            type: string
+        format:
+          type: string
+          description: Format of the schema
+        items:
+          $ref: '#/components/schemas/FunctionSchema'
+        maxLength:
+          type: number
+          description: Maximum length for string types
+        maximum:
+          type: number
+          description: Maximum value for number types
+        minLength:
+          type: number
+          description: Minimum length for string types
+        minimum:
+          type: number
+          description: Minimum value for number types
+        not:
+          type: object
+          description: Schema that this schema must not be
+        oneOf:
+          type: array
+          description: List of schemas, one of which this schema must be
+          items: {}
+        pattern:
+          type: string
+          description: Pattern for string types
+        properties:
+          type: object
+          description: Properties of the schema
+          additionalProperties:
+            $ref: '#/components/schemas/FunctionSchema'
+        required:
+          type: array
+          description: Required properties of the schema
+          items:
+            type: string
+        title:
+          type: string
+          description: Title of the schema
+        type:
+          type: string
+          description: Type of the schema
+    FunctionSchemaOrBool:
+      type: object
+      description: Helper type for AdditionalProperties which can be either a boolean
+        or a schema
     FunctionSpec:
       type: object
       description: Function specification
@@ -297,18 +361,11 @@ components:
               to work with an LLM
           kit:
             type: array
-            description: The kit of the function deployment
+            description: Function kits
             items:
               $ref: '#/components/schemas/FunctionKit'
-          parameters:
-            type: array
-            description: Function parameters, for your function to be callable with
-              Agent
-            items:
-              $ref: '#/components/schemas/StoreFunctionParameter'
-          storeId:
-            type: string
-            description: Store id
+          schema:
+            $ref: '#/components/schemas/FunctionSchema'
     FunctionsList:
       type: array
       items:
@@ -358,6 +415,8 @@ components:
         config:
           type: object
           description: Additional configuration for the integration
+          additionalProperties:
+            type: string
         integration:
           type: string
           description: Integration type
@@ -367,6 +426,8 @@ components:
         secret:
           type: object
           description: Integration secret
+          additionalProperties:
+            type: string
     IntegrationConnectionsList:
       type: array
       items:
@@ -422,6 +483,9 @@ components:
         id:
           type: string
           description: Repository ID
+        isBl:
+          type: boolean
+          description: Whether the repository has Blaxel imports
         name:
           type: string
           description: Repository name
@@ -465,6 +529,8 @@ components:
         options:
           type: object
           description: Options specific to the knowledge base
+          additionalProperties:
+            type: string
         policies:
           $ref: '#/components/schemas/PoliciesList'
         revision:
@@ -530,44 +596,54 @@ components:
     MCPDefinition:
       type: object
       description: Definition of an MCP from the MCP Hub
-      properties:
-        categories:
-          type: array
-          description: Categories of the artifact
-          items: {}
-        coming_soon:
-          type: boolean
-          description: If the artifact is coming soon
-        description:
-          type: string
-          description: Description of the artifact
-        displayName:
-          type: string
-          description: Display name of the artifact
-        enterprise:
-          type: boolean
-          description: If the artifact is enterprise
-        entrypoint:
-          type: object
-          description: Entrypoint of the artifact
-        form:
-          type: object
-          description: Form of the artifact
-        icon:
-          type: string
-          description: Icon of the artifact
-        integration:
-          type: string
-          description: Integration of the artifact
-        longDescription:
-          type: string
-          description: Long description of the artifact
-        name:
-          type: string
-          description: Name of the artifact
-        url:
-          type: string
-          description: URL of the artifact
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - properties:
+          categories:
+            type: array
+            description: Categories of the artifact
+            items: {}
+          coming_soon:
+            type: boolean
+            description: If the artifact is coming soon
+          description:
+            type: string
+            description: Description of the artifact
+          displayName:
+            type: string
+            description: Display name of the artifact
+          enterprise:
+            type: boolean
+            description: If the artifact is enterprise
+          entrypoint:
+            type: object
+            description: Entrypoint of the artifact
+          form:
+            type: object
+            description: Form of the artifact
+          hiddenSecrets:
+            type: array
+            description: Hidden secrets of the artifact
+            items:
+              type: string
+          icon:
+            type: string
+            description: Icon of the artifact
+          image:
+            type: string
+            description: Image of the artifact
+          integration:
+            type: string
+            description: Integration of the artifact
+          longDescription:
+            type: string
+            description: Long description of the artifact
+          name:
+            type: string
+            description: Name of the artifact
+          url:
+            type: string
+            description: URL of the artifact
     MemoryAllocationMetric:
       type: object
       description: Metrics for memory allocation
@@ -1009,6 +1085,12 @@ components:
         memoryAllocation:
           $ref: '#/components/schemas/MemoryAllocationMetric'
           description: Memory allocation metrics for the resource
+        modelTtft:
+          $ref: '#/components/schemas/LatencyMetric'
+          description: Time to first token metrics for model deployments
+        modelTtftOverTime:
+          $ref: '#/components/schemas/TimeToFirstTokenOverTimeMetrics'
+          description: Time to first token metrics over time for model deployments
         requestDurationOverTime:
           $ref: '#/components/schemas/RequestDurationOverTimeMetrics'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -1051,9 +1133,6 @@ components:
         canaryPercent:
           type: integer
           description: Canary revision percent
-        previousActive:
-          type: string
-          description: Previous active revision id
         traffic:
           type: integer
           description: Traffic percentage
@@ -1239,76 +1318,51 @@ components:
         value:
           type: string
           description: Store configuration option value
-    StoreFunction:
+    Template:
       type: object
-      description: Store function
-      allOf:
-      - $ref: '#/components/schemas/TimeFields'
-      - $ref: '#/components/schemas/OwnerFields'
-      - properties:
-          configuration:
-            type: array
-            description: Store function configuration
-            items:
-              $ref: '#/components/schemas/StoreConfiguration'
-          description:
-            type: string
-            description: Store function description
-          displayName:
-            type: string
-            description: Store function display name
-          image:
-            type: string
-            description: Store function image
-          kit:
-            type: array
-            description: Store function kit
-            items:
-              $ref: '#/components/schemas/StoreFunctionKit'
-          labels:
-            type: object
-            description: Store function labels
-          name:
-            type: string
-            description: Store function name
-          parameters:
-            type: array
-            description: Store function parameters
-            items:
-              $ref: '#/components/schemas/StoreFunctionParameter'
-    StoreFunctionKit:
-      type: object
-      description: Store function kit
+      description: Blaxel template
       properties:
+        defaultBranch:
+          type: string
+          description: Default branch of the template
         description:
           type: string
-          description: Description of the function kit, very important for the agent
-            to work with your kit
+          description: Description of the template
         name:
           type: string
-          description: The kit name, very important for the agent to work with your
-            kit
-        parameters:
+          description: Name of the template
+        sha:
+          type: string
+          description: SHA of the variable
+        topics:
           type: array
-          description: Kit parameters, for your kit to be callable with an Agent
+          description: Topic of the template
           items:
-            $ref: '#/components/schemas/StoreFunctionParameter'
-    StoreFunctionParameter:
+            type: string
+        url:
+          type: string
+          description: URL of the template
+        variables:
+          type: array
+          description: Variables of the template
+          items:
+            $ref: '#/components/schemas/TemplateVariable'
+    TemplateVariable:
       type: object
-      description: Store function parameter
+      description: Blaxel template variable
       properties:
         description:
           type: string
-          description: Store function parameter description
+          description: Description of the variable
         name:
           type: string
-          description: Store function parameter name
-        required:
-          type: boolean
-          description: Store function parameter required
-        type:
+          description: Name of the variable
+        path:
           type: string
-          description: Store function parameter type
+          description: Path of the variable
+        secret:
+          type: boolean
+          description: Whether the variable is secret
     TimeFields:
       type: object
       description: Time fields for Persistance
@@ -1319,6 +1373,12 @@ components:
         updatedAt:
           type: string
           description: The date and time when the resource was updated
+    TimeToFirstTokenOverTimeMetrics:
+      type: object
+      description: Time to first token over time metrics
+      properties:
+        timeToFirstTokenOverTime:
+          $ref: '#/components/schemas/RequestDurationOverTimeMetric'
     TokenRateMetric:
       type: object
       description: Token rate metric
@@ -1326,6 +1386,12 @@ components:
         model:
           type: string
           description: Model ID
+        provider:
+          type: string
+          description: Provider name
+        providerName:
+          type: string
+          description: Provider integration name
         timestamp:
           type: string
           description: Timestamp
@@ -2715,76 +2781,85 @@ paths:
       required: true
       schema:
         type: string
-  /store/agents:
+  /templates:
     get:
-      operationId: ListStoreAgents
+      description: Returns a list of all templates.
+      operationId: ListTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - templates:list
+      summary: List templates
+      tags:
+      - templates
+  /templates/{templateName}:
+    get:
+      description: Returns a template by name.
+      operationId: GetTemplate
+      parameters:
+      - description: Name of the template
+        in: path
+        name: templateName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - templates:get
+      summary: Get template
+  /templates/{templateName}/contents:
+    get:
+      operationId: GetTemplateContents
+      parameters:
+      - in: path
+        name: templateName
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/StoreAgent'
+                  type: string
                 type: array
-          description: successful operation
-      summary: List all store agent
-      tags:
-      - store
-  /store/agents/{agentName}:
+          description: List of files in the template
+  /templates/{templateName}/contents/{fileName}:
     get:
-      operationId: GetStoreAgent
+      operationId: GetTemplateFileContents
+      parameters:
+      - in: path
+        name: templateName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: fileName
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StoreAgent'
-          description: successful operation
-      summary: Get store agent by name
-      tags:
-      - store
-    parameters:
-    - description: Name of the agent
-      in: path
-      name: agentName
-      required: true
-      schema:
-        type: string
-  /store/functions:
-    get:
-      operationId: ListStoreFunctions
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/StoreFunction'
-                type: array
-          description: successful operation
-      summary: List all store agent functions
-      tags:
-      - store
-  /store/functions/{functionName}:
-    get:
-      operationId: GetStoreFunction
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StoreFunction'
-          description: successful operation
-      summary: Get store agent function by name
-      tags:
-      - store
-    parameters:
-    - description: Name of the function
-      in: path
-      name: functionName
-      required: true
-      schema:
-        type: string
+                type: string
+          description: Content of the file
   /users:
     get:
       description: Returns a list of all users in the workspace.
