@@ -1328,12 +1328,27 @@ components:
         description:
           type: string
           description: Description of the template
+        downloadCount:
+          type: integer
+          description: Number of downloads/clones of the repository
+        forksCount:
+          type: integer
+          description: Number of forks the repository has
+        icon:
+          type: string
+          description: URL to the template's icon
+        iconDark:
+          type: string
+          description: URL to the template's icon in dark mode
         name:
           type: string
           description: Name of the template
         sha:
           type: string
           description: SHA of the variable
+        starCount:
+          type: integer
+          description: Number of stars the repository has
         topics:
           type: array
           description: Topic of the template
@@ -1354,6 +1369,9 @@ components:
         description:
           type: string
           description: Description of the variable
+        integration:
+          type: string
+          description: Integration of the variable
         name:
           type: string
           description: Name of the variable
