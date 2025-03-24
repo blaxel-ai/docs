@@ -1,0 +1,246 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Documentation",
+  "colors": {
+    "primary": "#FD7B35",
+    "light": "#FD7B35",
+    "dark": "#C75617"
+  },
+  "favicon": "/favicon.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "Overview",
+              "Get-started"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "Examples/Deploy-a-LangChain-agent"
+            ]
+          },
+          {
+            "group": "Frameworks",
+            "pages": [
+              "Frameworks/Overview",
+              "Frameworks/LangChain",
+              "Frameworks/CrewAI"
+            ]
+          },
+          {
+            "group": "Agents",
+            "pages": [
+              "Agents/Overview",
+              {
+                "group": "Develop an agent",
+                "pages": [
+                  "Agents/Develop-an-agent",
+                  "Agents/Develop-an-agent-ts",
+                  "Agents/Develop-an-agent-py"
+                ]
+              },
+              "Agents/Deploy-an-agent",
+              "Agents/Query-agents",
+              "Agents/Integrate-in-apps"
+            ]
+          },
+          {
+            "group": "Functions",
+            "pages": [
+              "Functions/Overview",
+              "Functions/Invoke-functions"
+            ]
+          },
+          {
+            "group": "Model APIs",
+            "pages": [
+              "Models/Overview",
+              "Models/External-model-apis",
+              "Models/Query-a-model"
+            ]
+          },
+          {
+            "group": "Observability",
+            "pages": [
+              "Observability/Traces"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "Integrations",
+              "Integrations/OpenAI",
+              "Integrations/Anthropic",
+              "Integrations/MistralAI",
+              "Integrations/Cohere",
+              "Integrations/xAI",
+              "Integrations/DeepSeek",
+              "Integrations/HuggingFace",
+              "Integrations/Azure-AI-Foundry",
+              "Integrations/Google-Maps",
+              "Integrations/Gmail",
+              "Integrations/Pactory"
+            ]
+          },
+          {
+            "group": "Administration & security",
+            "pages": [
+              "Model-Governance/Policies",
+              {
+                "group": "Workspaces and permissions",
+                "pages": [
+                  "Security/Workspace-access-control",
+                  "Security/Service-accounts"
+                ]
+              },
+              "Security/Access-tokens",
+              {
+                "group": "Infrastructure",
+                "pages": [
+                  "Models/Global-Inference-Network"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Templates & Cookbooks",
+        "groups": [
+          {
+            "group": "Templates & Cookbooks",
+            "pages": [
+              "Examples/Templates-and-Cookbooks"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "openapi": {
+          "source": "/api-reference/controlplane.yml",
+          "directory": "api-reference"
+        },
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Inference API",
+            "pages": [
+              "api-reference/inference"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "cli-reference/introduction"
+            ]
+          },
+          {
+            "group": "Authentication API",
+            "pages": [
+              "cli-reference/bl_login",
+              "cli-reference/bl_workspaces",
+              "cli-reference/bl_logout"
+            ]
+          },
+          {
+            "group": "Developer API",
+            "pages": [
+              "cli-reference/bl_create-agent-app",
+              "cli-reference/bl_serve",
+              "cli-reference/bl_deploy"
+            ]
+          },
+          {
+            "group": "Inference API",
+            "pages": [
+              "cli-reference/bl_run",
+              "cli-reference/bl_chat"
+            ]
+          },
+          {
+            "group": "Management API",
+            "pages": [
+              "cli-reference/bl_apply",
+              "cli-reference/bl_metrics",
+              "cli-reference/bl_get",
+              "cli-reference/bl_get_agents",
+              "cli-reference/bl_get_environments",
+              "cli-reference/bl_get_functions",
+              "cli-reference/bl_get_integrationconnections",
+              "cli-reference/bl_get_locations",
+              "cli-reference/bl_get_modelproviders",
+              "cli-reference/bl_get_models",
+              "cli-reference/bl_get_policies",
+              "cli-reference/bl_delete",
+              "cli-reference/bl_delete_agent",
+              "cli-reference/bl_delete_function",
+              "cli-reference/bl_delete_integrationconnection",
+              "cli-reference/bl_delete_model",
+              "cli-reference/bl_delete_modelprovider",
+              "cli-reference/bl_delete_policy"
+            ]
+          },
+          {
+            "group": "Tools",
+            "pages": [
+              "cli-reference/bl_completion",
+              "cli-reference/bl_completion_fish",
+              "cli-reference/bl_completion_powershell",
+              "cli-reference/bl_version"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Changelog",
+          "href": "https://docs.blaxel.ai/changelog",
+          "icon": "calendar"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.png"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Changelog",
+        "href": "https://docs.blaxel.ai/changelog"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Blaxel Console",
+      "href": "https://app.blaxel.ai"
+    }
+  },
+  "integrations": {
+    "posthog": {
+      "apiKey": "phc_HGJ7t7Qa8cJJilL0CONU5se4vM6jU6nKFCuoCC9LSha",
+      "apiHost": "https://events.blaxel.ai"
+    }
+  }
+}
