@@ -165,7 +165,13 @@
         },
         "Agents/Deploy-an-agent",
         "Agents/Query-agents",
-        "Agents/Integrate-in-apps"
+        {
+          "group": "Integrate in apps",
+          "pages": [
+            "Agents/Integrate-in-apps",
+            "Agents/Integrate-in-apps/n8n"
+          ]
+        }
       ]
     },
     {
