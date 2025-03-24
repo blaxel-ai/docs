@@ -27,6 +27,9 @@ def copy_file(file_path, file_name, destination_folder):
 
   if dest_file.endswith("mint json.md"):
     return handleMintJson(destination_folder, file_path)
+
+  if dest_file.endswith("docs json.md"):
+    return handleDocsJson(destination_folder, file_path)
   # Copy the file
   if dest_file.endswith(".md"):
     dest_file = dest_file.replace(".md", ".mdx")
@@ -48,6 +51,21 @@ def handleMintJson(destination_folder, real_path):
     else:
         print("Failed to extract JSON content")
   return "mint.json"
+
+def handleDocsJson(destination_folder, real_path):
+  print("handleDocsJson", real_path)
+  with open(real_path, "r", encoding="utf-8") as f:
+    content = f.read()
+    # Extract the JSON content between the ```json and ``` markers
+    json_content = re.search(r'```json\n(.*?)\n```', content, re.DOTALL)
+    if json_content:
+        mint = json.loads(json_content.group(1))
+        destination_file = os.path.join(destination_folder, "docs.json")
+        with open(destination_file, "w", encoding="utf-8") as f:
+          json.dump(mint, f, indent=2)
+    else:
+        print("Failed to extract JSON content")
+  return "docs.json"
 
 def rewrite_links(file_path):
   is_different = True
