@@ -58,7 +58,7 @@
             ]
           },
           {
-            "group": "Functions",
+            "group": "Functions / MCP servers",
             "pages": [
               "Functions/Overview",
               "Functions/Invoke-functions"
@@ -75,7 +75,7 @@
           {
             "group": "Observability",
             "pages": [
-              "Observability/Traces"
+              "Observability/Overview"
             ]
           },
           {

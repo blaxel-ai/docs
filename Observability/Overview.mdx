@@ -8,7 +8,7 @@ description: 'Monitor your agents executions.'
 
 Deploying and running agents on Blaxel gives you **total observability by design**, without needing to install any additional library. When you either deploy from the console’s low-code builder or by using the Blaxel SDK to wrap your code for deployment, Blaxel will automatically implement logging & tracing on your requests.
 
-## **Monitor from the Blaxel console**
+## Monitor from the Blaxel console
 
 There are three ways you can observe and monitor your running agents:
 
@@ -16,7 +16,7 @@ There are three ways you can observe and monitor your running agents:
 - Logs
 - Traces
 
-### **Metrics**
+### Metrics
 
 Metrics are aggregated data about your agents’ executions. They include:
 
@@ -29,7 +29,7 @@ Metrics are aggregated data about your agents’ executions. They include:
 
 ![image.png](Overview/image%201.png)
 
-### **Logs**
+### Logs
 
 Logs are timestamped data about what happens with your agents, functions and model APIs. Such data includes:
 
@@ -39,7 +39,7 @@ Logs are timestamped data about what happens with your agents, functions and mod
 
 ![image.png](Overview/image%202.png)
 
-### **Traces**
+### Traces
 
 Tracing helps you understand how your agent works by showing you all its parts in action. When you make a request, it creates a trace that contains multiple *spans*.
 
@@ -49,6 +49,6 @@ Blaxel collects and saves the traces of a **sampled 10%** of all your executions
 
 ![traces.png](Overview/traces.png)
 
-### **Connect to third-party tools**
+### Connect to third-party tools
 
 Blaxel uses the OpenTelemetry standard for all the logging and tracing. We can export metrics easily to any compatible third-party platform, such as Datadog, Langfuse or others. Exporting metrics outside of Blaxel requires being in the Enterprise plan.

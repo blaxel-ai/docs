@@ -44,7 +44,7 @@ Blaxel is a serverless platform that runs your AI agents. You can develop these 
 The most important concept to get started are the three types of workload that you can deploy on Blaxel:
 
 - **Agents**: The core orchestration layer of an agentic AI application. It is the entry point to an AI-powered systems that can interact with users, reason independently, and take autonomous actions through APIs to read or write data. *Agents* are built using the two other atomic bricks: *functions* and *models*.
-- **Functions**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
+- **Functions (a.k.a MCP servers)**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
 - **Model APIs**: ML models that make inferences within the chained AI workflow. They act as action models—LLMs that interact with humans in natural language and can use available tools by generating appropriate input payloads (*function calling*).
 
 Blaxel provides all the **developer tools** needed to build and run your agents throughout their lifecycle. When pushed to Blaxel, agents, models, and functions become available as single **global endpoints**. Blaxel lets you set the model APIs and tools an agent uses during development, but also **executes those API and tool calls** during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
@@ -66,7 +66,7 @@ You might want to start with any of the following articles:
 - **Product Documentation**
     - [**Frameworks**](Frameworks/Overview): Discover the agent frameworks supported by Blaxel
     - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
-    - [**Functions**](Functions/Overview): Execute tool calls when requested by your AI agents
+    - [Functions / MCP servers](Functions/Overview): Execute tool calls when requested by your AI agents
     - [**Model APIs:**](Models/Overview) Learn about supported model types.
     - [**Integrations:**](Integrations/HuggingFace) Discover how Blaxel works with other tools, frameworks, and platforms.
     - [**Policies Governance**](Model-Governance/Policies%2013847e47b1ea817daa5bcd58129a9bdb)[:](Model-Governance/Environments) Manage your AI deployment strategies.
