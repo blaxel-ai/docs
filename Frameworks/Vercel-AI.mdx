@@ -1,23 +1,23 @@
 ---
 
-title: 'CrewAI'
+title: 'Vercel AI SDK'
 
-description: 'Learn how to leverage Blaxel with CrewAI agents.'
+description: 'Learn how to leverage Blaxel with Vercel AI SDK agents.'
 
 ---
 
-[CrewAI](https://www.crewai.com/) is a framework for orchestrating autonomous AI agents — enabling you to create AI teams where each agent has specific roles, tools, and goals, working together to accomplish complex tasks. You can deploy your CrewAI projects to Blaxel with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
+You can deploy your [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction) projects to Blaxel with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
 
-## Get started with CrewAI on Blaxel
+## Get started with Vercel AI SDK on Blaxel
 
-To get started with CrewAI on Blaxel:
+To get started with Vercel AI SDK on Blaxel:
 
-- if you already have a CrewAI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent%2015a47e47b1ea808fa98bdf4f8fde8fce) to connect to [MCP servers](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e), [LLMs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a) and [other agents](../Agents/Overview).
-- initialize an example project in CrewAI by using Blaxel CLI command `bl create-agent-app`, select the *CrewAI hello world*, and deploy it using `bl deploy`
+- if you already have a Vercel AI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent%2015a47e47b1ea808fa98bdf4f8fde8fce) to connect to [MCP servers](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e), [LLMs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a) and [other agents](../Agents/Overview).
+- initialize an example project with Vercel AI SDK by using Blaxel CLI command `bl create-agent-app`, select the *Vercel AI hello world*, and deploy it using `bl deploy`
 
-## Develop a CrewAI agent using Blaxel features
+## Develop a Vercel AI agent using Blaxel features
 
-While building your agent in CrewAI, use Blaxel SDK to connect to resources already hosted on Blaxel:
+While building your agent with Vercel AI SDK, use Blaxel SDK to connect to resources already hosted on Blaxel:
 
 - [MCP servers](../Functions/Overview)
 - [LLMs](../Models/Overview)
@@ -27,15 +27,15 @@ While building your agent in CrewAI, use Blaxel SDK to connect to resources alre
 
 Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
 
-Run the following command to retrieve tools in CrewAI format:
+Run the following command to retrieve tools in Vercel AI format:
 
 <CodeGroup>
 
-```python Python
+```typescript TypeScript
 
-from blaxel.tools import bl_tools
+import { blTools } from '@blaxel/sdk';
 
-await bl_tools(['mcp-server-name']).to_crewai()
+const tools = await blTools(['mcp-server-name']).ToVercelAI()
 
 ```
 
@@ -47,11 +47,11 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 
 <CodeGroup>
 
-```python Python
+```typescript TypeScript
 
-from blaxel.models import bl_model
+import { blModel } from "@blaxel/sdk";
 
-model = await bl_model("model-api-name").to_crewai()
+const model = await blModel("model-api-name").ToVercelAI();
 
 ```
 

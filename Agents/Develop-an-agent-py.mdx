@@ -6,175 +6,288 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can **bring agents developed in Python in any framework** (LangChain, CrewAI, or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference), GitHub action, etc.).
+You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
 
-<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
-
-## Blaxel agent file structure
-
-### Overview
-
-To deploy a custom AI agent on Blaxel, you need the following file in your repository:
-
-- **agent.py (or src/agent.py)**: This file must contain an *async* `main` function that runs your agent. The `agent.main` function serves as the default entry point during serving and deployment.
-    - You can specify a different module to serve using the flag `bl serve --module your-function-path.your-function-name`
-    - The function accepts these arguments, which Blaxel passes when a request is made to your deployed agent:
-        - *request*: The [FastAPI](https://fastapi.tiangolo.com/) Request that triggers the agent's execution.
-        - *agent*: (Optional) The core agent algorithm. By default, it uses a [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
-        - *model*: (Optional) The [LLM chat API](../Models/Overview) that powers the agent. By default, it uses the model API specified during agent creation, **passed in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
-        - *functions*: (Optional) The [functions](../Functions/Overview) available for tool calling. By default, it uses the functions from the `src/functions` folder, **passed in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
-
-**Mark your agent's main function with the `@agent` decorator to serve it with Blaxel. You can override the default argument values that Blaxel passes upon requesting the agent by using the decorator parameters** (see below).
-
-Some folders are optional but designed to handle specific parts of the agent code on Blaxel:
-
-- **src/functions**: all files listed in this folder will be interpreted as custom tools that will all be made available to the agent automatically when serving or deploying the agent. The tool’s Python function itself is identified with the `@function` decorator.
+<Tip>Check out [this Getting Started](https://www.notion.so/Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
 ### Quickstart
 
 <Warning>It is required to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) to use the following command.</Warning>
 
-You can quickly initialize a new project from scratch by using CLI command  `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. By default, this command creates a boilerplate agent that has:
+You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
 
-- A [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) as the core agent logic. This agent can be overridden by passing a custom agent as the `override-agent` parameter to the @agent decorator in */src/agent.py*
+In the generated folder, you'll find a standard server in the entrypoint file `main.py`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.py` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
 
-- A hello-world tool (a function) that returns a placeholder text string. This function can be customized by changing the code in the `helloworld` function in */src/functions/helloworld.py*, and additional functions can be created in the */src/functions* folder.
+## Connect to a model API
 
-## The @agent decorator
-
-The `@agent` decorator identifies the main function that handles your core agent logic such as how to handle queries and responses, tool calls and such.
+Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
 
 ```python
-@agent()
-async def main(request, agent):
-	# Your main agent logic
-	...
+from blaxel.models import bl_model
+
+model = await bl_model("Model-name-on-Blaxel").to_...();
 ```
 
-Inside the decorator, you can pass several parameters:
+Convert the retrieved model to the format of the framework you want to use with the `.to_...()` function.
 
-- **`agent`**: this can be either the Blaxel SDK’s `Agent` object or equivalent dict, and allows to specify all the parameters for the deployment of your agent on Blaxel. Examples include:
-    - `metadata.name`: the name of the agent on Blaxel
-    - `spec.description`: the description of the agent on Blaxel
-    - `spec.model`: the name of a model API deployed in your Blaxel workspace, to use as core chat model for the agent
-- **`override_agent`**: You can override the default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html) by passing any custom agent instance. When the deployed agent receives a request, Blaxel will pass this as the `agent` argument to the agent's `main()` function.
-- **`override_model`**: You can query an LLM provider directly instead of routing through Blaxel by passing a [ChatModel object from LangChain](https://python.langchain.com/docs/integrations/chat/). When the deployed agent receives a request, Blaxel will pass this as the *llm* to the default LangChain ReAct agent. This is used as a more granular alternative to `override_agent`.
-- **`remote_functions`**: You can pass on additional Blaxel [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Blaxel. This is used as a more granular alternative to `override_agent`.
+Available frameworks :
 
-### Managing secrets
+- [LangChain](https://python.langchain.com/docs/concepts/chat_models/) : `to_langchain()`
+- [CrewAI](https://docs.crewai.com/concepts/llms) : `to_crewai()`
+- [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `to_llamaindex()`
+- [OpenAI Agents](https://github.com/openai/openai-agents-python): `to_openai()`
 
-You can add secrets to your code using `$secrets.KEY_NAME`. When you run the `bl deploy` command, Blaxel will attempt to retrieve the secret values and export them:
-
-- if the key exists in your environment variables, Blaxel will use that value
-- if not, you'll be prompted to enter the secret value in the terminal
+For example, to connect to model `my-model` in a *LlamaIndex* agent:
 
 ```python
-### For example, to export in Blaxel's environment variables for an agent:
+from blaxel.models import bl_model
 
-@agent(
-    agent={
-        "metadata": {
-            "name": "test-py",
-        },
-        "spec": {
-            "runtime": {
-                "envs": [
-                    {
-                        "name": "OPENAI_API_KEY",
-                        "value": "$secrets.OPENAI_API_KEY"
-                    }
-                ]
-            },
-        },
-    },
-)
-async def main(request: Request, agent):
-...
+model = await bl_model("my-model").to_llamaindex()
 ```
 
-![Screenshot 2025-02-15 at 7.04.07 PM.png](Develop-an-agent-py/Screenshot_2025-02-15_at_7.04.07_PM.png)
+## Connect to tools
 
-### Example
+Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following function retrieves all the tools discoverable in the tool server.
 
-Here's an example that demonstrates overriding the default *agent* object.
+```bash
+from blaxel.tools import bl_tools
 
-```python
-from fastapi import Request
-from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
+await bl_tools(['Tool-Server-name-on-Blaxel']).to_...()
+```
+
+Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)) and `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)).
+
+You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
+
+1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](https://www.notion.so/Functions/Create-mcp-server))
+2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")
+
+<CodeGroup>
+
+```python agent.py (LangChain)
+
+from typing import AsyncGenerator
+
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from langchain.tools import tool
+from langchain_core.messages import AIMessageChunk
 from langgraph.prebuilt import create_react_agent
 
-from blaxel.agents import agent
-from customfunctions.helloworld import helloworld
+@tool
+def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
 
-chat = ChatOpenAI()
-memory = MemorySaver()
-custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
+async def agent(input: str) -> AsyncGenerator[str, None]:
+    prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    tools = await bl_tools(["blaxel-search"]).to_langchain() + [weather]
+    model = await bl_model("gpt-4o-mini").to_langchain()
+    agent = create_react_agent(model=model, tools=tools, prompt=prompt)
+    messages = {"messages": [("user", input)]}
+    async for chunk in agent.astream(messages, stream_mode=["updates", "messages"]):
+        type_, stream_chunk = chunk
+        # This is to stream the response from the agent, filtering response from tools
+        if type_ == "messages" and len(stream_chunk) > 0 and isinstance(stream_chunk[0], AIMessageChunk):
+            msg = stream_chunk[0]
+            if msg.content:
+                if not msg.tool_calls:
+                   yield msg.content
+        # This to show a call has been made to a tool, usefull if you want to show the tool call in your interface
+        if type_ == "updates":
+            if "tools" in stream_chunk:
+                for msg in stream_chunk["tools"]["messages"]:
+                    yield f"Tool call: {msg.name}\n"
 
-@agent(override_agent=custom_agent)
-async def main(request: Request, agent):
-	# Your main agent logic
-	...
+```
+```python agent.py (LlamaIndex)
+
+from typing import AsyncGenerator
+
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from llama_index.core.agent.workflow import AgentStream, ReActAgent
+from llama_index.core.tools import FunctionTool
+
+async def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
+
+async def agent(input: str) -> AsyncGenerator[str, None]:
+    prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    tools = await bl_tools(["blaxel-search"]).to_llamaindex() + [FunctionTool.from_defaults(async_fn=weather)]
+    model = await bl_model("gpt-4o-mini").to_llamaindex()
+    agent = ReActAgent(llm=model, tools=tools, system_prompt=prompt)
+    async for event in agent.run(input).stream_events():
+        if isinstance(event, AgentStream):
+            yield event.delta
 ```
 
-When developing custom agents, you may also need to retrieve instantiated model APIs and functions in your code. The following section shows you how to.
+```python agent.py (CrewAI)
 
-## Retrieve existing functions and model APIs
+# We have to apply nest_asyncio because crewai is not compatible with async
+import nest_asyncio
 
-### Get model APIs
+nest_asyncio.apply()
 
-You can use model APIs deployed on Blaxel by calling `get_chat_model()`. This function returns a model API **in LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)**
+from typing import AsyncGenerator
 
-```python
-from blaxel.agents.chat import get_chat_model
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from crewai import Agent, Crew, Task
+from crewai.tools import tool
 
-model = get_chat_model("model-name-on-Blaxel")
+@tool("Weather")
+def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
 
-custom_agent = create_react_agent(model, tools=[])
+async def agent(input: str) -> AsyncGenerator[str, None]:
+    tools = await bl_tools(["blaxel-search"]).to_crewai() + [weather]
+    model = await bl_model("gpt-4o-mini").to_crewai()
+
+    agent = Agent(
+        role="Weather Researcher",
+        goal="Find the weather in a city",
+        backstory="You are an experienced weather researcher with attention to detail",
+        llm=model,
+        tools=tools,
+        verbose=True,
+    )
+    crew = Crew(
+        agents=[agent],
+        tasks=[Task(description="Find weather", expected_output=input, agent=agent)],
+        verbose=True,
+    )
+    result = crew.kickoff()
+    yield result.raw
 ```
 
-### Get functions
+```python agent.py (OpenAI Agents)
 
-You can use [functions](../Functions/Overview) defined both in your code and deployed on Blaxel by calling `get_functions()`. This function returns a list of tools **in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).**
+from typing import AsyncGenerator
 
-```python
-from blaxel.agents import agent, get_default_thread
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import create_react_agent
-from blaxel.functions import get_functions
+from agents import Agent, RawResponsesStreamEvent, Runner, function_tool
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from openai.types.responses import ResponseTextDeltaEvent
 
-from langchain_openai import ChatOpenAI
+@function_tool()
+async def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
 
-async def get_custom_agent():
-    memory = MemorySaver()
-    chat = ChatOpenAI()
-    
-    functions = await get_functions(warning=False)
-    
-    custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
-    return custom_agent
+async def agent(input: str) -> AsyncGenerator[str, None]:
+    tools = await bl_tools(["blaxel-search"]).to_openai() + [weather]
+    model = await bl_model("gpt-4o-mini").to_openai()
+
+    agent = Agent(
+        name="blaxel-agent",
+        model=model,
+        tools=tools,
+        instructions="You are a helpful assistant.",
+    )
+    result = Runner.run_streamed(agent, input)
+    async for event in result.stream_events():
+        if isinstance(event, RawResponsesStreamEvent) and isinstance(event.data, ResponseTextDeltaEvent):
+            yield event.data.delta
+
 ```
 
-By default, this returns the list of functions **defined in the local folder** `src/functions/`. You can pass several parameters:
+</CodeGroup>
 
-- **`remote_functions`**: to retrieve additional Blaxel [functions](../Functions/Overview) that are already deployed so your agent can access them too, in addition to the functions from `src/functions/`. This parameter takes in an array of *string* representing the names of the functions on Blaxel
+## Connect to another agent (multi-agent chaining)
 
-### Manage threads for sessions
+Rather than using a "quick and dirty" approach where you would combine all your agents and capabilities into a single deployment, Blaxel provides a structured development paradigm based on two key principles:
 
-To simulate multi-turn conversations, agent consumers can generate a thread ID and include it in the agent request using either the `X-Blaxel-Thread-Id` or `Thread-Id` header. You can access this thread by calling `get_default_thread()` in your agent code.
+- Agents can grow significantly in complexity. Monolithic architectures make long-term maintenance difficult.
+- Individual agents should be reusable across multiple projects.
 
-```python
-from blaxel.agents import agent, get_default_thread
-from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
+Blaxel supports a microservice architecture for agent chaining, allowing you to call one agent from another using `bl_agent().run()` rather than combining all functionality into a single codebase.
 
-thread_id = get_default_thread(request) or str(uuid.uuid4())
+```bash
+from blaxel.agents import bl_agent
 
-agent_config = {"configurable": {"thread_id": thread_id}}
+first_agent_response = await bl_agent("first_agent").run(input);
+second_agent_response = await bl_agent("second_agent").run(first_agent_response);
 ```
 
-<Note>See an example of [how to use the Blaxel SDK to develop and deploy a custom LangChain agent](../Examples/Deploy-a-LangChain-agent) in 5 minutes.</Note>
+## Instrumentation
+
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK at your project's root level.
+
+```bash
+import blaxel
+```
+
+When agents and tools are deployed on Blaxel, request logging and tracing happens automatically.
+
+To add your own custom logs that you can view in the Blaxel Console, use the Python default logger.
+
+```bash
+import logging
+
+logger = getLogger(__name__)
+logger.info("Hello, world!");
+```
+
+## Blaxel agent template file structure
+
+### Overview
+
+```bash
+pyproject.toml          # Mandatory. This file is the standard pyproject.toml file, it defines dependencies.
+blaxel.toml             # This file lists configurations dedicated to Blaxel to customize the deployment. It is not mandatory.
+.blaxel                 # This folder allows you to define custom resources using the Blaxel API specifications. These resources will be deployed along with your agent.
+├── blaxel-search.yaml  # Here, blaxel-search is a sandbox Web search tool we provide so you can develop your first agent. It has a low rate limit, so we recommend you use a dedicated MCP server for production.
+src/
+└── main.py             # This file is the standard entrypoint of the project. It is used to start the server and create an endpoint bound with agent.py file.
+├── agent.py            # This file is the main file of your agent. It is loaded from main.py. In the template, all the agent logic is implemented here.
+```
+
+### blaxel.toml
+
+This file is used to configure the deployment of the agent on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+
+```toml
+name = "my-agent"
+workspace = "my-workspace"
+type = "agent"
+
+agents = []
+functions = ["blaxel-search"]
+models = ["gpt-4o-mini"]
+
+[entrypoint]
+prod = "python src/main.py"
+dev = "fastapi dev"
+
+[env]
+DEFAULT_CITY = "San Francisco"
+```
+
+The `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+
+The `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+
+The `entrypoint` section defines how we are going to start your server:
+
+- `prod`:  this is the command that will be used to serve your agent
+
+```bash
+python src/main.py
+```
+
+- `dev`: same as prod in dev mode, it will be used with the command hotreload. Example:
+
+```bash
+fastapi dev
+```
+
+`entrypoint` section is not required, if not set we will use an auto-detect of your agent content
+
+The `env` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
-Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint. 
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
 </Card>

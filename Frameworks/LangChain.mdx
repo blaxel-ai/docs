@@ -6,31 +6,110 @@ description: 'Learn how to leverage Blaxel with LangChain and LangGraph.'
 
 ---
 
-[LangChain](https://www.langchain.com/) is a composable framework to build LLM applications. It can be combined with [LangGraph](https://www.langchain.com/langgraph) is a stateful, orchestration framework that brings added control to agent workflows. You can deploy your LangChain or LangGraph projects to Blaxel with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
+[LangChain](https://www.langchain.com/) is a composable framework to build LLM applications. It can be combined with [LangGraph](https://www.langchain.com/langgraph) which is a stateful, orchestration framework that brings added control to agent workflows. You can deploy your LangChain or LangGraph projects to Blaxel with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more.
 
 ## Get started with LangChain on Blaxel
 
 To get started with LangChain/LangGraph on Blaxel:
 
-- if you already have a LangChain or LangGraph agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to use Blaxel features at deployment and runtime
+- if you already have a LangChain or LangGraph agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent%2015a47e47b1ea808fa98bdf4f8fde8fce) to connect to [MCP servers](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e), [LLMs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a) and [other agents](../Agents/Overview).
+- initialize an example project in LangChain by using Blaxel CLI command `bl create-agent-app`, select the *LangChain hello world*, and deploy it using `bl deploy`
 - clone one of our LangChain [example templates](https://github.com/beamlit/templates/tree/main) and deploy it by connecting to your git provider via the Blaxel console.
-- initialize an example project in LangChain by using Blaxel CLI command `bl create-agent-app` and deploy it using `bl deploy`
 
 <Card title="Explore our template gallery" icon="up-right-from-square" href="https://github.com/beamlit/templates/tree/main">
 Browse LangChain agents and deploy them with Blaxel.
 </Card>
 
-## Use Blaxel features with LangChain
+## Develop a LangChain agent using Blaxel features
 
-Since Blaxel SDK commands use LangGraph format by default when no framework is specified, these commands integrate seamlessly with the LangChain ecosystem. All commands in this section will be referred to in Python syntax. 
+While building your agent in LangChain, use Blaxel SDK to connect to resources already hosted on Blaxel:
 
-- `get_chat_model()`:  returns a [model API](../Models/Overview) **i**n LangChain format [*ChatModel*](https://python.langchain.com/docs/integrations/chat/)
-- `get_functions()`: returns a list of [tools](../Functions/Overview) in LangChain format [*BaseTool*](https://api.python.langchain.com/en/latest/tools/langchain_core.tools.BaseTool.html).
+- [MCP servers](../Functions/Overview)
+- [LLMs](../Models/Overview)
+- [other agents](../Agents/Overview)
 
-## To go further
+### Connect to MCP servers
 
-Learn more about deploying LangChain and LangGraph agents on Blaxel with the following resources:
+Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
 
-<Card title="Deploy a LangChain agent" icon="bolt" href="/Examples/Deploy-a-LangChain-agent">
-Complete guide for deploying a LangChain AI agent on Blaxel.
-</Card>
+Run the following command to retrieve tools in LangChain format:
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.tools import bl_tools
+
+await bl_tools(['mcp-server-name']).to_langchain()
+
+```
+
+```typescript TypeScript
+
+import { blTools } from '@blaxel/sdk';
+
+const tools = await blTools(['mcp-server-name']).ToLangChain()
+
+```
+
+</CodeGroup>
+
+### Connect to LLMs
+
+Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid managing model API connections yourself. All credentials remain securely stored on the platform.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.models import bl_model
+
+model = await bl_model("model-api-name").to_langchain()
+
+```
+
+```typescript TypeScript
+
+import { blModel } from "@blaxel/sdk";
+
+const model = await blModel("model-api-name").ToLangChain();
+
+```
+
+</CodeGroup>
+
+### Connect to other agents
+
+Connect to other agents hosted on Blaxel from your code by using the Blaxel SDK. This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.agents import bl_agent
+
+response = await bl_agent("agent-name").run(input);
+
+```
+
+```typescript TypeScript
+
+import { blAgent } from "@blaxel/sdk";
+
+const myAgentResponse = await blAgent("agent-name").run(input);
+
+```
+
+</CodeGroup>
+
+### Host your agent on Blaxel
+
+You can [deploy](../Agents/Deploy-an-agent%2018c47e47b1ea80658f94d9c463f5b493) your agent on Blaxel, enabling you to use [Serverless Deployments](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Traces%2018f47e47b1ea80e29594f9fd7e5a117e), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
+
+Either run the following CLI command from the root of your agent repository.
+
+```bash
+bl deploy
+```
+
+Or connect a GitHub repository to Blaxel for automatic deployments every time you push on *main*.

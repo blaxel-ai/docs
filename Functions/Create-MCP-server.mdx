@@ -1,0 +1,125 @@
+---
+
+title: 'Develop a custom MCP server'
+
+description: 'Create your own custom MCP Servers.'
+
+---
+
+You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
+
+## Quickstart
+
+<Warning>It is required to have *npm* installed to use the following command.</Warning>
+
+You can quickly **initialize a new MCP server from scratch** by using CLI command `bl create-mcp-server`. This will create a pre-scaffolded local repo where your entire code can be added.
+
+```
+bl create-mcp-server
+```
+
+After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can test it by running `pnpm test`. This command will call two functions in the hello-world MCP server.
+
+- **List tools** -> List all the tools available in the server.
+- **Call tool: hello_world** -> Call the hello_world tool defined in the server.
+
+## Develop the MCP server logic
+
+If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard closely, with the only difference being **our use of Blaxel transport** for efficient platform serving.
+
+The main component you'll need to modify is the tool definition:
+
+```typescript {12-24}
+
+import { BlaxelMcpServerTransport, logger } from "@blaxel/sdk";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({
+  name: "mymcp",
+  version: "1.0.0",
+  description: ""
+});
+
+server.tool(
+  "hello_world",
+  "Say hello to a person",
+  {
+    firstname: z.string()
+  },
+  async ({firstname}) => {
+    logger.info(`Hello world called`);
+    return {
+      content: [{ type: "text", text: `Hello ${firstname}` }]
+    }
+  }
+);
+
+function main() {
+  let transport;
+  if (process.env.BL_SERVER_PORT) {
+    transport = new BlaxelMcpServerTransport();
+  } else {
+    transport = new StdioServerTransport();
+  }
+  server.connect(transport);
+  logger.info("Server started");
+}
+
+main();
+
+```
+
+Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
+
+## Deploy your MCP server
+
+Just run `bl deploy` in the folder of your project, as explained [in this guide](Deploy-a-function).
+
+```
+bl deploy
+```
+
+## Test the server locally
+
+While developing the MCP server, you can easily launch test commands. Open the `src/client.ts` file to see how it works and replace/add any test calls you want to verify there:
+
+```typescript {25-29}
+
+import { BlaxelMcpClientTransport, logger } from "@blaxel/sdk";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+
+const transport = new BlaxelMcpClientTransport(
+  '<http://localhost:1338>'
+);
+
+const client = new Client(
+  {
+    name: "mcp-client",
+    version: "1.0.0"
+  },
+  {
+    capabilities: {
+      tools: {}
+    }
+  }
+);
+
+async function main() {
+  await client.connect(transport);
+  const {tools} = await client.listTools();
+  logger.info(JSON.stringify(tools));
+
+  const result = await client.callTool({
+    name:"hello_world",
+    arguments:{ firstname: "John" }
+  });
+  logger.info(JSON.stringify(result))
+
+  await client.close();
+  process.exit(0);
+}
+
+main().catch(logger.error);
+```
