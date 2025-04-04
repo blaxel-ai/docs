@@ -6,69 +6,17 @@ description: 'Ship your custom AI agents on Blaxel in a few clicks.'
 
 ---
 
-An agent can be uploaded into Blaxel from a variety of origins.
+Blaxel provides a serverless infrastructure to instantly deploy AI agents. You receive a global inference endpoint for each deployment, and your workloads are served optimally to dramatically accelerate cold-start and latency.
 
-- **From our pre-built template**: you can use the Blaxel web console to assemble an agent using models and functions already deployed on Blaxel. It will use a default [LangChain ReAct agent](https://api.python.langchain.com/en/latest/agents/langchain.agents.react.agent.create_react_agent.html).
-- **Using Blaxel CLI** to deploy a [custom agent](Develop-an-agent): this method is detailed down below on this page.
-- From a **GitHub** repository
+The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This method is detailed down below on the page. Alternatively you can deploy agents from a variety of **pre-built templates** on the Blaxel web console, or **connect a GitHub repository**: any push to the *main* branch will automatically update the deployment on Blaxel.
 
-## Deployment life-cycle
-
-### Deploying an agent
-
-Deploying an agent will create the associated agent deployment. At this time: 
-
-- it is [reachable](Query-agents) through a specific endpoint
-- it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
-- its status can be monitored either on the console or using the CLI/APIs
-
-Deploy an agent by running the following [CLI](https://docs.blaxel.ai/cli-reference/bl_apply) command:
-
-```
-bl apply -f ./my-agent-deployment.yaml
-```
-
-Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
-
-### Managing revisions
-
-As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
-
-![image.png](Deploy-an-agent/image.png)
-
-Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
-
-- **rollback a deployment** to its exact state from an earlier date
-- create a revision without immediate deployment to **prepare for a future release**
-- implement progressive rollout strategies, such as **canary deployments**
-
-Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
-
-Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
-
-![image.png](Deploy-an-agent/image%201.png)
-
-<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
-
-### Executions and inference requests
-
-**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents%2015447e47b1ea802f88bbd4bb180bf101). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Policies).
-
-Read more about [querying agents in this documentation](Query-agents).
-
-### Deactivating an agent deployment
-
-Any agent deployment can be deactivated at any time. When deactivated, it will **no longer be reachable** through the inference endpoint and will stop consuming resources. 
-
-Agents can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/agents/update-agent-by-name) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
-
-![deactivate-deployment.png](Deploy-an-agent/deactivate-deployment.png)
-
-## Deploy an agent from code
+## Deploy an agent with Blaxel CLI
 
 This section assumes you have developed an agent locally, as explained [in this documentation](Develop-an-agent), and are ready to deploy it. 
 
-To run your agent on Blaxel, you must package it by **using the Blaxel SDK** so Blaxel can identify the [core resources to deploy](Overview): the main agent code, the standalone tools/functions it can use, and the model APIs it can query. This is what allows Blaxel to enable its features when your agent is deployed, such as secure connections to third-party systems or private networks, smart global placement of workflows, and much more.
+The Blaxel SDK allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when agents are deployed.
+
+This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
 
 <Info>Read [this guide first](Develop-an-agent) on how to use the Blaxel SDK to develop a custom agent to deploy.</Info>
 
@@ -98,9 +46,63 @@ Run the following command to build and deploy a local agent on Blaxel:
 bl deploy
 ```
 
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
+
+## Overview of deployment life-cycle
+
+### Deploying an agent
+
+Deploying an agent will create the associated agent deployment. At this time: 
+
+- it is [reachable](Query-agents) through a specific endpoint
+- it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
+- its status can be monitored either on the console or using the CLI/APIs
+
+### Managing revisions
+
+As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+
+![image.png](Deploy-an-agent/image.png)
+
+Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
+
+- **rollback a deployment** to its exact state from an earlier date
+- create a revision without immediate deployment to **prepare for a future release**
+- implement progressive rollout strategies, such as **canary deployments**
+
+Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
+
+Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
+
+![image.png](Deploy-an-agent/image%201.png)
+
+### Executions and inference requests
+
+**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents%2015447e47b1ea802f88bbd4bb180bf101). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Policies).
+
+Read more about [querying agents in this documentation](Query-agents).
+
+### Deactivating an agent deployment
+
+Any agent deployment can be deactivated at any time. When deactivated, it will **no longer be reachable** through the inference endpoint and will stop consuming resources. 
+
+Agents can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/agents/update-agent-by-name) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
+
+![deactivate-deployment.png](Deploy-an-agent/deactivate-deployment.png)
+
 ## Agent deployment reference
 
-### Model
+### Deploy agent from configuration file (advanced usage)
+
+The `bl deploy` command generates a YAML configuration manifest automatically and deploys it to Blaxel's hosting infrastructure. You can also create custom manifest files in the `.blaxel` folder and deploy them using the following command:
+
+```
+bl apply -f ./my-agent-deployment.yaml
+```
+
+Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
+
+### Model API
 
 You must choose one action model, which will be the reasoning and talking core of the agent. The model must be a [model API](../Models/Overview) referenced on Blaxel.
 

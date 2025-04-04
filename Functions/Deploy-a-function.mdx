@@ -1,0 +1,82 @@
+---
+
+title: 'Deploy custom MCP servers'
+
+description: 'Host your custom MCP Servers on Blaxel in a few clicks.'
+
+---
+
+Blaxel provides a serverless infrastructure to instantly deploy MCP servers. You receive a global inference endpoint for each deployment, and your workloads are served optimally to dramatically accelerate cold-start and latency. The main way to deploy an MCP server on Blaxel is by **using Blaxel CLI.**
+
+## Deploy an MCP server with Blaxel CLI
+
+This section assumes you have developed the MCP server locally, as explained [in this documentation](Create-MCP-server), and are ready to deploy it. 
+
+### Serve locally
+
+You can serve the MCP server locally in order to make the `agent.py` / `agent.ts` main function available on a local endpoint. 
+
+Run the following command to serve the agent:
+
+```bash
+bl serve
+```
+
+Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Blaxel. Add the flag `--hotreload`  to get live changes.
+
+```bash
+bl serve --hotreload
+```
+
+### Deploy on production
+
+You can deploy the MCP server in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+
+Run the following command to build and deploy a local agent on Blaxel:
+
+```bash
+bl deploy
+```
+
+You can now call the MCP server tools from your agent with the Blaxel SDK:
+
+<CodeGroup>
+
+```typescript In TypeScript
+
+import { blTools } from "@blaxel/sdk";
+
+const tools = blTools(['blaxel-search']).ToVercelAI();
+// or
+const tools = blTools(['blaxel-search']).ToLangChain();
+// or
+const tools = blTools(['blaxel-search']).ToLlamaIndex();
+```
+
+</CodeGroup>
+
+## Overview of deployment life-cycle
+
+### Manage revisions
+
+As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+
+![image.png](Deploy-a-function/image.png)
+
+Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
+
+- **rollback a deployment** to its exact state from an earlier date
+- create a revision without immediate deployment to **prepare for a future release**
+- implement progressive rollout strategies, such as **canary deployments**
+
+Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
+
+Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
+
+![image.png](../Agents/Deploy-an-agent/image%201.png)
+
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
+
+<Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run invocation requests on your function. 
+</Card>

@@ -28,32 +28,6 @@ The Blaxel store contains a curated list of functions and tools from the most po
 
 Depending on the function you choose, you will need to enter credentials as an [integration](../Integrations), such as an API key if your tool is using a third-party service provider.
 
-### Deploy from custom code
-
-You can deploy **any custom Python or TypeScript code** as a serverless function on Blaxel. 
-
-The easiest way to deploy a function is to deploy it as part of an agent application. [Read more about developing and deploying custom agents and functions here](../Agents/Develop-an-agent). 
-
-### Manage revisions
-
-As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
-
-![image.png](Overview/image.png)
-
-Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
-
-- **rollback a deployment** to its exact state from an earlier date
-- create a revision without immediate deployment to **prepare for a future release**
-- implement progressive rollout strategies, such as **canary deployments**
-
-Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
-
-Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
-
-![image.png](../Agents/Deploy-an-agent/image%201.png)
-
-<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
-
 <Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run invocation requests on your function. 
 </Card>

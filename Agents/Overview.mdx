@@ -21,13 +21,15 @@ There are three types of workloads that you can deploy on Blaxel:
 - **Agents**: These are files of custom code which represents an agent’s logic, dictating which functions and models it can use, as well as which agents it is allowed to transfer a request to.
     - *When you deploy an agent on Blaxel, you get a global endpoint to run the agent in a secure sandboxed environment. Agent-type workloads handle all communication with their functions, model APIs, and other linked agents — making sure all requests are authenticated against the end-user’s identity and access rights. Agents also provide complete lineage and audit tracking of consumer requests across all workloads.*
 
-This is a high-level representation, as ultimately an entire AI agent is simply just software, but Blaxel helps you design your agent in a future-proof way by breaking it down into a function, model API and agent logic. 
+This is a high-level representation, as ultimately an AI agent is just software. Blaxel helps you design your agent in a future-proof way by breaking it down from a monolithic architecture into a *functions-models-agents* logic. 
 
-Blaxel provides all the **developer tools** needed to build and run your agents throughout their lifecycle. When pushed to Blaxel, agents, models, and functions become available as single **global endpoints**. Blaxel lets you set the model APIs and tools an agent uses during development, but also **executes those API and tool calls** during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
+Blaxel provides the **developer tools** needed to build and run agents throughout their entire lifecycle. Agents, models, and functions become available as single **global endpoints** when pushed to Blaxel’s infrastructure. Blaxel SDK also lets you connect to model APIs and tool servers when developing an agent, and ****triggers those API and tool call execution ****during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
 
 ## Run your agent on Blaxel
 
-To run your agent on Blaxel, you must package it by **using the Blaxel SDK**. This packaging is agnostic of the framework you used to develop your agent and doesn’t prevent you from deploying your software elsewhere. The Blaxel SDK allows Blaxel to identify core resources in your code, so they can be adequately created when launching a deployment on Blaxel.
+The Blaxel SDK allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when agents are deployed.
+
+This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
 
 <Card title="Developing an agent on Blaxel" icon="robot" href="/Agents/Develop-an-agent">
 Read our guide for developing any custom AI agent using Blaxel.

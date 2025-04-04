@@ -21,17 +21,15 @@
             ]
           },
           {
-            "group": "Examples",
-            "pages": [
-              "Examples/Deploy-a-LangChain-agent"
-            ]
-          },
-          {
             "group": "Frameworks",
             "pages": [
               "Frameworks/Overview",
               "Frameworks/LangChain",
-              "Frameworks/CrewAI"
+              "Frameworks/CrewAI",
+              "Frameworks/LlamaIndex",
+              "Frameworks/Vercel-AI",
+              "Frameworks/Mastra",
+              "Frameworks/OpenAI-Agents"
             ]
           },
           {
@@ -43,7 +41,8 @@
                 "pages": [
                   "Agents/Develop-an-agent",
                   "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py"
+                  "Agents/Develop-an-agent-py",
+                  "Agents/Variables-and-secrets"
                 ]
               },
               "Agents/Deploy-an-agent",
@@ -61,6 +60,8 @@
             "group": "Functions / MCP servers",
             "pages": [
               "Functions/Overview",
+              "Functions/Create-MCP-server",
+              "Functions/Deploy-a-function",
               "Functions/Invoke-functions"
             ]
           },
