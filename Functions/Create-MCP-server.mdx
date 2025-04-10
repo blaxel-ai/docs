@@ -18,10 +18,16 @@ You can quickly **initialize a new MCP server from scratch** by using CLI comman
 bl create-mcp-server
 ```
 
-After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can test it by running `pnpm test`. This command will call two functions in the hello-world MCP server.
+After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can test it by running the following command:
+
+```bash
+pnpm dev
+```
+
+This command will call two functions in the hello-world MCP server.
 
 - **List tools** -> List all the tools available in the server.
-- **Call tool: hello_world** -> Call the hello_world tool defined in the server.
+- **Call tool *hello_world*** -> Call the *hello_world* tool defined in the server.
 
 ## Develop the MCP server logic
 
@@ -73,17 +79,11 @@ main();
 
 Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
 
-## Deploy your MCP server
-
-Just run `bl deploy` in the folder of your project, as explained [in this guide](Deploy-a-function).
-
-```
-bl deploy
-```
-
 ## Test the server locally
 
-While developing the MCP server, you can easily launch test commands. Open the `src/client.ts` file to see how it works and replace/add any test calls you want to verify there:
+After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can 
+
+If you created your MCP using the scaffolding command `bl create-mcp-server`, you'll find a testing script at `src/client.ts`. This script creates an MCP Client that communicates with your Server to run a *hello_world* function. When testing locally, communication happens over stdio, but when deployed on Blaxel, your server will use WebSockets instead. 
 
 ```typescript {25-29}
 
@@ -123,3 +123,17 @@ async function main() {
 
 main().catch(logger.error);
 ```
+
+Execute the test by running the command:
+
+## Deploy your MCP server
+
+Just run `bl deploy` in the folder of your project, as explained [in this guide](Deploy-a-function).
+
+```
+bl deploy
+```
+
+<Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
+Read our guide for deploying your custom MCP server on Blaxel.
+</Card>
