@@ -36,6 +36,7 @@ Available frameworks :
 - [CrewAI](https://docs.crewai.com/concepts/llms) : `to_crewai()`
 - [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `to_llamaindex()`
 - [OpenAI Agents](https://github.com/openai/openai-agents-python): `to_openai()`
+- [Pydantic AI Agents](https://github.com/pydantic/pydantic-ai): `to_pydantic()`
 
 For example, to connect to model `my-model` in a *LlamaIndex* agent:
 
@@ -49,13 +50,13 @@ model = await bl_model("my-model").to_llamaindex()
 
 Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following function retrieves all the tools discoverable in the tool server.
 
-```bash
+```python
 from blaxel.tools import bl_tools
 
 await bl_tools(['Tool-Server-name-on-Blaxel']).to_...()
 ```
 
-Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)) and `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)).
+Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)), `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)) and `to_pydantic()` ([Pydantic AI Agents](https://github.com/pydantic/pydantic-ai)).
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
@@ -191,6 +192,36 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
     async for event in result.stream_events():
         if isinstance(event, RawResponsesStreamEvent) and isinstance(event.data, ResponseTextDeltaEvent):
             yield event.data.delta
+
+```
+
+```python agent.py (Pydantic AI Agents)
+
+from typing import AsyncGenerator
+
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from pydantic_ai import Agent, CallToolsNode, Tool
+from pydantic_ai.messages import ToolCallPart
+from pydantic_ai.models import ModelSettings
+
+def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
+
+async def agent(input: str) -> AsyncGenerator[str, None]:
+    prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    tools = await bl_tools(["blaxel-search"]).to_pydantic() + [Tool(weather, )]
+    model = await bl_model("gpt-4o-mini").to_pydantic()
+    agent = Agent(model=model, tools=tools, model_settings=ModelSettings(temperature=0), system_prompt=prompt)
+    async with agent.iter(input) as agent_run:
+        async for node in agent_run:
+            if isinstance(node, CallToolsNode):
+                for part in node.model_response.parts:
+                    if isinstance(part, ToolCallPart):
+                        yield(f"Tool call: {part.tool_name}\n")
+                    else:
+                        yield part.content + "\n"
 
 ```
 

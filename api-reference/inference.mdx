@@ -14,19 +14,19 @@ The inference API URL depends on the type of workload ([agent](../Agents/Overvie
 
 ```http Query agent
 
-POST run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 ```
 
 ```http Query model API
 
-POST run.blaxel.ai/{your-workspace}/models/{your-model}
+POST https://run.blaxel.ai/{your-workspace}/models/{your-model}
 
 ```
 
-```markdown Query function
+```http Connect to an MCP server
 
-run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-FUNCTION}
+wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
 
 ```
 
@@ -53,15 +53,11 @@ curl -X POST "run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completion
 
 ```
 
-```http Query function (custom functions only)
-curl -X POST "run.blaxel.ai/{your-workspace}/functions/{your-function}/tools/call" \
--H 'Content-Type: application/json' \
--H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
--d $'{"inputs":"Enter your input here."}'
-
-```
-
 </CodeGroup>
+
+### Connect to MCP servers
+
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
 
 ### Manage sessions
 
@@ -78,11 +74,5 @@ curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
 -d '{"inputs":"Hello, world!"}'
 
 ```
-
-### Invoke pre-built functions
-
-**Pre-built functions** are [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) servers deployed on Blaxel. They provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These functions can be interacted using WebSocket protocol. 
-
-Read more about [how to call pre-built functions in this documentation](../Functions/Invoke-functions).
 
 <Card title="Product documentation" icon="earth-americas" href="/Models/Query-agents" > Read our product guide on querying an agent. </Card>

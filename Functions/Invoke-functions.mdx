@@ -6,51 +6,37 @@ description: 'Make invocation requests on your functions and MCP servers.'
 
 ---
 
-Function [deployments](Overview%2015347e47b1ea8038813fef14c49dfd5e) on Blaxel have an **invocation endpoint** which can be used by external consumers to request an invocation execution. Invocation requests are then routed on the [Global Inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your function deployment. 
+Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature robust capabilities — including persistent connections with automatic reconnection handling, multi-tenant support, health monitoring, and seamless AI framework integration.
 
-When an [agent](../Agents/Overview) requests a function execution, it uses the same invocation endpoint routed through the Global Inference Network.
+At this time, MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
 
-## Invocation endpoints
+## MCP server endpoint
 
-When you deploy a function on Blaxel, an invocation endpoint is generated on Global Inference Network. The **protocol used for communication depends on the type of function**: pre-built functions use WebSockets, while custom functions use HTTPS.
+When you deploy an MCP server on Blaxel, a WebSocket-based endpoint is generated on Global Agentics Network to connect to the server.
 
-The invocation endpoint looks like this:
+The server endpoint looks like this:
 
-```markdown Query function
+```http Connect to an MCP server
 
-run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-FUNCTION}
+wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
 
 ```
 
 ### Endpoint authentication
 
-By default, functions deployed on Blaxel aren’t public. It is necessary to authenticate all invocation requests, via a [bearer token](../Security/Access-tokens).
+By default, MCP servers deployed on Blaxel aren’t public. It is necessary to authenticate all connections, via a [bearer token](../Security/Access-tokens).
 
-The evaluation of authentication/authorization for invocation requests is managed by the Global Inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
+The evaluation of authentication/authorization for messages is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
 <Info>Making a function publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 
 ## Make an invocation request
 
-### Blaxel API
+### Using the API
 
-Using this endpoint to make invocation requests is done differently depending whether the function is one of your **custom functions** or if it is a **pre-built Blaxel function.**
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
 
-**Custom functions** can be invoked by calling the root endpoint using the **HTTPS protocol**. Make a *POST* request to the invocation endpoint for the function deployment you are requesting, making sure to fill in the authentication token:
-
-```bash
-curl 'https://run.blaxel.ai/YOUR-WORKSPACE/functions/YOUR-function' \
-  -H 'accept: application/json, text/plain, */*' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \
-  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
-  --data-raw $'{"inputs":"Enter your input here."}'
-```
-
-<Info>Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/inference).</Info>
-
-**Pre-built functions** are [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) servers deployed on Blaxel. They provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These functions can be interacted using WebSocket protocol. 
-
-They offer two methods:
+Blaxel’s pre-built MCP servers offer two methods:
 
 - `tools/list` A method that **lists the available tools** and their schemas, allowing consumers (you or agents) to discover the function’s capabilities.
 - `tools/call` A method that lets consumers **execute individual tools**. It requires params with two keys:
@@ -135,20 +121,8 @@ Example of `tools/call` outbound message on the ***brave_web_search*** tool.
 }
 ```
 
-### Blaxel CLI
-
-The following command is **only compatible with custom functions** and will make a default POST request to the function’s deployment (by default), on the base endpoint.
-
-```bash
-bl run function your-function --data '{"inputs":"Enter your input here."}'
-```
-
-<Info>Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-reference/bl_run).</Info>
-
-At the moment, pre-built Blaxel functions cannot be invoked via Blaxel CLI.
-
 ### Blaxel console
 
-invocation requests can be made from the Blaxel console from the function deployment’s **Playground** page.
+Requests to an MCP server can be made from the Blaxel console from the server deployment’s **Playground** page.
 
 ![image.png](Invoke-functions/image.png)

@@ -8,25 +8,30 @@ description: 'Execute custom code to empower your AI agents with tools and actio
 
 ---
 
-Functions (also called *MCP servers* on Blaxel) represent **custom code** that can be executed by passing specific input arguments. 
+Functions (also called *MCP servers* on Blaxel Console) represent **custom code** that can be executed by passing specific input arguments. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). MCP servers are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, the function in the MCP server is ran separately from the action model and agent logic. This ensures not only minimal latency for your consumers as well as optimal resource utilization, but also better design practice for your agentic system.
 
-Blaxel runs your code on Global Inference Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its execution and scaling - providing you with one single globally endpoint to run the function. 
+When deployed on Blaxel, MCP servers are hosted on Global Agentics Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its hosting, execution and scaling - providing you with one single globally endpoint to access the MCP server. 
 
-Functions are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, our Global Inference Network accelerates the whole execution behind the scenes, by running the function separately from the action model and agent logic. This ensures minimal latency for your consumers as well as optimal resource utilization. 
+## MCP hosting on Blaxel
 
-## Deploy a function on Blaxel
+Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature robust capabilities — including persistent connections with automatic reconnection handling, multi-tenant support, health monitoring, and seamless AI framework integration.
 
-A function can be uploaded into Blaxel from a variety of origins.
+At this time, MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
 
-- Using a function from the Blaxel Store
-- From a custom code
-- *From GitHub (coming soon!)*
+<Info>For developers interested in the technical details, our implementation is available open-source through [Blaxel's Supergateway](https://github.com/beamlit/supergateway) and [Blaxel's SDK](https://github.com/beamlit/toolkit/blob/main/sdk-ts/src/functions/mcp.ts).</Info>
 
-### Deploy from the Blaxel store
+There are two routes you can take when hosting MCPs on Blaxel:
 
-The Blaxel store contains a curated list of functions and tools from the most popular providers that can be **deployed out-of-the-box on Blaxel**. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP).
+- Use one of the pre-built MCP servers from the Blaxel Store
+- Deploy a custom MCP server from your code
 
-Depending on the function you choose, you will need to enter credentials as an [integration](../Integrations), such as an API key if your tool is using a third-party service provider.
+<Card title="Develop an MCP server" icon="code" href="/Functions/Create-MCP-server">
+Read our guide for developing a custom MCP server with Blaxel.
+</Card>
+
+<Card title="Host an MCP server on Blaxel" icon="rocket" href="/Functions/Deploy-a-function">
+Read our guide for deploying your custom MCP server on Blaxel.
+</Card>
 
 <Card title="Invoke functions" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run invocation requests on your function. 
