@@ -29,7 +29,8 @@
               "Frameworks/LlamaIndex",
               "Frameworks/Vercel-AI",
               "Frameworks/Mastra",
-              "Frameworks/OpenAI-Agents"
+              "Frameworks/OpenAI-Agents",
+              "Frameworks/PydanticAI"
             ]
           },
           {

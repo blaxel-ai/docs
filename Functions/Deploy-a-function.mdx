@@ -14,15 +14,17 @@ This section assumes you have developed the MCP server locally, as explained [in
 
 ### Serve locally
 
-You can serve the MCP server locally in order to make the `agent.py` / `agent.ts` main function available on a local endpoint. 
+You can serve the MCP server locally in order to make the main function in `server.ts` / `server.py` available on a local endpoint. 
 
-Run the following command to serve the agent:
+Run the following command to serve the MCP server:
 
 ```bash
 bl serve
 ```
 
-Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Blaxel. Add the flag `--hotreload`  to get live changes.
+You can then create an MCP Client to communicate with your server. When testing locally, communication happens over stdio, but when deployed on Blaxel, your server will use WebSockets instead. 
+
+Add the flag `--hotreload`  to get live changes.
 
 ```bash
 bl serve --hotreload
@@ -30,15 +32,15 @@ bl serve --hotreload
 
 ### Deploy on production
 
-You can deploy the MCP server in order to make the `agent.py` / `agent.ts` main function **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the MCP server in order to make it **available on a global hosted endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
-Run the following command to build and deploy a local agent on Blaxel:
+Run the following command to build and deploy the MCP server on Blaxel:
 
 ```bash
 bl deploy
 ```
 
-You can now call the MCP server tools from your agent with the Blaxel SDK:
+You can now connect to the MCP server either from an agent on Blaxel (using the Blaxel SDK), or from an external script. 
 
 <CodeGroup>
 
@@ -51,6 +53,9 @@ const tools = blTools(['blaxel-search']).ToVercelAI();
 const tools = blTools(['blaxel-search']).ToLangChain();
 // or
 const tools = blTools(['blaxel-search']).ToLlamaIndex();
+// or
+
+// …
 ```
 
 </CodeGroup>

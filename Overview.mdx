@@ -47,13 +47,13 @@ The most important concept to get started are the three types of workload that y
 - **Functions (a.k.a MCP servers)**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
 - **Model APIs**: ML models that make inferences within the chained AI workflow. They act as action models—LLMs that interact with humans in natural language and can use available tools by generating appropriate input payloads (*function calling*).
 
-Blaxel provides the **developer tools** needed to build and run agents throughout their entire lifecycle. Agents, models, and functions become available as single **global endpoints** when pushed to Blaxel’s infrastructure. Blaxel SDK also lets you connect to model APIs and tool servers when developing an agent, and ****triggers those API and tool call execution ****during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
+Blaxel provides the **developer tools** needed to build and run agents throughout their entire lifecycle. Agents, models, and functions become available as single **global endpoints** when pushed to Blaxel’s infrastructure. Blaxel SDK also lets you connect to model APIs and tool servers when developing an agent, and triggers those API and tool call execution during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
 
 ## The Blaxel powerhouse
 
-When you deploy your agents to Blaxel, they run on a technical backbone called the **Global Inference Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Blaxel, and we'll run the agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
+When you deploy your agents to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. Simply bring your agents to Blaxel, and we'll run the agent, model API and function calls for you—ensuring your users receive excellent service regardless of their location.
 
-Global Inference Network serves as the powerhouse for the entire Blaxel platform, and is natively **distributed** in order to optimize for ultra-low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
+Global Agentics Network serves as the powerhouse for the entire Blaxel platform, and is natively **distributed** in order to optimize for ultra-low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
 
 The platform implements advanced security measures, including fine-grained authentication and authorization through Blaxel IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, console, as well as a Kubernetes operator for IT teams.
 
@@ -65,9 +65,10 @@ You might want to start with any of the following articles:
 - **Product Documentation**
     - [**Frameworks**](Frameworks/Overview): Discover the agent frameworks supported by Blaxel
     - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
-    - [Functions / MCP servers](Functions/Overview): Execute tool calls when requested by your AI agents
+    - [Functions / MCP servers](Functions/Overview): Execute tool calls requested by your AI agents
     - [**Model APIs:**](Models/Overview) Learn about supported model types.
     - [**Integrations:**](Integrations/HuggingFace) Discover how Blaxel works with other tools, frameworks, and platforms.
+    - [Observability](Observability/Overview): Monitor logs, traces and metrics for your agent runs.
     - [**Policies Governance**](Model-Governance/Policies%2013847e47b1ea817daa5bcd58129a9bdb)[:](Model-Governance/Environments) Manage your AI deployment strategies.
     - [**Security:**](Security/Workspace-access-control) Implement robust security measures for your AI infrastructure.
 - [**API reference:**](https://docs.blaxel.ai/api-reference/introduction) Comprehensive guide to Blaxel's APIs.
