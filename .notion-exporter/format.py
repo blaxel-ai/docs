@@ -126,9 +126,9 @@ def rewrite_title(file_path):
 def process_export_folder():
   os.chdir(f"export/Private & Shared/Product Documentation {page}/")
 
-  destination_folder = "../.."
+  destination_folder = "../../.."
   if os.getenv("DEBUG"):
-    destination_folder = "../../debug"
+    destination_folder = "../../../debug"
   for root, _, files in os.walk("./"):
     for file in files:
       file_path = os.path.join(root, file)
