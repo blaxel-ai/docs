@@ -1,0 +1,201 @@
+---
+
+title: 'CopilotKit integration'
+
+description: 'Turn your Blaxel agent (built with LangGraph) into an agent-native application in 10 minutes.'
+
+---
+
+This tutorial will walk you through how to use [CopilotKit](https://www.copilotkit.ai/) to **create complete copilots that leverage Blaxel agents in your frontend**. Turn your MCP servers, models and agents hosted on Blaxel into [CopilotKit CoAgents](https://docs.copilotkit.ai/coagents) that provide full user interaction.
+
+<Tip>This tutorial is based on a Python LangGraph agent.</Tip>
+
+## Requirements
+
+- One or several [MCP servers](../../Functions/Overview), hosted on Blaxel
+- A [model API](../../Models/Overview), connected on Blaxel
+
+## Step 1: Create a LangGraph agent
+
+You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
+
+Develop your LangGraph agent, using [Blaxel SDK](../Develop-an-agent-py) to connect to Blaxel AI gateway for model APIs and MCP servers, and making sure to add a **memory checkpointer**. You can copy-paste the following code snippet into `agent.py` to get started:
+
+```python agent.py
+
+from typing import AsyncGenerator
+
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from langchain.tools import tool
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
+
+@tool
+def weather(city: str) -> str:
+    """Get the weather in a given city"""
+    print(f"Getting weather for {city}")
+    return f"The weather in {city} is sunny"
+
+async def agent():
+    prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    tools = await bl_tools(["blaxel-search"]).to_langchain() + [weather]
+    model = await bl_model("sandbox-openai").to_langchain()
+    
+    # Create memory checkpointer
+    memory = MemorySaver()
+    
+    # Create the agent with checkpointing
+    agent = create_react_agent(
+        model=model, 
+        tools=tools, 
+        prompt=prompt,
+        checkpointer=memory
+    )
+
+    return agent
+
+```
+
+## Step 2: Use CopilotKit integration to serve your agent
+
+Make sure to have the latest packages for CopilotKit installed into your frontend.
+
+<CodeGroup>
+
+```shell npm
+
+npm install @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell pnpm
+
+pnpm add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell yarn
+
+yarn add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell bun
+
+bun add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+</CodeGroup>
+
+Next, use CopilotKit's FastAPI integration to serve your LangGraph agent. You can directly modify  `main.py` from the scaffolded directory by copy-pasting the following code:
+
+```python main.py
+
+import os
+from contextlib import asynccontextmanager
+from logging import getLogger
+
+import uvicorn
+from fastapi import FastAPI
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor 
+
+from server.error import init_error_handlers
+from server.middleware import init_middleware
+
+from copilotkit.integrations.fastapi import add_fastapi_endpoint 
+from copilotkit import CopilotKitRemoteEndpoint, LangGraphAgent
+
+from agent import agent
+
+logger = getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info(f"Server running on port {os.getenv('BL_SERVER_PORT', 80)}")
+    try:
+        # Initialize the graph
+        graph = await agent()
+        
+        # Initialize the SDK
+        sdk = await get_sdk(graph)
+        
+        # Store in app state
+        app.state.sdk = sdk
+        
+        # Add CopilotKit endpoint
+        add_fastapi_endpoint(app, sdk, "/copilotkit", use_thread_pool=False)
+        
+        yield
+        logger.info("Server shutting down")
+    except Exception as e:
+        logger.error(f"Error during startup: {str(e)}", exc_info=True)
+        raise
+
+app = FastAPI(lifespan=lifespan)
+
+# Create the SDK after the graph is initialized
+async def get_sdk(graph):
+    sdk = CopilotKitRemoteEndpoint(
+        agents=[
+            LangGraphAgent(
+                name="weather_agent",
+                description="An agent that can provide weather information and handle other conversational tasks",
+                graph=graph
+            )
+        ],
+    )
+    return sdk
+
+init_error_handlers(app)
+init_middleware(app)
+
+FastAPIInstrumentor.instrument_app(app)
+
+if __name__ == "__main__":
+    uvicorn.run(
+        app,
+        host=os.getenv("BL_SERVER_HOST", "0.0.0.0"),
+        port=os.getenv("BL_SERVER_PORT", 80),
+        log_level="critical",
+    )
+
+```
+
+## Step 3: Plug to CopilotKit your front-end
+
+You can follow the rest of CopilotKit’s documentation on deploying CoAgents: start at [Step 4 on this tutorial](https://docs.copilotkit.ai/coagents/quickstart/langgraph). Use option “**Self hosted (FastAPI)**” for the code snippets when available.
+
+You have two options regarding hosting of the agent:
+
+- local hosting
+- hosting on Blaxel
+
+### Local hosting
+
+Run the following command at the root of your agent folder to serve the agent locally:
+
+```bash
+bl serve
+```
+
+The agent will be available on: `http://localhost:1338/copilotkit` by default.
+
+<Warning>Make sure to use the correct port when plugging to CopilotRuntime. By default, CopilotKit’s documentation binds to port 8000 but the default port in the Blaxel agent is 1338.</Warning>
+
+### Hosting on Blaxel
+
+Run the following command at the root of your agent folder to deploy the agent to Blaxel:
+
+```bash
+bl deploy
+```
+
+The agent will be available on the following URL:
+
+```http Query agent
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
+
+```
