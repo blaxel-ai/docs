@@ -6,30 +6,38 @@ description: 'Create your own custom MCP Servers.'
 
 ---
 
-You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
+You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** **or Python** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
 
 ## Quickstart
 
-<Warning>It is required to have *npm* installed to use the following command.</Warning>
+<Warning>It is required to have *npm* (TypeScript) *or uv* (Python) installed to use the following command.</Warning>
 
 You can quickly **initialize a new MCP server from scratch** by using CLI command `bl create-mcp-server`. This will create a pre-scaffolded local repo where your entire code can be added.
 
 ```
-bl create-mcp-server
+bl create-mcp-server my-mcp
 ```
 
-After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can test it by running the following command:
+You can test it by running the following command which launches both the server and a web application ([MCP Inspector](https://github.com/modelcontextprotocol/inspector), managed by MCP) locally for testing the server’s capabilities during development. 
 
-```bash
-pnpm dev
+<CodeGroup>
+
+```typescript 
+
+pnpm inspect
+
 ```
 
-This command will call two functions in the hello-world MCP server.
+```python 
+BL_DEBUG=true uv run mcp dev src/server.py
 
-- **List tools** -> List all the tools available in the server.
-- **Call tool *hello_world*** -> Call the *hello_world* tool defined in the server.
+```
 
-## Develop the MCP server logic
+</CodeGroup>
+
+The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply serve the server locally by running `bl serve --hotreload`.
+
+## Develop the MCP server logic (TypeScript)
 
 If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard closely, with the only difference being **our use of Blaxel transport** for efficient platform serving.
 
@@ -79,52 +87,37 @@ main();
 
 Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
 
-## Test the server locally
+## Develop the MCP server logic (Python)
 
-After [serving the MCP server locally](Deploy-a-function) (by running `bl serve`), you can 
+If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard closely, with the only difference being **our use of Blaxel transport** for efficient platform serving.
 
-If you created your MCP using the scaffolding command `bl create-mcp-server`, you'll find a testing script at `src/client.ts`. This script creates an MCP Client that communicates with your Server to run a *hello_world* function. When testing locally, communication happens over stdio, but when deployed on Blaxel, your server will use WebSockets instead. 
+The main component you'll need to modify is the tool definition:
 
-```typescript {25-29}
+```python {10-18}
 
-import { BlaxelMcpClientTransport, logger } from "@blaxel/sdk";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+from blaxel import env
+from blaxel.mcp.server import FastMCP
 
-const transport = new BlaxelMcpClientTransport(
-  '<http://localhost:1338>'
-);
+from typing import Annotated
+from logging import getLogger
 
-const client = new Client(
-  {
-    name: "mcp-client",
-    version: "1.0.0"
-  },
-  {
-    capabilities: {
-      tools: {}
-    }
-  }
-);
+mcp = FastMCP("mcp-helloworld-python")
+logger = getLogger(__name__)
 
-async function main() {
-  await client.connect(transport);
-  const {tools} = await client.listTools();
-  logger.info(JSON.stringify(tools));
+@mcp.tool()
+def hello_world(
+    first_name: Annotated[
+        str,
+        "First name of the user",
+    ],
+) -> str:
+    """Say hello to the user"""
+    return f"Hello {first_name}!"
 
-  const result = await client.callTool({
-    name:"hello_world",
-    arguments:{ firstname: "John" }
-  });
-  logger.info(JSON.stringify(result))
+if not env["BL_DEBUG"]:
+    mcp.run(transport="ws")
 
-  await client.close();
-  process.exit(0);
-}
-
-main().catch(logger.error);
 ```
-
-Execute the test by running the command:
 
 ## Deploy your MCP server
 
@@ -135,5 +128,5 @@ bl deploy
 ```
 
 <Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
-Read our guide for deploying your custom MCP server on Blaxel.
+Read our complete guide for deploying your custom MCP server on Blaxel.
 </Card>
