@@ -226,6 +226,8 @@ The agent will be available on: `http://localhost:1338/copilotkit` by default.
 
 Now let’s setup a Copilot Runtime endpoint in your application and point your frontend to it. The following tutorial will demonstrate integration with a NextJS application. Check out [CopilotKit’s documentation (step 6)](https://docs.copilotkit.ai/coagents/quickstart/langgraph?copilot-hosting=self-hosted&lg-deployment-type=Local+(LangGraph+Studio)&package-manager=bun&component=CopilotSidebar&endpoint-type=Next.js+App+Router#setup-a-copilot-runtime-endpoint) for other frameworks.
 
+Create the following route file:
+
 ```typescript app/api/copilotkit/route.ts {13}
 import {
   CopilotRuntime,
@@ -283,9 +285,11 @@ Then, create an API key either for your profile or for a service account in your
 
 **Integrate with CopilotKit**
 
-Make sure to replace `https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/copilotkit` and `<API_KEY / TOKEN>` .
+Now let’s setup a Copilot Runtime endpoint in your application and point your frontend to it. The following tutorial will demonstrate integration with a NextJS application. Check out [CopilotKit’s documentation (step 6)](https://docs.copilotkit.ai/coagents/quickstart/langgraph?copilot-hosting=self-hosted&lg-deployment-type=Local+(LangGraph+Studio)&package-manager=bun&component=CopilotSidebar&endpoint-type=Next.js+App+Router#setup-a-copilot-runtime-endpoint) for other frameworks.
 
-```typescript app/api/copilotkit/route.ts {13,23}
+Create the following route file. Make sure to replace `https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/copilotkit` and `<API_KEY / TOKEN>` .
+
+```typescript app/api/copilotkit/route.ts {14-19}
 import {
   CopilotRuntime,
   ExperimentalEmptyAdapter,
@@ -324,4 +328,6 @@ export const POST = async (req: NextRequest) => {
 
 ```
 
-<Warning>Make sure to call the `/copilot` endpoint on your agent.</Warning>
+<Warning>Make sure to call the `/copilotkit` endpoint on your agent (if left as default), or the actual endpoint name that you have used.</Warning>
+
+You can now follow the rest of [CopilotKit’s documentation on how to setup a Copilot in your frontend application (step 8)](https://docs.copilotkit.ai/coagents/quickstart/langgraph?copilot-hosting=self-hosted&lg-deployment-type=Self+hosted+(FastAPI)&package-manager=bun&component=CopilotSidebar&endpoint-type=Next.js+App+Router#configure-the-copilotkit-provider). Make sure to adapt the name of the agent if you changed it.
