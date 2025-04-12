@@ -59,37 +59,7 @@ async def agent():
 
 ## Step 2: Use CopilotKit integration to serve your agent
 
-Make sure to have the latest packages for CopilotKit installed into your frontend.
-
-<CodeGroup>
-
-```shell npm
-
-npm install @copilotkit/react-ui @copilotkit/react-core
-
-```
-
-```shell pnpm
-
-pnpm add @copilotkit/react-ui @copilotkit/react-core
-
-```
-
-```shell yarn
-
-yarn add @copilotkit/react-ui @copilotkit/react-core
-
-```
-
-```shell bun
-
-bun add @copilotkit/react-ui @copilotkit/react-core
-
-```
-
-</CodeGroup>
-
-Next, use CopilotKit's FastAPI integration to serve your LangGraph agent. You can directly modify  `main.py` from the scaffolded directory by copy-pasting the following code:
+Next, use CopilotKit's FastAPI integration to serve your LangGraph agent. You can directly modify  `main.py` from the scaffolded directory by copy-pasting the following code.
 
 ```python main.py
 
@@ -140,7 +110,7 @@ async def get_sdk(graph):
     sdk = CopilotKitRemoteEndpoint(
         agents=[
             LangGraphAgent(
-                name="weather_agent",
+                name="sample_agent",
                 description="An agent that can provide weather information and handle other conversational tasks",
                 graph=graph
             )
@@ -163,9 +133,81 @@ if __name__ == "__main__":
 
 ```
 
-## Step 3: Plug to CopilotKit your front-end
+If you haven’t installed CopilotKit in your Python environment, do it now using *uv*:
 
-You can follow the rest of CopilotKit’s documentation on deploying CoAgents: start at [Step 4 on this tutorial](https://docs.copilotkit.ai/coagents/quickstart/langgraph). Use option “**Self hosted (FastAPI)**” for the code snippets when available.
+```bash
+uv add copilotkit
+```
+
+## Step 3: Setup CopilotKit
+
+CopilotKit maintains a documentation on deploying CoAgents: we are now at [Step 4 of this tutorial](https://docs.copilotkit.ai/coagents/quickstart/langgraph). The rest of this page will highlight the differences required to integrate with a Blaxel agent, using options “**Self-Hosted Copilot Runtime**” and “**Self hosted (FastAPI)**” for the code snippets when available.
+
+### Install CopilotKit
+
+Make sure to have the latest packages for CopilotKit installed into your frontend.
+
+<CodeGroup>
+
+```shell npm
+
+npm install @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell pnpm
+
+pnpm add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell yarn
+
+yarn add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+```shell bun
+
+bun add @copilotkit/react-ui @copilotkit/react-core
+
+```
+
+</CodeGroup>
+
+### **Install Copilot Runtime**
+
+Copilot Runtime is a production-ready proxy for your LangGraph agents. In your frontend, go ahead and install it.
+
+<CodeGroup>
+
+```shell npm
+
+npm install @copilotkit/runtime class-validator
+
+```
+
+```shell pnpm
+
+pnpm add @copilotkit/runtime class-validator
+
+```
+
+```shell yarn
+
+yarn add @copilotkit/runtime class-validator
+
+```
+
+```shell bun
+
+bun add @copilotkit/runtime class-validator
+
+```
+
+</CodeGroup>
+
+## Step 4: Plug your agent to CopilotKit in your front-end
 
 You have two options regarding hosting of the agent:
 
@@ -182,9 +224,44 @@ bl serve
 
 The agent will be available on: `http://localhost:1338/copilotkit` by default.
 
-<Warning>Make sure to use the correct port when plugging to CopilotRuntime. By default, CopilotKit’s documentation binds to port 8000 but the default port in the Blaxel agent is 1338.</Warning>
+Now let’s setup a Copilot Runtime endpoint in your application and point your frontend to it. The following tutorial will demonstrate integration with a NextJS application. Check out [CopilotKit’s documentation (step 6)](https://docs.copilotkit.ai/coagents/quickstart/langgraph?copilot-hosting=self-hosted&lg-deployment-type=Local+(LangGraph+Studio)&package-manager=bun&component=CopilotSidebar&endpoint-type=Next.js+App+Router#setup-a-copilot-runtime-endpoint) for other frameworks.
+
+```typescript app/api/copilotkit/route.ts {13}
+import {
+  CopilotRuntime,
+  ExperimentalEmptyAdapter,
+  copilotRuntimeNextJSAppRouterEndpoint,
+} from "@copilotkit/runtime";;
+import { NextRequest } from "next/server";
+ 
+// You can use any service adapter here for multi-agent support.
+const serviceAdapter = new ExperimentalEmptyAdapter();
+ 
+const runtime = new CopilotRuntime({
+  remoteEndpoints: [
+    { url: "http://localhost:1338/copilotkit" },
+  ],
+});
+ 
+export const POST = async (req: NextRequest) => {
+  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+    runtime,
+    serviceAdapter,
+    endpoint: "/api/copilotkit",
+  });
+ 
+  return handleRequest(req);
+};
+
+```
+
+<Warning>Make sure to use the correct port when plugging to CopilotRuntime. By default, CopilotKit’s documentation binds to port 8000 but the default port in the Blaxel agent is **1338**.</Warning>
+
+You can now follow the rest of [CopilotKit’s documentation on how to setup a Copilot in your frontend application (step 8)](https://docs.copilotkit.ai/coagents/quickstart/langgraph?copilot-hosting=self-hosted&lg-deployment-type=Self+hosted+(FastAPI)&package-manager=bun&component=CopilotSidebar&endpoint-type=Next.js+App+Router#configure-the-copilotkit-provider). Make sure to adapt the name of the agent if you changed it.
 
 ### Hosting on Blaxel
+
+**Deploy the agent**
 
 Run the following command at the root of your agent folder to deploy the agent to Blaxel:
 
@@ -192,10 +269,59 @@ Run the following command at the root of your agent folder to deploy the agent t
 bl deploy
 ```
 
-The agent will be available on the following URL:
+Retrieve the base invocation URL for the agent. It should look like this, **on top of which you will add the `/copilotkit` endpoint**.
 
 ```http Query agent
 
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 ```
+
+**Create API key**
+
+Then, create an API key either for your profile or for a service account in your workspace. Store that API key for the next step.
+
+**Integrate with CopilotKit**
+
+Make sure to replace `https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/copilotkit` and `<API_KEY / TOKEN>` .
+
+```typescript app/api/copilotkit/route.ts {13,23}
+import {
+  CopilotRuntime,
+  ExperimentalEmptyAdapter,
+  copilotRuntimeNextJSAppRouterEndpoint,
+} from "@copilotkit/runtime";;
+import { NextRequest } from "next/server";
+ 
+// You can use any service adapter here for multi-agent support.
+const serviceAdapter = new ExperimentalEmptyAdapter();
+ 
+const runtime = new CopilotRuntime({
+  remoteEndpoints: [
+    {
+      url: "https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/copilotkit",
+      onBeforeRequest: ({ ctx }) => {
+        return {
+          headers: {
+            "X-Blaxel-Authorization":
+              "Bearer <API_KEY / TOKEN>",
+          },
+        };
+      },
+    },
+  ],
+});
+ 
+export const POST = async (req: NextRequest) => {
+  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+    runtime,
+    serviceAdapter,
+    endpoint: "/api/copilotkit",
+  });
+ 
+  return handleRequest(req);
+};
+
+```
+
+<Warning>Make sure to call the `/copilot` endpoint on your agent.</Warning>

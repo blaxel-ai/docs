@@ -10,11 +10,11 @@ You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduct
 
 ## Quickstart
 
-<Warning>It is required to have *npm* (TypeScript) *or uv* (Python) installed to use the following command.</Warning>
+<Warning>It is required to have *npm* (TypeScript) **or *uv* (Python) installed to use the following command.</Warning>
 
 You can quickly **initialize a new MCP server from scratch** by using CLI command `bl create-mcp-server`. This will create a pre-scaffolded local repo where your entire code can be added.
 
-```
+```bash
 bl create-mcp-server my-mcp
 ```
 
@@ -22,13 +22,13 @@ You can test it by running the following command which launches both the server 
 
 <CodeGroup>
 
-```typescript 
+```shell TypeScript
 
 pnpm inspect
 
 ```
 
-```python 
+```shell Python
 BL_DEBUG=true uv run mcp dev src/server.py
 
 ```
@@ -43,7 +43,7 @@ If you open the `src/server.ts` file, you'll see the complete server implementat
 
 The main component you'll need to modify is the tool definition:
 
-```typescript {12-24}
+```typescript server.ts {12-24}
 
 import { BlaxelMcpServerTransport, logger } from "@blaxel/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -93,7 +93,7 @@ If you open the `src/server.py` file, you'll see the complete server implementat
 
 The main component you'll need to modify is the tool definition:
 
-```python {10-18}
+```python server.py {10-18}
 
 from blaxel import env
 from blaxel.mcp.server import FastMCP
@@ -123,7 +123,7 @@ if not env["BL_DEBUG"]:
 
 Just run `bl deploy` in the folder of your project, as explained [in this guide](Deploy-a-function).
 
-```
+```bash
 bl deploy
 ```
 
