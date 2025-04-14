@@ -6,7 +6,7 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
+You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents, PydanticAI, Google ADK or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
 
 <Tip>Check out [this Getting Started](https://www.notion.so/Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
@@ -37,6 +37,7 @@ Available frameworks :
 - [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `to_llamaindex()`
 - [OpenAI Agents](https://github.com/openai/openai-agents-python): `to_openai()`
 - [Pydantic AI Agents](https://github.com/pydantic/pydantic-ai): `to_pydantic()`
+- [Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/models/lite_llm.py): `to_google_adk()`
 
 For example, to connect to model `my-model` in a *LlamaIndex* agent:
 
@@ -56,7 +57,7 @@ from blaxel.tools import bl_tools
 await bl_tools(['Tool-Server-name-on-Blaxel']).to_...()
 ```
 
-Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)), `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)) and `to_pydantic()` ([Pydantic AI Agents](https://github.com/pydantic/pydantic-ai)).
+Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)), `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `to_pydantic()` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `to_google_adk()` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
@@ -222,6 +223,68 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
                         yield(f"Tool call: {part.tool_name}\n")
                     else:
                         yield part.content + "\n"
+
+```
+
+```python agent.py (Google ADK)
+
+from logging import getLogger
+from typing import AsyncGenerator
+
+from blaxel.models import bl_model
+from blaxel.tools import bl_tools
+from google.adk.agents import Agent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+
+logger = getLogger(__name__)
+
+# @title Define the get_weather Tool
+def get_weather(city: str) -> dict:
+    """Get the weather in a given city"""
+    return f"The weather in {city} is sunny"
+
+APP_NAME = "research_assistant"
+
+async def agent(input: str, user_id: str = "default", session_id: str = "default") -> AsyncGenerator[str, None]:
+    description = "You are a helpful assistant that can answer questions and help with tasks."
+    prompt = """
+You are a helpful weather assistant. Your primary goal is to provide current weather reports. "
+When the user asks for the weather in a specific city,
+You can also use a research tool to find more information about anything.
+Analyze the tool's response: if the status is 'error', inform the user politely about the error message.
+If the status is 'success', present the weather 'report' clearly and concisely to the user.
+Only use the tool when a city is mentioned for a weather request.
+"""
+    tools = await bl_tools(["blaxel-search"], timeout_enabled=False).to_google_adk() + [get_weather]
+    model = await bl_model("sandbox-openai").to_google_adk()
+
+    agent = Agent(model=model, name=APP_NAME, description=description, instruction=prompt, tools=tools)
+    # Create the specific session where the conversation will happen
+    session_service = InMemorySessionService()
+    session_service.create_session(
+        app_name=APP_NAME,
+        user_id=user_id,
+        session_id=session_id
+    )
+    logger.info(f"Session created: App='{APP_NAME}', User='{user_id}', Session='{session_id}'")
+
+    runner = Runner(
+        agent=agent,
+        app_name=APP_NAME,
+        session_service=session_service,
+    )
+    logger.info(f"Runner created for agent '{runner.agent.name}'.")
+    content = types.Content(role="user", parts=[types.Part(text=input)])
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+      # Key Concept: is_final_response() marks the concluding message for the turn.
+      if event.is_final_response():
+        if event.content and event.content.parts:
+            # Assuming text response in the first part
+            yield event.content.parts[0].text
+        elif event.actions and event.actions.escalate: # Handle potential errors/escalations
+            yield f"Agent escalated: {event.error_message or 'No specific message.'}"
 
 ```
 
