@@ -30,7 +30,8 @@
               "Frameworks/Vercel-AI",
               "Frameworks/Mastra",
               "Frameworks/OpenAI-Agents",
-              "Frameworks/PydanticAI"
+              "Frameworks/PydanticAI",
+              "Frameworks/ADK"
             ]
           },
           {
