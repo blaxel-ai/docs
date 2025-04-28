@@ -10,7 +10,7 @@ description: 'Deploy your first AI agent worldwide in just 3 minutes.'
 <img src="/img/general/functions-dark.png" />
 </Frame>
 
-[Blaxel](https://app.blaxel.ai/) is a serverless platform that enables developers to **push and run any AI agent in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Blaxel.
+[Blaxel](https://app.blaxel.ai/) is a computing platform that enables developers to **push and run AI agents in a production-critical environment** in a single click. This tutorial demonstrates how to deploy your first AI agent on Blaxel.
 
 ## Quickstart
 
@@ -53,14 +53,6 @@ https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
-If you cannot use `sudo`:
-
-```shell 
-curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
-| BINDIR=$HOME/.local/bin sh
-```
-
 If you need to specify a version (e.g. 0.36.0):
 
 ```shell 
@@ -79,14 +71,6 @@ Install Blaxel CLI by running the following command in a terminal (alternatives 
 curl -fsSL \
 https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
-```
-
-If you cannot use `sudo`:
-
-```shell 
-curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
-| BINDIR=$HOME/.local/bin sh
 ```
 
 If you need to specify a version (e.g. 0.36.0):
@@ -175,7 +159,11 @@ bl serve;
 
 <Tip>Add the hot reload option in command bl serve --hotreload to have live reload so you can patch changes onto the agent server while it runs.</Tip>
 
-Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
+Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"inputs": "Hello world!"}' [http://localhost:1338](http://localhost:1338/)
+```
 
 To push to Blaxel, run the following command. Blaxel will handle the build and deployment:
 
@@ -195,9 +183,15 @@ Run a first inference on your Blaxel agent with the following command:
 bl chat my-agent
 ```
 
-This gives you a chat-like interface where you can interact with your agent!
+This gives you a chat-like interface where you can interact with your agent! To use this when serving locally, just add option `--local` .
 
-Alternatively, you can send requests to your agent by running `bl run agent my-agent --data '{"inputs":"Hello world!"}'` .
+Alternatively, you can send requests to your production agent by running:
+
+```bash
+ bl run agent my-agent --data '{"inputs":"Hello world!"}'
+```
+
+Or by directly calling the [global endpoint](Agents/Query-agents).
 
 </Step>
 

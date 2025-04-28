@@ -6,7 +6,7 @@ description: 'Create and enforce fine-grained deployment rules.'
 
 ---
 
-Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Inference Network](../Models/Global-Inference-Network).
+Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Inference Network](../Infrastructure/Global-Inference-Network).
 
 Policies apply to the entities they are attached to: [model APIs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [functions](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e) and [agent](../Agents/Overview) deployments. 
 
@@ -20,7 +20,7 @@ Example:
 
 - Policy `Country: US` means that attached workloads will only be able to run in locations that are in the United States.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Inference Network](../Models/Global-Inference-Network)’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Inference Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
 
 ### Policy types
 
@@ -67,7 +67,7 @@ Read [our complete reference on policies](https://docs.blaxel.ai/api-reference/p
 
 Attaching a policy to a workload enforces it on the workload.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Inference Network](../Models/Global-Inference-Network)’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Inference Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
 
 ### Attaching multiple policies
 

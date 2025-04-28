@@ -127,6 +127,70 @@ Just run `bl deploy` in the folder of your project, as explained [in this guide]
 bl deploy
 ```
 
+You can **configure the server deployment** (e.g. specify the MCP server name, etc.) in the `blaxel.toml` file at the root of your directory. Read the file structure section down below for more details.
+
 <Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
 Read our complete guide for deploying your custom MCP server on Blaxel.
 </Card>
+
+## Blaxel MCP server template file structure
+
+### blaxel.toml
+
+This file is used to configure the deployment of the MCP server on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+
+```toml
+name = "my-mcp-server"
+workspace = "my-workspace"
+type = "function"
+
+[env]
+DEFAULT_CITY = "San Francisco"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+
+<AccordionGroup>
+<Accordion title="Define entrypoints in Python" icon="python">
+
+Additionally, when developing in Python, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server. 
+
+```toml
+...
+
+[entrypoint]
+prod = ".venv/bin/python3 src/server.py"
+dev = "npx nodemon --exec uv run python src/server.py"
+
+...
+```
+
+- `prod`:  this is the command that will be used to serve your MCP server
+
+```bash
+.venv/bin/python3 src/server.py
+```
+
+- `dev`: same as prod in dev mode, it will be used with the command `--hotreload`. Example:
+
+```bash
+npx nodemon --exec uv run python src/server.py
+```
+
+This `entrypoint` section is optional. If not specified, Blaxel will automatically detect in the MCP server’s content and configure your server’s startup settings.
+
+</Accordion>
+
+<Accordion title="Define entrypoints in TypeScript" icon="js">
+
+In TypeScript, entrypoints are managed in the `scripts` in the `package.json` file at the root of the directory.
+
+- `scripts.start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `scripts.build` : build the project. It is done automatically when deploying.
+- `scripts.prod` : start the server remotely from the dist folder, the project needs to be have been built before.
+- `scripts.dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
+
+The remaining fields in *package.json* follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+</Accordion>
+</AccordionGroup>
