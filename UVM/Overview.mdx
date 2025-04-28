@@ -1,0 +1,31 @@
+---
+
+title: 'Sandbox VMs'
+
+sidebarTitle: "Overview"
+
+description: 'Lightweight virtual machines where both you and your agents can run code with sub-20ms cold starts.'
+
+---
+
+Sandbox VMs are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents. These VMs start in under 20 milliseconds, and scale back down after one second of inactivity, maintaining their previous state after scaling down.
+
+Sandbox VMs natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandbox VMs ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+
+Blaxel’s core backbone infrastructure relies on sandbox VMs. When you deploy agents or functions as serverless endpoints, they actually run on sandbox VMs under the hood. While the high-level platform meets most developers' needs, **we expose this low-level API to give full flexibility to AI builders** over management of deployment locations, VM lifecycle, and resource allocation.
+
+## Deploy a sandbox VM
+
+The key feature of sandbox VMs is their fast and flexible scaling capabilities after they are deployed. This makes them very similar to running serverless containers.
+
+Sandbox VMs have either one of the following statuses:
+
+- **standby**: The VM is created but remains idle. You are not charged while a VM is in standby mode. VMs transition from *standby* to *active* mode in approximately 20 ms.
+- **active**: The VM is running and processing tasks. You **are** charged for active runtime. VMs automatically return to standby mode after 1 second of inactivity.
+- **stopped**: The VM is shut down and requires manual restart to access its API.
+
+Read the reference API for managing sandbox VMs.
+
+## Connect to a sandbox VM
+
+Coming soon!

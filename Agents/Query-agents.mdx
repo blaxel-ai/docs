@@ -6,11 +6,11 @@ description: 'Make inference requests on your agents.'
 
 ---
 
-Agent [deployments](Overview%2015347e47b1ea807bbba6d269c01e633d) on Blaxel have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global inference Network](../Models/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
+Agent [deployments](Overview%2015347e47b1ea807bbba6d269c01e633d) on Blaxel have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
 
 ## Inference endpoints
 
-Whenever you deploy an agent on Blaxel, an **inference endpoint** is generated on Global inference Network.
+Whenever you deploy an agent on Blaxel, an **inference endpoint** is generated on Global Agentics Network.
 
 The inference URL looks like this:
 
@@ -24,7 +24,7 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 By default, agents deployed on Blaxel aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
 
-The evaluation of authentication/authorization for inference requests is managed by the Global inference Network based on the [access given in your workspace](../Security/Workspace-access-control).
+The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
 <Info>Making an agent publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 

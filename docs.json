@@ -114,7 +114,8 @@
               {
                 "group": "Infrastructure",
                 "pages": [
-                  "Models/Global-Inference-Network"
+                  "Infrastructure/Global-Inference-Network",
+                  "Infrastructure/Generations"
                 ]
               }
             ]

@@ -246,6 +246,7 @@ def get_weather(city: str) -> dict:
     return f"The weather in {city} is sunny"
 
 APP_NAME = "research_assistant"
+session_service = InMemorySessionService()
 
 async def agent(input: str, user_id: str = "default", session_id: str = "default") -> AsyncGenerator[str, None]:
     description = "You are a helpful assistant that can answer questions and help with tasks."
@@ -262,12 +263,12 @@ Only use the tool when a city is mentioned for a weather request.
 
     agent = Agent(model=model, name=APP_NAME, description=description, instruction=prompt, tools=tools)
     # Create the specific session where the conversation will happen
-    session_service = InMemorySessionService()
-    session_service.create_session(
-        app_name=APP_NAME,
-        user_id=user_id,
-        session_id=session_id
-    )
+    if not session_service.get_session(app_name=APP_NAME, user_id=user_id, session_id=session_id):
+        session_service.create_session(
+            app_name=APP_NAME,
+            user_id=user_id,
+            session_id=session_id
+        )
     logger.info(f"Session created: App='{APP_NAME}', User='{user_id}', Session='{session_id}'")
 
     runner = Runner(
@@ -305,6 +306,12 @@ from blaxel.agents import bl_agent
 first_agent_response = await bl_agent("first_agent").run(input);
 second_agent_response = await bl_agent("second_agent").run(first_agent_response);
 ```
+
+## Customize the agent deployment
+
+You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory. 
+
+Read the file structure section down below for more details.
 
 ## Instrumentation
 
@@ -352,19 +359,25 @@ agents = []
 functions = ["blaxel-search"]
 models = ["gpt-4o-mini"]
 
-[entrypoint]
-prod = "python src/main.py"
-dev = "fastapi dev"
-
 [env]
 DEFAULT_CITY = "San Francisco"
 ```
 
-The `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 
-The `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+Additionally, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server:
 
-The `entrypoint` section defines how we are going to start your server:
+```toml
+...
+
+[entrypoint]
+prod = "python src/main.py"
+dev = "fastapi dev"
+
+...
+```
 
 - `prod`:  this is the command that will be used to serve your agent
 
@@ -372,15 +385,13 @@ The `entrypoint` section defines how we are going to start your server:
 python src/main.py
 ```
 
-- `dev`: same as prod in dev mode, it will be used with the command hotreload. Example:
+- `dev`: same as prod in dev mode, it will be used with the command `--hotreload`. Example:
 
 ```bash
 fastapi dev
 ```
 
-`entrypoint` section is not required, if not set we will use an auto-detect of your agent content
-
-The `env` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+This `entrypoint` section is optional. If not specified, Blaxel will automatically detect in the agent’s content and configure your agent startup settings.
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
 Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.

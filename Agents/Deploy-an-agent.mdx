@@ -48,6 +48,29 @@ bl deploy
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
+### Customize an agent deployment
+
+You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory.
+
+This file is used to configure the deployment of the agent on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+
+```toml
+name = "my-agent"
+workspace = "my-workspace"
+type = "agent"
+
+agents = []
+functions = ["blaxel-search"]
+models = ["gpt-4o-mini"]
+
+[env]
+DEFAULT_CITY = "San Francisco"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+
 ## Overview of deployment life-cycle
 
 ### Deploying an agent
@@ -57,6 +80,10 @@ Deploying an agent will create the associated agent deployment. At this time:
 - it is [reachable](Query-agents) through a specific endpoint
 - it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
 - its status can be monitored either on the console or using the CLI/APIs
+
+### Choosing the infrastructure generation
+
+Blaxel offers two [infrastructure generations](../Infrastructure/Generations). When deploying a workload, you can select between *Mk 2 infrastructure*—which provides stable, globally distributed container-based workloads—and *Mk 3* (in Alpha), which delivers ultra-fast cold starts. Choose the generation that best fits your specific requirements.
 
 ### Managing revisions
 
@@ -80,7 +107,7 @@ Deployment revisions are updated following a **blue-green** paradigm. The Global
 
 ### Executions and inference requests
 
-**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents%2015447e47b1ea802f88bbd4bb180bf101). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Policies).
+**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents%2015447e47b1ea802f88bbd4bb180bf101). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Agentics Network, as defined by your [environment policies](../Model-Governance/Policies).
 
 Read more about [querying agents in this documentation](Query-agents).
 
@@ -94,8 +121,6 @@ Agents can be deactivated and activated at any time from the Blaxel console, or 
 
 ## Agent deployment reference
 
-### Deploy agent from configuration file (advanced usage)
-
 The `bl deploy` command generates a YAML configuration manifest automatically and deploys it to Blaxel's hosting infrastructure. You can also create custom manifest files in the `.blaxel` folder and deploy them using the following command:
 
 ```
@@ -103,40 +128,6 @@ bl apply -f ./my-agent-deployment.yaml
 ```
 
 Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
-
-### Model API
-
-You must choose one action model, which will be the reasoning and talking core of the agent. The model must be a [model API](../Models/Overview) referenced on Blaxel.
-
-Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
-
-### Functions
-
-Select one or multiple [functions](../Functions/Overview) to equip your agent with the ability to run custom code. This is optional, in which case your agent will only be able to talk.
-
-Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
-
-### Chaining and multi-agents
-
-Multi-agent systems allow to better specialize each agent, with their specific set of tools and instructions. 
-
-You can chain other agents to an agent on Blaxel. When processing a consumer query, the agent will be able to handover the request to another agent that is chained to it if the action model considers it the best way to address the query.
-
-![image.png](Deploy-an-agent/image%202.png)
-
-Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
-
-### Policies
-
- [Policies](../Model-Governance/Policies) can be optionally attached to an agent deployment directly. 
-
-Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
-
-### Resources
-
-Select the memory size to allocate to the execution of the agent.
-
-Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/agents/create-agent-by-name).
 
 <Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
 Learn how to run consumers’ inference requests on your agent. 
