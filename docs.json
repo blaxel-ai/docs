@@ -48,6 +48,7 @@
                 ]
               },
               "Agents/Deploy-an-agent",
+              "Agents/Github-integration",
               "Agents/Query-agents",
               {
                 "group": "Integrate in your apps",
