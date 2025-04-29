@@ -8,7 +8,7 @@ description: 'Create and enforce fine-grained deployment rules.'
 
 Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Agentics Network](../Infrastructure/Global-Inference-Network).
 
-Policies apply to the entities they are attached to: [model APIs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [functions](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e) and [agent](../Agents/Overview) deployments. 
+Policies apply to the entities they are attached to: [model APIs](../Models/Overview), [functions](../Functions/Overview) and [agent](../Agents/Overview) deployments. 
 
 ## Policies overview
 
@@ -75,7 +75,7 @@ When attaching **multiple policies** to a resource, it's crucial to understand t
 
 **If you are attaching multiple policies to the same resource:**
 
-Their combined effect is the **UNION** of all of their effects for the same [type](Policies%2013847e47b1ea817daa5bcd58129a9bdb) of policy (a.k.a *OR* clause), and **INTERSECTION** across all [types](Policies) of policies (a.k.a *AND* clause).
+Their combined effect is the **UNION** of all of their effects for the same [type](Policies) of policy (a.k.a *OR* clause), and **INTERSECTION** across all [types](Policies) of policies (a.k.a *AND* clause).
 
 For example:
 

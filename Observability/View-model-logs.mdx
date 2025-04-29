@@ -21,7 +21,7 @@ Logs about what happens inside the inference runtime while processing an inferen
 
 Depending on [how you are deployed on Global Inference Network](../Models/Global-Inference-Network), logs storage and querying will behave differently.
 
-- Models that are deployed on Beamlit, either by [direct deployment](../Models/Model-deployment%2013847e47b1ea8103a274c27cff3de584) or when [overflowing on Beamlit](../Models/Cloud-Burst-Network/Model-overflow%2013847e47b1ea817f82a8c8bda522126f), **automatically export inference logs**. They can be [viewed](View-model-logs) per specific model deployment.
+- Models that are deployed on Beamlit, either by [direct deployment](../Models/Model-deployment) or when [overflowing on Beamlit](../Models/Cloud-Burst-Network/Model-overflow), **automatically export inference logs**. They can be [viewed](View-model-logs) per specific model deployment.
 - Models that are deployed on your own clusters as an [origin to be offloaded on Beamlit](../Models/Cloud-Burst-Network/Model-overflow) **do not export logs**. Please [contact us](mailto:support@beamlit.com) if you would be interested to centralize these logs with Beamlit logs, either on Beamlit or in your cluster.
 
 ### Retention duration

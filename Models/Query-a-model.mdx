@@ -6,7 +6,7 @@ description: 'Make inference requests on your model APIs.'
 
 ---
 
-Model APIs on Blaxel have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e) based on the [deployment policies](../Model-Governance/Policies) associated with your model API. 
+Model APIs on Blaxel have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your model API. 
 
 ## Inference endpoints
 
@@ -31,7 +31,7 @@ For example, if you are calling a text generation model that also implements the
 
 ### Endpoint authentication
 
-It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens%2013847e47b1ea813cac82ed531bd2356f). The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
+It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens). The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
 <Info>Making a workload publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 
@@ -39,7 +39,7 @@ It is necessary to authenticate all inference requests, via a [bearer token](../
 
 ### Blaxel API
 
-Make a **POST** request to the [inference endpoint](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
+Make a **POST** request to the [inference endpoint](Query-a-model) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
 
 ```
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/models/YOUR-MODEL' \
