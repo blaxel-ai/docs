@@ -6,6 +6,8 @@ description: 'Create your own custom MCP Servers.'
 
 ---
 
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
+
 You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** **or Python** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
 
 ## Quickstart
@@ -35,11 +37,14 @@ BL_DEBUG=true uv run mcp dev src/server.py
 
 </CodeGroup>
 
-The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply serve the server locally by running `bl serve --hotreload`.
+The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply [serve the server](Deploy-a-function) locally by running `bl serve --hotreload`.
 
-## Develop the MCP server logic (TypeScript)
+## Develop the MCP server logic
 
-If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard closely, with the only difference being **our use of Blaxel transport** for efficient platform serving.
+<AccordionGroup>
+<Accordion title="Develop in TypeScript" icon="js">
+
+If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
 
 The main component you'll need to modify is the tool definition:
 
@@ -87,9 +92,11 @@ main();
 
 Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
 
-## Develop the MCP server logic (Python)
+</Accordion>
 
-If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard closely, with the only difference being **our use of Blaxel transport** for efficient platform serving.
+<Accordion title="Develop in Python" icon="python">
+
+If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
 
 The main component you'll need to modify is the tool definition:
 
@@ -118,6 +125,10 @@ if not env["BL_DEBUG"]:
     mcp.run(transport="ws")
 
 ```
+
+</Accordion>
+
+</AccordionGroup>
 
 ## Deploy your MCP server
 
@@ -194,3 +205,7 @@ In TypeScript, entrypoints are managed in the `scripts` in the `package.json` fi
 The remaining fields in *package.json* follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
 </Accordion>
 </AccordionGroup>
+
+<Card title="Connect to your MCP server" icon="bolt" href="/Functions/Invoke-a-function">
+Read our complete guide for connecting to and invoking an MCP server.
+</Card>
