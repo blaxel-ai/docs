@@ -8,13 +8,13 @@ description: 'Learn how to leverage Blaxel with Google ADK agents.'
 
 <Warning>Google ADK has a [known open issue](https://github.com/google/adk-python/issues/153) where tool calling will sometimes **not work** with models other than Gemini models.</Warning>
 
-You can deploy your [Google Agent Development Kit (ADK)](https://github.com/google/adk-python/tree/main) projects to Blaxel with minimal code edition (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](https://www.notion.so/Traces-18f47e47b1ea80e29594f9fd7e5a117e?pvs=21), [Policies](../Model-Governance/Policies), and more.
+You can deploy your [Google Agent Development Kit (ADK)](https://github.com/google/adk-python/tree/main) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](https://www.notion.so/Traces-18f47e47b1ea80e29594f9fd7e5a117e?pvs=21), [Policies](../Model-Governance/Policies), and more.
 
 ## Get started with ADK on Blaxel
 
 To get started with ADK on Blaxel:
 
-- if you already have a ADK agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent%2015a47e47b1ea808fa98bdf4f8fde8fce) to connect to [MCP servers](../Functions/Overview%2015347e47b1ea8038813fef14c49dfd5e), [LLMs](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a) and [other agents](../Agents/Overview).
+- if you already have a ADK agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
 - else initialize an example project with ADK by using the following Blaxel CLI command and selecting the *Google ADK hello world:*
 
 ```bash
@@ -87,7 +87,7 @@ response = await bl_agent("agent-name").run(input);
 
 ### Host your agent on Blaxel
 
-You can [deploy](../Agents/Deploy-an-agent%2018c47e47b1ea80658f94d9c463f5b493) your agent on Blaxel, enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network%2013847e47b1ea8199a2b3fa9c62f9e09e), [Agentic Observability](../Observability/Overview%201ab47e47b1ea80ca9331cc0a52906854), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
+You can [deploy](../Agents/Deploy-an-agent) your agent on Blaxel, enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
 
 Either run the following CLI command from the root of your agent repository.
 

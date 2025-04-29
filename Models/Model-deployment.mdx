@@ -24,9 +24,9 @@ Blaxel model deployment works using two conceptual entities: **models** and **de
 
 - **Models** are the base logical entity labeling an AI model throughout it’s life-cycle. A model can be instantiated into multiple deployments over different environments. This effectively allows to run multiple versions of the model at the same time, each on a different environment.
 - **Deployments** (a.k.a model deployments) are the instantiation of one model version over one specific [environment](../Model-Governance/Environments). For example, you can have a *deployment* XYZ of *model* ABC on the *production environment*.
-- **Executions** (a.k.a inference executions) are ephemeral invocations of model deployments by a [consumer](Query-a-model%2013847e47b1ea81cead6ce786a80b2a2f). Because Blaxel is serverless, a model deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Environments).
+- **Executions** (a.k.a inference executions) are ephemeral invocations of model deployments by a [consumer](Query-a-model). Because Blaxel is serverless, a model deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Environments).
 
-A model can be uploaded into Blaxel from a variety of [origins](#model-origins). At this moment, it can be either: **just** **created** (a *model deployment* exists but it is deactivated), or **created and deployed** (as a *model deployment*). At any time, you can [deactivate a model deployment](Model-deployment%2013847e47b1ea8103a274c27cff3de584), and [update it with a new version](Model-deployment).
+A model can be uploaded into Blaxel from a variety of [origins](#model-origins). At this moment, it can be either: **just** **created** (a *model deployment* exists but it is deactivated), or **created and deployed** (as a *model deployment*). At any time, you can [deactivate a model deployment](Model-deployment), and [update it with a new version](Model-deployment).
 
 ![models2.png](Model-deployment/models2.png)
 
@@ -57,7 +57,7 @@ Read our [reference for model deployments](https://docs.blaxel.ai/api-reference/
 
 As you iterate on software development, you will need to update the version of a model that is currently deployed and used by your consumers.
 
-One way to manage this is through multiple [environments](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd), and [releasing](Model-deployment) the model version that is on one environment (e.g. development) to another environment (e.g. production). Another more straightforward way is to directly update a model deployment on an environment.
+One way to manage this is through multiple [environments](../Model-Governance/Environments), and [releasing](Model-deployment) the model version that is on one environment (e.g. development) to another environment (e.g. production). Another more straightforward way is to directly update a model deployment on an environment.
 
 When updating a model deployment, you can:
 
@@ -111,11 +111,11 @@ Blaxel natively supports the following runtimes:
 
 ### Environment
 
-You must choose an [environment](../Model-Governance/Environments%2013847e47b1ea81ac9677d81f847741bd) when deploying a model on Blaxel. Environments allow you to pre-attach [policies](../Model-Governance/Policies) to a model deployment (for example: to make it so the model only runs in certain countries, or on a certain hardware). 
+You must choose an [environment](../Model-Governance/Environments) when deploying a model on Blaxel. Environments allow you to pre-attach [policies](../Model-Governance/Policies) to a model deployment (for example: to make it so the model only runs in certain countries, or on a certain hardware). 
 
 ### Policies
 
-Additional [policies](../Model-Governance/Policies%2013847e47b1ea817daa5bcd58129a9bdb) can be optionally attached to a model deployment directly. If there already are policies set in the environment, policies of the **same policy type** (e.g. location-based, flavor-based, etc.) will collide. In this case, the result will be [as described here](../Model-Governance/Policies).
+Additional [policies](../Model-Governance/Policies) can be optionally attached to a model deployment directly. If there already are policies set in the environment, policies of the **same policy type** (e.g. location-based, flavor-based, etc.) will collide. In this case, the result will be [as described here](../Model-Governance/Policies).
 
 <Tip>To force execution of the model on a certain type of GPU, it is best to configure it in the model deployment [resources](Model-deployment) directly.</Tip>
 
