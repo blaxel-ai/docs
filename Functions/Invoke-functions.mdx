@@ -6,13 +6,13 @@ description: 'Make invocation requests on your functions and MCP servers.'
 
 ---
 
-Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature robust capabilities — including persistent connections with automatic reconnection handling, multi-tenant support, health monitoring, and seamless AI framework integration.
+Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature robust capabilities — including persistent connections with automatic reconnection handling, multi-tenant support, health monitoring, and seamless integration with agent frameworks.
 
 At this time, MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
 
 ## MCP server endpoint
 
-When you deploy an MCP server on Blaxel, a WebSocket-based endpoint is generated on Global Agentics Network to connect to the server.
+When you deploy an MCP server on Blaxel, a **WebSocket endpoint** is generated on Global Agentics Network to connect to the server.
 
 The server endpoint looks like this:
 
@@ -28,13 +28,149 @@ By default, MCP servers deployed on Blaxel aren’t public. It is necessary to a
 
 The evaluation of authentication/authorization for messages is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making a function publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
+<Info>Making an MCP server publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
 
-## Make an invocation request
+## Call the MCP server
 
-### Using the API
+### Connect using Blaxel SDK
 
-**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
+Below are snippets of code to connect to an MCP server that is deployed on Blaxel. You will need the following information:
+
+- BL_API_KEY: an [API key](../Security/Access-tokens) to connect to your Blaxel workspace
+- BL_WORKSPACE: the slug ID for your workspace
+- MCP_SERVER_NAME: the slug name for your MCP server
+
+<CodeGroup>
+
+```typescript In TypeScript
+
+import { Client as ModelContextProtocolClient } from "@modelcontextprotocol/sdk/client/index.js";
+import dotenv from 'dotenv';
+import { env } from "../src/common/env.js";
+import { BlaxelMcpClientTransport } from "../src/mcp/client.js";
+
+// Load environment variables from .env file
+dotenv.config();
+
+async function sampleMcpBlaxel(name: string): Promise<void> {
+  const apiKey = env.BL_API_KEY;
+  const workspace = env.BL_WORKSPACE;
+
+  if (!apiKey || !workspace) {
+    throw new Error("BL_API_KEY and BL_WORKSPACE environment variables must be set");
+  }
+
+  const headers = {
+    "X-Blaxel-Authorization": `Bearer ${apiKey}`
+  };
+
+  const transport = new BlaxelMcpClientTransport(
+    `
+
+wss://run.blaxel.ai/${workspace}/functions/${name}
+
+`,
+    headers
+  );
+
+  const client = new ModelContextProtocolClient(
+    {
+      name: name,
+      version: "1.0.0",
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
+  try {
+    await client.connect(transport);
+    const response = await client.listTools();
+    console.log(`Tools retrieved, number of tools: ${response.tools.length}`);
+
+    // Call the tool, specify the correct tool name and arguments
+    const result = await client.callTool({
+      name: "search_issues",
+      arguments: { query: "test" }
+    });
+    console.log(`Tool call result: ${JSON.stringify(result)}`);
+  } finally {
+    await client.close();
+    await transport.close();
+  }
+}
+
+// Example usage
+if (require.main === module) {
+  sampleMcpBlaxel("MCP_SERVER_NAME").catch(console.error);
+}
+
+```
+
+```python In Python
+
+import asyncio
+import os
+
+from blaxel.mcp.client import websocket_client
+from dotenv import load_dotenv
+from mcp import ClientSession
+
+load_dotenv()
+
+BL_API_KEY = os.getenv("BL_API_KEY")
+BL_WORKSPACE = os.getenv("BL_WORKSPACE")
+
+async def list_mcp_tools(name: str):
+    headers = {
+        "X-Blaxel-Authorization": f"Bearer {BL_API_KEY}"
+    }
+
+    async with websocket_client(
+        f"
+
+wss://run.blaxel.ai/{BL_WORKSPACE}/functions/{name}
+
+",
+        headers=headers,
+        timeout=30,
+    ) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                response = await session.list_tools()
+                print(f"Tools retrieved, number of tools: {len(response.tools)}")
+                # Call the tool, specify the correct tool name and arguments
+                result = await session.call_tool("search_issues", { "query": "test" })
+                print(f"Tool call result: {result}")
+
+if __name__ == "__main__":
+    asyncio.run(list_mcp_tools("MCP_SERVER_NAME"))
+
+```
+
+</CodeGroup>
+
+Requirements are as follows:
+
+<CodeGroup>
+
+```json package.json (In TypeScript)
+
+"dependencies": {"@blaxel/sdk": …}
+
+```
+
+```txt requirements.txt (In Python)
+
+python-dotenv
+blaxel
+
+```
+
+</CodeGroup>
+
+### Connect to pre-built servers
 
 Blaxel’s pre-built MCP servers offer two methods:
 

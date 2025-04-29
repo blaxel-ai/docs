@@ -86,17 +86,32 @@
             "group": "Integrations",
             "pages": [
               "Integrations",
-              "Integrations/OpenAI",
-              "Integrations/Anthropic",
-              "Integrations/MistralAI",
-              "Integrations/Cohere",
-              "Integrations/xAI",
-              "Integrations/DeepSeek",
-              "Integrations/HuggingFace",
-              "Integrations/Azure-AI-Foundry",
-              "Integrations/Google-Maps",
-              "Integrations/Gmail",
-              "Integrations/Pactory"
+              {
+                "group": "Model providers integrations",
+                "pages": [
+                  "Integrations/OpenAI",
+                  "Integrations/Anthropic",
+                  "Integrations/MistralAI",
+                  "Integrations/Cohere",
+                  "Integrations/xAI",
+                  "Integrations/DeepSeek",
+                  "Integrations/HuggingFace",
+                  "Integrations/Azure-AI-Foundry"
+                ]
+              },
+              {
+                "group": "Tool servers integrations",
+                "pages": [
+                  "Integrations/Google-Maps",
+                  "Integrations/Gmail"
+                ]
+              },
+              {
+                "group": "Monetization integrations",
+                "pages": [
+                  "Integrations/Pactory"
+                ]
+              }
             ]
           },
           {
