@@ -6,9 +6,9 @@ description: 'Run inferences on your Blaxel deployments.'
 
 ---
 
-Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Inference Network, the [infrastructure powerhouse](../Infrastructure/Global-Inference-Network) that hosts it.
+Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Agentics Network, the [infrastructure powerhouse](../Infrastructure/Global-Inference-Network) that hosts it.
 
-The inference API URL depends on the type of workload ([agent](../Agents/Overview%2015347e47b1ea807bbba6d269c01e633d), [model API](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [function](../Functions/Overview)) you are trying to request:
+The inference API URL depends on the type of workload ([agent](../Agents/Overview%2015347e47b1ea807bbba6d269c01e633d), [model API](../Models/Overview%2015347e47b1ea80f48cbcd345aafd924a), [MCP server](../Functions/Overview)) you are trying to request:
 
 <CodeGroup>
 
@@ -20,7 +20,7 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 
 ```http Query model API
 
-POST https://run.blaxel.ai/{your-workspace}/models/{your-model}
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/models/{YOUR-MODEL}
 
 ```
 
@@ -57,7 +57,11 @@ curl -X POST "run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completion
 
 ### Connect to MCP servers
 
-**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple capabilities for agents. These servers can be interacted with using Blaxel’s WebSocket transport implementation on the server’s global endpoint. 
+
+<Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run invocation requests on your MCP server. 
+</Card>
 
 ### Manage sessions
 

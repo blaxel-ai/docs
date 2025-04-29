@@ -40,7 +40,7 @@ Run the following command to build and deploy the MCP server on Blaxel:
 bl deploy
 ```
 
-You can now connect to the MCP server either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports WebSockets transport.
+You can now [connect to the MCP server](Invoke-functions) either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports WebSockets transport. 
 
 <CodeGroup>
 
@@ -48,6 +48,7 @@ You can now connect to the MCP server either from an agent on Blaxel (using the 
 
 import { blTools } from "@blaxel/sdk";
 
+// Retrieve tools (in whichever framework format):
 const tools = blTools(['blaxel-search']).ToVercelAI();
 // or
 const tools = blTools(['blaxel-search']).ToLangChain();
@@ -62,17 +63,22 @@ const tools = blTools(['blaxel-search']).ToLlamaIndex();
 
 from blaxel.tools import bl_tools
 
+# Retrieve tools (in whichever framework format):
 await bl_tools(['blaxel-search']).to_pydantic();
-// or
+# or
 await bl_tools(['blaxel-search']).to_langchain();
-// or
+# or
 await bl_tools(['blaxel-search']).to_llamaindex();
-// or
+#or
 
-// …
+# …
 ```
 
 </CodeGroup>
+
+<Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run invocation requests on your MCP server. 
+</Card>
 
 ### Customize an MCP server deployment
 
