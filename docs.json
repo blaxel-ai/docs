@@ -80,7 +80,10 @@
           {
             "group": "Sandboxes",
             "pages": [
-              "UVM/Overview"
+              "UVM/Overview",
+              "UVM/Filesystem",
+              "UVM/Processses",
+              "UVM/Log-streaming"
             ]
           },
           {
