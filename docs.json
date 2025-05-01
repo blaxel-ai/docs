@@ -82,7 +82,7 @@
             "pages": [
               "UVM/Overview",
               "UVM/Filesystem",
-              "UVM/Processses",
+              "UVM/Processes",
               "UVM/Log-streaming"
             ]
           },
