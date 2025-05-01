@@ -1,0 +1,67 @@
+---
+
+title: 'File system'
+
+description: 'A simple file system interface for managing files in sandboxes.'
+
+---
+
+Manage files and directories within sandboxes through the `fs` module of the Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
+
+## Basic file system operations
+
+### Create directory
+
+Create a new directory at a specific path in the sandbox:
+
+```tsx
+import { SandboxInstance } from "@blaxel/sdk";
+
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+await sandbox.fs.mkdir(`/Users/user/Downloads/test`)
+```
+
+### List files
+
+List files in a specific path:
+
+```tsx
+const dir = await sandbox.fs.ls(`/Users/user/Downloads`);
+
+if (dir.files?.length && dir.files?.length < 1) {
+  throw new Error("Directory is empty");
+}
+```
+
+### Read file
+
+Read a file from a specific filepath:
+
+```tsx
+const content = await sandbox.fs.read(`/Users/user/Downloads/test`)
+```
+
+### Write file
+
+Create a file in a specific path:
+
+```tsx
+await sandbox.fs.write(`/Users/user/Downloads/test`, "Hello world");
+```
+
+### Copy file
+
+Copy a file from a path to another path:
+
+```tsx
+await sandbox.fs.cp(`/Users/user1/Downloads/test`, `/Users/user2/Downloads/test2`);
+```
+
+### Delete file or directory
+
+Delete a file or directory by specifying its path:
+
+```tsx
+await sandbox.fs.rm(`/Users/user/Downloads/test`);
+```

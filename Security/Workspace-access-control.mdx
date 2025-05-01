@@ -1,14 +1,22 @@
 ---
 
-title: 'Users and roles'
+title: 'Workspaces, users and roles'
 
 description: 'Control authentication and authorization over all resources in your workspace.'
 
 ---
 
-All resources on Blaxel are logically regrouped in a **workspace,** which is the highest possible level of tenancy. Your organization will usually operate within one single workspace, but it is not necessarily the case when dealing with multiple business units or end-clients for example.
+All resources on Blaxel are logically regrouped in a **workspace,** which is the highest possible level of tenancy. Your organization will usually operate within one single workspace, but you can work with several workspaces when dealing with multiple business units or end-clients for example.
 
 Users can be either [team members](Workspace-access-control), or [service accounts](Service-accounts) that represent external systems that can operate Blaxel. They are added to a workspace with certain permissions on the workspace resources inherited from their role.
+
+## Workspace ID
+
+The workspace ID (called `name` in Blaxel API) uniquely identifies your workspace. You set it when the workspace is created. Once set, it cannot be changed.
+
+You can find the workspace ID at the top of the left sidebar on Blaxel Console.
+
+Each workspace also has a display name for better organization, which workspace admins can modify.
 
 ## User roles
 

@@ -1,6 +1,6 @@
 ---
 
-title: 'Sandbox VMs'
+title: 'Sandboxes'
 
 sidebarTitle: "Overview"
 
@@ -8,24 +8,60 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 ---
 
-Sandbox VMs are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents. These VMs start in under 20 milliseconds, and scale back down after one second of inactivity, maintaining their previous state after scaling down.
+Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
-Sandbox VMs natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandbox VMs ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+Sandboxes natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
 
-Blaxel’s core backbone infrastructure relies on sandbox VMs. When you deploy agents or functions as serverless endpoints, they actually run on sandbox VMs under the hood. While the high-level platform meets most developers' needs, **we expose this low-level API to give full flexibility to AI builders** over management of deployment locations, VM lifecycle, and resource allocation.
+Blaxel’s core backbone infrastructure relies on sandboxes. When you deploy agents or functions as serverless endpoints, they actually run on sandbox VMs under the hood. While the high-level platform meets most developers' needs, **we expose this low-level API to give full flexibility to AI builders** over management of deployment locations, VM lifecycle, and resource allocation.
 
-## Deploy a sandbox VM
+<Warning>The SDK for managing a sandbox’s lifecycle and to operate it is currently only available in TypeScript. A Python SDK is coming soon!</Warning>
 
-The key feature of sandbox VMs is their fast and flexible scaling capabilities after they are deployed. This makes them very similar to running serverless containers.
+## Create a sandbox
 
-Sandbox VMs have either one of the following statuses:
+Create a new sandbox using the Blaxel SDK by specifying:
 
-- **standby**: The VM is created but remains idle. You are not charged while a VM is in standby mode. VMs transition from *standby* to *active* mode in approximately 20 ms.
-- **active**: The VM is running and processing tasks. You **are** charged for active runtime. VMs automatically return to standby mode after 1 second of inactivity.
-- **stopped**: The VM is shut down and requires manual restart to access its API.
+- the name of the sandbox to create
+- the image to use
+- the ports to expose
 
-Read the reference API for managing sandbox VMs.
+```tsx
+import { SandboxInstance } from "@blaxel/sdk";
 
-## Connect to a sandbox VM
+const sandbox = await SandboxInstance.create({
+    metadata: {
+      name: "my-sandbox"
+    },
+      spec: {
+        runtime: {
+          image: "blaxel/sandbox-hub/prod/ts-app",
+          ports: [
+            {
+              target: 8080,
+              protocol: "HTTP",
+            }
+          ]
+        }
+      }
+    })
+    
+    
+ console.log(await sandbox.fs.ls("/"))
+```
 
-Coming soon!
+## Connect to a sandbox
+
+Connect to an existing sandbox by passing the sandbox name:
+
+```tsx
+const sandbox = await SandboxInstance.get("sandbox-test")
+```
+
+## Overview of sandbox lifecycle
+
+Blaxel sandboxes start in under 20 milliseconds, and scale back down after one second of inactivity, maintaining their previous state after scaling down.
+
+Sandboxes have either one of the following statuses:
+
+- **standby**: The sandbox is created but remains idle. You are not charged while a sandbox is in standby mode. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
+- **active**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
+- **stopped**: The sandbox is shut down and requires manual restart to access its API.

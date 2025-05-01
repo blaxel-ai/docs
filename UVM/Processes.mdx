@@ -1,0 +1,61 @@
+---
+
+title: 'Process execution'
+
+description: 'Execute and manage processes in sandboxes.'
+
+---
+
+Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, work with process names, retrieve process information, and control process execution.
+
+<Warning>The SDK for managing processes is currently only available in TypeScript. A Python SDK is coming soon!</Warning>
+
+## Execute processes and commands
+
+### Execute command
+
+Execute shell commands using the TypeScript SDK:
+
+```tsx
+import { SandboxInstance } from "@blaxel/sdk";
+
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+const process = await sandbox.process.exec({command: "echo 'Hello world'"})
+
+if (process.status === "completed") {
+  throw new Error("Process did complete without waiting");
+}
+```
+
+### Use process names
+
+When starting a process (running a command), you can specify a **process name**. This lets you interact with the process—such as retrieving logs or process information—without needing to store the process ID on your end.
+
+```tsx
+const process = await sandbox.process.exec({
+  name: "test",
+  command: "echo 'Hello world'",
+})
+```
+
+You can use the process name to get information about the process
+
+```tsx
+await new Promise((resolve) => setTimeout(resolve, 10));
+
+const completedProcess = await sandbox.process.get("test");
+
+if (completedProcess.status !== "completed") {
+  throw new Error("Process did not complete");
+```
+
+You can also use the process name to [retrieve logs of your processes](Log-streaming).
+
+### Kill process
+
+Kill a process immediately by running:
+
+```tsx
+await sandbox.process.kill("test")
+```
