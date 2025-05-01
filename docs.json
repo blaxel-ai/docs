@@ -78,6 +78,12 @@
             ]
           },
           {
+            "group": "Sandboxes",
+            "pages": [
+              "UVM/Overview"
+            ]
+          },
+          {
             "group": "Observability",
             "pages": [
               "Observability/Overview"
