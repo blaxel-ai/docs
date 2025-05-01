@@ -80,10 +80,10 @@
           {
             "group": "Sandboxes",
             "pages": [
-              "UVM/Overview",
-              "UVM/Filesystem",
-              "UVM/Processes",
-              "UVM/Log-streaming"
+              "Sandboxes/Overview",
+              "Sandboxes/Processes",
+              "Sandboxes/Filesystem",
+              "Sandboxes/Log-streaming"
             ]
           },
           {
@@ -140,7 +140,7 @@
                 "group": "Infrastructure",
                 "pages": [
                   "Infrastructure/Global-Inference-Network",
-                  "Infrastructure/Generations"
+                  "Infrastructure/Gens"
                 ]
               }
             ]

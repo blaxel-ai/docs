@@ -39,7 +39,7 @@ const process = await sandbox.process.exec({
 })
 ```
 
-You can use the process name to get information about the process
+You can use either the process name or the process ID to get information about the process:
 
 ```tsx
 await new Promise((resolve) => setTimeout(resolve, 10));
@@ -50,7 +50,7 @@ if (completedProcess.status !== "completed") {
   throw new Error("Process did not complete");
 ```
 
-You can also use the process name to [retrieve logs of your processes](Log-streaming).
+You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
 
 ### Kill process
 

@@ -1,6 +1,6 @@
 ---
 
-title: 'Functions (MCP servers)'
+title: 'MCP servers'
 
 sidebarTitle: "Overview"
 
@@ -8,7 +8,7 @@ description: 'Execute custom code to empower your AI agents with tools and actio
 
 ---
 
-Functions (also called *MCP servers* on Blaxel Console) represent **custom code** that can be executed by passing specific input arguments. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). MCP servers are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, the function in the MCP server is run separately from the action model and agent logic. This ensures not only minimal latency for your consumers as well as optimal resource utilization, but also better design practice for your agentic system.
+MCP servers (called *functions* in Blaxel API) represent **custom code** that can be executed by passing specific input arguments. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). MCP servers are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, the function in the MCP server is run separately from the action model and agent logic. This ensures not only minimal latency for your consumers as well as optimal resource utilization, but also better design practice for your agentic system.
 
 When deployed on Blaxel, MCP servers are hosted on Global Agentics Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. 
 
