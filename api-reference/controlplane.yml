@@ -1288,6 +1288,80 @@ components:
           type: string
           description: The type of origin for the deployment (hf_private_endpoint,
             hf_public_endpoint)
+    Sandbox:
+      type: object
+      description: Micro VM for running agentic tasks
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/SandboxSpec'
+        status:
+          type: string
+          description: Sandbox status
+    SandboxDefinition:
+      type: object
+      description: Sandbox definition for admin store operations
+      properties:
+        categories:
+          type: array
+          description: Categories of the defintion
+          items: {}
+        coming_soon:
+          type: boolean
+          description: If the definition is coming soon
+        description:
+          type: string
+          description: Description of the defintion
+        displayName:
+          type: string
+          description: Display name of the definition
+        enterprise:
+          type: boolean
+          description: If the definition is enterprise
+        icon:
+          type: string
+          description: Icon of the definition
+        image:
+          type: string
+          description: Image of the Sandbox definition
+        longDescription:
+          type: string
+          description: Long description of the defintion
+        memory:
+          type: integer
+          description: Memory of the Sandbox definition in MB
+        name:
+          type: string
+          description: Name of the artifact
+        ports:
+          $ref: '#/components/schemas/Ports'
+        url:
+          type: string
+          description: URL of the definition
+    SandboxSpec:
+      type: object
+      description: Sandbox specification
+      allOf:
+      - $ref: '#/components/schemas/CoreSpec'
+      - {}
+    SandboxStoreDefinitionName:
+      description: Name of a Sandbox definition
+    Sandboxes:
+      description: Micro VM for running agentic tasks
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/SandboxSpec'
+        status:
+          description: Sandbox status
+          type: string
+      type: object
     ServerlessConfig:
       type: object
       description: Configuration for a serverless deployment
@@ -1316,9 +1390,9 @@ components:
         value:
           type: string
           description: Configuration value
-    StartUVM:
+    StartSandbox:
       type: object
-      description: Response when starting a UVM
+      description: Response when starting a Sandbox
       properties:
         message:
           type: string
@@ -1327,10 +1401,10 @@ components:
           $ref: '#/components/schemas/Metadata'
         status:
           type: string
-          description: Status of the UVM start operation
-    StopUVM:
+          description: Status of the Sandbox start operation
+    StopSandbox:
       type: object
-      description: Response when stopping a UVM
+      description: Response when stopping a Sandbox
       properties:
         message:
           type: string
@@ -1339,7 +1413,7 @@ components:
           $ref: '#/components/schemas/Metadata'
         status:
           type: string
-          description: Status of the UVM stop operation
+          description: Status of the Sandbox stop operation
     StoreAgent:
       type: object
       description: Store agent
@@ -1576,67 +1650,6 @@ components:
       description: Triggers to use your agent
       items:
         $ref: '#/components/schemas/Trigger'
-    UVM:
-      type: object
-      description: Micro VM for running agentic tasks
-      properties:
-        events:
-          $ref: '#/components/schemas/CoreEvents'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          $ref: '#/components/schemas/UVMSpec'
-        status:
-          type: string
-          description: UVM status
-    UVMDefinition:
-      type: object
-      description: UVM definition for admin store operations
-      properties:
-        categories:
-          type: array
-          description: Categories of the defintion
-          items: {}
-        coming_soon:
-          type: boolean
-          description: If the definition is coming soon
-        description:
-          type: string
-          description: Description of the defintion
-        displayName:
-          type: string
-          description: Display name of the definition
-        enterprise:
-          type: boolean
-          description: If the definition is enterprise
-        icon:
-          type: string
-          description: Icon of the definition
-        image:
-          type: string
-          description: Image of the UVM definition
-        longDescription:
-          type: string
-          description: Long description of the defintion
-        memory:
-          type: integer
-          description: Memory of the UVM definition in MB
-        name:
-          type: string
-          description: Name of the artifact
-        ports:
-          $ref: '#/components/schemas/Ports'
-        url:
-          type: string
-          description: URL of the definition
-    UVMSpec:
-      type: object
-      description: UVM specification
-      allOf:
-      - $ref: '#/components/schemas/CoreSpec'
-      - {}
-    UVMStoreDefinitionName:
-      description: Name of a UVM definition
     WebsocketChannel:
       type: object
       description: WebSocket connection details
@@ -1838,161 +1851,6 @@ paths:
       summary: List all agent revisions
       tags:
       - agents
-  /compute/uvm:
-    get:
-      description: Returns a list of all UVMs in the workspace.
-      operationId: ListUVMs
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/UVM'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvm:list
-      summary: List UVMs
-      tags:
-      - compute
-    post:
-      description: Creates a UVM.
-      operationId: CreateUVM
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UVM'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UVM'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvm:create
-      summary: Create UVM
-      tags:
-      - compute
-  /compute/uvm/{uvmName}:
-    delete:
-      description: Deletes a UVM by name.
-      operationId: DeleteUVM
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UVM'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvm:delete
-      summary: Delete UVM
-      tags:
-      - compute
-    get:
-      description: Returns a UVM by name.
-      operationId: GetUVM
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UVM'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvm:get
-      summary: Get UVM
-      tags:
-      - compute
-    parameters:
-    - description: Name of the UVM
-      in: path
-      name: uvmName
-      required: true
-      schema:
-        type: string
-    put:
-      description: Update a UVM by name.
-      operationId: UpdateUVM
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UVM'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UVM'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvm:update
-      summary: Update UVM
-      tags:
-      - compute
-  /compute/uvm/{uvmName}/start:
-    put:
-      description: Starts a UVM by name.
-      operationId: StartUVM
-      parameters:
-      - description: Name of the UVM
-        in: path
-        name: uvmName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartUVM'
-          description: successful operation
-        "409":
-          description: UVM is already running
-      security:
-      - BearerAuth:
-        - uvm:control
-      summary: Start UVM
-      tags:
-      - compute
-  /compute/uvm/{uvmName}/stop:
-    put:
-      description: Stops a UVM by name.
-      operationId: StopUVM
-      parameters:
-      - description: Name of the UVM
-        in: path
-        name: uvmName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StopUVM'
-          description: successful operation
-        "409":
-          description: UVM is not running
-      security:
-      - BearerAuth:
-        - uvm:control
-      summary: Stop UVM
-      tags:
-      - compute
   /configuration:
     get:
       operationId: GetConfiguration
@@ -2888,6 +2746,176 @@ paths:
       summary: List pending invitations
       tags:
       - invitations
+  /sandbox/hub:
+    get:
+      operationId: ListSandboxHubDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SandboxDefinition'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxhub:list
+  /sandboxes:
+    get:
+      description: Returns a list of all Sandboxes in the workspace.
+      operationId: ListSandboxes
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Sandbox'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:list
+      summary: List Sandboxes
+      tags:
+      - compute
+    post:
+      description: Creates a Sandbox.
+      operationId: CreateSandbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:create
+      summary: Create Sandbox
+      tags:
+      - compute
+  /sandboxes/{sandboxName}:
+    delete:
+      description: Deletes a Sandbox by name.
+      operationId: DeleteSandbox
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:delete
+      summary: Delete Sandbox
+      tags:
+      - compute
+    get:
+      description: Returns a Sandbox by name.
+      operationId: GetSandbox
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:get
+      summary: Get Sandbox
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Update a Sandbox by name.
+      operationId: UpdateSandbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:update
+      summary: Update Sandbox
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/start:
+    put:
+      description: Starts a Sandbox by name.
+      operationId: StartSandbox
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartSandbox'
+          description: successful operation
+        "409":
+          description: Sandbox is already running
+      security:
+      - BearerAuth:
+        - sandboxes:control
+      summary: Start Sandbox
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/stop:
+    put:
+      description: Stops a Sandbox by name.
+      operationId: StopSandbox
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StopSandbox'
+          description: successful operation
+        "409":
+          description: Sandbox is not running
+      security:
+      - BearerAuth:
+        - sandboxes:control
+      summary: Stop Sandbox
+      tags:
+      - compute
   /service_accounts:
     get:
       description: Returns a list of all service accounts in the workspace.
@@ -3338,21 +3366,6 @@ paths:
       summary: Update user role in workspace
       tags:
       - workspaces
-  /uvm/hub:
-    get:
-      operationId: ListUVMHubDefinitions
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/UVMDefinition'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - uvmhub:list
   /workspaces:
     get:
       description: Returns a list of all workspaces.
