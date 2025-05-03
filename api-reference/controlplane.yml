@@ -3559,6 +3559,31 @@ paths:
       summary: Leave workspace
       tags:
       - workspaces
+  /workspaces/availability:
+    post:
+      description: Check if a workspace is available.
+      operationId: CheckWorkspaceAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+              required:
+              - name
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: boolean
+          description: successful operation
+      summary: Check workspace availability
+      tags:
+      - workspaces
 security:
 - BearerAuth:
   - admin
