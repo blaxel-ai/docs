@@ -12,6 +12,10 @@ Log streaming provides developers with real-time visibility into process outputs
 
 ## Retrieve logs
 
+### Batch
+
+This allows you to retrieve logs for a specific process after it has completed execution. This is useful for analyzing process output or debugging issues.
+
 ```tsx
 import { SandboxInstance } from "@blaxel/sdk";
 
@@ -20,3 +24,7 @@ const process = await sandbox.process.exec({name: "test", command: "echo 'Hello 
 
 const logs = await sandbox.process.logs("test");
 ```
+
+### Streaming
+
+Coming in the next few days!

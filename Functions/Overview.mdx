@@ -12,6 +12,8 @@ MCP servers (called *functions* in Blaxel API) represent **custom code** that ca
 
 When deployed on Blaxel, MCP servers are hosted on Global Agentics Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. 
 
+Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 5 minutes**, but this can be increased up to 60 minutes depending on your workspace quota.
+
 ## MCP hosting on Blaxel
 
 Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature cloud deployment capabilities.

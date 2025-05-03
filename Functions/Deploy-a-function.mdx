@@ -148,6 +148,10 @@ The remaining fields in *package.json* follow standard JavaScript/TypeScript pro
 
 Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When deploying a workload, you can select between *Mk 2 infrastructure*—which provides stable, globally distributed container-based workloads—and *Mk 3* (in Alpha), which delivers ultra-fast cold starts. Choose the generation that best fits your specific requirements.
 
+### Maximum runtime
+
+Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 5 minutes**, but this can be increased up to 60 minutes depending on your workspace quota.
+
 ### Manage revisions
 
 As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
