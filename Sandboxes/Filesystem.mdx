@@ -39,7 +39,7 @@ if (dir.files?.length && dir.files?.length < 1) {
 Read a file from a specific filepath:
 
 ```tsx
-const content = await sandbox.fs.read(`/Users/user/Downloads/test`)
+const content = await sandbox.fs.read(`/Users/user/Downloads/test.txt`)
 ```
 
 ### Write file
@@ -47,7 +47,7 @@ const content = await sandbox.fs.read(`/Users/user/Downloads/test`)
 Create a file in a specific path:
 
 ```tsx
-await sandbox.fs.write(`/Users/user/Downloads/test`, "Hello world");
+await sandbox.fs.write(`/Users/user/Downloads/test.txt`, "Hello world");
 ```
 
 ### Copy file
@@ -55,7 +55,7 @@ await sandbox.fs.write(`/Users/user/Downloads/test`, "Hello world");
 Copy a file from a path to another path:
 
 ```tsx
-await sandbox.fs.cp(`/Users/user1/Downloads/test`, `/Users/user2/Downloads/test2`);
+await sandbox.fs.cp(`/Users/user1/Downloads/test.txt`, `/Users/user2/Downloads`);
 ```
 
 ### Delete file or directory
@@ -63,5 +63,5 @@ await sandbox.fs.cp(`/Users/user1/Downloads/test`, `/Users/user2/Downloads/test2
 Delete a file or directory by specifying its path:
 
 ```tsx
-await sandbox.fs.rm(`/Users/user/Downloads/test`);
+await sandbox.fs.rm(`/Users/user/Downloads/test.txt`);
 ```
