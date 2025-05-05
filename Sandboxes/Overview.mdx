@@ -10,9 +10,13 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
-They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+<video
+controls
+className="w-full aspect-video"
+src="https://www.tella.tv/video/demo-sandboxes-1-91db"
+></video>
 
-<Warning>The SDK for managing a sandbox’s lifecycle and to operate it is currently only available in TypeScript. The Python SDK is coming soon!</Warning>
+They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
 
 ## Create a sandbox
 
@@ -21,8 +25,12 @@ Create a new sandbox using the Blaxel SDK by specifying:
 - the name of the sandbox to create
 - the image to use
 - the ports to expose
+- and waiting for it to be fully deployed
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 import { SandboxInstance } from "@blaxel/sdk";
 
 const sandbox = await SandboxInstance.create({
@@ -43,11 +51,50 @@ const sandbox = await SandboxInstance.create({
       }
     })
     
-    
 
 /// Wait for the sandbox to be deployed (for max 120 seconds, checking every 1 second)
 await sandbox.wait({ maxWait: 120000, interval: 1000 })
+
 ```
+
+```python Python
+
+import asyncio
+import logging
+import os
+
+from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
+from blaxel.sandbox.base import ResponseError
+from blaxel.sandbox.client.models import ProcessRequest
+from blaxel.sandbox.sandbox import SandboxInstance
+
+logger = logging.getLogger(__name__)
+
+async def create_sandbox(sandbox_name: str):
+    image = "blaxel/prod-base:14769328323"
+    logger.info(f"Creating sandbox {sandbox_name} with image {image}")
+    sandbox = await SandboxInstance.create(Sandbox(
+        metadata=Metadata(name=sandbox_name),
+        spec=SandboxSpec(
+            runtime=Runtime(
+                image=image,
+                memory=2048,
+                cpu=2,
+                ports=[
+                    Port(name="sandbox-api", target=8080, protocol="HTTP")
+                ]
+            )
+        )
+    ))
+
+    ### Wait for the sandbox to be deployed (for max 120 seconds, checking every 1 second)
+    await sandbox.wait(max_wait=120000, interval=1000)
+    logger.info("Sandbox deployed")
+    return sandbox
+
+```
+
+</CodeGroup>
 
 While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel.
 
@@ -55,9 +102,23 @@ While `SandboxInstance.create()` waits for the creation to be acknowledged, the 
 
 Connect to an existing sandbox by passing the sandbox name:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 const sandbox = await SandboxInstance.get("sandbox-test")
+
 ```
+
+```python Python
+
+sandbox = await SandboxInstance.get("sandbox-test")
+
+```
+
+</CodeGroup>
+
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/beamlit/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/beamlit/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Overview of sandbox lifecycle
 

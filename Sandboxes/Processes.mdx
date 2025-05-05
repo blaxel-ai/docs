@@ -8,7 +8,7 @@ description: 'Execute and manage processes in sandboxes.'
 
 Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, work with process names, retrieve process information, and control process execution.
 
-<Warning>The SDK for managing processes is currently only available in TypeScript. A Python SDK is coming soon!</Warning>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/beamlit/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/beamlit/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Execute processes and commands
 
@@ -16,7 +16,10 @@ Execute and manage processes in your sandboxes with Blaxel SDK. Run shell comman
 
 Execute shell commands using the TypeScript SDK:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript {5}
+
 import { SandboxInstance } from "@blaxel/sdk";
 
 const sandbox = await SandboxInstance.get("my-sandbox")
@@ -26,29 +29,78 @@ const process = await sandbox.process.exec({command: "echo 'Hello world'"})
 if (process.status === "completed") {
   throw new Error("Process did complete without waiting");
 }
+
 ```
+
+```python Python {12}
+
+import asyncio
+import logging
+import os
+
+from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
+from blaxel.sandbox.base import ResponseError
+from blaxel.sandbox.client.models import ProcessRequest
+from blaxel.sandbox.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+process = await sandbox.process.exec(ProcessRequest(command="echo 'Hello world'"))
+assert getattr(process, "status", None) != "completed", "Process did complete without waiting"
+
+```
+
+</CodeGroup>
 
 ### Use process names
 
 When starting a process (running a command), you can specify a **process name**. This lets you interact with the process—such as retrieving logs or process information—without needing to store the process ID on your end.
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 const process = await sandbox.process.exec({
   name: "test",
   command: "echo 'Hello world'",
 })
+
 ```
+
+```python Python
+
+process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'"))
+
+```
+
+</CodeGroup>
 
 You can use either the process name or the process ID to get information about the process:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript {3}
+
 await new Promise((resolve) => setTimeout(resolve, 10));
 
 const completedProcess = await sandbox.process.get("test");
 
 if (completedProcess.status !== "completed") {
   throw new Error("Process did not complete");
+
 ```
+
+```python Python {3}
+
+await asyncio.sleep(0.01)
+
+completed_process = await sandbox.process.get("test")
+
+assert getattr(completed_process, "status", None) == "completed", "Process did not complete"
+
+```
+
+</CodeGroup>
 
 You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
 
@@ -56,9 +108,21 @@ You can also use the process ID or name to [retrieve logs of your processes](Log
 
 Kill a process immediately by running:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 await sandbox.process.kill("test")
+
 ```
+
+```python Python
+
+await sandbox.process.kill("test")
+
+```
+
+</CodeGroup>
 
 ## Call a sandbox on a specific port
 

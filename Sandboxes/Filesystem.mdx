@@ -8,60 +8,149 @@ description: 'A simple file system interface for managing files in sandboxes.'
 
 Manage files and directories within sandboxes through the `fs` module of the Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
 
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/beamlit/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/beamlit/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+
 ## Basic file system operations
 
 ### Create directory
 
 Create a new directory at a specific path in the sandbox:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript {5}
+
 import { SandboxInstance } from "@blaxel/sdk";
 
 const sandbox = await SandboxInstance.get("my-sandbox")
 
 await sandbox.fs.mkdir(`/Users/user/Downloads/test`)
+
 ```
+
+```python Python {14}
+
+import asyncio
+import logging
+import os
+
+from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
+from blaxel.sandbox.base import ResponseError
+from blaxel.sandbox.client.models import ProcessRequest
+from blaxel.sandbox.sandbox import SandboxInstance
+
+logger = logging.getLogger(__name__)
+
+sandbox = await SandboxInstance.get(sandbox_name)
+
+await sandbox.fs.mkdir(f"/Users/user/Downloads/test")
+
+```
+
+</CodeGroup>
 
 ### List files
 
 List files in a specific path:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript {1}
+
 const dir = await sandbox.fs.ls(`/Users/user/Downloads`);
 
 if (dir.files?.length && dir.files?.length < 1) {
   throw new Error("Directory is empty");
 }
+
 ```
+
+```python Python {1}
+
+dir = await sandbox.fs.ls(f"/Users/{user}/Downloads")
+
+assert dir.files and len(dir.files) >= 1, "Directory is empty"
+
+```
+
+</CodeGroup>
 
 ### Read file
 
 Read a file from a specific filepath:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 const content = await sandbox.fs.read(`/Users/user/Downloads/test.txt`)
+
 ```
+
+```python Python
+
+content = await sandbox.fs.read(f"/Users/user/Downloads/test.txt")
+
+```
+
+</CodeGroup>
 
 ### Write file
 
 Create a file in a specific path:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 await sandbox.fs.write(`/Users/user/Downloads/test.txt`, "Hello world");
+
 ```
+
+```python Python
+
+await sandbox.fs.write(f"/Users/user/Downloads/test.txt", "Hello world")
+
+```
+
+</CodeGroup>
 
 ### Copy file
 
 Copy a file from a path to another path:
 
-```tsx
-await sandbox.fs.cp(`/Users/user1/Downloads/test.txt`, `/Users/user2/Downloads`);
+<CodeGroup>
+
+```typescript TypeScript
+
+await sandbox.fs.cp(`/Users/user/Downloads/test.txt`, `/Users/user/Documents/private/test.txt`);
+
 ```
+
+```python Python
+
+await sandbox.fs.cp(f"/Users/user/Downloads/test.txt", f"/Users/user/Documents/private/test.txt")
+
+```
+
+</CodeGroup>
 
 ### Delete file or directory
 
 Delete a file or directory by specifying its path:
 
-```tsx
+<CodeGroup>
+
+```typescript TypeScript
+
 await sandbox.fs.rm(`/Users/user/Downloads/test.txt`);
+
 ```
+
+```python Python
+
+await sandbox.fs.rm(f"/Users/user/Downloads/test.txt")
+
+```
+
+</CodeGroup>
