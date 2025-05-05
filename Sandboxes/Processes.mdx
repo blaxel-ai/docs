@@ -6,7 +6,7 @@ description: 'Execute and manage processes in sandboxes.'
 
 ---
 
-Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, work with process names, retrieve process information, and control process execution.
+Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
 
 <Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/beamlit/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/beamlit/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
@@ -103,6 +103,14 @@ assert getattr(completed_process, "status", None) == "completed", "Process did n
 </CodeGroup>
 
 You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
+
+### Process statuses
+
+A process can have either of the following status:
+
+- `running`
+- `completed`
+- `failed`
 
 ### Kill process
 
