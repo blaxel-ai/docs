@@ -945,6 +945,92 @@ components:
       description: Set of ports for a resource
       items:
         $ref: '#/components/schemas/Port'
+    Preview:
+      type: object
+      description: Preview of a Resource
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PreviewMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewSpec'
+    PreviewMetadata:
+      type: object
+      description: PreviewMetadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Model display name
+          name:
+            type: string
+            description: Preview name
+          resourceName:
+            type: string
+            description: Resource name
+          resourceType:
+            type: string
+            description: Resource type
+          workspace:
+            type: string
+            description: Workspace name
+    PreviewSpec:
+      type: object
+      description: Preview of a Resource
+      properties:
+        port:
+          type: integer
+          description: Port of the preview
+        public:
+          type: boolean
+          description: Whether the preview is public
+        url:
+          type: string
+          description: URL of the preview
+    PreviewToken:
+      type: object
+      description: Token for a Preview
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PreviewTokenMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewTokenSpec'
+    PreviewTokenMetadata:
+      type: object
+      description: PreviewTokenMetadata
+      properties:
+        name:
+          type: string
+          description: Token name
+        previewName:
+          type: string
+          description: Preview name
+        resourceName:
+          type: string
+          description: Resource name
+        resourceType:
+          type: string
+          description: Resource type
+        workspace:
+          type: string
+          description: Workspace name
+    PreviewTokenSpec:
+      type: object
+      description: Spec for a Preview Token
+      properties:
+        expired:
+          type: boolean
+          description: Whether the token is expired
+        expiresAt:
+          type: string
+          description: Expiration time of the token
+        jwt:
+          type: string
+          description: JWT token
+        public:
+          type: boolean
+          description: Whether the token is public
     PrivateCluster:
       type: object
       description: A private cluster where models can be located on.
@@ -2862,6 +2948,234 @@ paths:
       - BearerAuth:
         - sandboxes:update
       summary: Update Sandbox
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews:
+    get:
+      description: Returns a list of Sandbox Previews in the workspace.
+      operationId: ListSandboxPreviews
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Preview'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:get
+      summary: List Sandboxes
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Create a preview
+      operationId: CreateSandboxPreview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:create
+      summary: Create Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}:
+    delete:
+      description: Deletes a Sandbox Preview by name.
+      operationId: DeleteSandboxPreview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:delete
+      summary: Delete Sandbox Preview
+      tags:
+      - compute
+    get:
+      description: Returns a Sandbox Preview by name.
+      operationId: GetSandboxPreview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:get
+      summary: Get Sandbox Preview
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Name of the Preview
+      in: path
+      name: previewName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a Sandbox Preview by name.
+      operationId: UpdateSandboxPreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:update
+      summary: Update Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens:
+    get:
+      description: Gets tokens for a Sandbox Preview.
+      operationId: GetSandboxPreviewTokens
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    created_at:
+                      description: When the token was created
+                      type: string
+                    name:
+                      description: The name of the token
+                      type: string
+                  type: object
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:get
+      summary: Get tokens for Sandbox Preview
+      tags:
+      - compute
+    post:
+      description: Creates a token for a Sandbox Preview.
+      operationId: CreateSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewToken'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  token:
+                    description: The generated token for the preview
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:update
+      summary: Create token for Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens/{tokenName}:
+    delete:
+      description: Deletes a token for a Sandbox Preview by name.
+      operationId: DeleteSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Token
+        in: path
+        name: tokenName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    description: Success message
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - BearerAuth:
+        - sandboxes:delete
+      summary: Delete token for Sandbox Preview
       tags:
       - compute
   /sandboxes/{sandboxName}/start:
