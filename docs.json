@@ -176,13 +176,6 @@
             "pages": [
               "api-reference/inference"
             ]
-          },
-          {
-            "group": "Sandbox API",
-            "openapi": {
-              "source": "/sandbox.json",
-              "directory": "api-reference"
-            }
           }
         ]
       },
