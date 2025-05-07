@@ -8,7 +8,7 @@ sidebarTitle: "Overview"
 
 ---
 
-Blaxel is a **serverless platform** that gives AI Builders the dev tools and infrastructure to build and deploy **AI agents**. Blaxel lets you bring your own model APIs, MCP severs and agents code (in Python or TypeScript) and runs them securely with low-latency and high-availability.
+Blaxel is a **serverless platform** that gives AI Builders the dev tools and infrastructure to build and deploy **AI agents**. Blaxel lets you bring your own model APIs, MCP servers and agents code (in Python or TypeScript) and runs them securely with low-latency and high-availability.
 
 <Frame>
 <img src="/img/general/overview-with-map.png" />
@@ -21,7 +21,7 @@ At its core, an *AI agent* is any software that leverages generative AI models t
 - **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured data from sources, uses an LLM to turn this raw data into structured data, and insert it back into a database
 - **Automated agents** that automate machine-to-machine workflows with AI: for example a system that retrieves traffic video feeds in real-time, detects the presence of accidents, and if so contacts emergency services automatically by generating and sending a detailed report.
 
-Blaxel provides developer tools for running such production-grade multi-agents **in** **sandboxed environments** ; and offers infrastructure to run these agents on a global network that makes them **resilient** and ensures **secure interactions with your private systems**, wherever they are.
+Blaxel provides developer tools for running such production-grade multi-agents that can use tools, LLMs and code sandboxes ; and offers infrastructure to run these agents on a global network that makes them **resilient** and ensures **secure interactions with your private systems**, wherever they are.
 
 This portal provides comprehensive documentation, API references, and CLI instructions to help you operate the platform effectively.
 
@@ -44,7 +44,7 @@ Blaxel is a serverless platform that runs your AI agents. You can develop these 
 The most important concept to get started are the three types of workload that you can deploy on Blaxel:
 
 - **Agents**: The core orchestration layer of an agentic AI application. It is the entry point to an AI-powered systems that can interact with users, reason independently, and take autonomous actions through APIs to read or write data. *Agents* are built using the two other atomic bricks: *MCP servers* and *models*. Agents can also handoff requests to other agents, for multi-agent systems.
-- **MCP servers (a.k.a Functions)**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint.
+- **MCP servers (a.k.a *functions* in SDK)**: Tools that agents use to interact with their environment. These are custom code pieces that run with specific arguments through an API endpoint following Model Context Protocol.
 - **Model APIs**: ML models that make inferences within the chained AI workflow. They act as action models—LLMs that interact with humans in natural language and can use available tools by generating appropriate input payloads (*function calling*).
 
 Blaxel provides the **developer tools** needed to build and run agents throughout their entire lifecycle. Agents, models, and MCP servers become available as single **global endpoints** when pushed to Blaxel’s infrastructure. Blaxel SDK also lets you connect to model APIs and tool servers when developing an agent, and triggers those API and tool call execution during agent runtime. You can manage your agents’ lifecycle across stages with revisions, in order to iterate on prompts and code, and ship and rollback as needed. 
@@ -67,9 +67,9 @@ You might want to start with any of the following articles:
 - **Product Documentation**
     - [**Frameworks**](Frameworks/Overview): Discover the agent frameworks supported by Blaxel
     - [**Agents**](Agents/Overview): Build and run AI agents that can scale.
-    - [MCP servers](Functions/Overview): Execute tool calls requested by your AI agents
+    - [MCP servers](Functions/Overview): Expose capabilities and execute tool calls for your AI agents
     - [**Model APIs:**](Models/Overview) Learn about supported model types.
-    - [Sandboxes](Sandboxes/Overview): Equip your agents with blazing-fast virtual machines to manage files, run commands and code
+    - [Sandboxes](Sandboxes/Overview): Equip your agents with blazing-fast virtual machines to run commands and code
     - [**Integrations:**](Integrations/HuggingFace) Discover how Blaxel works with other tools, frameworks, and platforms.
     - [Observability](Observability/Overview): Monitor logs, traces and metrics for your agent runs.
     - [**Policies Governance**](Model-Governance/Policies)[:](Model-Governance/Environments) Manage your AI deployment strategies.

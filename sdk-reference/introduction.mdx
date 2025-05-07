@@ -1,0 +1,62 @@
+---
+
+title: 'Blaxel SDK'
+
+sidebarTitle: "Overview"
+
+description: 'Manage Blaxel resources programmatically using our SDKs.'
+
+---
+
+## Install
+
+Run the following command 
+
+```shell TypeScript
+
+npm install @blaxel
+
+```
+
+```shell Python
+
+uv init && uv add blaxel
+
+```
+
+</CodeGroup>
+
+This will install the following packages:
+
+- in TypeScript:
+    - @blaxel/core: functions to manage resources on Blaxel
+    - @blaxel/telemetry: for automatic telemetry export to Blaxel
+    - @blaxel/langgraph: to convert tools and agents to LangChain or LangGraph format
+    - @blaxel/vercel: to convert tools and agents to Vercel’s AI SDK format
+    - @blaxel/mastra: to convert tools and agents to Mastra format
+    - @blaxel/llamaindex: to convert tools and agents to LlamaIndex format
+
+## How it works
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options)
+2. environment variables from your machine
+3. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the first option above.
+
+## Full documentation
+
+Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+
+<CardGroup cols={2}>
+<Card title="TypeScript" icon="js" href="https://github.com/beamlit/sdk-typescript">
+Open the GitHub repository for Blaxel SDK in TypeScript.
+</Card>
+<Card title="Python" icon="python" href="https://github.com/beamlit/sdk-python">
+Open the GitHub repository for Blaxel SDK in Python.
+</Card>
+</CardGroup>

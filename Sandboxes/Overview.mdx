@@ -10,6 +10,8 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
+<iframe style="border:0;" width="800" height="450" src="[https://www.tella.tv/video/cma91vg3d00020bkydp5491db/embed?b=0&title=0&a=1&loop=0&t=0&muted=0&wt=0](https://www.tella.tv/video/cma91vg3d00020bkydp5491db/embed?b=0&title=0&a=1&loop=0&t=0&muted=0&wt=0)" allowfullscreen allowtransparency></iframe>
+
 They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
 
 ## Create a sandbox
@@ -17,7 +19,7 @@ They natively serve as **sandboxed environments for agents**. You can securely r
 Create a new sandbox using the Blaxel SDK by specifying:
 
 - the name of the sandbox to create
-- the image to use
+- the image to use. The list of public images [can be found here](https://github.com/beamlit/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. `blaxel/prod-base:latest`).
 - the ports to expose
 - and waiting for it to be fully deployed
 
@@ -64,7 +66,7 @@ from blaxel.sandbox.sandbox import SandboxInstance
 logger = logging.getLogger(__name__)
 
 async def create_sandbox(sandbox_name: str):
-    image = "blaxel/prod-base:14769328323"
+    image = "blaxel/prod-base:latest"
     logger.info(f"Creating sandbox {sandbox_name} with image {image}")
     sandbox = await SandboxInstance.create(Sandbox(
         metadata=Metadata(name=sandbox_name),
@@ -90,7 +92,9 @@ async def create_sandbox(sandbox_name: str):
 
 While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel.
 
- 
+### Images
+
+Custom images are currently not supported. [Contact us](https://blaxel.ai/contact?purpose=custom_sandboxes&origin=docs) to host your own image.
 
 ## Retrieve an existing sandbox
 

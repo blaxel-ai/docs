@@ -1,0 +1,63 @@
+---
+
+title: 'Preview URL'
+
+description: 'Access a sandbox with a direct preview URL.'
+
+---
+
+You can access a sandbox via a preview URL that routes to a specific port on your sandbox. They are useful for example if you are rendering the content of a JavaScript application running on the sandbox in a front-end client.
+
+This preview URL **does not require you to be authenticated** to access it. 
+
+## Public and private preview URLs
+
+Preview URLs can be created in either one of two modes:
+
+- **public**: anyone can access the URL
+- **private**: a key is required to access the URL (coming soon!)
+
+## Create a preview URL
+
+### Blaxel console
+
+You can create a preview URL for a sandbox from the Blaxel Console, on the overview of a sandbox:
+
+![Screenshot 2025-05-06 at 10.50.49 PM.png](Preview-url/Screenshot_2025-05-06_at_10.50.49_PM.png)
+
+### Blaxel SDK
+
+```tsx
+  try {
+    await sandbox.previews.create({
+      metadata: {
+        name: "preview-test-1"
+      },
+      spec: {
+        port: 443,
+        public: true
+      }
+    })
+    const previews = await sandbox.previews.list()
+    if (previews.length < 1) {
+      throw new Error("No previews found");
+    }
+    const preview = await sandbox.previews.get("preview-test-1")
+    if (preview.name !== "preview-test-1") {
+      throw new Error("Preview name is not correct");
+    }
+    const url = preview.spec?.url
+    if (!url) {
+      throw new Error("Preview URL is not correct");
+    }
+    const response = await fetch(`${url}/health`)
+    if (response.status !== 200) {
+      throw new Error("Preview is not working");
+    }
+    console.log("Preview is healthy :)")
+  } catch (e) {
+    console.log("ERROR IN PREVIEWS NOT EXPECTED => ", e.error);
+  } finally {
+    await sandbox.previews.delete("preview-test-1")
+  }
+```

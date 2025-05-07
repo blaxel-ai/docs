@@ -61,10 +61,11 @@
             ]
           },
           {
-            "group": "Functions / MCP servers",
+            "group": "MCP servers",
             "pages": [
               "Functions/Overview",
               "Functions/Create-MCP-server",
+              "Functions/Variables-and-secrets",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions"
             ]
@@ -78,12 +79,13 @@
             ]
           },
           {
-            "group": "Sandboxes",
+            "group": "Sandboxes \ud83c\udd95",
             "pages": [
               "Sandboxes/Overview",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
-              "Sandboxes/Log-streaming"
+              "Sandboxes/Log-streaming",
+              "Sandboxes/Preview-url"
             ]
           },
           {
@@ -175,6 +177,24 @@
             "group": "Inference API",
             "pages": [
               "api-reference/inference"
+            ]
+          },
+          {
+            "group": "Sandbox API",
+            "openapi": {
+              "source": "/sandbox.json",
+              "directory": "api-reference"
+            }
+          }
+        ]
+      },
+      {
+        "tab": "SDK Reference",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "sdk-reference/introduction"
             ]
           }
         ]

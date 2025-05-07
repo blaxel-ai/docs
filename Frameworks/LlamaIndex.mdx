@@ -51,9 +51,9 @@ await bl_tools(['mcp-server-name']).to_llamaindex()
 
 ```typescript TypeScript
 
-import { blTools } from '@blaxel/sdk';
+import { blTools } from '@blaxel/llamaindex';
 
-const tools = await blTools(['mcp-server-name']).ToLlamaIndex()
+const tools = await blTools(['mcp-server-name'])
 
 ```
 
@@ -75,9 +75,9 @@ model = await bl_model("model-api-name").to_llamaindex()
 
 ```typescript TypeScript
 
-import { blModel } from "@blaxel/sdk";
+import { blModel } from "@blaxel/llamaindex";
 
-const model = await blModel("model-api-name").ToLlamaIndex();
+const model = await blModel("model-api-name");
 
 ```
 
@@ -99,7 +99,7 @@ response = await bl_agent("agent-name").run(input);
 
 ```typescript TypeScript
 
-import { blAgent } from "@blaxel/sdk";
+import { blAgent } from "@blaxel/core";
 
 const myAgentResponse = await blAgent("agent-name").run(input);
 
