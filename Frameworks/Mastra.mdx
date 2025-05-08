@@ -27,7 +27,7 @@ bl deploy
 
 ## Develop a Mastra agent using Blaxel features
 
-While building your agent in Mastra, use Blaxel SDK to connect to resources already hosted on Blaxel:
+While building your agent in Mastra, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
 
 - [MCP servers](../Functions/Overview)
 - [LLMs](../Models/Overview)
@@ -43,9 +43,9 @@ Run the following command to retrieve tools in Mastra format:
 
 ```typescript TypeScript
 
-import { blTools } from '@blaxel/sdk';
+import { blTools } from '@blaxel/mastra';
 
-const tools = await blTools(['mcp-server-name']).ToMastra()
+const tools = await blTools(['mcp-server-name'])
 
 ```
 
@@ -59,9 +59,9 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 
 ```typescript TypeScript
 
-import { blModel } from "@blaxel/sdk";
+import { blModel } from "@blaxel/mastra";
 
-const model = await blModel("model-api-name").ToMastra();
+const model = await blModel("model-api-name");
 
 ```
 
@@ -69,13 +69,13 @@ const model = await blModel("model-api-name").ToMastra();
 
 ### Connect to other agents
 
-Connect to other agents hosted on Blaxel from your code by using the Blaxel SDK. This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
+Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK](../sdk-reference/introduction). This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
 
 <CodeGroup>
 
 ```typescript TypeScript
 
-import { blAgent } from "@blaxel/sdk";
+import { blAgent } from "@blaxel/core";
 
 const myAgentResponse = await blAgent("agent-name").run(input);
 

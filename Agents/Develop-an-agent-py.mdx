@@ -6,15 +6,21 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents, PydanticAI, Google ADK or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
+You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents, PydanticAI, Google ADK or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
 
-<Tip>Check out [this Getting Started](https://www.notion.so/Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
+<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
 ### Quickstart
 
 <Warning>It is required to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/) to use the following command.</Warning>
 
-You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
+You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. 
+
+```bash
+bl create-agent-app myagent
+```
+
+This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
 
 In the generated folder, you'll find a standard server in the entrypoint file `main.py`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.py` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
 
@@ -315,7 +321,7 @@ Read the file structure section down below for more details.
 
 ## Instrumentation
 
-Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK at your project's root level.
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK in your project's entry point.
 
 ```bash
 import blaxel

@@ -1,0 +1,157 @@
+---
+
+title: 'Blaxel SDK'
+
+sidebarTitle: "Overview"
+
+description: 'Manage Blaxel resources programmatically using our SDKs.'
+
+---
+
+## Install
+
+### Python SDK
+
+Run the following command 
+
+```shell Python
+
+uv init && uv add blaxel
+
+```
+
+### TypeScript SDK
+
+To manage Blaxel resources, use the core SDK `@blaxel/core`:
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/core
+
+```
+
+```shell TypeScript (npm)
+
+npm install @blaxel/core
+
+```
+
+```shell TypeScript (yarn)
+
+yarn add @blaxel/core
+
+```
+
+```shell TypeScript (bun)
+
+bun add @blaxel/core
+
+```
+
+</CodeGroup>
+
+For automatic trace and metric exports when running workloads with Blaxel SDK, you'll want to use `@blaxel/telemetry`. Import this SDK at your project's entry point.
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/telemetry
+
+```
+
+```shell TypeScript (npm)
+
+npm install @blaxel/telemetry
+
+```
+
+```shell TypeScript (yarn)
+
+yarn add @blaxel/telemetry
+
+```
+
+```shell TypeScript (bun)
+
+bun add @blaxel/telemetry
+
+```
+
+</CodeGroup>
+
+For compatibility with agent’s frameworks (to import tools and models in the framework’s format), import the corresponding SDK:
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/langgraph
+
+pnpm install @blaxel/vercel
+
+pnpm install @blaxel/mastra
+
+pnpm install @blaxel/llamaindex
+
+```
+
+```shell TypeScript (npm)
+
+npm install @blaxel/telemetry
+
+npm install @blaxel/vercel
+
+npm install @blaxel/mastra
+
+npm install @blaxel/llamaindex
+
+```
+
+```shell TypeScript (yarn)
+
+yarn add @blaxel/telemetry
+
+yarn add @blaxel/vercel
+
+yarn add @blaxel/mastra
+
+yarn add @blaxel/llamaindex
+
+```
+
+```shell TypeScript (bun)
+
+bun add @blaxel/telemetry
+
+bun add @blaxel/vercel
+
+bun add @blaxel/mastra
+
+bun add @blaxel/llamaindex
+
+```
+
+</CodeGroup>
+
+## How it works
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the second option above.
+
+## Full documentation
+
+Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+
+<CardGroup cols={2}>
+<Card title="TypeScript" icon="js" href="https://github.com/blaxel-ai/sdk-typescript">
+Open the GitHub repository for Blaxel SDK in TypeScript.
+</Card>
+<Card title="Python" icon="python" href="https://github.com/blaxel-ai/sdk-python">
+Open the GitHub repository for Blaxel SDK in Python.
+</Card>
+</CardGroup>

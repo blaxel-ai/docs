@@ -50,7 +50,7 @@ Install Blaxel CLI by running the following command in a terminal (alternatives 
 
 ```shell 
 curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
@@ -58,7 +58,7 @@ If you need to specify a version (e.g. 0.36.0):
 
 ```shell 
 curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | VERSION=0.36.0 BINDIR=/usr/local/bin sudo -E sh
 ```
 
@@ -70,7 +70,7 @@ Install Blaxel CLI by running the following command in a terminal (alternatives 
 
 ```shell 
 curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
@@ -78,7 +78,7 @@ If you need to specify a version (e.g. 0.36.0):
 
 ```shell 
 curl -fsSL \
-https://raw.githubusercontent.com/beamlit/toolkit/main/install.sh \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | VERSION=0.36.0 BINDIR=/usr/local/bin sudo -E sh
 ```
 
@@ -145,7 +145,7 @@ Let’s initialize a first app. The following command creates a **pre-scaffolded
 bl create-agent-app my-agent
 ```
 
-You can now [use the Blaxel SDK to develop](Agents/Develop-an-agent) your agent's core logic in `/my-agent/src/agent.py` (or `/my-agent/src/agent.ts`).
+You can now use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [develop your agent's core logic](Agents/Develop-an-agent) in `/my-agent/src/agent.py` (or `/my-agent/src/agent.ts`).
 
 </Step>
 
@@ -158,7 +158,7 @@ cd my-agent;
 bl serve;
 ```
 
-<Tip>Add the hot reload option in command bl serve --hotreload to have live reload so you can patch changes onto the agent server while it runs.</Tip>
+<Tip>Add the hot reload option in command `bl serve --hotreload` to have live reload so you can patch changes onto the agent server while it runs.</Tip>
 
 Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`:
 
