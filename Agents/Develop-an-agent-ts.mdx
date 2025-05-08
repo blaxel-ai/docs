@@ -6,15 +6,21 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in TypeScript
 
 ---
 
-You can **develop agents in TypeScript using any framework** (LangChain, LlamaIndex, VercelAI, or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](https://www.notion.so/cli-reference), GitHub action, etc.).
+You can **develop agents in TypeScript using any framework** (LangChain, LlamaIndex, VercelAI, or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel [SDK](../sdk-reference/introduction) and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
 
-<Tip>Check out [this Getting Started](https://www.notion.so/Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
+<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
 
 ## Quickstart
 
 <Warning>It is required to have *npm* installed to use the following command.</Warning>
 
-You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
+You can quickly **initialize a new project from scratch** by using CLI command `bl create-agent-app`. 
+
+```bash
+bl create-agent-app myagent
+```
+
+This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
 
 In the generated folder, you'll find a standard server in the entrypoint file `index.ts`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.ts` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
 
@@ -23,26 +29,29 @@ In the generated folder, you'll find a standard server in the entrypoint file `i
 Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
 
 ```tsx
-import { blModel } from "@blaxel/sdk";
+///Comment
+import "@blaxel/telemetry"
 
-const model = await blModel("Model-name-on-Blaxel").To...();
+import { blModel } from "@blaxel/{FRAMEWORK_NAME}";
+
+const model = await blModel("Model-name-on-Blaxel");
 ```
 
-Convert the retrieved model to the format of the framework you want to use with the `.To...()` function.
+The model is automatically converted to your chosen framework's format based on the `FRAMEWORK_NAME` specified in the import.
 
 Available frameworks :
 
-- [LangChain](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html) : `ToLangChain()`
-- [LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool) : `ToLlamaIndex()`
-- [VercelAI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling) : `ToVercelAI()`
-- [Mastra](https://mastra.ai/docs/reference/agents/createTool): `ToMastra()`
+- [LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html) : `langgraph`
+- [LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool) : `llamaindex`
+- [VercelAI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling) : `vercel`
+- [Mastra](https://mastra.ai/docs/reference/agents/createTool): `mastra`
 
 For example, to connect to model `my-model` in a *LlamaIndex* agent:
 
 ```tsx
-import { blModel } from "@blaxel/sdk";
+import { blModel } from "@blaxel/llamaindex";
 
-const model = await blModel("my-model").ToLlamaIndex();
+const model = await blModel("my-model");
 ```
 
 ## Connect to tools
@@ -50,10 +59,12 @@ const model = await blModel("my-model").ToLlamaIndex();
 Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following function retrieves all the tools discoverable in the tool server.
 
 ```tsx
-await blTools(['Tool-Server-name-on-Blaxel']).To...()
+import { blTools } from "@blaxel/{FRAMEWORK_NAME}";
+
+await blTools(['Tool-Server-name-on-Blaxel'])
 ```
 
-Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.To...()` function. Available frameworks are `ToLangChain()` ([LangChain](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)), `ToLlamaIndex()` ([LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool)), `ToVercelAI()` ([Vercel AI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling)) and `ToMastra()` ([Mastra](https://mastra.ai/docs/reference/agents/createTool)).
+Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool)), `vercel` ([Vercel AI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling)) and `mastra` ([Mastra](https://mastra.ai/docs/reference/agents/createTool)).
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
@@ -64,7 +75,7 @@ You can develop agents by **mixing tools defined locally in your agents, and too
 
 ```typescript agent.ts (Vercel AI)
 
-import { blModel, blTools, logger } from '@blaxel/sdk';
+import { blModel, blTools } from '@blaxel/vercel';
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
 interface Stream {
@@ -76,10 +87,10 @@ export default async function agent(input: string, stream: Stream): Promise<void
   const response = streamText({
     experimental_telemetry: { isEnabled: true },
     // Load model API dynamically from Blaxel:
-    model: await blModel("gpt-4o-mini").ToVercelAI(),
+    model: await blModel("gpt-4o-mini"),
     tools: {
       // Load tools dynamically from Blaxel:
-      ...await blTools(['blaxel-search']).ToVercelAI(),
+      ...await blTools(['blaxel-search']),
       // And here's an example of a tool defined locally for Vercel AI:
       "weather": tool({
         description: "Get the weather in a specific city",
@@ -87,7 +98,7 @@ export default async function agent(input: string, stream: Stream): Promise<void
           city: z.string(),
         }),
         execute: async (args: { city: string }) => {
-          logger.debug("TOOLCALLING: local weather", args);
+          console.debug("TOOL CALLING: local weather", args);
           return `The weather in ${args.city} is sunny`;
         },
       }),
@@ -108,7 +119,7 @@ export default async function agent(input: string, stream: Stream): Promise<void
 ```
 ```typescript agent.ts (LlamaIndex)
 
-import { blModel, blTools, logger } from '@blaxel/sdk';
+import { blModel, blTools } from '@blaxel/llamaindex';
 import { agent, AgentStream, tool, ToolCallLLM } from "llamaindex";
 import { z } from "zod";
 interface Stream {
@@ -119,9 +130,9 @@ interface Stream {
 export default async function myagent(input: string, stream: Stream): Promise<void> {
   const streamResponse = agent({
     // Load model API dynamically from Blaxel:
-    llm: await blModel("gpt-4o-mini").ToLlamaIndex() as unknown as ToolCallLLM,
+    llm: await blModel("gpt-4o-mini") as unknown as ToolCallLLM,
     // Load tools dynamically from Blaxel:
-    tools: [...await blTools(['blaxel-search']).ToLlamaIndex(),
+    tools: [...await blTools(['blaxel-search']),
       // And here's an example of a tool defined locally for LlamaIndex:
       tool({
         name: "weather",
@@ -130,7 +141,7 @@ export default async function myagent(input: string, stream: Stream): Promise<vo
           city: z.string(),
         }),
         execute: async (input) => {
-          logger.debug("TOOLCALLING: local weather", input)
+          console.debug("TOOL CALLING: local weather", input)
           return `The weather in ${input.city} is sunny`;
         },
       })
@@ -149,9 +160,9 @@ export default async function myagent(input: string, stream: Stream): Promise<vo
 }
 ```
 
-```typescript agent.ts (LangChain)
+```typescript agent.ts (LangChain/LangGraph)
 
-import { blModel, blTools, logger } from '@blaxel/sdk';
+import { blModel, blTools } from '@blaxel/langgraph';
 import { HumanMessage } from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -164,14 +175,14 @@ interface Stream {
 export default async function agent(input: string, stream: Stream): Promise<void> {
   const streamResponse = await createReactAgent({
     // Load model API dynamically from Blaxel:
-    llm: await blModel("gpt-4o-mini").ToLangChain(),
+    llm: await blModel("gpt-4o-mini"),
     prompt: "If the user asks for the weather, use the weather tool.",
     // Load tools dynamically from Blaxel:
     tools: [
-      ...await blTools(['blaxel-search']).ToLangChain(),
+      ...await blTools(['blaxel-search']),
       // And here's an example of a tool defined locally for LangChain:
       tool(async (input: any) => {
-        logger.debug("TOOLCALLING: local weather", input)
+        console.debug("TOOL CALLING: local weather", input)
         return `The weather in ${input.city} is sunny`;
       },{
         name: "weather",
@@ -196,7 +207,7 @@ export default async function agent(input: string, stream: Stream): Promise<void
 
 ```typescript agent.ts (Mastra)
 
-import { blModel, blTools, logger } from "@blaxel/sdk";
+import { blModel, blTools } from "@blaxel/mastra";
 import { createTool } from "@mastra/core/tools";
 import { Agent } from "@mastra/core/agent";
 import { z } from "zod";
@@ -213,10 +224,10 @@ export default async function agent(
   const agent = new Agent({
     name: "blaxel-agent-mastra",
     // Load model API dynamically from Blaxel:
-    model: await blModel("sandbox-openai").ToMastra(),
+    model: await blModel("sandbox-openai"),
     // Load tools dynamically from Blaxel:
     tools: {
-      ...(await blTools(["blaxel-search"]).ToMastra()),
+      ...(await blTools(["blaxel-search"])),
       // And here's an example of a tool defined locally for Mastra:
       weatherTool: createTool({
         id: "weatherTool",
@@ -257,7 +268,7 @@ Rather than using a "quick and dirty" approach where you would combine all your 
 Blaxel lets you organize your software with a microservice architecture for agent chaining, allowing you to call one agent from another using `blAgent().run()` rather than combining all functionality into a single codebase.
 
 ```tsx
-import { blAgent } from "@blaxel/sdk";
+import { blAgent } from "@blaxel/core";
 
 const myFirstAgentResponse = await blAgent("firstAgent").run(input);
 const mySecondAgentResponse = await blAgent("secondAgent").run(myFirstAgentResponse);
@@ -271,20 +282,18 @@ Read the file structure section down below for more details.
 
 ## Instrumentation
 
-Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK at your project's root level.
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK in your project's entry point.
 
 ```tsx
-import "@blaxel/sdk";
+import "@blaxel/telemetry";
 ```
 
 When agents and tools are deployed on Blaxel, request logging and tracing happens automatically.
 
-To add your own custom logs that you can view in the Blaxel Console, use the Blaxel logger.
+To add your own custom logs that you can view in the Blaxel Console, use the default console logger or any logging library (pino, winston, …).
 
 ```tsx
-import { logger } from "@blaxel/sdk";
-
-logger.info("Hello, world!");
+console.info("my-log")
 ```
 
 ## Blaxel agent template file structure

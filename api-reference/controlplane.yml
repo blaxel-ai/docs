@@ -373,6 +373,34 @@ components:
         p99:
           type: number
           description: P99 request duration
+    Integration:
+      type: object
+      description: Integration
+      properties:
+        additionalInfos:
+          type: object
+          description: Integration additional infos
+          additionalProperties:
+            type: string
+        endpoints:
+          $ref: '#/components/schemas/IntegrationEndpoints'
+        headers:
+          $ref: '#/components/schemas/IntegrationHeaders'
+        name:
+          type: string
+          description: Integration name
+        organizations:
+          type: array
+          description: Integration organizations
+          items:
+            $ref: '#/components/schemas/IntegrationOrganization'
+        params:
+          $ref: '#/components/schemas/IntegrationQueryParams'
+        repositories:
+          type: array
+          description: Integration repositories
+          items:
+            $ref: '#/components/schemas/IntegrationRepository'
     IntegrationConnection:
       type: object
       description: Integration Connection
@@ -406,6 +434,54 @@ components:
       items:
         type: string
         description: Deployment integration connection name
+    IntegrationEndpoint:
+      type: object
+      description: Integration endpoint
+      properties:
+        body:
+          type: string
+          description: Integration endpoint body
+        ignoreModels:
+          type: array
+          description: Integration endpoint ignore models
+          items: {}
+        method:
+          type: string
+          description: Integration endpoint method
+        models:
+          type: array
+          description: Integration endpoint models
+          items: {}
+        streamKey:
+          type: string
+          description: Integration endpoint stream key
+        streamToken:
+          $ref: '#/components/schemas/IntegrationEndpointToken'
+        token:
+          $ref: '#/components/schemas/IntegrationEndpointToken'
+    IntegrationEndpointToken:
+      type: object
+      description: Integration endpoint token
+      properties:
+        received:
+          type: string
+          description: Integration endpoint token received
+        sent:
+          type: string
+          description: Integration endpoint token sent
+        total:
+          type: string
+          description: Integration endpoint token total
+    IntegrationEndpoints:
+      type: object
+      description: Integration endpoints
+      additionalProperties:
+        $ref: '#/components/schemas/IntegrationEndpoint'
+    IntegrationHeaders:
+      type: object
+      description: Integration headers
+      additionalProperties:
+        type: string
     IntegrationModel:
       type: object
       description: Model obtained from an external authentication provider, such as
@@ -449,6 +525,27 @@ components:
         trending_score:
           type: integer
           description: Provider model trending score
+    IntegrationOrganization:
+      type: object
+      description: Integration organization
+      properties:
+        avatar_url:
+          type: string
+          description: Provider organization avatar URL
+        displayName:
+          type: string
+          description: Provider organization display name
+        id:
+          type: string
+          description: Provider organization ID
+        name:
+          type: string
+          description: Provider organization name
+    IntegrationQueryParams:
+      type: object
+      description: Integration query params
+      additionalProperties:
+        type: string
     IntegrationRepository:
       type: object
       description: Integration repository
@@ -701,6 +798,8 @@ components:
           type: object
           description: Number of requests per second for all resources globally per
             code
+        sandboxes:
+          description: Metrics for sandboxes
     Model:
       type: object
       description: Logical object representing a model
@@ -982,6 +1081,9 @@ components:
         port:
           type: integer
           description: Port of the preview
+        prefixUrl:
+          type: string
+          description: Prefix URL
         public:
           type: boolean
           description: Whether the preview is public
@@ -1025,12 +1127,9 @@ components:
         expiresAt:
           type: string
           description: Expiration time of the token
-        jwt:
+        token:
           type: string
-          description: JWT token
-        public:
-          type: boolean
-          description: Whether the token is public
+          description: Token
     PrivateCluster:
       type: object
       description: A private cluster where models can be located on.
@@ -1435,19 +1534,6 @@ components:
       - {}
     SandboxStoreDefinitionName:
       description: Name of a Sandbox definition
-    Sandboxes:
-      description: Micro VM for running agentic tasks
-      properties:
-        events:
-          $ref: '#/components/schemas/CoreEvents'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          $ref: '#/components/schemas/SandboxSpec'
-        status:
-          description: Sandbox status
-          type: string
-      type: object
     ServerlessConfig:
       type: object
       description: Configuration for a serverless deployment
@@ -2090,6 +2176,10 @@ paths:
           type: string
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
           description: successful operation
       security:
       - BearerAuth:
@@ -2979,6 +3069,12 @@ paths:
     post:
       description: Create a preview
       operationId: CreateSandboxPreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
       responses:
         "200":
           content:
@@ -3063,7 +3159,7 @@ paths:
   /sandboxes/{sandboxName}/previews/{previewName}/tokens:
     get:
       description: Gets tokens for a Sandbox Preview.
-      operationId: GetSandboxPreviewTokens
+      operationId: ListSandboxPreviewTokens
       parameters:
       - description: Name of the Sandbox
         in: path
@@ -3083,14 +3179,7 @@ paths:
             application/json:
               schema:
                 items:
-                  properties:
-                    created_at:
-                      description: When the token was created
-                      type: string
-                    name:
-                      description: The name of the token
-                      type: string
-                  type: object
+                  $ref: '#/components/schemas/PreviewToken'
                 type: array
           description: successful operation
       security:
@@ -3126,11 +3215,7 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  token:
-                    description: The generated token for the preview
-                    type: string
-                type: object
+                $ref: '#/components/schemas/PreviewToken'
           description: successful operation
       security:
       - BearerAuth:
