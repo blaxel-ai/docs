@@ -8,7 +8,7 @@ description: 'A simple file system interface for managing files in sandboxes.'
 
 Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Basic file system operations
 
@@ -20,7 +20,7 @@ Create a new directory at a specific path in the sandbox:
 
 ```typescript TypeScript {5}
 
-import { SandboxInstance } from "@blaxel/sdk";
+import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox")
 

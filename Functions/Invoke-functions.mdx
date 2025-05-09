@@ -46,17 +46,16 @@ The following code example demonstrates how to use the Blaxel SDK to retrieve an
 
 ```typescript In TypeScript
 
-import { blTools } from "@blaxel/sdk";
+// Import tool adapter (in whichever framework format):
+import { blTools } from "@blaxel/langchain";
+// or
+import { blTools } from "@blaxel/llamaindex";
+// or
+import { blTools } from "@blaxel/mastra";
+// or
+import { blTools } from "@blaxel/vercel";
 
-// Retrieve tools (in whichever framework format):
-const tools = blTools(['blaxel-search']).ToVercelAI();
-// or
-const tools = blTools(['blaxel-search']).ToLangChain();
-// or
-const tools = blTools(['blaxel-search']).ToLlamaIndex();
-// or
-
-// …
+const tools = blTools(['blaxel-search'])
 ```
 
 ```python In Python
@@ -76,7 +75,7 @@ await bl_tools(['blaxel-search']).to_llamaindex();
 
 </CodeGroup>
 
-### Connect from your code
+### Directly connect from your code
 
 Below are snippets of code to connect to an MCP server that is deployed on Blaxel. You will need the following information:
 
@@ -90,8 +89,7 @@ Below are snippets of code to connect to an MCP server that is deployed on Blaxe
 
 import { Client as ModelContextProtocolClient } from "@modelcontextprotocol/sdk/client/index.js";
 import dotenv from 'dotenv';
-import { env } from "../src/common/env.js";
-import { BlaxelMcpClientTransport } from "../src/mcp/client.js";
+import { BlaxelMcpClientTransport, env } from “@blaxel/core”
 
 // Load environment variables from .env file
 dotenv.config();
@@ -201,7 +199,7 @@ Requirements are as follows:
 
 ```json package.json (In TypeScript)
 
-"dependencies": {"@blaxel/sdk": …}
+"dependencies": {"@blaxel/core": …}
 
 ```
 
