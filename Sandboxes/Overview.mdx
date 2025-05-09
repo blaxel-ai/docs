@@ -10,8 +10,6 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
-<iframe style="border:0;" width="800" height="450" src="[https://www.tella.tv/video/cma91vg3d00020bkydp5491db/embed?b=0&title=0&a=1&loop=0&t=0&muted=0&wt=0](https://www.tella.tv/video/cma91vg3d00020bkydp5491db/embed?b=0&title=0&a=1&loop=0&t=0&muted=0&wt=0)" allowfullscreen allowtransparency></iframe>
-
 They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
 
 ## Create a sandbox
@@ -27,7 +25,7 @@ Create a new sandbox using the Blaxel SDK by specifying:
 
 ```typescript TypeScript
 
-import { SandboxInstance } from "@blaxel/sdk";
+import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.create({
     metadata: {
@@ -116,7 +114,7 @@ sandbox = await SandboxInstance.get("sandbox-test")
 
 </CodeGroup>
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/integrationtest/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Overview of sandbox lifecycle
 

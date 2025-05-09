@@ -46,17 +46,16 @@ You can now [connect to the MCP server](Invoke-functions) either from an agent o
 
 ```typescript In TypeScript
 
-import { blTools } from "@blaxel/sdk";
+// Import tool adapter (in whichever framework format):
+import { blTools } from "@blaxel/langchain";
+// or
+import { blTools } from "@blaxel/llamaindex";
+// or
+import { blTools } from "@blaxel/mastra";
+// or
+import { blTools } from "@blaxel/vercel";
 
-// Retrieve tools (in whichever framework format):
-const tools = blTools(['blaxel-search']).ToVercelAI();
-// or
-const tools = blTools(['blaxel-search']).ToLangChain();
-// or
-const tools = blTools(['blaxel-search']).ToLlamaIndex();
-// or
-
-// …
+const tools = blTools(['blaxel-search'])
 ```
 
 ```python In Python
