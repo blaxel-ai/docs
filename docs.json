@@ -68,7 +68,13 @@
               "Functions/Create-MCP-server",
               "Functions/Variables-and-secrets",
               "Functions/Deploy-a-function",
-              "Functions/Invoke-functions"
+              "Functions/Invoke-functions",
+              {
+                "group": "Integrate in your apps",
+                "pages": [
+                  "Functions/Integrate-in-apps/OneGrep"
+                ]
+              }
             ]
           },
           {
