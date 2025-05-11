@@ -189,6 +189,10 @@
         ]
       },
       {
+        "tab": "Sandbox API Reference",
+        "openapi": "https://raw.githubusercontent.com/blaxel-ai/sandbox/refs/heads/main/sandbox-api/docs/openapi.yml"
+      },
+      {
         "tab": "SDK Reference",
         "groups": [
           {
