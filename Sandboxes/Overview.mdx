@@ -14,12 +14,24 @@ They natively serve as **sandboxed environments for agents**. You can securely r
 
 ## Create a sandbox
 
-Create a new sandbox using the Blaxel SDK by specifying:
+Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. 
 
-- the name of the sandbox to create
-- the image to use. The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. `blaxel/prod-base:latest`).
-- the ports to expose
-- and waiting for it to be fully deployed
+<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
+
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the second option above.
+
+</Accordion>
 
 <CodeGroup>
 
@@ -27,6 +39,7 @@ Create a new sandbox using the Blaxel SDK by specifying:
 
 import { SandboxInstance } from "@blaxel/core";
 
+/// Start sandbox creation
 const sandbox = await SandboxInstance.create({
     metadata: {
         name: "my-sandbox"
@@ -65,7 +78,7 @@ logger = logging.getLogger(__name__)
 
 async def create_sandbox(sandbox_name: str):
     image = "blaxel/prod-base:latest"
-    logger.info(f"Creating sandbox {sandbox_name} with image {image}")
+    ### Start sandbox creation
     sandbox = await SandboxInstance.create(Sandbox(
         metadata=Metadata(name=sandbox_name),
         spec=SandboxSpec(
@@ -118,13 +131,13 @@ sandbox = await SandboxInstance.get("sandbox-test")
 
 ## Overview of sandbox lifecycle
 
-Blaxel sandboxes start in under 20 milliseconds, and scale back down after one second of inactivity, maintaining their previous state after scaling down.
+Blaxel sandboxes start from `standby` to `active` in **under 20 milliseconds**, and scale back down top `standby` **after one second of inactivity**, maintaining their previous state after scaling down.
 
-Sandboxes have either one of the following statuses:
+Here is the summary on the possible statuses for a sandbox:
 
-- **standby**: The sandbox is created but remains idle. You are not charged while a sandbox is in standby mode. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
-- **active**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
-- **stopped**: The sandbox is shut down and requires manual restart to access its API.
+- **`standby`**: The sandbox is created but is hibernating. You are not charged while a sandbox is in standby mode. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
+- **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
+- **`stopped`**: The sandbox is shut down and **requires manual restart** to access its API.
 
 <CardGroup>
 <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
