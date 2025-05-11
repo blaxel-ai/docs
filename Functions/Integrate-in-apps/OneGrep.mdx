@@ -1,0 +1,100 @@
+---
+
+title: 'OneGrep integration'
+
+description: 'Implement semantic tool search and selection on Blaxel-hosted MCP servers using OneGrep.'
+
+---
+
+This tutorial will walk you through how to use [OneGrep](https://www.onegrep.dev/) to power your agents with semantic tool search, trainable contexts, and feedback-driven selection that gets smarter over time. Access your MCP servers hosted on Blaxel with configurable security policies and guardrails.
+
+<Tip>This tutorial is based on a TypeScript LangGraph agent.</Tip>
+
+## **Prerequisites**
+
+- **Node.js:** v18 or later.
+- **OneGrep**: Install [OneGrep](https://github.com/OneGrep/typescript-sdk) CLI and login to your account:
+
+```bash
+
+npx -y @onegrep/cli account
+
+```
+
+- **Blaxel CLI:** Ensure you have [Blaxel CLI](../../cli-reference/introduction) installed.
+- **Login to Blaxel:**
+
+```bash
+
+bl login YOUR-WORKSPACE
+
+```
+
+## **Installation**
+
+- **Clone the repository and install dependencies:**
+
+```bash
+
+git clone https://github.com/blaxel-ai/template-onegrep.git
+
+cd template-onegrep
+
+pnpm i
+
+```
+
+- **Environment Variables:** Create a `.env` file with your configuration. You can begin by copying the sample file:
+
+```bash
+
+cp .env-sample .env
+
+```
+
+Then, update the following values with your own credentials:
+
+- [OneGrep API key](https://onegrep.dev): `ONEGREP_API_KEY`
+- [OneGrep URL](https://onegrep.dev): `ONEGREP_URL`
+
+## **Running the server locally**
+
+Start the development server with hot reloading:
+
+```bash
+
+bl serve --hotreload
+
+```
+
+<Tip>This command starts the server and enables hot reload so that changes to the source code are automatically reflected.</Tip>
+
+## **Testing your agent**
+
+You can test your agent using the chat interface:
+
+```bash
+
+bl chat --local blaxel-agent
+
+```
+
+Or run it directly with specific input:
+
+```bash
+
+bl run agent blaxel-agent --local --data '{"input": "What is the weather in Paris?"}'
+
+```
+
+## **Deploying to Blaxel**
+
+When you are ready to deploy your agent:
+
+```bash
+
+bl deploy
+
+```
+
+<Tip>This command uses your code and the configuration files under the `.blaxel` directory to deploy your application.</Tip>
