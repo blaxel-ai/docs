@@ -12,6 +12,21 @@ Execute and manage processes in your sandboxes with Blaxel SDK. Run shell comman
 
 ## Execute processes and commands
 
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the second option above.
+
+</Accordion>
+
 ### Execute command
 
 Execute shell commands using the TypeScript SDK:
@@ -20,7 +35,7 @@ Execute shell commands using the TypeScript SDK:
 
 ```typescript TypeScript {5}
 
-import { SandboxInstance } from "@blaxel/sdk";
+import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox")
 
