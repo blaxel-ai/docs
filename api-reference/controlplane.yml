@@ -3614,45 +3614,6 @@ paths:
       - BearerAuth:
         - templates:get
       summary: Get template
-  /templates/{templateName}/contents:
-    get:
-      operationId: GetTemplateContents
-      parameters:
-      - in: path
-        name: templateName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  type: string
-                type: array
-          description: List of files in the template
-  /templates/{templateName}/contents/{fileName}:
-    get:
-      operationId: GetTemplateFileContents
-      parameters:
-      - in: path
-        name: templateName
-        required: true
-        schema:
-          type: string
-      - in: path
-        name: fileName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: string
-          description: Content of the file
   /users:
     get:
       description: Returns a list of all users in the workspace.
