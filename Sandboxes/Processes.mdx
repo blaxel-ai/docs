@@ -8,7 +8,7 @@ description: 'Execute and manage processes in sandboxes.'
 
 Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Execute processes and commands
 
@@ -119,13 +119,71 @@ assert getattr(completed_process, "status", None) == "completed", "Process did n
 
 You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
 
-### Process statuses
+### Wait for process completion
 
-A process can have either of the following status:
+You can wait for process completion when executing it:
 
-- `running`
-- `completed`
-- `failed`
+<CodeGroup>
+
+```typescript TypeScript {4}
+
+const process = await sandbox.process.exec({
+  name: "test",
+  command: "echo 'Hello world'",
+  waitForCompletion: true,
+  timeout: 3600
+})
+
+```
+
+```python Python
+
+process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_completion=True, timeout=3600))
+
+```
+
+</CodeGroup>
+
+Notice the `timeout` parameter which allows to set a timeout duration on the process.
+
+You can also wait for a process after it has started:
+
+<CodeGroup>
+
+```typescript TypeScript
+
+/// Wait for the process to finish (for max 120 seconds, checking every 1 second)
+await sandbox.process.wait(”test”, { maxWait: 120000, interval: 1000 })
+
+```
+
+</CodeGroup>
+
+Set a long completion duration if your process is expected to take longer.
+
+### Wait for ports
+
+In some cases, you may want to wait for a port to be opened while running — for example if you are running `npm run dev` and want to wait for port 3000 to be open.
+
+<CodeGroup>
+
+```typescript TypeScript {4}
+
+const process = await sandbox.process.exec({
+  name: "test",
+  command: "echo 'Hello world'",
+  waitForPorts: [3000]
+})
+
+```
+
+```python Python
+
+process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_ports=[3000]))
+
+```
+
+</CodeGroup>
 
 ### Kill process
 
@@ -146,6 +204,14 @@ await sandbox.process.kill("test")
 ```
 
 </CodeGroup>
+
+### Process statuses
+
+A process can have either of the following status:
+
+- `running`
+- `completed`
+- `failed`
 
 ## Call a sandbox on a specific port
 

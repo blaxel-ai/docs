@@ -22,7 +22,7 @@ This packaging makes Blaxel **fully agnostic of the framework** used to develop 
 
 ### Serve locally
 
-You can serve the agent locally in order to make the `main.py` / `main.ts` main function available on a local endpoint. 
+You can serve the agent locally in order to make the entrypoint function (by default: `main.py` / `main.ts`) available on a local endpoint. 
 
 Run the following command to serve the agent:
 
@@ -38,7 +38,7 @@ bl serve --hotreload
 
 ### Deploy on production
 
-You can deploy the agent in order to make the `main.py` / `main.ts` main function **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the agent in order to make the entrypoint function (by default: `main.py` / `main.ts`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
 Run the following command to build and deploy a local agent on Blaxel:
 
@@ -52,7 +52,7 @@ bl deploy
 
 You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory.
 
-This file is used to configure the deployment of the agent on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
 
 ```toml
 name = "my-agent"

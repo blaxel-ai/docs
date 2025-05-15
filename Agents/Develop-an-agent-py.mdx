@@ -338,7 +338,7 @@ logger = getLogger(__name__)
 logger.info("Hello, world!");
 ```
 
-## Blaxel agent template file structure
+## Template directory reference
 
 ### Overview
 
@@ -354,7 +354,7 @@ src/
 
 ### blaxel.toml
 
-This file is used to configure the deployment of the agent on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
 
 ```toml
 name = "my-agent"

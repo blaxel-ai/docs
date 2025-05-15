@@ -144,11 +144,11 @@ You can **configure the server deployment** (e.g. specify the MCP server name, e
 Read our complete guide for deploying your custom MCP server on Blaxel.
 </Card>
 
-## Blaxel MCP server template file structure
+## Template directory reference
 
 ### blaxel.toml
 
-This file is used to configure the deployment of the MCP server on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
 
 ```toml
 name = "my-mcp-server"

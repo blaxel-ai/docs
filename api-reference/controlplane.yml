@@ -1087,6 +1087,18 @@ components:
         public:
           type: boolean
           description: Whether the preview is public
+        requestHeaders:
+          type: object
+          description: Those headers will be set in all requests to your preview.
+            This is especially useful to set the Authorization header.
+          additionalProperties:
+            type: string
+        responseHeaders:
+          type: object
+          description: Those headers will be set in all responses of your preview.
+            This is especially useful to set the CORS headers.
+          additionalProperties:
+            type: string
         url:
           type: string
           description: URL of the preview

@@ -296,7 +296,7 @@ To add your own custom logs that you can view in the Blaxel Console, use the def
 console.info("my-log")
 ```
 
-## Blaxel agent template file structure
+## Template directory reference
 
 ### Overview
 
@@ -357,7 +357,7 @@ The remaining fields in package.json follow standard JavaScript/TypeScript proje
 
 ### blaxel.toml
 
-This file is used to configure the deployment of the agent on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
 
 ```toml
 name = "my-agent"

@@ -8,7 +8,7 @@ description: 'A simple file system interface for managing files in sandboxes.'
 
 Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Basic file system operations
 
@@ -165,6 +165,95 @@ await sandbox.fs.rm(`/Users/user/Downloads/test.txt`);
 ```python Python
 
 await sandbox.fs.rm(f"/Users/user/Downloads/test.txt")
+
+```
+
+</CodeGroup>
+
+## Watch filesystem for events
+
+The goal here was to having more information about what has happened on your file
+
+<CodeGroup>
+
+```typescript TypeScript
+
+import { SandboxInstance } from "@blaxel/core";
+import { createOrGetSandbox } from "../utils";
+
+// Test the watch functionality of SandboxFileSystem
+async function testWatch(sandbox: SandboxInstance) {
+  try {
+    const user = process.env.USER;
+    const testDir = `/Users/${user}/Downloads/watchtest`;
+    const testFile = `/file.txt`;
+
+    // Ensure correct type for fs
+    const fs = sandbox.fs;
+
+    // Clean up before test
+    try { await fs.rm(testDir, true); } catch {}
+    await fs.mkdir(testDir);
+
+    // Watch without content
+    const events: string[] = []
+    const contents: string[] = []
+    const handle = fs.watch("/", (fileEvent) => {
+      events.push(fileEvent.op)
+      if (fileEvent.op === "WRITE") {
+        contents.push(fileEvent.content ?? "")
+      }
+    }, {
+      withContent: true
+    });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await fs.write(testFile, "content");
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await fs.write(testFile, "new content");
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await fs.rm(testFile)
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    handle.close();
+
+    // Clean up after test
+    await fs.rm(testDir, true);
+
+    if (!events.includes("CREATE") || !events.includes("WRITE") || !events.includes("REMOVE")) {
+      throw new Error("Watch callback not consistent with expected events: " + events.join(", "));
+    }
+    if (!contents.includes("content") || !contents.includes("new content")) {
+      throw new Error("Watch callback not consistent with expected contents: " + contents.join(", "));
+    }
+    console.log("testWatch passed");
+  } catch (e) {
+    console.error("There was an error => ", e);
+  }
+}
+
+async function main() {
+  const sandboxName = "sandbox-test-watch-folder"
+  try {
+    const sandbox = await createOrGetSandbox(sandboxName)
+    await testWatch(sandbox)
+  } catch (e) {
+    console.error("There was an error => ", e);
+  } finally {
+    console.log("Deleting sandbox");
+    await SandboxInstance.delete(sandboxName)
+  }
+}
+
+main()
+  .catch((err) => {
+    console.error("There was an error => ", err);
+    process.exit(1);
+  })
+  .then(() => {
+    process.exit(0);
+  })
 
 ```
 

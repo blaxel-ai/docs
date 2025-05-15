@@ -14,7 +14,7 @@ This section assumes you have developed the MCP server locally, as explained [in
 
 ### Serve locally
 
-You can serve the MCP server locally in order to make the main function in `server.ts` / `server.py` available on a local endpoint. 
+You can serve the MCP server locally in order to make the entrypoint function (by default: `server.ts` / `server.py`) available on a local endpoint. 
 
 Run the following command to serve the MCP server:
 
@@ -32,7 +32,7 @@ bl serve --hotreload
 
 ### Deploy on production
 
-You can deploy the MCP server in order to make it **available on a global hosted endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the MCP server in order to make the entrypoint function (by default: `server.ts` / `server.py`) **available on a global hosted endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
 Run the following command to build and deploy the MCP server on Blaxel:
 
@@ -83,7 +83,7 @@ Learn how to run invocation requests on your MCP server.
 
 You can set custom parameters for an MCP server deployment (e.g. specify the server name, etc.) in the `blaxel.toml` file at the root of your directory.
 
-This file is used to configure the deployment of the MCP server on Blaxel. It's not mandatory, but it allows you to customize the deployment.
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
 
 ```toml
 name = "my-mcp-server"

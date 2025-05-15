@@ -14,7 +14,7 @@ They natively serve as **sandboxed environments for agents**. You can securely r
 
 ## Create a sandbox
 
-Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. 
+Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. **Port 8080** is the sandbox API, it is mandatory to set it if you want to use t. 
 
 <Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
 
@@ -101,7 +101,7 @@ async def create_sandbox(sandbox_name: str):
 
 </CodeGroup>
 
-While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel.
+While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel. 
 
 ### Images
 
@@ -127,7 +127,7 @@ sandbox = await SandboxInstance.get("sandbox-test")
 
 </CodeGroup>
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox.ts) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Overview of sandbox lifecycle
 
@@ -151,5 +151,8 @@ Access logs generated in a sandbox.
 </Card>
 <Card title="Preview in real-time" icon="eye" href="/Sandboxes/Preview-url">
 Render code in real-time via a direct preview URL.
+</Card>
+<Card title="Sessions" icon="user" href="/Sandboxes/Sessions">
+Manage temporary sessions to connect to sandboxes from a frontend client.
 </Card>
 </CardGroup>
