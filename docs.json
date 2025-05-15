@@ -92,7 +92,8 @@
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
               "Sandboxes/Log-streaming",
-              "Sandboxes/Preview-url"
+              "Sandboxes/Preview-url",
+              "Sandboxes/Sessions"
             ]
           },
           {

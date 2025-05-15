@@ -85,6 +85,17 @@ https://api.blaxel.ai/v0/.well-known/openid-configuration
 
 Through the endpoints discoverable in the aforementioned URL, you can implement any authentication flow in your application, and use the retrieved tokens in any of the following headers: `Authorization` or `X-Blaxel-Authorization` .
 
+Alternatively, you can retrieve a token using the SDK:
+
+```tsx
+import { settings } from ´blaxel/core’
+
+await settings.authenticate() // Refreshes the token only if needed
+console.log(settings.token)
+```
+
+*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [is done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*
+
 ## API keys
 
 Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration is infinite.
