@@ -22,21 +22,7 @@
             ]
           },
           {
-            "group": "Frameworks",
-            "pages": [
-              "Frameworks/Overview",
-              "Frameworks/LangChain",
-              "Frameworks/CrewAI",
-              "Frameworks/LlamaIndex",
-              "Frameworks/Vercel-AI",
-              "Frameworks/Mastra",
-              "Frameworks/OpenAI-Agents",
-              "Frameworks/PydanticAI",
-              "Frameworks/ADK"
-            ]
-          },
-          {
-            "group": "Agents",
+            "group": "Agents Hosting",
             "pages": [
               "Agents/Overview",
               {
@@ -58,11 +44,25 @@
                   "Agents/Integrate-in-apps/n8n",
                   "Agents/Integrate-in-apps/CopilotKit"
                 ]
+              },
+              {
+                "group": "Frameworks",
+                "pages": [
+                  "Frameworks/Overview",
+                  "Frameworks/LangChain",
+                  "Frameworks/CrewAI",
+                  "Frameworks/LlamaIndex",
+                  "Frameworks/Vercel-AI",
+                  "Frameworks/Mastra",
+                  "Frameworks/OpenAI-Agents",
+                  "Frameworks/PydanticAI",
+                  "Frameworks/ADK"
+                ]
               }
             ]
           },
           {
-            "group": "MCP servers",
+            "group": "MCP Servers Hosting",
             "pages": [
               "Functions/Overview",
               "Functions/Create-MCP-server",
@@ -78,7 +78,7 @@
             ]
           },
           {
-            "group": "Model APIs",
+            "group": "Model Gateway",
             "pages": [
               "Models/Overview",
               "Models/External-model-apis",
@@ -94,6 +94,12 @@
               "Sandboxes/Log-streaming",
               "Sandboxes/Preview-url",
               "Sandboxes/Sessions"
+            ]
+          },
+          {
+            "group": "Batch Jobs \ud83c\udd95",
+            "pages": [
+              "Jobs/Overview"
             ]
           },
           {

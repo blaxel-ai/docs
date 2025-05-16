@@ -89,7 +89,8 @@ export async function GET() {
 
 ### Client code (frontend)
 
-```tsx
+```typescript TypeScript {31-38}
+
 'use client'
 
 import { SandboxInstance } from "@blaxel/core";
@@ -378,4 +379,5 @@ function InfoCard({ title, children }: { title: string, children: React.ReactNod
     </div>
   );
 }
+
 ```

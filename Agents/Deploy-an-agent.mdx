@@ -65,11 +65,16 @@ models = ["gpt-4o-mini"]
 
 [env]
 DEFAULT_CITY = "San Francisco"
+
+[runtime]
+timeout = 900
+memory = 1024
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
 
 ### Deploy from GitHub
 
@@ -95,7 +100,7 @@ Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When dep
 
 ### Maximum runtime
 
-Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 5 minutes**, but this can be increased up to 60 minutes depending on your workspace’s quota.
+Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 15 minutes**, but this can be increased up to 60 minutes.
 
 ### Managing revisions
 

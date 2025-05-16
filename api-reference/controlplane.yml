@@ -565,6 +565,174 @@ components:
         url:
           type: string
           description: Repository URL
+    Job:
+      type: object
+      description: Job
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/JobSpec'
+        status:
+          type: string
+          description: Job status
+    JobExecutionConfig:
+      type: object
+      description: Configuration for a job execution
+      properties:
+        maxConcurrentTasks:
+          type: integer
+          description: The maximum number of concurrent tasks for an execution
+        maxRetries:
+          type: integer
+          description: The maximum number of retries for the job execution
+        timeout:
+          type: integer
+          description: The timeout for the job execution in seconds
+    JobMetrics:
+      type: object
+      description: Metrics for job
+      properties:
+        billableTime:
+          type: array
+          description: Billable time
+          items: {}
+        cpuUsage:
+          type: array
+          description: CPU usage
+          items: {}
+        executionsChart:
+          type: object
+          description: Executions chart
+        executionsRunning:
+          type: array
+          description: Executions running
+          items: {}
+        executionsTotal:
+          type: object
+          description: Total executions
+        ramUsage:
+          type: array
+          description: RAM usage
+          items: {}
+        tasksChart:
+          type: object
+          description: Tasks chart
+        tasksRunning:
+          type: array
+          description: Tasks running
+          items: {}
+        tasksTotal:
+          type: object
+          description: Total tasks
+    JobSpec:
+      type: object
+      description: Job specification
+      allOf:
+      - $ref: '#/components/schemas/CoreSpec'
+      - {}
+    JobsChart:
+      description: Jobs chart
+      properties:
+        failed:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Failed
+        success:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Success
+      type: object
+    JobsChartValue:
+      type: object
+      description: Jobs CPU usage
+      properties:
+        timestamp:
+          type: string
+          description: Metric timestamp
+        value:
+          type: integer
+          description: Metric value
+    JobsExecutions:
+      description: Jobs executions
+      properties:
+        failed:
+          description: Failed executions
+          type: integer
+        running:
+          description: Running executions
+          type: integer
+        success:
+          description: Success executions
+          type: integer
+        total:
+          description: Total executions
+          type: integer
+      type: object
+    JobsNetworkChart:
+      type: object
+      description: Jobs chart
+      properties:
+        received:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Received
+        sent:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Sent
+    JobsSuccessFailedChart:
+      type: object
+      description: Jobs chart
+      properties:
+        failed:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Failed
+        retried:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Retried
+        success:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Success
+        timestamp:
+          type: string
+          description: Metric timestamp
+        total:
+          $ref: '#/components/schemas/JobsChartValue'
+          description: Total
+    JobsTasks:
+      description: Jobs tasks
+      properties:
+        failed:
+          description: Failed executions
+          type: integer
+        running:
+          description: Running executions
+          type: integer
+        success:
+          description: Success executions
+          type: integer
+        total:
+          description: Total executions
+          type: integer
+      type: object
+    JobsTotal:
+      type: object
+      description: Jobs executions
+      properties:
+        failed:
+          type: integer
+          description: Failed executions
+        retried:
+          type: integer
+          description: Retried executions
+        running:
+          type: integer
+          description: Running executions
+        success:
+          type: integer
+          description: Success executions
+        total:
+          type: integer
+          description: Total executions
     Knowledgebase:
       type: object
       description: Knowledgebase
@@ -1453,6 +1621,12 @@ components:
         image:
           type: string
           description: The Docker image for the deployment
+        maxConcurrentTasks:
+          type: integer
+          description: The maximum number of concurrent task for an execution
+        maxRetries:
+          type: integer
+          description: The maximum number of retries for the deployment
         maxScale:
           type: integer
           description: The minimum number of replicas for the deployment. Can be 0
@@ -1553,6 +1727,9 @@ components:
         configuration:
           type: object
           description: The configuration for the deployment
+        maxRetries:
+          type: integer
+          description: The maximum number of retries for the deployment
         maxScale:
           type: integer
           description: The minimum number of replicas for the deployment. Can be 0
@@ -2362,6 +2539,135 @@ paths:
       summary: Get integration model endpoint configurations
       tags:
       - integrations
+  /jobs:
+    get:
+      description: Returns a list of all jobs in the workspace.
+      operationId: ListJobs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Job'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:list
+      summary: List jobs
+      tags:
+      - jobs
+    post:
+      description: Creates a job.
+      operationId: CreateJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:create
+      summary: Create job
+      tags:
+      - jobs
+  /jobs/{jobId}:
+    delete:
+      description: Deletes a job by name.
+      operationId: DeleteJob
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:delete
+      summary: Delete job
+      tags:
+      - jobs
+    get:
+      description: Returns a job by name.
+      operationId: GetJob
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:get
+      summary: Get job
+      tags:
+      - jobs
+    parameters:
+    - description: Name of the job
+      in: path
+      name: jobId
+      required: true
+      schema:
+        type: string
+    put:
+      description: Update a job by name.
+      operationId: UpdateJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:update
+      summary: Create or update job
+      tags:
+      - jobs
+  /jobs/{jobId}/revisions:
+    get:
+      description: Returns revisions for a job by name.
+      operationId: ListJobRevisions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - jobs:list
+      summary: List job revisions
+      tags:
+      - jobs
   /knowledgebases:
     get:
       description: Returns a list of all knowledgebases in the workspace.

@@ -370,11 +370,16 @@ models = ["gpt-4o-mini"]
 
 [env]
 DEFAULT_CITY = "San Francisco"
+
+[runtime]
+timeout = 900
+memory = 1024
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
 Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
