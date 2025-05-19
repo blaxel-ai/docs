@@ -6,17 +6,39 @@ description: 'Make inference requests on your agents.'
 
 ---
 
-Agent [deployments](Overview) on Blaxel have an **inference endpoint** which can be used by external consumers to request an inference execution. Inference requests are then routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
+Agent [deployments](Overview) on Blaxel have a default **inference endpoint** which can be used by external consumers to request an inference execution. This inference endpoint is synchronous so the connection remains open until the end of your request is entirely processed by the agent. You can also query an asynchronous endpoint for agents, allowing to send requests that last for longer times without keeping connections open.
+
+All inference requests are routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
 
 ## Inference endpoints
 
-Whenever you deploy an agent on Blaxel, an **inference endpoint** is generated on Global Agentics Network.
+### Default synchronous endpoint
+
+When you deploy an agent on Blaxel, an **inference endpoint** is automatically generated on Global Agentics Network. This endpoint operates synchronously—keeping the connection open until your agent sends its complete response. Your agent's code must handle either batch or streaming processing on this endpoint.
 
 The inference URL looks like this:
 
 ```http Query agent
 
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
+
+```
+
+### Async endpoint
+
+In addition to the default synchronous endpoint, Blaxel provides the ability to create **asynchronous endpoints** for handling longer-running agent requests. 
+
+![Screenshot 2025-05-18 at 8.53.14 PM.png](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.png)
+
+This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene. **You are responsible for implementing your own method for retrieving the agent's results in your code**.
+
+The timeout duration for this endpoint is **15 minutes**. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+
+The async endpoint looks like this:
+
+```http Query agent (async)
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/async
 
 ```
 
@@ -36,7 +58,7 @@ To simulate multi-turn conversations, you can include a thread ID in your agent 
 
 ### Blaxel API
 
-Make a **POST** request to the inference endpoint for the agent deployment you are requesting, making sure to fill in the authentication token:
+Make a **POST** request to the default inference endpoint for the agent deployment you are requesting, making sure to fill in the authentication token:
 
 ```
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT?environment=YOUR-ENVIRONMENT' \
