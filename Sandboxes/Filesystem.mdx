@@ -134,7 +134,7 @@ See down below for how to upload/write a binary, or multiple files at once.
 
 ### Write multiple files
 
-You can write multiple files or directories at once:
+You can write multiple files or directories at once. The 
 
 <CodeGroup>
 
@@ -320,7 +320,7 @@ Watch all sub-directories recursively with `/**`:
 
 <CodeGroup>
 
-```typescript TypeScript {3}
+```typescript TypeScript {4}
 
 async function testWatchWithSubfolder(sandbox: SandboxInstance) {
     const fs = sandbox.fs;
@@ -345,7 +345,7 @@ You can ignore changes in certain files or directories by providing an array of 
 
 <CodeGroup>
 
-```typescript TypeScript {8}
+```typescript TypeScript {9}
 
 // Test the watch functionality, ignoring of some files:
 async function testWatchWithIgnore(sandbox: SandboxInstance) {

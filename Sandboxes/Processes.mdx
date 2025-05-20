@@ -33,7 +33,7 @@ Execute shell commands using the TypeScript SDK:
 
 <CodeGroup>
 
-```typescript TypeScript {5}
+```typescript TypeScript {6}
 
 import { SandboxInstance } from "@blaxel/core";
 
@@ -47,7 +47,7 @@ if (process.status === "completed") {
 
 ```
 
-```python Python {12}
+```python Python {13}
 
 import asyncio
 import logging
@@ -94,7 +94,7 @@ You can use either the process name or the process ID to get information about t
 
 <CodeGroup>
 
-```typescript TypeScript {3}
+```typescript TypeScript {4}
 
 await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -105,7 +105,7 @@ if (completedProcess.status !== "completed") {
 
 ```
 
-```python Python {3}
+```python Python {4}
 
 await asyncio.sleep(0.01)
 
@@ -125,7 +125,7 @@ You can wait for process completion when executing it:
 
 <CodeGroup>
 
-```typescript TypeScript {4}
+```typescript TypeScript {5}
 
 const process = await sandbox.process.exec({
   name: "test",
@@ -167,7 +167,7 @@ In some cases, you may want to wait for a port to be opened while running — fo
 
 <CodeGroup>
 
-```typescript TypeScript {4}
+```typescript TypeScript {5}
 
 const process = await sandbox.process.exec({
   name: "test",
