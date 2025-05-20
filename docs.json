@@ -205,7 +205,9 @@
           {
             "group": "Get started",
             "pages": [
-              "sdk-reference/introduction"
+              "sdk-reference/introduction",
+              "sdk-reference/sdk-ts",
+              "sdk-reference/sdk-python"
             ]
           }
         ]
