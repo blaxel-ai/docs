@@ -14,7 +14,7 @@ All inference requests are routed on the [Global Agentics Network](../Infrastruc
 
 ### Default synchronous endpoint
 
-When you deploy an agent on Blaxel, an **inference endpoint** is automatically generated on Global Agentics Network. This endpoint operates synchronously—keeping the connection open until your agent sends its complete response. Your agent's code must handle either batch or streaming processing on this endpoint.
+When you deploy an agent on Blaxel, an **inference endpoint** is automatically generated on Global Agentics Network. This endpoint operates synchronously—keeping the connection open until your agent sends its complete response. This endpoint supports both batch and streaming responses, which you can implement in your agent's code.
 
 The inference URL looks like this:
 
@@ -30,7 +30,7 @@ In addition to the default synchronous endpoint, Blaxel provides the ability to 
 
 ![Screenshot 2025-05-18 at 8.53.14 PM.png](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.png)
 
-This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene. **You are responsible for implementing your own method for retrieving the agent's results in your code**.
+This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene. **You are responsible for implementing your own method for retrieving the agent's results in your code**. You can send results to a webhook, a database, an S3 bucket, etc.
 
 The timeout duration for this endpoint is **15 minutes**. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
 

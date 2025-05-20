@@ -62,6 +62,23 @@
             ]
           },
           {
+            "group": "Sandboxes \ud83c\udd95",
+            "pages": [
+              "Sandboxes/Overview",
+              "Sandboxes/Processes",
+              "Sandboxes/Filesystem",
+              "Sandboxes/Log-streaming",
+              "Sandboxes/Preview-url",
+              "Sandboxes/Sessions"
+            ]
+          },
+          {
+            "group": "Batch Jobs \ud83c\udd95",
+            "pages": [
+              "Jobs/Overview"
+            ]
+          },
+          {
             "group": "MCP Servers Hosting",
             "pages": [
               "Functions/Overview",
@@ -83,23 +100,6 @@
               "Models/Overview",
               "Models/External-model-apis",
               "Models/Query-a-model"
-            ]
-          },
-          {
-            "group": "Sandboxes \ud83c\udd95",
-            "pages": [
-              "Sandboxes/Overview",
-              "Sandboxes/Processes",
-              "Sandboxes/Filesystem",
-              "Sandboxes/Log-streaming",
-              "Sandboxes/Preview-url",
-              "Sandboxes/Sessions"
-            ]
-          },
-          {
-            "group": "Batch Jobs \ud83c\udd95",
-            "pages": [
-              "Jobs/Overview"
             ]
           },
           {
