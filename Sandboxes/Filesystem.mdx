@@ -130,6 +130,53 @@ await sandbox.fs.write(f"/Users/user/Downloads/test.txt", "Hello world")
 
 </CodeGroup>
 
+See down below for how to upload/write a binary, or multiple files at once.
+
+### Write multiple files
+
+You can write multiple files or directories at once:
+
+<CodeGroup>
+
+```typescript TypeScript {8}
+
+const files = [
+    { path: "file1.txt", content: "Content of file 1" },
+    { path: "file2.txt", content: "Content of file 2" },
+    { path: "subfolder/subfile1.txt", content: "Content of subfile 1" },
+    { path: "subfolder/subfile2.txt", content: "Content of subfile 2" },
+  ]
+
+await sandbox.fs.writeTree(files, "/blaxel/tmp")
+
+```
+
+</CodeGroup>
+
+### Write binary
+
+Write binary content to a file in the sandbox filesystem:
+
+<CodeGroup>
+
+```typescript TypeScript {4}
+
+// Read archive.zip as binary
+const archiveBuffer = await fs.readFile("tests/sandbox/archive.zip")
+
+await sandbox.fs.writeBinary("/blaxel/archive.zip", archiveBuffer)
+
+```
+
+</CodeGroup>
+
+The binary content to write can be provided as:
+
+- *Buffer*: Node.js Buffer object
+- *Blob*: Web API Blob object
+- *File*: Web API File object
+- *Uint8Array*: Typed array containing binary data
+
 ### Copy file
 
 Copy a file from a path to another path:
@@ -172,16 +219,25 @@ await sandbox.fs.rm(f"/Users/user/Downloads/test.txt")
 
 ## Watch filesystem for events
 
-The goal here was to having more information about what has happened on your file
+The `watch` function monitors all file system changes **in the specified directory and its subdirectories.** 
+
+By default (when *withContent: false*), the events will only include metadata about the changes, not the actual file contents. Here's what you'll get in the callback events:
+
+1. For ALL operations (CREATE, WRITE, DELETE, etc.), you'll receive:
+    1. op: The operation type (e.g., "CREATE", "WRITE", "DELETE")
+    2. path: The directory path where the change occurred
+    3. name: The name of the file/directory that changed
+2. You will NOT receive:
+    1. The actual content of the files
+    2. File contents for CREATE or WRITE operations
 
 <CodeGroup>
 
 ```typescript TypeScript
 
 import { SandboxInstance } from "@blaxel/core";
-import { createOrGetSandbox } from "../utils";
 
-// Test the watch functionality of SandboxFileSystem
+// Test the default watch functionality:
 async function testWatch(sandbox: SandboxInstance) {
   try {
     const user = process.env.USER;
@@ -234,9 +290,8 @@ async function testWatch(sandbox: SandboxInstance) {
 }
 
 async function main() {
-  const sandboxName = "sandbox-test-watch-folder"
   try {
-    const sandbox = await createOrGetSandbox(sandboxName)
+    const sandbox = await SandboxInstance.get("my-sandbox")
     await testWatch(sandbox)
   } catch (e) {
     console.error("There was an error => ", e);
@@ -258,3 +313,49 @@ main()
 ```
 
 </CodeGroup>
+
+You can ignore changes in certain files or directories by providing an array of patterns to ignore:
+
+<CodeGroup>
+
+```typescript TypeScript {8}
+
+// Test the watch functionality, ignoring of some files:
+async function testWatchWithIgnore(sandbox: SandboxInstance) {
+  const fs = sandbox.fs;
+  const handle = fs.watch("/", (fileEvent) => {
+    console.log(fileEvent)
+  }, {
+    withContent: true,
+    ignore: ["app/node_modules", "*.tmp", "test2.txt"]
+  });
+  await fs.write("test.txt", "content");
+  await fs.write("test2.txt", "content");
+  await fs.write("test3.txt", "content");
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  handle.close();
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.get("my-sandbox")
+    await testWatchWithIgnore(sandbox)
+  } catch (e) {
+    console.error("There was an error => ", e);
+  } 
+}
+
+main()
+  .catch((err) => {
+    console.error("There was an error => ", err);
+    process.exit(1);
+  })
+  .then(() => {
+    process.exit(0);
+  })
+
+```
+
+</CodeGroup>
+
+Specify `withContent: true` so the events include the actual file contents.
