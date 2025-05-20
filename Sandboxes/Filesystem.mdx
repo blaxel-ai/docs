@@ -134,11 +134,11 @@ See down below for how to upload/write a binary, or multiple files at once.
 
 ### Write multiple files
 
-You can write multiple files or directories at once. The 
+You can write multiple files or directories simultaneously. The second path parameter in `writeTree` specifies the base directory for writing the file tree, eliminating the need to repeat the full path for each file.
 
 <CodeGroup>
 
-```typescript TypeScript {8}
+```typescript TypeScript {9}
 
 const files = [
     { path: "file1.txt", content: "Content of file 1" },
@@ -159,7 +159,7 @@ Write binary content to a file in the sandbox filesystem:
 
 <CodeGroup>
 
-```typescript TypeScript {4}
+```typescript TypeScript {5}
 
 // Read archive.zip as binary
 const archiveBuffer = await fs.readFile("tests/sandbox/archive.zip")
@@ -341,7 +341,7 @@ async function testWatchWithSubfolder(sandbox: SandboxInstance) {
 
 ### Ignore files or directories
 
-You can ignore changes in certain files or directories by providing an array of patterns to ignore:
+You can ignore changes in certain files or directories by providing an array of filepaths to ignore:
 
 <CodeGroup>
 
