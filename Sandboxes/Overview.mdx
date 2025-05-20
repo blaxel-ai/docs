@@ -8,7 +8,7 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 ---
 
-Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic REST API interface for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
+Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
 They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
 
@@ -156,3 +156,9 @@ Render code in real-time via a direct preview URL.
 Manage temporary sessions to connect to sandboxes from a frontend client.
 </Card>
 </CardGroup>
+
+Or explore the Sandbox API:
+
+<Card title="Sandbox API" icon="code" href="https://docs.blaxel.ai/api-reference/filesystem">
+Access the your sandbox with an HTTP REST API.
+</Card>

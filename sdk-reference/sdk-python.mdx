@@ -1,27 +1,16 @@
 ---
 
-title: 'Blaxel SDK'
+title: 'Blaxel Python SDK'
 
 sidebarTitle: "Overview"
 
-description: 'Manage Blaxel resources programmatically using our SDKs.'
+description: 'Manage Blaxel resources programmatically using our Python SDK.'
 
 ---
 
-Blaxel features a SDK in two languages: **Python and TypeScript**. Check out down below the installation instructions, as well as documentation on **how the SDK** **authenticates** to Blaxel.
+Blaxel features a SDK in **Python**. Check out down below the installation instructions down below.
 
-## Install
-
-<CardGroup cols={2}>
-<Card title="TypeScript SDK" icon="js" href="/sdk-reference/sdk-ts">
-Install the TypeScript SDK.
-</Card>
-<Card title="Python SDK" icon="python" href="/sdk-reference/sdk-python">
-Install the Python SDK.
-</Card>
-</CardGroup>
-
-## How authentication works
+<Accordion title="Set up authentication to Blaxel">
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
@@ -34,15 +23,36 @@ When developing locally, the recommended method is to just **log in to your work
 
 When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
 
+</Accordion>
+
+## Install
+
+<CodeGroup>
+
+```shell Python (pip)
+
+pip install blaxel
+
+```
+
+```shell Python (uv)
+
+uv pip install blaxel
+
+```
+
+```shell Python (uv add)
+
+uv init && uv add blaxel
+
+```
+
+</CodeGroup>
+
 ## Complete SDK reference
 
-Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
 
-<CardGroup cols={2}>
-<Card title="TypeScript SDK" icon="js" href="https://github.com/blaxel-ai/sdk-typescript">
-Open the GitHub repository for Blaxel SDK in TypeScript.
-</Card>
 <Card title="Python SDK" icon="python" href="https://github.com/blaxel-ai/sdk-python">
 Open the GitHub repository for Blaxel SDK in Python.
 </Card>
-</CardGroup>
