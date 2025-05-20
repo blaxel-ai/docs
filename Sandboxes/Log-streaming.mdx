@@ -84,6 +84,18 @@ logs = await sandbox.process.logs("test", "stderr")
 
 </CodeGroup>
 
+To retrieve both *stderr* and *stdout*:
+
+<CodeGroup>
+
+```typescript TypeScript
+
+const logs = await sandbox.process.logs("test", "all");
+
+```
+
+</CodeGroup>
+
 ### Streaming
 
 Stream logs for a specific [process](Processes) (using either its name or process ID):
