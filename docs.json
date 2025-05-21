@@ -279,17 +279,15 @@
         ]
       }
     ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Changelog",
-          "icon": "calendar",
-          "pages": [
-            "changelog"
-          ]
-        }
-      ]
-    }
+    "anchors": [
+      {
+        "anchor": "Changelog",
+        "icon": "calendar",
+        "pages": [
+          "changelog"
+        ]
+      }
+    ]
   },
   "logo": {
     "light": "/images/logo-light.svg",
