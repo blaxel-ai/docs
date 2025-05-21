@@ -289,7 +289,7 @@
       "anchors": [
         {
           "anchor": "Changelog",
-          "href": "/changelog",
+          "href": "changelog",
           "icon": "calendar"
         }
       ]
