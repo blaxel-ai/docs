@@ -127,6 +127,8 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 </CodeGroup>
 
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+
 ### Create if not exists
 
 This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
@@ -156,8 +158,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
 ```
 
 </CodeGroup>
-
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
 
 ## Overview of sandbox lifecycle
 
