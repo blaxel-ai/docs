@@ -59,11 +59,11 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 </Accordion>
 
-Create and manage a sandbox’s preview URL (both public and private): 
+Create and manage a sandbox’s public preview URL: 
 
 <CodeGroup>
 
-```typescript TypeScript
+```typescript TypeScript {8-16}
 
 import { SandboxInstance } from "@blaxel/core";
 
@@ -102,54 +102,9 @@ try {
 } finally {
     await sandbox.previews.delete("preview-test-1")
 }
-
-/// Create a private preview
-try {
-    const preview = await sandbox.previews.create({
-      metadata: {
-        name: "preview-test-private"
-      },
-      spec: {
-        port: 443,
-        public: false
-      }
-    })
-    const url = preview.spec?.url
-    if (!url) {
-      throw new Error("Preview URL is not correct");
-    }
-    const retrievedPreview = await sandbox.previews.get("preview-test-private")
-    console.log(`Retrieved preview => url = ${retrievedPreview.spec?.url}`)
-    const token = await preview.tokens.create(new Date(Date.now() + 1000 * 60 * 10)) // 10 minutes expiration
-    console.log("Token created => ", token.value)
-    const tokens = await preview.tokens.list()
-    if (tokens.length < 1) {
-      throw new Error("No tokens found");
-    }
-    if (!tokens.find((t) => t.value === token.value)) {
-      throw new Error("Token not found in list");
-    }
-    console.log("Token created => ", token.value)
-    const response = await fetch(`${url}/health`)
-    if (response.status !== 401) {
-      throw new Error(`Preview is not protected by token, response => ${response.status}`);
-    }
-
-    const responseWithToken = await fetch(`${url}/health?bl_preview_token=${token.value}`)
-    if (responseWithToken.status !== 200) {
-      throw new Error(`Preview is not working with token, response => ${responseWithToken.status}`);
-    }
-    console.log("Preview is healthy with token :)")
-    await preview.tokens.delete(token.value)
-} catch (e) {
-  console.log("ERROR IN PREVIEWS NOT EXPECTED => ", e);
-} finally {
-    await sandbox.previews.delete("preview-test-private")
-}
-
 ```
 
-```python Python
+```python Python {18-25}
 
 import asyncio
 import logging
@@ -203,6 +158,88 @@ async def test_public_preview(sandbox: SandboxInstance):
     finally:
         await sandbox.previews.delete("preview-test-public")
 
+async def main():
+    sandbox = await SandboxInstance.get("sandbox-test")
+    await test_public_preview(sandbox)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+```
+
+</CodeGroup>
+
+Or create a private preview:
+
+<CodeGroup>
+
+```typescript TypeScript {8-16, 23}
+
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+/// Create a private preview
+try {
+    const preview = await sandbox.previews.create({
+      metadata: {
+        name: "preview-test-private"
+      },
+      spec: {
+        port: 443,
+        public: false
+      }
+    })
+    const url = preview.spec?.url
+    if (!url) {
+      throw new Error("Preview URL is not correct");
+    }
+    const retrievedPreview = await sandbox.previews.get("preview-test-private")
+    console.log(`Retrieved preview => url = ${retrievedPreview.spec?.url}`)
+    const token = await preview.tokens.create(new Date(Date.now() + 1000 * 60 * 10)) // 10 minutes expiration
+    console.log("Token created => ", token.value)
+    const tokens = await preview.tokens.list()
+    if (tokens.length < 1) {
+      throw new Error("No tokens found");
+    }
+    if (!tokens.find((t) => t.value === token.value)) {
+      throw new Error("Token not found in list");
+    }
+    console.log("Token created => ", token.value)
+    const response = await fetch(`${url}/health`)
+    if (response.status !== 401) {
+      throw new Error(`Preview is not protected by token, response => ${response.status}`);
+    }
+
+    const responseWithToken = await fetch(`${url}/health?bl_preview_token=${token.value}`)
+    if (responseWithToken.status !== 200) {
+      throw new Error(`Preview is not working with token, response => ${responseWithToken.status}`);
+    }
+    console.log("Preview is healthy with token :)")
+    await preview.tokens.delete(token.value)
+} catch (e) {
+  console.log("ERROR IN PREVIEWS NOT EXPECTED => ", e);
+} finally {
+    await sandbox.previews.delete("preview-test-private")
+}
+
+```
+
+```python Python {18-24, 31}
+
+import asyncio
+import logging
+from datetime import datetime, timedelta, timezone
+
+import aiohttp
+
+from blaxel.client.models import (Metadata, Port, Preview, PreviewSpec,
+                                  Runtime, Sandbox, SandboxSpec)
+from blaxel.common.settings import settings
+from blaxel.sandbox.sandbox import SandboxInstance
+
+logger = logging.getLogger(__name__)
+
 async def test_private_preview(sandbox: SandboxInstance):
     try:
         # Create a private preview
@@ -249,11 +286,32 @@ async def test_private_preview(sandbox: SandboxInstance):
 
 async def main():
     sandbox = await SandboxInstance.get("sandbox-test")
-    await test_public_preview(sandbox)
     await test_private_preview(sandbox)
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+```
+
+</CodeGroup>
+
+### Create if not exists
+
+Just like for sandboxes, this helper function either retrieves an existing preview or creates a new one if it doesn't exist. Blaxel first checks for an existing preview with the provided `name` and either retrieves it or creates a new one using your specified configuration.
+
+<CodeGroup>
+
+```typescript TypeScript
+
+const preview = await SandboxInstance.createIfNotExists({
+      metadata: {
+        name: "preview-name"
+      },
+      spec: {
+        port: 443,
+        public: false
+      }
+    })
 
 ```
 

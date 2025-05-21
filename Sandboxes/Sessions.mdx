@@ -12,7 +12,7 @@ Sessions are created for a sandbox from a backend server (using Blaxel credentia
 
 ## Basic example
 
-Create a temporary backend session to access a sandbox instance from your client application:
+Create a temporary backend session to access a sandbox instance from your client application. Main parameter for this is `expiresAt`, a `Date()` corresponding to the expiration date.
 
 ```tsx
 /// From your backend:
@@ -29,6 +29,14 @@ import { SandboxInstance } from "@blaxel/core";
 const sandboxWithSession = await SandboxInstance.fromSession(session)
 ```
 
+### Create if expired
+
+This helper function either retrieves an existing session or creates a new one if it expired. You can optionally pass `delta` (default: 1 hour), the time window in milliseconds before actual expiration when a session should still be recreated.
+
+```tsx
+const session = await sandbox.sessions.createIfExpired({ expiresAt }, delta: 60000)
+```
+
 ## Complete example (NextJS)
 
 The following example (see [full app on GitHub](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox/nextjs-sandbox-test)) demonstrates a full implementation of sessions in a backend server and frontend client using NextJS.
@@ -39,7 +47,7 @@ The following example (see [full app on GitHub](https://github.com/blaxel-ai/sdk
 import { NextResponse } from 'next/server';
 import { createOrGetSandbox } from '../../../../../../utils';
 
-const SANDBOX_NAME = 'sandbox-test-3';
+const SANDBOX_NAME = 'my-sandbox';
 
 const responseHeaders = {
   "Access-Control-Allow-Origin": "http://localhost:3000",

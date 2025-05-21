@@ -115,13 +115,43 @@ To reconnect to an existing sandbox, simply provide its name:
 
 ```typescript TypeScript
 
-const sandbox = await SandboxInstance.get("sandbox-test")
+const sandbox = await SandboxInstance.get("my-sandbox")
 
 ```
 
 ```python Python
 
-sandbox = await SandboxInstance.get("sandbox-test")
+sandbox = await SandboxInstance.get("my-sandbox")
+
+```
+
+</CodeGroup>
+
+### Create if not exists
+
+This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
+
+<CodeGroup>
+
+```typescript TypeScript
+
+const sandbox = await SandboxInstance.createIfNotExists({
+    metadata: {
+        name: "my-sandbox"
+    },
+    spec: {
+        runtime: {
+            memory: 2048,
+            image: "blaxel/prod-base:latest",
+            ports: [
+                {
+                    target: 8080,
+                    protocol: "HTTP",
+                }
+            ]
+        }
+    }
+})
 
 ```
 
