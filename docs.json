@@ -160,6 +160,12 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "changelog"
+            ]
           }
         ]
       },
@@ -283,7 +289,7 @@
       "anchors": [
         {
           "anchor": "Changelog",
-          "href": "https://docs.blaxel.ai/changelog",
+          "href": "/changelog",
           "icon": "calendar"
         }
       ]
