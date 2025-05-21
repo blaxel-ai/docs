@@ -12,6 +12,15 @@
     "tabs": [
       {
         "tab": "Documentation",
+        "anchors": [
+          {
+            "anchor": "Changelog",
+            "icon": "calendar",
+            "pages": [
+              "changelog"
+            ]
+          }
+        ],
         "groups": [
           {
             "group": "Get Started",
@@ -276,15 +285,6 @@
               "cli-reference/bl_version"
             ]
           }
-        ]
-      }
-    ],
-    "anchors": [
-      {
-        "anchor": "Changelog",
-        "icon": "calendar",
-        "pages": [
-          "changelog"
         ]
       }
     ]
