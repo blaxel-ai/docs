@@ -160,12 +160,6 @@
                 ]
               }
             ]
-          },
-          {
-            "group": "Help",
-            "pages": [
-              "changelog"
-            ]
           }
         ]
       },
@@ -289,8 +283,10 @@
       "anchors": [
         {
           "anchor": "Changelog",
-          "href": "changelog",
-          "icon": "calendar"
+          "icon": "calendar",
+          "pages": [
+            "changelog"
+          ]
         }
       ]
     }
