@@ -42,6 +42,51 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/async
 
 ```
 
+You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file.
+
+<Accordion title="blaxel.toml reference">
+
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+
+```toml
+name = "my-agent"
+workspace = "my-workspace"
+type = "agent"
+
+agents = []
+functions = ["blaxel-search"]
+models = ["gpt-4o-mini"]
+
+[env]
+DEFAULT_CITY = "San Francisco"
+
+[runtime]
+timeout = 900
+memory = 1024
+
+[[triggers]]
+  id = "http"
+  type = "http-async"
+[triggers.configuration]
+  path = "agents/worker/async"
+  retry = 1
+
+[[triggers]]
+  id = "http"
+  type = "http"
+[triggers.configuration]
+  path = "agents/worker/sync"
+  retry = 1
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[[triggers]]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. A synchronous HTTP endpoint is always created by default.
+
+</Accordion>
+
 ### Endpoint authentication
 
 By default, agents deployed on Blaxel aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).

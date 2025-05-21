@@ -303,7 +303,9 @@ Just like for sandboxes, this helper function either retrieves an existing previ
 
 ```typescript TypeScript
 
-const preview = await SandboxInstance.createIfNotExists({
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+const preview = await sandbox.previews.createIfNotExists({
       metadata: {
         name: "preview-name"
       },

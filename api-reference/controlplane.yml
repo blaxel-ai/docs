@@ -837,6 +837,33 @@ components:
         status:
           type: string
           description: Status of the location
+    LogsResponse:
+      type: object
+      description: Response for logs
+      properties:
+        data:
+          type: array
+          description: Data
+          items: {}
+    LogsResponseData:
+      type: object
+      description: Response data for logs
+      properties:
+        body:
+          type: string
+          description: Body of the log
+        logAttributes:
+          type: map
+          description: Log attributes
+        severityNumber:
+          type: integer
+          description: Severity number of the log
+        timestamp:
+          type: string
+          description: Timestamp of the log
+        traceId:
+          type: string
+          description: Trace ID of the log
     MCPDefinition:
       type: object
       description: Definition of an MCP from the MCP Hub
@@ -1444,6 +1471,19 @@ components:
         workspace:
           type: string
           description: Workspace
+    Resource:
+      type: object
+      description: Resource
+      properties:
+        name:
+          type: string
+          description: Name of the resource
+        type:
+          type: string
+          description: Type of the resource
+        workspace:
+          type: string
+          description: Workspace of the resource
     ResourceLog:
       type: object
       description: Log for a resource deployment (eg. model deployment, function deployment)
@@ -1460,6 +1500,52 @@ components:
         trace_id:
           type: string
           description: Trace ID of the log
+    ResourceLogChart:
+      type: object
+      description: Chart for a resource log
+      properties:
+        count:
+          type: integer
+          description: Count of the log
+        debug:
+          type: integer
+          description: Debug count of the log
+        error:
+          type: integer
+          description: Error count of the log
+        fatal:
+          type: integer
+          description: Fatal count of the log
+        info:
+          type: integer
+          description: Info count of the log
+        timestamp:
+          type: string
+          description: Timestamp of the log
+        trace:
+          type: integer
+          description: Trace count of the log
+        unknown:
+          type: integer
+          description: Unknown count of the log
+        warning:
+          type: integer
+          description: Warning count of the log
+    ResourceLogResponse:
+      type: object
+      description: Response for a resource log
+      properties:
+        chart:
+          type: array
+          description: Chart
+          items: {}
+        logs:
+          type: array
+          description: Logs
+          items: {}
+        total_count:
+          type: integer
+          description: Total count of logs
     ResourceMetrics:
       type: object
       description: Metrics for a single resource deployment (eg. model deployment,
