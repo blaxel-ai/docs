@@ -853,8 +853,9 @@ components:
           type: string
           description: Body of the log
         logAttributes:
-          type: map
+          type: array
           description: Log attributes
+          items: {}
         severityNumber:
           type: integer
           description: Severity number of the log
