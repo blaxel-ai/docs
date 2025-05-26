@@ -295,9 +295,6 @@ async function main() {
     await testWatch(sandbox)
   } catch (e) {
     console.error("There was an error => ", e);
-  } finally {
-    console.log("Deleting sandbox");
-    await SandboxInstance.delete(sandboxName)
   }
 }
 
