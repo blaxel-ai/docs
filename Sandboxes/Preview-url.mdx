@@ -99,8 +99,6 @@ try {
     console.log("Preview is healthy :)")
 } catch (e) {
     console.log("ERROR IN PREVIEWS NOT EXPECTED => ", e.error);
-} finally {
-    await sandbox.previews.delete("preview-test-1")
 }
 ```
 
@@ -155,8 +153,6 @@ async def test_public_preview(sandbox: SandboxInstance):
     except Exception as e:
         logger.error("ERROR IN PUBLIC PREVIEW TEST => ", exc_info=e)
         raise
-    finally:
-        await sandbox.previews.delete("preview-test-public")
 
 async def main():
     sandbox = await SandboxInstance.get("sandbox-test")
@@ -219,9 +215,7 @@ try {
     await preview.tokens.delete(token.value)
 } catch (e) {
   console.log("ERROR IN PREVIEWS NOT EXPECTED => ", e);
-} finally {
-    await sandbox.previews.delete("preview-test-private")
-}
+} 
 
 ```
 
@@ -281,8 +275,6 @@ async def test_private_preview(sandbox: SandboxInstance):
     except Exception as e:
         logger.error("ERROR IN PRIVATE PREVIEW TEST => ", exc_info=e)
         raise
-    finally:
-        await sandbox.previews.delete("preview-test-private")
 
 async def main():
     sandbox = await SandboxInstance.get("sandbox-test")

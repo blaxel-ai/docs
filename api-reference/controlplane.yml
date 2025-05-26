@@ -651,7 +651,7 @@ components:
           type: string
           description: Metric timestamp
         value:
-          type: integer
+          type: number
           description: Metric value
     JobsExecutions:
       description: Jobs executions
@@ -853,8 +853,10 @@ components:
           type: string
           description: Body of the log
         logAttributes:
-          type: map
+          type: object
           description: Log attributes
+          additionalProperties:
+            type: string
         severityNumber:
           type: integer
           description: Severity number of the log
@@ -1543,7 +1545,7 @@ components:
           type: array
           description: Logs
           items: {}
-        total_count:
+        totalCount:
           type: integer
           description: Total count of logs
     ResourceMetrics:
