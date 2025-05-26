@@ -141,7 +141,7 @@ Blaxel is the ultimate toolkit for AI agent builders, letting you create and dep
 
 <AccordionGroup>
 
-<Accordion title="Create an agent application" icon="bot">
+<Accordion title="Create an agent application" icon="robot">
 
 <Warning>In Python, you will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
 
@@ -155,7 +155,7 @@ You can now develop your agent application using any framework you want (or none
 
 </Accordion>
 
-<Accordion title="Create a batch job" icon="chart-diagram">
+<Accordion title="Create a batch job" icon="list-check">
 <Warning>In Python, you will need to [have *uv* installed](https://docs.astral.sh/uv/getting-started/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
 
 Let’s initialize a first batch job definition. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your job on Blaxel.
@@ -211,7 +211,7 @@ bun add @blaxel/core
 
 </CodeGroup>
 
-<Card title="Create sandboxes" icon="box" href="/Sandboxes/Overview">
+<Card title="Learn how to create sandboxes" icon="box" href="/Sandboxes/Overview">
 Read the guide for creating and connecting to sandboxes using Blaxel SDK.
 </Card>
 </Accordion>
@@ -245,7 +245,7 @@ bl serve;
 
 <AccordionGroup>
 
-<Accordion title="Agent: send a test invocation" icon="bot">
+<Accordion title="Agent: send a test invocation" icon="robot">
 
 Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`:
 
@@ -255,7 +255,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"inputs": "Hello world!"}'
 
 </Accordion>
 
-<Accordion title="Job: execute the job locally" icon="chart-diagram">
+<Accordion title="Job: execute the job locally" icon="list-check">
 
 Execute your job locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"tasks": [{"param1": "value1"}]}`
 
@@ -304,7 +304,7 @@ Your workload is made available as a **serverless auto scalable** **global endpo
 
 <AccordionGroup>
 
-<Accordion title="Agent: send an invocation request" icon="bot">
+<Accordion title="Agent: send an invocation request" icon="robot">
 
 Run a first inference on your Blaxel agent with the following command:
 
@@ -324,7 +324,7 @@ Or by directly calling the [global endpoint](Agents/Query-agents).
 
 </Accordion>
 
-<Accordion title="Job: execute the job" icon="chart-diagram">
+<Accordion title="Job: execute the job" icon="list-check">
 
 Trigger an execution of your batch job by running:
 
@@ -369,7 +369,7 @@ Complete guide for deploying AI agents on Blaxel.
 Complete guide for spawning sandboxed VMs for your agents to access.
 </Card>
 
-<Card title="Schedule and execute batch tasks" icon="chart-diagram" href="/Jobs/Overview">
+<Card title="Schedule and execute batch tasks" icon="list-check" href="/Jobs/Overview">
 Complete guide for creating and running batch jobs from your agents.
 </Card>
 
