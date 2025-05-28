@@ -14,7 +14,7 @@ The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This metho
 
 This section assumes you have developed an agent locally, as explained [in this documentation](Develop-an-agent), and are ready to deploy it. 
 
-The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when agents are deployed.
+The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate Blaxel resources when developing your agents, such as: model APIs, tool servers, sandboxes, batch jobs, or other agents. It also ensures telemetry, secure connections to third-party systems or private networks and smart global placement of workflows.
 
 This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
 
@@ -115,7 +115,7 @@ Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When dep
 
 ### Maximum runtime
 
-Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 15 minutes**, but this can be increased up to 60 minutes.
+- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
 
 ### Managing revisions
 

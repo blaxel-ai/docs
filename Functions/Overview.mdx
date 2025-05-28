@@ -4,15 +4,27 @@ title: 'MCP servers'
 
 sidebarTitle: "Overview"
 
-description: 'Execute custom code to empower your AI agents with tools and actions.'
+description: 'Deploy MCP servers as serverless APIs to equip your agents with tools.'
 
 ---
 
-MCP servers (called *functions* in Blaxel API) represent **custom code** that can be executed by passing specific input arguments. They are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). MCP servers are designed to **equip agents with tools** to interact with the world. When an agent runs on Blaxel, the function in the MCP server is run separately from the action model and agent logic. This ensures not only minimal latency for your consumers as well as optimal resource utilization, but also better design practice for your agentic system.
+MCP servers (called `*functions*` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). 
 
-When deployed on Blaxel, MCP servers are hosted on Global Agentics Network, a high-availability and low-latency compute infrastructure. You only provide the code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. 
+MCP servers are designed to **equip agents with tools** to interact with the world. 
 
-Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **default timeout is 5 minutes**, but this can be increased up to 60 minutes depending on your workspace’s quota.
+## Essentials
+
+MCP Server Hosting is a **serverless computing service that allows you to host remote MCP servers** without having to manage infrastructure. It gives you full observability and tracing out of the box.
+
+You only provide the MCP server code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. The deployed server implements Blaxel’s customized WebSockets transport layer.
+
+Blaxel SDK allows to r**etrieve the tools from an MCP server in your code**. When both an agent and MCP server run on Blaxel, the tool call in the MCP server is execute separately from the agent logic. This ensures not only optimal resource utilization, but also better design practice for your agentic system.
+
+### Requirements & limitations
+
+- Your MCP server must implement Blaxel’s customized WebSockets transport layer.
+
+- Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
 
 ## MCP hosting on Blaxel
 
