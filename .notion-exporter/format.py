@@ -2,6 +2,9 @@ import json
 import os
 import re
 import shutil
+from dotenv import load_dotenv
+
+load_dotenv()
 
 page = os.getenv("NOTION_PAGE", "13847e47b1ea80b389c8cfcfa90d34f9")
 
