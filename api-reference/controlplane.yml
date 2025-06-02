@@ -97,6 +97,16 @@ components:
       description: Array of metrics
       items:
         $ref: '#/components/schemas/Metric'
+    BillableTimeMetric:
+      type: object
+      description: Billable time metric
+      properties:
+        billableTime:
+          type: number
+          description: Billable time
+        totalAllocation:
+          type: number
+          description: Total memory allocation in GB-seconds
     Configuration:
       type: object
       description: Configuration
@@ -916,6 +926,16 @@ components:
           url:
             type: string
             description: URL of the artifact
+    MemoryAllocationByName:
+      type: object
+      description: Memory allocation by service name
+      properties:
+        allocation:
+          type: number
+          description: Memory allocation value
+        name:
+          type: string
+          description: Name
     MemoryAllocationMetric:
       type: object
       description: Metrics for memory allocation
@@ -938,6 +958,8 @@ components:
           name:
             type: string
             description: Model name
+          plan:
+            description: Plan
           workspace:
             type: string
             description: Workspace name
@@ -1552,6 +1574,9 @@ components:
       description: Metrics for a single resource deployment (eg. model deployment,
         function deployment)
       properties:
+        billableTime:
+          $ref: '#/components/schemas/BillableTimeMetric'
+          description: Billable time
         inferenceErrorsGlobal:
           $ref: '#/components/schemas/ArrayMetric'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -2141,6 +2166,9 @@ components:
           message:
             type: string
             description: Message
+          ttl:
+            type: integer
+            description: TTL timestamp for automatic deletion
           workspace:
             type: string
             description: Workspace the connection belongs to

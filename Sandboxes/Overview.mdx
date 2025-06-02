@@ -159,6 +159,62 @@ const sandbox = await SandboxInstance.createIfNotExists({
 
 </CodeGroup>
 
+## MCP server for a sandbox
+
+Every sandbox is also exposed via an MCP server that allows agents to **operate a sandbox using tool calls.**
+
+The MCP server runs on the base URL of the sandbox: 
+
+```
+https://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
+```
+
+<Accordion title="Tools available in the MCP server…">
+
+1. Filesystem operations
+    1. `functions.fsDeleteFileOrDirectory` - Delete a file or directory.
+    2. `functions.fsGetWorkingDirectory` - Get the current working directory.
+    3. `functions.fsListDirectory` - List contents of a directory.
+    4. `functions.fsReadFile` - Read contents of a file.
+    5. `functions.fsWriteFile` - Create or update a file.
+2. Process management:
+    1. `functions.processExecute` - Execute a command.
+    2. `functions.processGet` - Get process information by identifier (PID or name).
+    3. `functions.processGetLogs` - Get logs for a specific process.
+    4. `functions.processKill` - Kill a specific process.
+    5. `functions.processStop` - Stop a specific process.
+    6. `functions.processesList` - List all running processes.
+3. Network management:
+    1. `functions.networkGetProcessPorts` - Get ports for a specific process.
+    2. `functions.networkMonitorProcessPorts` - Start monitoring ports for a specific process.
+    3. `functions.networkStopMonitorProcessPorts` - Stop monitoring ports for a specific process.
+
+</Accordion>
+
+Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) though the endpoint shown above.
+
+Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph: 
+
+<CodeGroup>
+
+```typescript TypeScript
+import { blTools } from "@blaxel/langgraph";
+
+const tools = await blTools([`sandbox/${sandboxName}`])
+
+```
+
+```python Python
+from blaxel.tools import bl_tools
+
+tools = await bl_tools([f"sandbox/{sandbox_name}"])
+
+```
+
+</CodeGroup>
+
+[Read more documentation](../Functions/Invoke-functions) on connecting to the MCP server directly from your code.
+
 ## Overview of sandbox lifecycle
 
 Blaxel sandboxes start from `standby` to `active` in **under 20 milliseconds**, and scale back down top `standby` **after one second of inactivity**, maintaining their previous state after scaling down.

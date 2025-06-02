@@ -8,14 +8,25 @@ description: 'Make your coding assistant access this documentation.'
 
 ---
 
-Blaxel provides an **MCP server** that you can install locally in your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). This MCP server connects directly to this documentation, ensuring your coding assistant receives real-time information about available commands and features.
+Blaxel provides LLM-accessible tools that you can plug locally in your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are two options:
 
-## Install the MCP server
+- **An MCP server** that can directly query this documentation, ensuring your coding assistant receives real-time information about available commands and features.
+- **An llms-full.txt** text file with the entire documentation compiled and formatted for LLMs
 
-Open a terminal and run the following command:
+## Option 1: Install the MCP server
+
+Open a terminal and run the following command to install the MCP server locally:
 
 ```bash
 npx mint-mcp add blaxel
 ```
 
 Everything will be set up automatically.
+
+## Option 2: Copy-paste llms-full.txt
+
+You'll find a `llms-full.txt` file at the root level of this documentation. It is a compiled text document designed to provide context for LLMs. 
+
+Copy the following content and paste it in the prompt for your coding assistant:
+
+[https://docs.blaxel.ai/llms-full.txt](https://docs.blaxel.ai/llms-full.txt)
