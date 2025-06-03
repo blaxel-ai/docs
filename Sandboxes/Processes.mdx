@@ -131,20 +131,22 @@ const process = await sandbox.process.exec({
   name: "test",
   command: "echo 'Hello world'",
   waitForCompletion: true,
-  timeout: 3600
+  timeout: 100
 })
 
 ```
 
 ```python Python
 
-process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_completion=True, timeout=3600))
+process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_completion=True, timeout=100))
 
 ```
 
 </CodeGroup>
 
 Notice the `timeout` parameter which allows to set a timeout duration on the process.
+
+<Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 100 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
 
 You can also wait for a process after it has started:
 

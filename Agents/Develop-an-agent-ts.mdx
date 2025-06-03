@@ -376,25 +376,27 @@ timeout = 900
 memory = 1024
 
 [[triggers]]
-  id = "http"
+  id = "trigger-async-my-agent"
   type = "http-async"
 [triggers.configuration]
-  path = "agents/worker/async"
+  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE} 
   retry = 1
 
 [[triggers]]
-  id = "http"
+  id = "trigger-my-agent"
   type = "http"
 [triggers.configuration]
-  path = "agents/worker/sync"
+  path = "agents/my-agent/sync"
   retry = 1
+  authenticationType = "public"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. A synchronous HTTP endpoint is always created by default.
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. You can also make them either private (default) or public. 
+A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
 Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
