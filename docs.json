@@ -47,8 +47,8 @@
                 "group": "Deploy an agent",
                 "pages": [
                   "Agents/Deploy-an-agent",
-                  "Agents/Develop-dockerfile",
-                  "Agents/Develop-multiple"
+                  "Agents/Deploy-dockerfile",
+                  "Agents/Deploy-multiple"
                 ]
               },
               "Agents/Github-integration",
