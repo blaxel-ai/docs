@@ -66,7 +66,7 @@ Learn how to run invocation requests on your MCP server.
 
 ### Manage sessions
 
-To simulate multi-turn conversations, you can include a thread ID in your agent request header. You'll need to generate this ID and pass it using either `X-Blaxel-Thread-Id` or `Thread-Id`. Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
+To simulate multi-turn conversations, you can pass on request headers. You'll need your client to generate this ID and pass it using any header which you can retrieve via the code (e.g. `Thread-Id`). Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
 
 This is only available for agent requests.
 
