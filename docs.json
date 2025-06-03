@@ -43,7 +43,14 @@
                   "Agents/Variables-and-secrets"
                 ]
               },
-              "Agents/Deploy-an-agent",
+              {
+                "group": "Deploy an agent",
+                "pages": [
+                  "Agents/Deploy-an-agent",
+                  "Agents/Develop-dockerfile",
+                  "Agents/Develop-multiple"
+                ]
+              },
               "Agents/Github-integration",
               "Agents/Query-agents",
               {

@@ -163,10 +163,10 @@ const sandbox = await SandboxInstance.createIfNotExists({
 
 Every sandbox is also exposed via an MCP server that allows agents to **operate a sandbox using tool calls.**
 
-The MCP server runs on the base URL of the sandbox: 
+The MCP server operates through WebSockets at the sandbox's base URL: 
 
 ```
-https://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
+wss://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
 ```
 
 <Accordion title="Tools available in the MCP server…">
