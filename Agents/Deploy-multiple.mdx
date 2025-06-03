@@ -1,0 +1,49 @@
+---
+
+title: 'Deploy multiple resources'
+
+description: 'Deploy multiple resources with shared context from a mono-repo.'
+
+---
+
+You can use a **shared context from a same single repository** to deploy multiple resources, mixing [agents](Overview), [MCP servers](../Functions/Overview), [batch jobs](../Jobs/Overview), etc.
+
+## Deploying multiple resources
+
+With the `--directory` (`-d`) parameter in `bl deploy`, you can specify a subfolder containing your `blaxel.toml` and/or `Dockerfile`. 
+
+This enables a mono-repo structure with shared libraries:
+
+```
+myrepo
+|- myagent
+    |- src
+    |- blaxel.toml
+    |- Dockerfile
+|- myotheragent
+    |- src
+    |- blaxel.toml
+    |- Dockerfile
+|- shared
+    |- sharedfile
+```
+
+No changes are required to your `blaxel.toml`. However, in your `Dockerfile`, paths **must be relative** to the root context. For example, replace `COPY src src` with`COPY myagent/src src`
+
+This allows you to reference shared resources:
+
+```
+COPY myagent/src src
+COPY shared shared
+```
+
+### Deploy
+
+To deploy, run these commands from the root folder:
+
+```bash
+bl deploy -d myagent
+bl deploy -d myotheragent
+```
+
+For a complete example, see our [sample repository](https://github.com/drappier-charles/multiagent).

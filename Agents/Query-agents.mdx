@@ -65,39 +65,58 @@ timeout = 900
 memory = 1024
 
 [[triggers]]
-  id = "http"
+  id = "trigger-async-my-agent"
   type = "http-async"
 [triggers.configuration]
-  path = "agents/worker/async"
+  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE} 
   retry = 1
 
 [[triggers]]
-  id = "http"
+  id = "trigger-my-agent"
   type = "http"
 [triggers.configuration]
-  path = "agents/worker/sync"
+  path = "agents/my-agent/sync"
   retry = 1
+  authenticationType = "public"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. A synchronous HTTP endpoint is always created by default.
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. You can also make them either private (default) or public. 
+A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 </Accordion>
 
 ### Endpoint authentication
 
-By default, agents deployed on Blaxel aren’t public. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
+By default, agents deployed on Blaxel **aren’t public**. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
 
 The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making an agent publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
+<Tip>See how to remove authentication on a deployed agent down below.</Tip>
 
 ### Manage sessions
 
-To simulate multi-turn conversations, you can include a thread ID in your agent request header. You'll need to generate this ID and pass it using either `X-Blaxel-Thread-Id` or `Thread-Id`. Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
+To simulate multi-turn conversations, you can pass on request headers. You'll need your client to generate this ID and pass it using any header which you can retrieve via the code (e.g. `Thread-Id`). Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
+
+## Make an agent public
+
+To make an agent publicly accessible, add the following to the `blaxel.toml` configuration file, as explained above:
+
+```toml blaxel.toml
+
+…
+[[triggers]]
+id = "http"
+type = "http"
+
+[triggers.configuration]
+path = "/<PATH>" # This will be translated to https://run.blaxel.ai/<YOUR_WORKSPACE>/<PATH>
+authenticationType = "public"
+
+```
 
 ## Make an inference request
 
