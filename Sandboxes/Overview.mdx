@@ -171,20 +171,29 @@ wss://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
 
 <Accordion title="Tools available in the MCP server…">
 
-1. Filesystem operations
-    1. `functions.fsDeleteFileOrDirectory` - Delete a file or directory.
-    2. `functions.fsGetWorkingDirectory` - Get the current working directory.
-    3. `functions.fsListDirectory` - List contents of a directory.
-    4. `functions.fsReadFile` - Read contents of a file.
-    5. `functions.fsWriteFile` - Create or update a file.
-2. Process management:
+1. Process management:
     1. `functions.processExecute` - Execute a command.
     2. `functions.processGet` - Get process information by identifier (PID or name).
     3. `functions.processGetLogs` - Get logs for a specific process.
     4. `functions.processKill` - Kill a specific process.
     5. `functions.processStop` - Stop a specific process.
     6. `functions.processesList` - List all running processes.
-3. Network management:
+2. Filesystem operations
+    1. `functions.fsDeleteFileOrDirectory` - Delete a file or directory.
+    2. `functions.fsGetWorkingDirectory` - Get the current working directory.
+    3. `functions.fsListDirectory` - List contents of a directory.
+    4. `functions.fsReadFile` - Read contents of a file.
+    5. `functions.fsWriteFile` - Create or update a file.
+3. Tools specialized for code generation AI:
+    1. `codegenEditFile` - Propose and apply a targeted edit to a specified file, with instructions and partial contents. This tool uses [MorphLLM](https://morphllm.com/) for fast edits, and requires a Morph API key set as an environment variable when creating the sandbox.
+    2. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
+    3. `codegenFileSearch` - Fast fuzzy filename search in the project.
+    4. `codegenGrepSearch` - Run fast, exact regex/text searches on files for locating patterns or strings.
+    5. `codegenListDir` - List contents of a directory in the project.
+    6. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
+    7. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
+    8. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
+4. Network management:
     1. `functions.networkGetProcessPorts` - Get ports for a specific process.
     2. `functions.networkMonitorProcessPorts` - Start monitoring ports for a specific process.
     3. `functions.networkStopMonitorProcessPorts` - Stop monitoring ports for a specific process.

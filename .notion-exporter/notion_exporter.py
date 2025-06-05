@@ -217,12 +217,13 @@ class NotionExporter:
 
         response = requests.request(
             "POST", url, headers=self.query_headers, data=payload
-        ).json()
-        if "results" in response:
-            return response["results"][0]
+        )
+        response.raise_for_status()
+        result = response.json()
+        if "results" in result:
+            return result["results"][0]
         else:
-            print(response)
-            raise Exception("Failed to get tasks")
+            raise Exception(f"Failed to get tasks: {result}")
 
     def _download(self, url: str):
         """
