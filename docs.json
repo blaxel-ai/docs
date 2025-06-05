@@ -83,6 +83,7 @@
               "Sandboxes/Overview",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
+              "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
               "Sandboxes/Preview-url",
               "Sandboxes/Sessions"
