@@ -265,7 +265,7 @@ Rather than using a "quick and dirty" approach where you would combine all your 
 - Agents can grow significantly in complexity. Monolithic architectures make long-term maintenance difficult.
 - Individual agents should be reusable across multiple projects.
 
-Blaxel lets you organize your software with a microservice architecture for agent chaining, allowing you to call one agent from another using `blAgent().run()` rather than combining all functionality into a single codebase.
+Blaxel lets you organize your software with a microservice architecture for handoffs, allowing you to call one agent from another using `blAgent().run()` rather than combining all functionality into a single codebase.
 
 ```tsx
 import { blAgent } from "@blaxel/core";

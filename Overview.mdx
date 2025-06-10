@@ -61,6 +61,23 @@ As the ultimate AI builder's playground, Blaxel doesn’t require you to learn a
 - Agentic systems naturally connect with many services both inside and outside your network, mixing North-South and East-West traffic in cloud terms. Strong observability is essential for reliability.
 - Reliability is the biggest challenge in agentic AI. Focus on fine-tuning your prompts, tool calls, data access, and orchestration logic—Blaxel will handle the execution.
 
+### Which component should I use?
+
+When building your agentic system, you'll need to make architecture design choices. Blaxel offers several compute options, summarized below in order of latency performance:
+
+- [**Sandboxes**](Sandboxes/Overview): Perfect for maximum workload flexibility. These micro VMs provide full access to filesystem, network, and processes, booting from hibernation in under 25ms.
+- [**Agents Hosting (sync mode)**](https://docs.blaxel.ai/Agents/Query-agents#default-synchronous-endpoint): Ideal for running HTTP API services that process requests within a few seconds.
+- [**Agents Hosting (async mode)**](https://docs.blaxel.ai/Agents/Query-agents#async-endpoint): Best for running HTTP API services handling longer requests without maintaining an open connection.
+- [**Batch Jobs**](Jobs/Overview): Designed for asynchronous tasks that may run for extended periods where boot latency is less critical. These jobs are triggered by providing specific input parameters, unlike Agents that are a fully hosted API.
+
+| **Product** | **Typical use** | **Typical workload duration** | **Boot time** | **Input type** |
+| --- | --- | --- | --- | --- |
+| Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~2-4s | Custom API endpoints |
+| Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~5s | Custom API endpoints |
+| Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific inputs parameters |
+| Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms | Fully custom |
+| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 15 mins**) | ~2-4s | API following MCP  |
+
 ## The Blaxel powerhouse
 
 When you deploy workloads to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. 

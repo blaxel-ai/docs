@@ -12,11 +12,13 @@ Blaxel Sandboxes provide tools for managing files and their contents, specialize
 
 With this tool, you can **apply code changes** suggested by an LLM to your existing code files fast (2000+ tokens/second).
 
-Traditional code generation requires generating the entire files every time, which can be slow for large files. This approach is more efficient: your LLM only generates the specific changes needed, and this tool quickly applies them to the original file.
+Traditional code generation requires generating the entire files every time, which can be slower for large files. With this approach your LLM only generates the specific changes needed, and this tool applies them to the original file.
 
 ### Get started
 
-Fast apply of file edits is powered by [MorphLLM](https://morphllm.com/). In order for this tool to work, make sure to pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
+Fast apply of file edits is powered by [MorphLLM](https://morphllm.com/), and requires you to bring your own Morph account. 
+
+Make sure to pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
 
 <CodeGroup>
 

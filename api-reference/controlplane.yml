@@ -1656,24 +1656,24 @@ components:
           description: Historical requests (in last 24 hours) for the model deployment
             globally
     ResourceTrace:
+      type: object
       description: Log for a resource deployment (eg. model deployment, function deployment)
       properties:
         duration:
+          type: integer
           description: Duration in nanoseconds
-          type: integer
         hasError:
-          description: Has error
           type: boolean
+          description: Has error
         startTime:
+          type: string
           description: The timestamp of the log
-          type: string
         statusCode:
-          description: Status code
           type: integer
+          description: Status code
         traceID:
-          description: Trace ID of the log
           type: string
-      type: object
+          description: Trace ID of the log
     RevisionConfiguration:
       type: object
       description: Revision configuration
