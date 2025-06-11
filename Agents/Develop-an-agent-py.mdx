@@ -6,9 +6,7 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can **develop agents in Python using any framework** (LangChain, LlamaIndex, CrewAI, OpenAI Agents, PydanticAI, Google ADK or any custom framework) and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
-
-<Tip>Check out [this Getting Started](../Get-started) tutorial in order to develop and deploy your first Hello World AI agent globally in less than 5 minutes.</Tip>
+You can bring your **custom agents developed in Python** and deploy them to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.). You can develop agents using frameworks like LangChain, Google ADK, OpenAI Agents SDK; or your own custom code.
 
 ### Quickstart
 
@@ -24,7 +22,11 @@ This will create a pre-scaffolded local repo where your entire code can be added
 
 In the generated folder, you'll find a standard server in the entrypoint file `main.py`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.py` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
 
-## Connect to a model API
+## Accessing resources with Blaxel SDK
+
+[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
+
+### Connect to a model API
 
 Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
 
@@ -53,9 +55,9 @@ from blaxel.models import bl_model
 model = await bl_model("my-model").to_llamaindex()
 ```
 
-## Connect to tools
+### Connect to tools
 
-Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following function retrieves all the tools discoverable in the tool server.
+Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following method retrieves all the tools discoverable in the tool server.
 
 ```python
 from blaxel.tools import bl_tools
@@ -297,7 +299,7 @@ Only use the tool when a city is mentioned for a weather request.
 
 </CodeGroup>
 
-## Connect to another agent (multi-agent chaining)
+### Connect to another agent (multi-agent chaining)
 
 Rather than using a "quick and dirty" approach where you would combine all your agents and capabilities into a single deployment, Blaxel provides a structured development paradigm based on two key principles:
 

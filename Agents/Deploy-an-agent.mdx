@@ -6,19 +6,19 @@ description: 'Ship your custom AI agents on Blaxel in a few clicks.'
 
 ---
 
-Blaxel provides a serverless infrastructure to instantly deploy AI agents. You receive a global inference endpoint for each deployment, and your workloads are served optimally to dramatically accelerate cold-start and latency.
+Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework. 
 
 The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This method is detailed down below on the page. Alternatively you can [**connect a GitHub repository**](Github-integration): any push to the *main* branch will automatically update the deployment on Blaxel — or deploy from a variety of **pre-built templates** on the Blaxel Console.
 
 ## Deploy an agent with Blaxel CLI
 
-This section assumes you have developed an agent locally, as explained [in this documentation](Develop-an-agent), and are ready to deploy it. 
+This section assumes you have developed an agent locally, as presented [in this documentation](Develop-an-agent), and are ready to deploy it. 
 
-The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate Blaxel resources when developing your agents, such as: model APIs, tool servers, sandboxes, batch jobs, or other agents. It also ensures telemetry, secure connections to third-party systems or private networks and smart global placement of workflows.
+[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
 
 This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
 
-<Info>Read [this guide first](Develop-an-agent) on how to use the Blaxel SDK to develop a custom agent to deploy.</Info>
+<Info>Read [this guide first](Develop-an-agent) on how to leverage the Blaxel SDK when developing a custom agent to deploy.</Info>
 
 ### Serve locally
 
@@ -38,7 +38,7 @@ bl serve --hotreload
 
 ### Deploy on production
 
-You can deploy the agent in order to make the entrypoint function (by default: `main.py` / `main.ts`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the agent in order to make the entrypoint function (by default: `main.py` / `main.ts`) **callable on a global endpoint**. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your [deployment policies](../Model-Governance/Policies).
 
 Run the following command to build and deploy a local agent on Blaxel:
 
@@ -117,7 +117,7 @@ You can connect a GitHub repository to Blaxel to automatically deploy updates wh
 Learn how to synchronize your GitHub repository to automatically deploy updates.
 </Card>
 
-## Overview of deployment life-cycle
+## Reference for deployment life-cycle
 
 ### Deploying an agent
 
@@ -166,8 +166,6 @@ Read more about [querying agents in this documentation](Query-agents).
 Any agent deployment can be deactivated at any time. When deactivated, it will **no longer be reachable** through the inference endpoint and will stop consuming resources. 
 
 Agents can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/agents/update-agent-by-name) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
-
-![deactivate-deployment.png](Deploy-an-agent/deactivate-deployment.png)
 
 ## Agent deployment reference
 
