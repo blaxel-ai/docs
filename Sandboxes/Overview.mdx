@@ -14,7 +14,7 @@ They natively serve as **sandboxed environments for agents**. You can securely r
 
 ## Create a sandbox
 
-Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. **Port 8080** is the sandbox API, it is mandatory to set it if you want to use t. 
+Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. Note that port 8080 is the sandbox API, it is automatically exposed by Blaxel sandboxes.
 
 <Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
 
@@ -46,14 +46,8 @@ const sandbox = await SandboxInstance.create({
     },
     spec: {
         runtime: {
-            memory: 2048,
-            image: "blaxel/prod-base:latest",
-            ports: [
-                {
-                    target: 8080,
-                    protocol: "HTTP",
-                }
-            ]
+            memory: 4096,
+            image: "blaxel/prod-base:latest"
         }
     }
 })
@@ -84,10 +78,7 @@ async def create_sandbox(sandbox_name: str):
         spec=SandboxSpec(
             runtime=Runtime(
                 image=image,
-                memory=2048,
-                ports=[
-                    Port(name="sandbox-api", target=8080, protocol="HTTP")
-                ]
+                memory=4096
             )
         )
     ))
@@ -143,14 +134,8 @@ const sandbox = await SandboxInstance.createIfNotExists({
     },
     spec: {
         runtime: {
-            memory: 2048,
-            image: "blaxel/prod-base:latest",
-            ports: [
-                {
-                    target: 8080,
-                    protocol: "HTTP",
-                }
-            ]
+            memory: 4096,
+            image: "blaxel/prod-base:latest"
         }
     }
 })

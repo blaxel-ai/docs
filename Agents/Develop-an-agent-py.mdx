@@ -22,6 +22,17 @@ This will create a pre-scaffolded local repo where your entire code can be added
 
 In the generated folder, you'll find a standard server in the entrypoint file `main.py`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.py` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
 
+### Requirements & limitations
+
+Agents Hosting have few requirements or limitations:
+
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port). **These two environment variables are required for the host+port combo.**
+    - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
+
+- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+
+- The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
+
 ## Accessing resources with Blaxel SDK
 
 [Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
@@ -422,6 +433,17 @@ fastapi dev
 ```
 
 This `entrypoint` section is optional. If not specified, Blaxel will automatically detect in the agent’s content and configure your agent startup settings.
+
+## Troubleshooting
+
+### Wrong port or host
+
+```
+Default STARTUP TCP probe failed 1 time consecutively for container "agent" on port 80. The instance was not started.
+Connection failed with status DEADLINE_EXCEEDED.
+```
+
+If you encounter this error when deploying your agent on Blaxel, ensure that your agent properly exposes an API server that binds to a host and port with the **required** environment variables: `BL_SERVER_HOST` & `BL_SERVER_PORT`. Blaxel automatically injects these variables during deployment.
 
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
 Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.

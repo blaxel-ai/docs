@@ -35,7 +35,9 @@ Some features of running workloads on Agents Hosting:
 Agents Hosting have few requirements or limitations:
 
 - Agents Hosting only supports applications developed in **Python** and in **TypeScript**.
-- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server. You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
+
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port). **These two environment variables are required for the host+port combo.**
+    - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
 
 - Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
 
