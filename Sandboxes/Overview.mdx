@@ -39,7 +39,7 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 import { SandboxInstance } from "@blaxel/core";
 
-/// Start sandbox creation
+/// Start sandbox creation (exposing port 3000 for example)
 const sandbox = await SandboxInstance.create({
     metadata: {
         name: "my-sandbox"
@@ -47,7 +47,13 @@ const sandbox = await SandboxInstance.create({
     spec: {
         runtime: {
             memory: 4096,
-            image: "blaxel/prod-base:latest"
+            image: "blaxel/prod-base:latest",
+            ports: [
+                {
+                    target: 3000,
+                    protocol: "HTTP",
+                }
+            ]
         }
     }
 })
@@ -60,33 +66,26 @@ await sandbox.wait({ maxWait: 120000, interval: 1000 })
 ```python Python
 
 import asyncio
-import logging
-import os
 
-from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
-from blaxel.sandbox.base import ResponseError
-from blaxel.sandbox.client.models import ProcessRequest
-from blaxel.sandbox.sandbox import SandboxInstance
+from blaxel.core.sandbox import SandboxInstance
 
-logger = logging.getLogger(__name__)
+async def main():
+    configuration = {
+        "metadata": {
+            "name": "my-sandbox",
+        },
+        "spec": {
+            "runtime": {
+                "image": "blaxel/prod-base:latest",
+                "memory": 4096,
+            }
+        },
+    }
+    sandbox = await SandboxInstance.create(configuration)
+    await sandbox.wait()
 
-async def create_sandbox(sandbox_name: str):
-    image = "blaxel/prod-base:latest"
-    ### Start sandbox creation
-    sandbox = await SandboxInstance.create(Sandbox(
-        metadata=Metadata(name=sandbox_name),
-        spec=SandboxSpec(
-            runtime=Runtime(
-                image=image,
-                memory=4096
-            )
-        )
-    ))
-
-    ### Wait for the sandbox to be deployed (for max 120 seconds, checking every 1 second)
-    await sandbox.wait(max_wait=120000, interval=1000)
-    logger.info("Sandbox deployed")
-    return sandbox
+if __name__ == "__main__":
+    asyncio.run(main())
 
 ```
 
@@ -139,6 +138,24 @@ const sandbox = await SandboxInstance.createIfNotExists({
         }
     }
 })
+
+```
+
+```python Python
+
+configuration = {
+    "metadata": {
+        "name": "my-sandbox",
+    },
+    "spec": {
+        "runtime": {
+            "image": "blaxel/prod-base:latest",
+            "memory": 4096,
+        }
+    },
+}
+sandbox = await SandboxInstance.create_if_not_exists(configuration)
+await sandbox.wait()
 
 ```
 

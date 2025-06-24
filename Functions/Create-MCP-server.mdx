@@ -102,8 +102,8 @@ The main component you'll need to modify is the tool definition:
 
 ```python server.py {10-18}
 
-from blaxel import env
-from blaxel.mcp.server import FastMCP
+from blaxel.core import env
+from blaxel.core.mcp.server import FastMCP
 
 from typing import Annotated
 from logging import getLogger
