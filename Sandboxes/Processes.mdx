@@ -48,19 +48,10 @@ if (process.status === "completed") {
 ```
 
 ```python Python {13}
-
-import asyncio
-import logging
-import os
-
-from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
-from blaxel.sandbox.base import ResponseError
-from blaxel.sandbox.client.models import ProcessRequest
-from blaxel.sandbox.sandbox import SandboxInstance
+from blaxel.core.sandbox import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-
-process = await sandbox.process.exec(ProcessRequest(command="echo 'Hello world'"))
+process = await sandbox.process.exec({"command": "echo 'Hello world'"})
 assert getattr(process, "status", None) != "completed", "Process did complete without waiting"
 
 ```
@@ -84,7 +75,7 @@ const process = await sandbox.process.exec({
 
 ```python Python
 
-process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'"))
+process = await sandbox.process.exec({"name": "test", "command": "echo 'Hello world'"})
 
 ```
 
@@ -137,8 +128,14 @@ const process = await sandbox.process.exec({
 ```
 
 ```python Python
-
-process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_completion=True, timeout=100))
+process = await sandbox.process.exec(
+    {
+        "name": "test",
+        "command": "echo 'Hello world'",
+        "wait_for_completion": True,
+        "timeout": 100,
+    }
+)
 
 ```
 
@@ -156,6 +153,13 @@ You can also wait for a process after it has started:
 
 /// Wait for the process to finish (for max 120 seconds, checking every 1 second)
 await sandbox.process.wait(”test”, { maxWait: 120000, interval: 1000 })
+
+```
+
+```python Python
+
+process = await sandbox.process.exec({"name": "test", "command": "echo 'Hello world'"})
+await sandbox.process.wait("test")
 
 ```
 
@@ -181,7 +185,13 @@ const process = await sandbox.process.exec({
 
 ```python Python
 
-process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'", wait_for_ports=[3000]))
+process = await sandbox.process.exec(
+    {
+        "name": "test",
+        "command": "echo 'Hello world'",
+        "wait_for_ports": [3000],
+    }
+)
 
 ```
 

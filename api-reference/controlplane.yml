@@ -642,7 +642,9 @@ components:
       description: Job specification
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
-      - {}
+      - properties:
+          triggers:
+            $ref: '#/components/schemas/Triggers'
     JobsChart:
       description: Jobs chart
       properties:
@@ -2129,7 +2131,7 @@ components:
       description: Trigger configuration
       properties:
         configuration:
-          type: object
+          $ref: '#/components/schemas/TriggerConfiguration'
           description: The configuration of the trigger
         id:
           type: string
@@ -2137,6 +2139,22 @@ components:
         type:
           type: string
           description: The type of trigger, can be http or http-async
+    TriggerConfiguration:
+      type: object
+      description: Trigger configuration
+      properties:
+        authenticationType:
+          type: string
+          description: The authentication type of the trigger
+        path:
+          type: string
+          description: The path of the trigger
+        retry:
+          type: integer
+          description: The retry of the trigger
+        schedule:
+          type: string
+          description: The schedule of the trigger, cron expression * * * * *
     Triggers:
       type: array
       description: Triggers to use your agent

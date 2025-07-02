@@ -119,7 +119,7 @@ Then, here’s an example adding the Blaxel decorator:
 
 ```python agent.py (Python) {2,12}
 from fastapi import Request
-from blaxel.agents import agent
+from blaxel.core.agents import agent
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent

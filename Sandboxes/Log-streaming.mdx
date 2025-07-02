@@ -45,20 +45,10 @@ const logs = await sandbox.process.logs("test");
 ```
 
 ```python Python {15}
+from blaxel.core.sandbox.sandbox import SandboxInstance
 
-import asyncio
-import logging
-import os
-
-from blaxel.client.models import Metadata, Port, Runtime, Sandbox, SandboxSpec
-from blaxel.sandbox.base import ResponseError
-from blaxel.sandbox.client.models import ProcessRequest
-from blaxel.sandbox.sandbox import SandboxInstance
-
-logger = logging.getLogger(__name__)
-
-sandbox = await SandboxInstance.get(sandbox_name)
-process = await sandbox.process.exec(ProcessRequest(name="test", command="echo 'Hello world'"))
+sandbox = await SandboxInstance.get("my-sandbox")
+process = await sandbox.process.exec({"name": "test", "command": "echo 'Hello world'"})
 
 logs = await sandbox.process.logs("test")
 
@@ -104,37 +94,60 @@ Stream logs for a specific [process](Processes) (using either its name or proces
 
 ```typescript TypeScript
 
-// This command will output to both stdout and stderr 5 times with a 1 second sleep between each
+// This command will output to both stdout and stderr 5 times with a 5 second sleep between each
 const command = `sh -c 'for i in $(seq 1 5); do echo "Hello from stdout $i"; echo "Hello from stderr $i" 1>&2; sleep 1; done'`;
-
+const sandbox = await SandboxInstance.get("my-sandbox")
+const name = "test-2"
 await sandbox.process.exec(
-    {
-        command: command,
-        name: "test",
-    },
+  {
+    command,
+    name,
+  },
 );
-const stream = sandbox.process.streamLogs("test", {
-    onLog: (log) => {
-        logCalled = true;
-        console.log("onLog", log);
-
-        logOutput += log + '\n';
-    },
-    onStdout: (stdout) => {
-        stdoutCalled = true;
-        console.log("onStdout", stdout);
-        stdoutOutput += stdout + '\n';
-    },
-    onStderr: (stderr) => {
-        stderrCalled = true;
-        console.log("onStderr", stderr);
-        stderrOutput += stderr + '\n';
-    },
+const stream = sandbox.process.streamLogs(name, {
+  onLog: (log) => {
+    console.log("onLog", log);
+  },
+  onStdout: (stdout) => {
+    console.log("onStdout", stdout);
+  },
+  onStderr: (stderr) => {
+    console.log("onStderr", stderr);
+  },
 })
+await sandbox.process.wait(name)
+await stream.close()
 
-await sandbox.process.wait("test")
+```
 
-stream.close();
+```python Python
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# This command will output to both stdout and stderr 5 times with a 1 second sleep between each
+command = """sh -c 'for i in $(seq 1 5); do echo "Hello from stdout $i"; echo "Hello from stderr $i" 1>&2; sleep 1; done'"""
+name = "stream-logs"
+await sandbox.process.exec({"name": name, "command": command})
+
+def on_log(log):
+    print(f"onLog {log}")
+
+def on_stdout(stdout):
+    print(f"onStdout {stdout}")
+
+def on_stderr(stderr):
+    print(f"onStderr {stderr}")
+
+# Start streaming logs
+stream = sandbox.process.stream_logs(
+    name, {"on_log": on_log, "on_stdout": on_stdout, "on_stderr": on_stderr}
+)
+
+# Wait for the process to complete
+await sandbox.process.wait(name)
+
+# Close the stream
+stream["close"]()
 
 ```
 

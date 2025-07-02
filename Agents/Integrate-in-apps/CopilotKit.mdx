@@ -31,8 +31,7 @@ Develop your LangGraph agent, using [Blaxel SDK](../Develop-an-agent-py) to conn
 
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.langgraph import bl_model,  bl_tools
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
@@ -45,8 +44,8 @@ def weather(city: str) -> str:
 
 async def agent():
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
-    tools = await bl_tools(["blaxel-search"]).to_langchain() + [weather]
-    model = await bl_model("sandbox-openai").to_langchain()
+    tools = await bl_tools(["blaxel-search"]) + [weather]
+    model = await bl_model("sandbox-openai")
     
     # Create memory checkpointer
     memory = MemorySaver()

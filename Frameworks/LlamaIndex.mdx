@@ -43,9 +43,9 @@ Run the following command to retrieve tools in LlamaIndex format:
 
 ```python Python
 
-from blaxel.tools import bl_tools
+from blaxel.llamaindex import bl_tools
 
-await bl_tools(['mcp-server-name']).to_llamaindex()
+await bl_tools(['mcp-server-name'])
 
 ```
 
@@ -67,9 +67,9 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 
 ```python Python
 
-from blaxel.models import bl_model
+from blaxel.llamaindex import bl_model
 
-model = await bl_model("model-api-name").to_llamaindex()
+model = await bl_model("model-api-name")
 
 ```
 
@@ -91,7 +91,7 @@ Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK
 
 ```python Python
 
-from blaxel.agents import bl_agent
+from blaxel.core.agents import bl_agent
 
 response = await bl_agent("agent-name").run(input);
 

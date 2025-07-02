@@ -42,28 +42,28 @@ Agents Hosting have few requirements or limitations:
 Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
 
 ```python
-from blaxel.models import bl_model
+from blaxel.{FRAMEWORK_NAME} import bl_model
 
-model = await bl_model("Model-name-on-Blaxel").to_...();
+model = await bl_model("Model-name-on-Blaxel");
 ```
 
 Convert the retrieved model to the format of the framework you want to use with the `.to_...()` function.
 
 Available frameworks :
 
-- [LangChain](https://python.langchain.com/docs/concepts/chat_models/) : `to_langchain()`
-- [CrewAI](https://docs.crewai.com/concepts/llms) : `to_crewai()`
-- [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `to_llamaindex()`
-- [OpenAI Agents](https://github.com/openai/openai-agents-python): `to_openai()`
-- [Pydantic AI Agents](https://github.com/pydantic/pydantic-ai): `to_pydantic()`
-- [Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/models/lite_llm.py): `to_google_adk()`
+- [Langgraph/LangChain](https://python.langchain.com/docs/concepts/chat_models/) : `langgraph`
+- [CrewAI](https://docs.crewai.com/concepts/llms) : `crewai`
+- [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `llamaindex()`
+- [OpenAI Agents](https://github.com/openai/openai-agents-python): `openai()`
+- [Pydantic AI Agents](https://github.com/pydantic/pydantic-ai): `pydantic()`
+- [Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/models/lite_llm.py): `googleadk()`
 
 For example, to connect to model `my-model` in a *LlamaIndex* agent:
 
 ```python
-from blaxel.models import bl_model
+from blaxel.llamaindex import bl_model
 
-model = await bl_model("my-model").to_llamaindex()
+model = await bl_model("my-model")
 ```
 
 ### Connect to tools
@@ -71,12 +71,12 @@ model = await bl_model("my-model").to_llamaindex()
 Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following method retrieves all the tools discoverable in the tool server.
 
 ```python
-from blaxel.tools import bl_tools
+from blaxel.{FRAMEWORK_NAME} import bl_tools
 
-await bl_tools(['Tool-Server-name-on-Blaxel']).to_...()
+await bl_tools(['Tool-Server-name-on-Blaxel'])
 ```
 
-Like for a model, convert the retrieved tools to the format of the framework you want to use with the `.to_...()` function. Available frameworks are `to_langchain()` ([LangChain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `to_llamaindex()` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `to_crewai()` ([CrewAI](https://docs.crewai.com/concepts/tools)), `to_openai()` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `to_pydantic()` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `to_google_adk()` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
+Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([Langgraph/Langchain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `crewai` ([CrewAI](https://docs.crewai.com/concepts/tools)), `openai` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `pydantic` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `googleadk` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
@@ -85,12 +85,11 @@ You can develop agents by **mixing tools defined locally in your agents, and too
 
 <CodeGroup>
 
-```python agent.py (LangChain)
+```python agent.py (Langgraph)
 
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.langgraph import bl_model, bl_tools
 from langchain.tools import tool
 from langchain_core.messages import AIMessageChunk
 from langgraph.prebuilt import create_react_agent
@@ -102,8 +101,8 @@ def weather(city: str) -> str:
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
-    tools = await bl_tools(["blaxel-search"]).to_langchain() + [weather]
-    model = await bl_model("gpt-4o-mini").to_langchain()
+    tools = await bl_tools(["blaxel-search"]) + [weather]
+    model = await bl_model("gpt-4o-mini")
     agent = create_react_agent(model=model, tools=tools, prompt=prompt)
     messages = {"messages": [("user", input)]}
     async for chunk in agent.astream(messages, stream_mode=["updates", "messages"]):
@@ -125,8 +124,7 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
 
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.llamaindex import bl_model, bl_tools
 from llama_index.core.agent.workflow import AgentStream, ReActAgent
 from llama_index.core.tools import FunctionTool
 
@@ -136,8 +134,8 @@ async def weather(city: str) -> str:
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
-    tools = await bl_tools(["blaxel-search"]).to_llamaindex() + [FunctionTool.from_defaults(async_fn=weather)]
-    model = await bl_model("gpt-4o-mini").to_llamaindex()
+    tools = await bl_tools(["blaxel-search"]) + [FunctionTool.from_defaults(async_fn=weather)]
+    model = await bl_model("gpt-4o-mini")
     agent = ReActAgent(llm=model, tools=tools, system_prompt=prompt)
     async for event in agent.run(input).stream_events():
         if isinstance(event, AgentStream):
@@ -153,8 +151,7 @@ nest_asyncio.apply()
 
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.crewai import bl_model, bl_tools
 from crewai import Agent, Crew, Task
 from crewai.tools import tool
 
@@ -164,8 +161,8 @@ def weather(city: str) -> str:
     return f"The weather in {city} is sunny"
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
-    tools = await bl_tools(["blaxel-search"]).to_crewai() + [weather]
-    model = await bl_model("gpt-4o-mini").to_crewai()
+    tools = await bl_tools(["blaxel-search"]) + [weather]
+    model = await bl_model("gpt-4o-mini")
 
     agent = Agent(
         role="Weather Researcher",
@@ -189,8 +186,7 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
 from typing import AsyncGenerator
 
 from agents import Agent, RawResponsesStreamEvent, Runner, function_tool
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.openai import bl_model, bl_tools
 from openai.types.responses import ResponseTextDeltaEvent
 
 @function_tool()
@@ -199,8 +195,8 @@ async def weather(city: str) -> str:
     return f"The weather in {city} is sunny"
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
-    tools = await bl_tools(["blaxel-search"]).to_openai() + [weather]
-    model = await bl_model("gpt-4o-mini").to_openai()
+    tools = await bl_tools(["blaxel-search"]) + [weather]
+    model = await bl_model("gpt-4o-mini")
 
     agent = Agent(
         name="blaxel-agent",
@@ -219,8 +215,7 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
 
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.pydantic import bl_model, bl_tools
 from pydantic_ai import Agent, CallToolsNode, Tool
 from pydantic_ai.messages import ToolCallPart
 from pydantic_ai.models import ModelSettings
@@ -250,8 +245,7 @@ async def agent(input: str) -> AsyncGenerator[str, None]:
 from logging import getLogger
 from typing import AsyncGenerator
 
-from blaxel.models import bl_model
-from blaxel.tools import bl_tools
+from blaxel.googleadk import bl_model, bl_tools
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -320,7 +314,7 @@ Rather than using a "quick and dirty" approach where you would combine all your 
 Blaxel supports a microservice architecture for handoffs, allowing you to call one agent from another using `bl_agent().run()` rather than combining all functionality into a single codebase.
 
 ```bash
-from blaxel.agents import bl_agent
+from blaxel.core.agents import bl_agent
 
 first_agent_response = await bl_agent("first_agent").run(input);
 second_agent_response = await bl_agent("second_agent").run(first_agent_response);
@@ -337,7 +331,7 @@ Read the file structure section down below for more details.
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK in your project's entry point.
 
 ```bash
-import blaxel
+import blaxel.core
 ```
 
 When agents and tools are deployed on Blaxel, request logging and tracing happens automatically.
