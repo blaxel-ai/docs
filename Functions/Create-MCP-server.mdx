@@ -31,6 +31,7 @@ pnpm inspect
 ```
 
 ```shell Python
+
 BL_DEBUG=true uv run mcp dev src/server.py
 
 ```
@@ -48,7 +49,7 @@ If you open the `src/server.ts` file, you'll see the complete server implementat
 
 The main component you'll need to modify is the tool definition:
 
-```typescript server.ts {12-24}
+```typescript server.ts {12-25}
 
 import { BlaxelMcpServerTransport } from "@blaxel/core";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -100,7 +101,7 @@ If you open the `src/server.py` file, you'll see the complete server implementat
 
 The main component you'll need to modify is the tool definition:
 
-```python server.py {10-18}
+```python server.py {11-19}
 
 from blaxel.core import env
 from blaxel.core.mcp.server import FastMCP

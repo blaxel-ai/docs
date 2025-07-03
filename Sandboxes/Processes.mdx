@@ -8,7 +8,7 @@ description: 'Execute and manage processes in sandboxes.'
 
 Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
 
 ## Execute processes and commands
 
@@ -33,30 +33,31 @@ Execute shell commands using the TypeScript SDK:
 
 <CodeGroup>
 
-```typescript TypeScript {6}
-
+```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox")
+const sandbox = await SandboxInstance.get("my-sandbox");
 
-const process = await sandbox.process.exec({command: "echo 'Hello world'"})
-
-if (process.status === "completed") {
-  throw new Error("Process did complete without waiting");
-}
-
+// Execute command
+const process = await sandbox.process.exec({
+  command: "echo 'Hello, World!'"
+});
 ```
 
-```python Python {13}
-from blaxel.core.sandbox import SandboxInstance
+```python Python
+from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-process = await sandbox.process.exec({"command": "echo 'Hello world'"})
-assert getattr(process, "status", None) != "completed", "Process did complete without waiting"
 
+# Execute command
+process = await sandbox.process.exec({
+  "command": "echo 'Hello, World!'"
+})
 ```
 
 </CodeGroup>
+
+Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter. 
 
 ### Use process names
 
@@ -64,19 +65,20 @@ When starting a process (running a command), you can specify a **process name**.
 
 <CodeGroup>
 
-```typescript TypeScript
-
+```typescript TypeScript {2}
 const process = await sandbox.process.exec({
-  name: "test",
-  command: "echo 'Hello world'",
-})
-
+  name: "hello-process",
+  command: "echo 'Hello, World!'"
+});
+const processInfo = await sandbox.process.get("hello-process");
 ```
 
-```python Python
-
-process = await sandbox.process.exec({"name": "test", "command": "echo 'Hello world'"})
-
+```python Python {2}
+process = await sandbox.process.exec({
+  "name": "hello-process",
+  "command": "echo 'Hello, World!'"
+})
+process_info = await sandbox.process.get("hello-process")
 ```
 
 </CodeGroup>
@@ -85,25 +87,17 @@ You can use either the process name or the process ID to get information about t
 
 <CodeGroup>
 
-```typescript TypeScript {4}
-
-await new Promise((resolve) => setTimeout(resolve, 10));
-
-const completedProcess = await sandbox.process.get("test");
-
-if (completedProcess.status !== "completed") {
-  throw new Error("Process did not complete");
-
+```typescript TypeScript
+const completedProcess = await sandbox.process.get("hello-process");
+if (completedProcess.status === "completed") {
+  // ...
+}
 ```
 
-```python Python {4}
-
-await asyncio.sleep(0.01)
-
-completed_process = await sandbox.process.get("test")
-
-assert getattr(completed_process, "status", None) == "completed", "Process did not complete"
-
+```python Python
+completed_process = await sandbox.process.get("hello-process")
+if completed_process.status == "completed":
+    # ...
 ```
 
 </CodeGroup>
@@ -116,32 +110,27 @@ You can wait for process completion when executing it:
 
 <CodeGroup>
 
-```typescript TypeScript {5}
-
+```typescript TypeScript
 const process = await sandbox.process.exec({
-  name: "test",
-  command: "echo 'Hello world'",
+  name: "build-process",
+  command: "npm run build",
   waitForCompletion: true,
-  timeout: 100
-})
-
+  timeout: 60000 // 60 seconds
+});
 ```
 
 ```python Python
-process = await sandbox.process.exec(
-    {
-        "name": "test",
-        "command": "echo 'Hello world'",
-        "wait_for_completion": True,
-        "timeout": 100,
-    }
-)
-
+process = await sandbox.process.exec({
+  "name": "build-process",
+  "command": "npm run build",
+  "wait_for_completion": True,
+  "timeout": 60000  # 60 seconds
+})
 ```
 
 </CodeGroup>
 
-Notice the `timeout` parameter which allows to set a timeout duration on the process.
+When waiting for completion, the process execution object will contain a `.logs` object which [surfaces both *stdout* and *stderr*](Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
 
 <Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 100 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
 
@@ -150,17 +139,26 @@ You can also wait for a process after it has started:
 <CodeGroup>
 
 ```typescript TypeScript
+await sandbox.process.exec({
+  name: "long-task",
+  command: "sleep 10"
+});
 
-/// Wait for the process to finish (for max 120 seconds, checking every 1 second)
-await sandbox.process.wait(”test”, { maxWait: 120000, interval: 1000 })
-
+// Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", {
+  maxWait: 600000,
+  interval: 5000
+});
 ```
 
 ```python Python
+await sandbox.process.exec({
+  "name": "long-task",
+  "command": "sleep 10"
+})
 
-process = await sandbox.process.exec({"name": "test", "command": "echo 'Hello world'"})
-await sandbox.process.wait("test")
-
+# Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", max_wait=600000, interval=5000)
 ```
 
 </CodeGroup>
@@ -173,26 +171,20 @@ In some cases, you may want to wait for a port to be opened while running — fo
 
 <CodeGroup>
 
-```typescript TypeScript {5}
-
+```typescript TypeScript
 const process = await sandbox.process.exec({
-  name: "test",
-  command: "echo 'Hello world'",
+  name: "dev-server",
+  command: "npm run dev",
   waitForPorts: [3000]
-})
-
+});
 ```
 
 ```python Python
-
-process = await sandbox.process.exec(
-    {
-        "name": "test",
-        "command": "echo 'Hello world'",
-        "wait_for_ports": [3000],
-    }
-)
-
+process = await sandbox.process.exec({
+  "name": "dev-server",
+  "command": "npm run dev",
+  "wait_for_ports": [3000]
+})
 ```
 
 </CodeGroup>
@@ -204,15 +196,11 @@ Kill a process immediately by running:
 <CodeGroup>
 
 ```typescript TypeScript
-
 await sandbox.process.kill("test")
-
 ```
 
 ```python Python
-
 await sandbox.process.kill("test")
-
 ```
 
 </CodeGroup>
