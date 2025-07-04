@@ -47,11 +47,11 @@ from blaxel.{FRAMEWORK_NAME} import bl_model
 model = await bl_model("Model-name-on-Blaxel");
 ```
 
-Convert the retrieved model to the format of the framework you want to use with the `.to_...()` function.
+The model is automatically converted to your chosen framework's format based on the `FRAMEWORK_NAME` specified in the import.
 
 Available frameworks :
 
-- [Langgraph/LangChain](https://python.langchain.com/docs/concepts/chat_models/) : `langgraph`
+- [LangGraph/LangChain](https://python.langchain.com/docs/concepts/chat_models/) : `langgraph`
 - [CrewAI](https://docs.crewai.com/concepts/llms) : `crewai`
 - [LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/models/llms/) : `llamaindex()`
 - [OpenAI Agents](https://github.com/openai/openai-agents-python): `openai()`
@@ -76,7 +76,7 @@ from blaxel.{FRAMEWORK_NAME} import bl_tools
 await bl_tools(['Tool-Server-name-on-Blaxel'])
 ```
 
-Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([Langgraph/Langchain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `crewai` ([CrewAI](https://docs.crewai.com/concepts/tools)), `openai` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `pydantic` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `googleadk` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
+Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangGraph/Langchain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `crewai` ([CrewAI](https://docs.crewai.com/concepts/tools)), `openai` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `pydantic` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `googleadk` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
@@ -85,7 +85,7 @@ You can develop agents by **mixing tools defined locally in your agents, and too
 
 <CodeGroup>
 
-```python agent.py (Langgraph)
+```python agent.py (LangGraph)
 
 from typing import AsyncGenerator
 
@@ -101,7 +101,9 @@ def weather(city: str) -> str:
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"]) + [weather]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("gpt-4o-mini")
     agent = create_react_agent(model=model, tools=tools, prompt=prompt)
     messages = {"messages": [("user", input)]}
@@ -134,7 +136,9 @@ async def weather(city: str) -> str:
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"]) + [FunctionTool.from_defaults(async_fn=weather)]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("gpt-4o-mini")
     agent = ReActAgent(llm=model, tools=tools, system_prompt=prompt)
     async for event in agent.run(input).stream_events():
@@ -161,7 +165,9 @@ def weather(city: str) -> str:
     return f"The weather in {city} is sunny"
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"]) + [weather]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("gpt-4o-mini")
 
     agent = Agent(
@@ -195,7 +201,9 @@ async def weather(city: str) -> str:
     return f"The weather in {city} is sunny"
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"]) + [weather]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("gpt-4o-mini")
 
     agent = Agent(
@@ -226,7 +234,9 @@ def weather(city: str) -> str:
 
 async def agent(input: str) -> AsyncGenerator[str, None]:
     prompt = "You are a helpful assistant that can answer questions and help with tasks."
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"]).to_pydantic() + [Tool(weather)]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("gpt-4o-mini").to_pydantic()
     agent = Agent(model=model, tools=tools, model_settings=ModelSettings(temperature=0), system_prompt=prompt)
     async with agent.iter(input) as agent_run:
@@ -271,7 +281,9 @@ Analyze the tool's response: if the status is 'error', inform the user politely 
 If the status is 'success', present the weather 'report' clearly and concisely to the user.
 Only use the tool when a city is mentioned for a weather request.
 """
+    ### Load tools dynamically from Blaxel, and adding a tool defined locally:
     tools = await bl_tools(["blaxel-search"], timeout_enabled=False).to_google_adk() + [get_weather]
+    ### Load model API dynamically from Blaxel:
     model = await bl_model("sandbox-openai").to_google_adk()
 
     agent = Agent(model=model, name=APP_NAME, description=description, instruction=prompt, tools=tools)

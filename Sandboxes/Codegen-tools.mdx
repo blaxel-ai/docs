@@ -23,56 +23,43 @@ Make sure to pass your [Morph API key](https://docs.morphllm.com/api-reference/i
 <CodeGroup>
 
 ```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-import { SandboxInstance } from "@blaxel/core"
+// Create sandbox with Morph API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/prod-nextjs:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
+    { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
+  ]
+});
 
-export async function createOrGetSandbox({sandboxName, wait = true}: {sandboxName: string, wait?: boolean}) {
-  const envs = []
-  if (process.env.MORPH_API_KEY) {
-    envs.push({
-      name: "MORPH_API_KEY",
-      value: process.env.MORPH_API_KEY
-    })
-  }
-  if (process.env.MORPH_MODEL) {
-    envs.push({
-      name: "MORPH_MODEL",
-      value: process.env.MORPH_MODEL
-    })
-  }
-  const sandboxModel = {
-    metadata: {
-      name: sandboxName
-    },
-    spec: {
-      runtime: {
-        image: "blaxel/prod-nextjs:latest",
-        memory: 4096,
-        ports: [
-          {
-            name: "sandbox-api",
-            target: 8080,
-            protocol: "HTTP",
-          },
-          {
-            name: "preview",
-            target: 3000,
-            protocol: "HTTP",
-          }
-        ]
-      },
-      envs
-    }
-  }
-  const sandbox = await SandboxInstance.createIfNotExists(sandboxModel)
-  if (wait) {
-    await sandbox.wait({ maxWait: 120000, interval: 1000 })
-  }
-  return sandbox
-}
-
+await sandbox.wait();
 ```
+```python Python
+import os
+from blaxel.core import SandboxInstance
 
+# Create sandbox with Morph API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/prod-nextjs:latest",
+  "memory": 4096,
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
+    { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
+  ]
+})
+await sandbox.wait()
+```
 </CodeGroup>
 
 <Note>If you do not pass the MORPH_API_KEY, this specific tool will not be available.</Note>
@@ -83,18 +70,30 @@ Call the `codegenEditFile` tool on the **[MCP server of a sandbox](https://docs.
 
 Use Blaxel SDK to retrieve the tool in any [compatible agent framework](../Frameworks/Overview) (here in AI SDK format):
 
-```tsx
-import { blTools } from '@blaxel/vercel'; // or any compatible agent framework
+<CodeGroup>
+```typescript TypeScript
+import { blTools } from '@blaxel/vercel';
 
-// Get all tools in the sandbox MCP
-const allTools = await blTools([`sandboxes/YOUR-SANDBOX-ID`], maxDuration * 1000)
+// Get codegen tools from sandbox MCP
+const allTools = await blTools([`sandboxes/${sandbox.metadata.name}`]);
 
-// Filter on just codegenEditFile
-const tools = Object.fromEntries(Object.entries(allTools).filter(([key]) => key.startsWith('codegenEditFile')))
-
-// You can then pass 'tools' in your agent, so it can autonomously use it
-...
+// Filter for specific codegen tools
+const codegenTools = Object.fromEntries(
+  Object.entries(allTools).filter(([key]) =>
+    key.startsWith('codegen')
+  )
+);
 ```
+```python Python
+from blaxel.langgraph import bl_tools
+
+# Get codegen tools from sandbox MCP
+all_tools = await bl_tools([f"sandboxes/{sandbox.metadata.name}"])
+
+# Filter for specific codegen tools
+codegen_tools = [tool for tool in all_tools if tool.name.startswith("codegen")]
+```
+</CodeGroup>
 
 Check out the [following file on GitHub](https://github.com/blaxel-ai/sdk-typescript/blob/main/tests/sandbox/nextjs-sandbox-test/src/app/api/sandboxes/%5Bid%5D/chat/route.ts) to see a full example of using the fast apply tool in an agent.
 

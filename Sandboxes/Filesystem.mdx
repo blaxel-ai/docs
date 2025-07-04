@@ -8,7 +8,7 @@ description: 'A simple file system interface for managing files in sandboxes.'
 
 Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
 
 ## Basic file system operations
 
@@ -33,25 +33,19 @@ Create a new directory at a specific path in the sandbox:
 
 <CodeGroup>
 
-```typescript TypeScript {5}
-
+```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox")
+const sandbox = await SandboxInstance.get("my-sandbox");
 
-await sandbox.fs.mkdir(`/Users/user/Downloads/test`)
-
+await sandbox.fs.mkdir("/blaxel/app/uploads");
 ```
 
-```python Python {14}
-from blaxel.core.sandbox import SandboxInstance
+```python Python
+from blaxel.core import SandboxInstance
 
-logger = logging.getLogger(__name__)
-
-sandbox = await SandboxInstance.get(sandbox_name)
-
-await sandbox.fs.mkdir(f"/Users/user/Downloads/test")
-
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.fs.mkdir("/blaxel/app/uploads")
 ```
 
 </CodeGroup>
@@ -62,22 +56,14 @@ List files in a specific path:
 
 <CodeGroup>
 
-```typescript TypeScript {1}
-
-const dir = await sandbox.fs.ls(`/Users/user/Downloads`);
-
-if (dir.files?.length && dir.files?.length < 1) {
-  throw new Error("Directory is empty");
-}
-
+```typescript TypeScript
+const { subdirectories, files } = await sandbox.fs.ls("/blaxel/app");
 ```
 
-```python Python {1}
-
-dir = await sandbox.fs.ls(f"/Users/{user}/Downloads")
-
-assert dir.files and len(dir.files) >= 1, "Directory is empty"
-
+```python Python
+result = await sandbox.fs.ls("/blaxel/app")
+directories = result.subdirectories
+files = result.files
 ```
 
 </CodeGroup>
@@ -89,15 +75,11 @@ Read a file from a specific filepath:
 <CodeGroup>
 
 ```typescript TypeScript
-
-const content = await sandbox.fs.read(`/Users/user/Downloads/test.txt`)
-
+const content = await sandbox.fs.read("/blaxel/app/config.json");
 ```
 
 ```python Python
-
-content = await sandbox.fs.read(f"/Users/user/Downloads/test.txt")
-
+content = await sandbox.fs.read("/blaxel/app/config.json")
 ```
 
 </CodeGroup>
@@ -109,15 +91,11 @@ Create a file in a specific path:
 <CodeGroup>
 
 ```typescript TypeScript
-
-await sandbox.fs.write(`/Users/user/Downloads/test.txt`, "Hello world");
-
+await sandbox.fs.write("/blaxel/app/config.json", "{}");
 ```
 
 ```python Python
-
-await sandbox.fs.write(f"/Users/user/Downloads/test.txt", "Hello world")
-
+await sandbox.fs.write("/blaxel/app/config.json", "{}")
 ```
 
 </CodeGroup>
@@ -130,29 +108,24 @@ You can write multiple files or directories simultaneously. The second path para
 
 <CodeGroup>
 
-```typescript TypeScript {9}
-
+```typescript TypeScript
 const files = [
-    { path: "file1.txt", content: "Content of file 1" },
-    { path: "file2.txt", content: "Content of file 2" },
-    { path: "subfolder/subfile1.txt", content: "Content of subfile 1" },
-    { path: "subfolder/subfile2.txt", content: "Content of subfile 2" },
-  ]
-
-await sandbox.fs.writeTree(files, "/blaxel/tmp")
-
+  { path: "src/app.js", content: "console.log('Hello');" },
+  { path: "src/utils.js", content: "export const helper = () => {};" },
+  { path: "package.json", content: '{"name": "my-app"}' },
+  { path: "docs/README.md", content: "# My App" }
+];
+await sandbox.fs.writeTree(files, "/blaxel/app");
 ```
 
 ```python Python
-
 files = [
-    {"path": "file1.txt", "content": "Content of file 1"},
-    {"path": "file2.txt", "content": "Content of file 2"},
-    {"path": "subfolder/subfile1.txt", "content": "Content of subfile 1"},
-    {"path": "subfolder/subfile2.txt", "content": "Content of subfile 2"},
+    {"path": "src/app.py", "content": "print('Hello')"},
+    {"path": "src/utils.py", "content": "def helper(): pass"},
+    {"path": "requirements.txt", "content": "flask==2.0.1"},
+    {"path": "docs/README.md", "content": "# My App"}
 ]
-await sandbox.fs.write_tree(files, "/blaxel/tmp")
-
+await sandbox.fs.write_tree(files, "/blaxel/app")
 ```
 
 </CodeGroup>
@@ -163,19 +136,15 @@ Write binary content to a file in the sandbox filesystem:
 
 <CodeGroup>
 
-```typescript TypeScript {5}
-
-// Read archive.zip as binary
-const archiveBuffer = await fs.readFile("archive.zip")
-await sandbox.fs.writeBinary("/blaxel/archive.zip", archiveBuffer)
-
+```typescript TypeScript
+const binaryData = fs.readFileSync("./image.png");
+await sandbox.fs.writeBinary("/blaxel/app/assets/image.png", binaryData);
 ```
 
 ```python Python
-
-with open("archive.zip", "rb") as f:
-    await sandbox.fs.write_binary("/blaxel/archive.zip", f.read())
-
+with open("image.png", "rb") as f:
+    binary_data = f.read()
+    await sandbox.fs.write_binary("/blaxel/app/assets/image.png", binary_data)
 ```
 
 </CodeGroup>
@@ -194,15 +163,11 @@ Copy a file from a path to another path:
 <CodeGroup>
 
 ```typescript TypeScript
-
-await sandbox.fs.cp(`/blaxel/test.txt`, `/blaxel/private/test.txt`);
-
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json");
 ```
 
 ```python Python
-
-await sandbox.fs.cp(f"/blaxel/test.txt", f"/blaxel/private/test.txt")
-
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json")
 ```
 
 </CodeGroup>
@@ -214,15 +179,11 @@ Delete a file or directory by specifying its path:
 <CodeGroup>
 
 ```typescript TypeScript
-
-await sandbox.fs.rm(`/blaxel/test.txt`);
-
+await sandbox.fs.rm(`/blaxel/app/config.json`);
 ```
 
 ```python Python
-
-await sandbox.fs.rm(f"/blaxel/test.txt")
-
+await sandbox.fs.rm(f"/blaxel/app/config.json")
 ```
 
 </CodeGroup>
@@ -244,79 +205,30 @@ By default (when *withContent: false*), the events will only include metadata a
 <CodeGroup>
 
 ```typescript TypeScript
+// You can specify if you want the content of the files or not
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path, fileEvent.content)
+}, {
+  withContent: true
+});
 
-import { SandboxInstance } from "@blaxel/core";
+// Do file operations
 
-// Test the default watch functionality:
-async function testWatch(sandbox: SandboxInstance) {
-  try {
-    const user = process.env.USER;
-    const testDir = `/Users/${user}/Downloads/watchtest`;
-    const testFile = `/file.txt`;
+// At the end, close the watch handle
+handle.close();
+```
 
-    // Ensure correct type for fs
-    const fs = sandbox.fs;
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path, file_event.content)
 
-    // Clean up before test
-    try { await fs.rm(testDir, true); } catch {}
-    await fs.mkdir(testDir);
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, { "with_content": True })
 
-    // Watch without content
-    const events: string[] = []
-    const contents: string[] = []
-    const handle = fs.watch("/", (fileEvent) => {
-      events.push(fileEvent.op)
-      if (fileEvent.op === "WRITE") {
-        contents.push(fileEvent.content ?? "")
-      }
-    }, {
-      withContent: true
-    });
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await fs.write(testFile, "content");
+# Do file operations
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await fs.write(testFile, "new content");
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await fs.rm(testFile)
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    handle.close();
-
-    // Clean up after test
-    await fs.rm(testDir, true);
-
-    if (!events.includes("CREATE") || !events.includes("WRITE") || !events.includes("REMOVE")) {
-      throw new Error("Watch callback not consistent with expected events: " + events.join(", "));
-    }
-    if (!contents.includes("content") || !contents.includes("new content")) {
-      throw new Error("Watch callback not consistent with expected contents: " + contents.join(", "));
-    }
-    console.log("testWatch passed");
-  } catch (e) {
-    console.error("There was an error => ", e);
-  }
-}
-
-async function main() {
-  try {
-    const sandbox = await SandboxInstance.get("my-sandbox")
-    await testWatch(sandbox)
-  } catch (e) {
-    console.error("There was an error => ", e);
-  }
-}
-
-main()
-  .catch((err) => {
-    console.error("There was an error => ", err);
-    process.exit(1);
-  })
-  .then(() => {
-    process.exit(0);
-  })
-
+# At the end, close the watch handle
+handle["close"]()
 ```
 
 </CodeGroup>
@@ -327,21 +239,18 @@ Watch all sub-directories recursively with `/**`:
 
 <CodeGroup>
 
-```typescript TypeScript {4}
+```typescript TypeScript
+const handle = sandbox.fs.watch("/folder/**", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+});
 
-async function testWatchWithSubfolder(sandbox: SandboxInstance) {
-    const fs = sandbox.fs;
-    const handle = fs.watch("/folder/**", (fileEvent) => {
-      console.log(fileEvent)
-    }, {
-      ignore: ["folder/test2.txt"]
-    });
-    await fs.write("folder/folder2/test.txt", "content");
-    await fs.write("folder/test2.txt", "content");
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    handle.close();
-  }
+```
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
 
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/folder/**", watch_callback)
 ```
 
 </CodeGroup>
@@ -352,45 +261,22 @@ You can ignore changes in certain files or directories by providing an array of 
 
 <CodeGroup>
 
-```typescript TypeScript {9}
-
-// Test the watch functionality, ignoring of some files:
-async function testWatchWithIgnore(sandbox: SandboxInstance) {
-  const fs = sandbox.fs;
-  const handle = fs.watch("/", (fileEvent) => {
-    console.log(fileEvent)
-  }, {
-    withContent: true,
-    ignore: ["app/node_modules", "folder/test2.txt"]
-  });
-  await fs.write("folder/folder2/test.txt", "content");
-  await fs.write("folder/test2.txt", "content")
-  await fs.write("test2.txt", "content");
-  await fs.write("test3.txt", "content");
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  handle.close();
-}
-
-async function main() {
-  try {
-    const sandbox = await SandboxInstance.get("my-sandbox")
-    await testWatchWithIgnore(sandbox)
-  } catch (e) {
-    console.error("There was an error => ", e);
-  } 
-}
-
-main()
-  .catch((err) => {
-    console.error("There was an error => ", err);
-    process.exit(1);
-  })
-  .then(() => {
-    process.exit(0);
-  })
-
+```typescript TypeScript
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+}, {
+  ignore: ["/folder", "/folder_two/test2.txt"]
+});
 ```
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
 
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, {
+  "ignore": ["/folder", "/folder_two/test2.txt"]
+})
+```
 </CodeGroup>
 
 Specify `withContent: true` so the events include the actual file contents.

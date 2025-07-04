@@ -36,7 +36,7 @@ brew install blaxel
 
 <Accordion title="Install on Linux" icon="linux">
 
-Install Blaxel CLI by running the following command in a terminal (alternatives below):
+Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
 ```shell 
 curl -fsSL \
@@ -44,19 +44,28 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
-If you need to specify a version (e.g. v0.1.21):
+If you need a non-sudo alternative (**it will ask you questions to configure**):
+
+```shell 
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+
+```
+
+If you need to install a specific version (e.g. v0.1.21):
 
 ```shell 
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 BINDIR=/usr/local/bin sudo -E sh
+| VERSION=v0.1.21 sh
 ```
 
 </Accordion>
 
 <Accordion title="Install with cURL" icon="code">
 
-Install Blaxel CLI by running the following command in a terminal (alternatives below):
+Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
 ```shell 
 curl -fsSL \
@@ -64,12 +73,21 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
-If you need to specify a version (e.g. v0.1.21):
+If you need a non-sudo alternative (**it will ask you questions to configure**):
+
+```shell 
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+
+```
+
+If you need to install a specific version (e.g. v0.1.21):
 
 ```shell 
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 BINDIR=/usr/local/bin sudo -E sh
+| VERSION=v0.1.21 sh
 ```
 
 </Accordion>
@@ -117,19 +135,28 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
-If you need to specify a version (e.g. 0.1.21):
+If you need a non-sudo alternative:
+
+```shell 
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
 
 ```shell 
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 BINDIR=/usr/local/bin sudo -E sh
+| VERSION=v0.1.21 sh
 ```
 
 </Accordion>
 
 <Accordion title="Update with cURL" icon="code">
 
-Update Blaxel CLI by running the following command in a terminal (alternatives below):
+Update Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
 ```shell 
 curl -fsSL \
@@ -137,12 +164,21 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
 ```
 
-If you need to specify a version (e.g. 0.1.21):
+If you need a non-sudo alternative:
+
+```shell 
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
 
 ```shell 
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 BINDIR=/usr/local/bin sudo -E sh
+| VERSION=v0.1.21 sh
 ```
 
 </Accordion>

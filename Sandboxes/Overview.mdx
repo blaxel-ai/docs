@@ -10,7 +10,9 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
-They natively serve as **sandboxed environments for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+
+Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after one second of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes.
 
 ## Create a sandbox
 
@@ -36,57 +38,33 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 <CodeGroup>
 
 ```typescript TypeScript
-
 import { SandboxInstance } from "@blaxel/core";
 
-/// Start sandbox creation (exposing port 3000 for example)
+// Create a new sandbox
 const sandbox = await SandboxInstance.create({
-    metadata: {
-        name: "my-sandbox"
-    },
-    spec: {
-        runtime: {
-            memory: 4096,
-            image: "blaxel/prod-base:latest",
-            ports: [
-                {
-                    target: 3000,
-                    protocol: "HTTP",
-                }
-            ]
-        }
-    }
-})
+  name: "my-sandbox",
+  image: "blaxel/prod-base:latest",
+  memory: 4096,
+  ports: [{ target: 3000, protocol: "HTTP" }]
+});
 
-/// Wait for the sandbox to be deployed (for max 120 seconds, checking every 1 second)
-await sandbox.wait({ maxWait: 120000, interval: 1000 })
-
+// Wait for deployment
+await sandbox.wait();
 ```
 
 ```python Python
+from blaxel.core import SandboxInstance
 
-import asyncio
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/prod-base:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000 }]
+})
 
-from blaxel.core.sandbox import SandboxInstance
-
-async def main():
-    configuration = {
-        "metadata": {
-            "name": "my-sandbox",
-        },
-        "spec": {
-            "runtime": {
-                "image": "blaxel/prod-base:latest",
-                "memory": 4096,
-            }
-        },
-    }
-    sandbox = await SandboxInstance.create(configuration)
-    await sandbox.wait()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
+# Wait for deployment
+await sandbox.wait()
 ```
 
 </CodeGroup>
@@ -95,7 +73,7 @@ While `SandboxInstance.create()` waits for the creation to be acknowledged, the 
 
 ### Images
 
-Custom images are currently not supported. [Contact us](https://blaxel.ai/contact?purpose=custom_sandboxes&origin=docs) to host your own image.
+Custom sandbox images is in private preview and will be officially supported soon. Here is the [preview guide](https://www.notion.so/Sandbox-Custom-Image-21847e47b1ea803d86dbc6febc6b30ac?pvs=21) to create a sandbox with a custom Docker image. 
 
 ## Retrieve an existing sandbox
 
@@ -104,20 +82,22 @@ To reconnect to an existing sandbox, simply provide its name:
 <CodeGroup>
 
 ```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox")
-
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox");
 ```
 
 ```python Python
+from blaxel.core import SandboxInstance
 
+# Connect to existing sandbox
 sandbox = await SandboxInstance.get("my-sandbox")
-
 ```
 
 </CodeGroup>
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/blob/main/integrationtest/sandbox.py).</Tip>
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
 
 ### Create if not exists
 
@@ -126,40 +106,46 @@ This helper function either retrieves an existing sandbox or creates a new one i
 <CodeGroup>
 
 ```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
+// Create sandbox if it doesn't exist
 const sandbox = await SandboxInstance.createIfNotExists({
-    metadata: {
-        name: "my-sandbox"
-    },
-    spec: {
-        runtime: {
-            memory: 4096,
-            image: "blaxel/prod-base:latest"
-        }
-    }
-})
+  name: "my-sandbox",
+  image: "blaxel/prod-base:latest",
+  memory: 4096,
+  ports: [{ target: 3000, protocol: "HTTP" }]
+});
 
+await sandbox.wait();
 ```
 
 ```python Python
+from blaxel.core import SandboxInstance
 
-configuration = {
-    "metadata": {
-        "name": "my-sandbox",
-    },
-    "spec": {
-        "runtime": {
-            "image": "blaxel/prod-base:latest",
-            "memory": 4096,
-        }
-    },
-}
-sandbox = await SandboxInstance.create_if_not_exists(configuration)
+# Create sandbox if it doesn't exist
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "my-sandbox",
+  "image": "blaxel/prod-base:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000, "protocol": "HTTP" }]
+})
+
 await sandbox.wait()
-
 ```
 
 </CodeGroup>
+
+## Connect to a sandbox with a terminal
+
+You can explore the contents of a sandbox with a terminal-like interface by running:
+
+```bash
+bl connect sandbox your-sandbox-name
+```
+
+![image.png](Overview/image.png)
+
+While not a true SSH connection, this interface lets you list and manage files, and execute commands as you would in a traditional terminal.
 
 ## MCP server for a sandbox
 
@@ -205,14 +191,14 @@ Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported fram
 <CodeGroup>
 
 ```typescript TypeScript
-import { blTools } from "@blaxel/langgraph";
+import { blTools } from "@blaxel/vercel";
 
 const tools = await blTools([`sandbox/${sandboxName}`])
 
 ```
 
 ```python Python
-from blaxel.tools import bl_tools
+from blaxel.langgraph import bl_tools
 
 tools = await bl_tools([f"sandbox/{sandbox_name}"])
 
@@ -222,9 +208,9 @@ tools = await bl_tools([f"sandbox/{sandbox_name}"])
 
 [Read more documentation](../Functions/Invoke-functions) on connecting to the MCP server directly from your code.
 
-## Overview of sandbox lifecycle
+## Sandbox statuses
 
-Blaxel sandboxes start from `standby` to `active` in **under 20 milliseconds**, and scale back down top `standby` **after one second of inactivity**, maintaining their previous state after scaling down.
+Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down top `standby` **after one second of inactivity**, maintaining their previous state after scaling down.
 
 Here is the summary on the possible statuses for a sandbox:
 
