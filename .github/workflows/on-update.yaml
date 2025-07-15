@@ -1,0 +1,17 @@
+name: On Update documentation
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  refresh-context7:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh doc
+        run: |
+          curl 'https://context7.com/api/refresh-library' \
+            -H 'content-type: application/json' \
+            --data-raw '{"libraryName":"/blaxel-ai/docs"}'
