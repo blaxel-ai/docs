@@ -201,6 +201,33 @@ First make sure WSL (Windows Subsystem for Linux) is installed if not already. T
 
 </AccordionGroup>
 
+## Shell autocompletion
+
+To enable shell autocompletion for Blaxel CLI commands, run one of the following:
+
+<CodeGroup>
+
+```zsh zsh
+echo 'eval "$(bl completion zsh)"' >> ~/.zshrc
+```
+
+```bash bash
+echo 'eval "$(bl completion bash)"' >> ~/.bashrc
+```
+
+```fish fish
+echo 'bl completion fish' > ~/.config/fish/completions/uv.fish
+```
+
+```powershell powershell
+if (!(Test-Path -Path $PROFILE)) {
+New-Item -ItemType File -Path $PROFILE -Force
+}
+Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | Invoke-Expression'
+```
+
+</CodeGroup>
+
 ## Get started
 
 To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using this command. Find your **workspace ID in the top left sidebar corner** of Blaxel Console:

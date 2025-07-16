@@ -30,6 +30,12 @@ wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
 
 ```
 
+```http Execute a job
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
+
+```
+
 </CodeGroup>
 
 Showing the full request, with the input payload:
@@ -47,10 +53,18 @@ curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
 
 ```http Query model API (example on a chat completion model)
 
-curl -X POST "run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
+curl -X POST "https://run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
 -H 'Content-Type: application/json' \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d '{"messages":[{"role":"user","content":"Hello!"}]}'
+
+```
+
+```http Execute a job
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+'{"tasks":[{"my_arg":"my_value"}]}’
 
 ```
 
