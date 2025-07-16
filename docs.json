@@ -78,13 +78,14 @@
             ]
           },
           {
-            "group": "Sandboxes \ud83c\udd95",
+            "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
               "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
+              "Sandboxes/Ports",
               "Sandboxes/Preview-url",
               "Sandboxes/Sessions"
             ]
@@ -213,7 +214,7 @@
         ]
       },
       {
-        "tab": "Sandbox API Reference \ud83c\udd95",
+        "tab": "Sandbox API Reference",
         "openapi": "https://raw.githubusercontent.com/blaxel-ai/sandbox/refs/heads/main/sandbox-api/docs/openapi.yml"
       },
       {
