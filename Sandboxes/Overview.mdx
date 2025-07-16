@@ -10,15 +10,13 @@ description: 'Lightweight virtual machines where both you and your agents can ru
 
 Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
 
-They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code. This makes sandboxes ideal for codegen agents that need access to an operating system to run commands or code, without compromising security and for other users. Beyond code generation, they can just be used as general-purpose VMs for any kind of workload.
+They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code — making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
 
 Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after one second of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes.
 
 ## Create a sandbox
 
 Create a new sandbox using the Blaxel SDK by specifying a name, the image to use and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel. 
-
-<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
 
 <Accordion title="Set up authentication to Blaxel">
 
@@ -72,6 +70,8 @@ await sandbox.wait()
 While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel. 
 
 ### Images
+
+<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
 
 Custom sandbox images is in private preview and will be officially supported soon. Here is the [preview guide](https://www.notion.so/Sandbox-Custom-Image-21847e47b1ea803d86dbc6febc6b30ac?pvs=21) to create a sandbox with a custom Docker image. 
 
@@ -235,8 +235,14 @@ Execute and manage processes in sandboxes.
 <Card title="File system operations" icon="file-lines" href="/Sandboxes/Filesystem">
 Manage directories and files in sandboxes.
 </Card>
+<Card title="Tools for AI codegen" icon="file-lines" href="/Sandboxes/Codegen-tools">
+Manage codebases with tools specifically designed for code generation.
+</Card>
 <Card title="Log streaming" icon="table-list" href="/Sandboxes/Log-streaming">
 Access logs generated in a sandbox.
+</Card>
+<Card title="Ports" icon="network-wired" href="/Sandboxes/Ports">
+Expose and connect to ports of a sandbox.
 </Card>
 <Card title="Preview in real-time" icon="eye" href="/Sandboxes/Preview-url">
 Render code in real-time via a direct preview URL.
