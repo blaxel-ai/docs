@@ -230,15 +230,17 @@ Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | I
 
 ## Get started
 
-To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using this command. Find your **workspace ID in the top left sidebar corner** of Blaxel Console:
+To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using this command:
 
 ```bash
-bl login <<WORKSPACE-ID>>
+bl login
 ```
 
-You will be prompted to finish login using either an [API key](../Security/Access-tokens), or through your browser.
+In case you have multiple workspaces, the one you logged in to will be used automatically in every command you used with our CLI.
 
-Set a workspace to use as a context for the session by using the following command:
+You can login to as much workspace as you want
+
+To set your context to a  different workspace you already logged in to, use the following command:
 
 ```bash
 bl workspaces your-workspace

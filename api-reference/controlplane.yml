@@ -1412,6 +1412,23 @@ components:
         name:
           type: string
           description: Location name
+    PublicIp:
+      type: object
+      properties:
+        ipv4:
+          type: array
+          description: List of public ipv4 addresses
+          items:
+            type: string
+        ipv6:
+          type: array
+          description: List of public ipv6 addresses
+          items:
+            type: string
+    PublicIps:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/PublicIp'
     Repository:
       type: object
       description: Repository
@@ -3407,6 +3424,23 @@ paths:
       summary: List pending invitations
       tags:
       - invitations
+  /publicIps:
+    get:
+      description: Returns a list of all public ips used in Blaxel..
+      operationId: ListPublicIps
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicIps'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - admin
+      summary: List public ips
+      tags:
+      - publicIps:list
   /sandbox/hub:
     get:
       operationId: ListSandboxHubDefinitions

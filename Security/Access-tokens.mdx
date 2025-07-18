@@ -22,11 +22,9 @@ These short-lived tokens are based on the [OAuth 2.0](https://oauth.net/2/) auth
 
 ### Use OAuth tokens in the CLI
 
-When using the `bl login YOUR-WORKSPACE`  command, you will be asked to authenticate using one of two methods: via **the Blaxel console (OAuth 2.0 Device mode**), or via an API key. The former option makes use of short-lived tokens. 
+Use `bl login`  command.
 
-![terminal-login.png](Access-tokens/terminal-login.png)
-
-Choosing “***device***” (the OAuth option), you will be redirected to the Blaxel console to finish logging in. Sign in using your Blaxel account if you aren’t already. 
+You will then be redirected to the Blaxel console to finish logging in. Sign in using your Blaxel account if you aren’t already. 
 
 Once this is done, return to your terminal: the login will be finalized and you will then be able to run CLI commands. 
 
@@ -122,8 +120,11 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'Authorization: Bearer YOUR-API-KEY'
 ```
 
-**To authenticate in the CLI,** use the `bl login` command. You will be asked to authenticate using one of two methods: via the Blaxel console (OAuth 2.0 device mode), or **via an API key**. Choose the latter, and you will be prompted to enter the API key generated for your user or service account.
+**To authenticate in the CLI** use this command
 
-![terminal-login.png](Access-tokens/terminal-login%201.png)
+```toml
+export BL_API_KEY=YOUR-API-KEY
+bl login YOUR-WORKSPACE
+```
 
 You will then be authenticated in this terminal session.
