@@ -130,7 +130,9 @@ Start a batch job execution by [calling the inference API for your batch job](..
 
 ```http Execute a job
 
-POST https://run.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
+curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+'{"tasks":[{"my_arg":"my_value"}]}’
 
 ```
 
