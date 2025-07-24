@@ -1415,6 +1415,9 @@ components:
     PublicIp:
       type: object
       properties:
+        description:
+          type: string
+          description: Description of the region/location
         ipv4:
           type: array
           description: List of public ipv4 addresses

@@ -18,12 +18,12 @@ An *AI agent* is any application that leverages generative AI models to take aut
 
 <Accordion title="Some examples of agents include…">
 
-- **Conversational agents** that are able to take action in the world while keeping a human in the loop for activation or validation: for example an AI agent for an e-commerce website, assisting consumers with purchases and refunds with a natural language interface.
-- **Retrieval Augmented Generation** **(RAG) agents**: for example, a chatbot assistant for a SaaS that can better answer consumers’ queries by autonomously accessing the software documentation and reference
-- **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured data from sources, uses an LLM to turn this raw data into structured data, and insert it back into a database
-- **Automated agents** that automate machine-to-machine workflows with AI: for example a system that retrieves traffic video feeds in real-time, detects the presence of accidents, and if so contacts emergency services automatically by generating and sending a detailed report.
+- **Conversational agents** that are able to take action in the world while keeping a human in the loop for activation or validation: for example code generation agents with real-time previews.
+- **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured video files and uses an AI model to extract structured data then act on it.
+- **RAG agents**: for example, a chatbot assistant that can better answer consumers’ queries by autonomously accessing relevant documentation or database.
+- **Autonomous system agents** that handle machine-to-machine workflows: like a smart traffic monitoring system that analyzes video feeds, detects accidents in real-time, and automatically dispatches emergency services with AI-generated incident reports.
 
-Blaxel provides developer tools for running such production-grade multi-agents that can use tools, LLMs and code sandboxes ; and offers infrastructure to run these agents on a global network that makes them run fast and reliably.
+Blaxel provides cloud services that give production-grade multi-agents their own computing environments including code sandboxes, tool servers, and LLMs. It offers infrastructure to run these agents on a global network that makes them run fast and reliably.
 
 </Accordion>
 
@@ -33,7 +33,7 @@ This portal provides comprehensive documentation and API, SDK and CLI reference 
 
 Blaxel is a cloud designed for agentic AI. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build agentic systems exactly the way you want.
 
-Blaxel consists of modular services that are engineered to work seamlessly together — but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power and ship agents.
+Blaxel consists of modular services that are engineered to work seamlessly together — but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power agents.
 
 ### The building blocks
 
@@ -45,10 +45,10 @@ At the heart of Blaxel is our flagship **Agents Hosting** service. Agents Hostin
 
 The rest of Blaxel’s cloud services include:
 
+- **Sandboxes** - MicroVMs with near-instant cold starts that provide agents with their own compute runtime to execute code or run commands.
+- **Batch Jobs** - Scalable compute engine designed for agents to schedule and execute many AI processing tasks in parallel in the background
 - **MCP Servers Hosting** - Deploy custom tool servers on a fast-starting infrastructure to extend your agents' capabilities.
 - **Model Gateway** - Intelligent routing layer to LLM providers with built-in telemetry, token cost control, and fallbacks capabilities
-- **Sandboxes** - Near instant-starting micro VMs that provide agents with their own compute runtime to execute code or run commands.
-- **Batch Jobs** - Scalable compute engine designed for agents to schedule and execute many AI processing tasks in parallel in the background
 
 ### The Blaxel method
 
