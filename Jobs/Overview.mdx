@@ -122,7 +122,7 @@ bl deploy
 
 ### Run a job
 
-You can run a job via API or using Blaxel CLI. 
+You can run a job via API or using Blaxel CLI, or schedule it to run periodically via a cron.
 
 **API**
 
@@ -181,13 +181,26 @@ bl run job jobs-ts --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
 
 You can cancel a job execution from the Blaxel Console or via API.
 
+**Cron schedule**
+
+Set a job on a cron schedule by adding the following to the `blaxel.toml` configuration file (read full reference on *blaxel.toml* down below):
+
+```toml
+[[triggers]]
+id = "cron-trigger"
+type = "cron"
+
+[triggers.configuration]
+schedule = "0 * * * *"
+```
+
 ### Retries
 
 You can set a maximum number of **retries per task** in the job definition. Check out the reference for `blaxel.toml` configuration file down below.
 
 ### Deploy with a Dockerfile
 
-While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your agent using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
+While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your workload using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
 
 <Card title="Deploy using Dockerfile" icon="folder-tree" href="/Agents/Deploy-dockerfile">
 Deploy resources using a custom Dockerfile.
@@ -266,9 +279,34 @@ memory = 1024
 maxConcurrentTasks = 10
 timeout = 900
 maxRetries=0
+
+[[triggers]]
+  id = "trigger-my-job"
+  type = "http"
+[triggers.configuration]
+  path = "jobs/my-job/execute"
+  retry = 1
+
+[[triggers]]
+id = "cron-trigger"
+type = "cron"
+
+[triggers.configuration]
+schedule = "0 * * * *"
+tasks = [
+  { p_id = "1234", arg2 = "foo" },
+  { p_id = "5678", arg2 = "bar" }
+]
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `policies` fields is also optional. It allow you to specify a Blaxel [policy](../Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
 - `[env]` section defines environment variables that the job can access via the SDK. Note that these are NOT secrets.
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
+- `[tasks]` sections allows to specify
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to schedule job executions.
+    - `type = "http"` lets you create an HTTP endpoint to execute the job
+    - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
+        - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
+    
+    A private HTTP endpoint is always created by default, even if you don’t define any trigger here.

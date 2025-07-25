@@ -293,6 +293,10 @@ You can set custom parameters for an agent deployment (e.g. specify the agent na
 
 Read the file structure section down below for more details.
 
+<Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
+</Card>
+
 ## Instrumentation
 
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply require the SDK in your project's entry point.
@@ -408,7 +412,7 @@ memory = 1024
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints. You can also make them either private (default) or public. 
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). 
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 ## Troubleshooting

@@ -20,7 +20,7 @@ You can quickly **initialize a new MCP server from scratch** by using CLI comman
 bl create-mcp-server my-mcp
 ```
 
-You can test it by running the following command which launches both the server and a web application ([MCP Inspector](https://github.com/modelcontextprotocol/inspector), managed by MCP) locally for testing the server’s capabilities during development. 
+You can test it by running the following command which launches **both** the MCP server and a web application to query it ([MCP Inspector](https://github.com/modelcontextprotocol/inspector), managed by MCP) locally.
 
 <CodeGroup>
 
@@ -131,26 +131,8 @@ if not env["BL_DEBUG"]:
 
 </AccordionGroup>
 
-## Deploy your MCP server
-
-Just run `bl deploy` in the folder of your project, as explained [in this guide](Deploy-a-function).
-
-```bash
-bl deploy
-```
-
-You can **configure the server deployment** (e.g. specify the MCP server name, etc.) in the `blaxel.toml` file at the root of your directory. Read the file structure section down below for more details.
-
 <Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
 Read our complete guide for deploying your custom MCP server on Blaxel.
-</Card>
-
-### Deploy with a Dockerfile
-
-While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your agent using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
-
-<Card title="Deploy using Dockerfile" icon="folder-tree" href="/Agents/Deploy-dockerfile">
-Deploy resources using a custom Dockerfile.
 </Card>
 
 ## Template directory reference
@@ -215,6 +197,6 @@ The remaining fields in *package.json* follow standard JavaScript/TypeScript pro
 </Accordion>
 </AccordionGroup>
 
-<Card title="Connect to your MCP server" icon="bolt" href="/Functions/Invoke-a-function">
-Read our complete guide for connecting to and invoking an MCP server.
+<Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
+Read our complete guide for deploying your custom MCP server on Blaxel.
 </Card>

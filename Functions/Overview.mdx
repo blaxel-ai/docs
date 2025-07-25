@@ -8,9 +8,7 @@ description: 'Deploy MCP servers as serverless APIs to equip your agents with to
 
 ---
 
-MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). 
-
-MCP servers are designed to **equip agents with tools** to interact with the world. 
+MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to **equip agents with tools** to interact with the world. 
 
 ## Essentials
 
@@ -30,7 +28,7 @@ Blaxel SDK allows to r**etrieve the tools from an MCP server in your code**. Whe
 
 Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature cloud deployment capabilities.
 
-At this time, MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
+MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
 
 <Info>For developers interested in the technical details, our implementation is available open-source through [Blaxel's Supergateway](https://github.com/blaxel-ai/supergateway) and [Blaxel's SDK](https://github.com/blaxel-ai/toolkit/blob/main/sdk-ts/src/functions/mcp.ts).</Info>
 
@@ -48,7 +46,7 @@ Read our guide for deploying your custom MCP server to Blaxel.
 </Card>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run invocation requests on your MCP server. 
+Learn how to run tool calls through your MCP server. 
 </Card>
 
 ## Examples
