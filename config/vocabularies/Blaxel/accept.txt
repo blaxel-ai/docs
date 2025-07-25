@@ -1,0 +1,16 @@
+[Bb]laxel
+checkpointer
+scaffolded
+[Cc]opilotkit
+[Aa]gentic
+serverless
+sandboxed
+VM
+Agentics
+[Tt]oolprint
+[Zz]endesk
+[Qq]drant
+[Ee]xa
+[Ss]torying
+sudo
+withSpan
