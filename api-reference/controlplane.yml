@@ -1418,12 +1418,12 @@ components:
         description:
           type: string
           description: Description of the region/location
-        ipv4:
+        ipv4Cidrs:
           type: array
           description: List of public ipv4 addresses
           items:
             type: string
-        ipv6:
+        ipv6Cidrs:
           type: array
           description: List of public ipv6 addresses
           items:
@@ -2175,6 +2175,14 @@ components:
         schedule:
           type: string
           description: The schedule of the trigger, cron expression * * * * *
+        tasks:
+          type: array
+          description: The tasks configuration of the cronjob
+          items:
+            $ref: '#/components/schemas/TriggerConfigurationTask'
+    TriggerConfigurationTask:
+      type: object
+      description: The tasks configuration of the cronjob
     Triggers:
       type: array
       description: Triggers to use your agent

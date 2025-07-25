@@ -109,7 +109,8 @@
                 "pages": [
                   "Functions/Integrate-in-apps/Toolprint"
                 ]
-              }
+              },
+              "Functions/oauth-flow-mcp"
             ]
           },
           {
@@ -130,6 +131,7 @@
             "group": "Integrations",
             "pages": [
               "Integrations",
+              "oauth-flow",
               {
                 "group": "Model providers integrations",
                 "pages": [
