@@ -87,7 +87,8 @@
               "Sandboxes/Log-streaming",
               "Sandboxes/Ports",
               "Sandboxes/Preview-url",
-              "Sandboxes/Sessions"
+              "Sandboxes/Sessions",
+              "Sandboxes/Templates"
             ]
           },
           {
@@ -109,7 +110,8 @@
                 "pages": [
                   "Functions/Integrate-in-apps/Toolprint"
                 ]
-              }
+              },
+              "Functions/oauth-flow-mcp"
             ]
           },
           {
@@ -130,6 +132,7 @@
             "group": "Integrations",
             "pages": [
               "Integrations",
+              "oauth-flow",
               {
                 "group": "Model providers integrations",
                 "pages": [
