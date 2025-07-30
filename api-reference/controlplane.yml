@@ -1418,12 +1418,12 @@ components:
         description:
           type: string
           description: Description of the region/location
-        ipv4:
+        ipv4Cidrs:
           type: array
           description: List of public ipv4 addresses
           items:
             type: string
-        ipv6:
+        ipv6Cidrs:
           type: array
           description: List of public ipv6 addresses
           items:
@@ -1768,6 +1768,10 @@ components:
           description: The env variables to set in the deployment. Should be a list
             of Kubernetes EnvVar types
           items: {}
+        expires:
+          type: string
+          description: The expiration date for the deployment in ISO 8601 format -
+            2024-12-31T23:59:59Z
         generation:
           type: string
           description: The generation of the deployment
@@ -1808,6 +1812,9 @@ components:
         timeout:
           type: integer
           description: The timeout for the deployment in seconds
+        ttl:
+          type: string
+          description: The TTL for the deployment in seconds - 30m, 24h, 7d
         type:
           type: string
           description: The type of origin for the deployment (hf_private_endpoint,
@@ -2175,6 +2182,14 @@ components:
         schedule:
           type: string
           description: The schedule of the trigger, cron expression * * * * *
+        tasks:
+          type: array
+          description: The tasks configuration of the cronjob
+          items:
+            $ref: '#/components/schemas/TriggerConfigurationTask'
+    TriggerConfigurationTask:
+      type: object
+      description: The tasks configuration of the cronjob
     Triggers:
       type: array
       description: Triggers to use your agent

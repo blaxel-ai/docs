@@ -1,0 +1,273 @@
+---
+
+title: 'Templates'
+
+description: 'Create sandboxes from customized templates'
+
+---
+
+Sandbox templates allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
+
+Templates are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR reviews agent, etc.).
+
+## What are sandbox templates?
+
+Sandbox templates are pre-configured images that serve as blueprints for creating sandboxes. Each template includes:
+
+- **Base environment**: Operating system and runtime configurations
+- **Tools**: Languages, frameworks, and development tools
+- **Configuration**: Environment variables, startup scripts, …
+- **Resources**: Memory allocated
+
+When you create a sandbox from a template, Blaxel provisions a new instance with all the specifications defined in that template.
+
+### How sandbox templates work
+
+1. **Initial setup**: Follow this guide to create your sandbox template for the first time. This process also creates your first sandbox instance using this template.
+2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations.
+3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
+4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
+
+## Create a sandbox template
+
+### 1. Initialize a template
+
+Start by creating a new sandbox template using the Blaxel CLI:
+
+```bash
+bl create-sandbox mytemplate
+```
+
+This creates a new directory with the essential template files:
+
+```
+mytemplate/
+├── blaxel.toml        # Template configuration
+├── Makefile           # Build commands
+├── Dockerfile         # Defines the sandbox environment
+└── entrypoint.sh      # Initialization script
+```
+
+### 2. Customize the Dockerfile
+
+The Dockerfile is the heart of your template. It defines what will be available in your sandbox environment.
+
+### Basic template structure
+
+```docker
+# Choose a base image
+FROM node:22-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy sandbox API (required)
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Install system dependencies
+RUN apk update && apk add --no-cache \
+	git curl python3 make g++ netcat-openbsd \
+  && rm -rf /var/cache/apk/*
+
+# Copy and set up entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+**Always include** the *sandbox-api* binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
+
+### 3. Configure template settings
+
+The `blaxel.toml` file defines your template’s runtime configuration:
+
+```toml
+name = "mytemplate"
+type = "sandbox"
+description = "Full-stack development environment with Node.js and Python"
+
+[runtime]
+generation = "mk3"        # Only available on Mk3 infrastructure generation
+memory = 8192             # 8GB RAM
+
+# Define exposed ports
+[[runtime.ports]]
+name = "dev-server"
+target = 3000
+protocol = "tcp"
+[[runtime.ports]]
+name = "another-api"
+target = 8888
+protocol = "tcp"
+
+# Set environment variables
+[env]
+NODE_ENV = "development"
+PYTHON_ENV = "development"
+```
+
+### 4. Define initialization
+
+The `entrypoint.sh` script runs when a sandbox is created from your template:
+
+```bash
+#!/bin/sh
+
+# Start the sandbox API (required)
+/usr/local/bin/sandbox-api &
+
+# Wait for sandbox API to be ready
+echo "Waiting for sandbox API..."
+while ! nc -z localhost 8080; do
+  sleep 0.1
+done
+
+echo "Sandbox API ready"
+
+# Initialize your environment
+echo "Setting up development environment..."
+
+# Example: Start a development server in the background
+if [ -f /app/package.json ]; then
+    cd /app
+    npm install
+    # Execute curl command, we execute it through the sandbox-api so that you can access logs,
+    # process status and everything you can do with the sandbox api
+    echo "Running Next.js dev server..."
+    curl http://localhost:8080/process -X POST -d '{"workingDir": "/app", "command": "npm run dev", "waitForCompletion": false}' -H "Content-Type: application/json"
+fi
+
+# Keep the container running
+wait
+```
+
+### 5. Build and test locally
+
+Before creating the template on Blaxel, test it locally:
+
+```bash
+# Build the Docker image
+make build
+
+# Run locally to test
+make run
+
+# Access your sandbox-api on exposed ports
+# e.g., http://localhost:8080
+# Example: curl http://localhost:8080/process
+```
+
+### 6. Deploy the template
+
+Once satisfied with your configuration, create the template on Blaxel:
+
+```bash
+bl deploy
+```
+
+This will:
+1. Build your Docker image
+2. Push it to Blaxel’s registry
+3. Return an image ID you can use for creating sandboxes
+
+You can monitor the template creation:
+
+```bash
+bl get sandbox mytemplate --watch
+```
+
+## Use a template
+
+Once your template is created, spawn new sandboxes instantly by using the image ID:
+
+```docker
+# Retrieve your IMAGE_ID
+bl get sandboxes mytemplate -ojson | jq -r '.[0].spec.runtime.image'
+```
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox-from-template",
+  image: "IMAGE_ID",
+  memory: 4096,
+  ports: [{ name: "nextjs-dev", target: 3000 }, { name: "another-api", target: 8888 }]
+});
+
+// Wait for deployment
+await sandbox.wait();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox-from-template",
+  "image": "IMAGE_ID",
+  "memory": 4096,
+  "ports": [{ "name": "nextjs-dev", "target": 3000 }, { "name": "another-api", "target": 8888 }]
+})
+
+# Wait for deployment
+await sandbox.wait()
+```
+
+</CodeGroup>
+
+## Update a template
+
+To update an existing template:
+
+1. Modify your Dockerfile or configuration
+2. Rebuild locally to test changes
+3. Deploy the new version:
+
+```bash
+bl deploy
+```
+
+The new revision becomes available while the old one remains accessible.
+
+## Best practices
+
+### 1. Optimize for cold starts
+
+- Use smaller base images (Alpine when possible)
+- Minimize layers in Dockerfile
+- Pre-install only essential packages
+- Defer optional installations to runtime
+
+### 2. Cache dependencies
+
+```docker
+# Good: Cache package installations
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+
+# Bad: Invalidates cache on any file change
+COPY . .
+RUN npm install
+```
+
+### 3. Security considerations
+
+- Don’t include secrets in templates
+- Use Blaxel’s secrets management for sensitive data
+- Keep base images updated
+- Scan for vulnerabilities regularly
+
+### 4. Resource optimization
+
+Choose appropriate resources for your use case:
+
+| Use Case | Memory |
+| --- | --- |
+| Light development | 2GB |
+| Small web application | 4GB |
+| Full-stack web | 8GB |
