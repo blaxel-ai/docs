@@ -203,3 +203,31 @@ preview = await sandbox.previews.create_if_not_exists({
 })
 ```
 </CodeGroup>
+
+## Troubleshooting
+
+### Cannot hot-reload on Webpack preview
+
+If you're running a Webpack server and can't connect to it via WebSocket from your client (for hot reloading the preview), the issue is likely that you're trying to connect to the same port you use in local development—but the preview URL is already pointing to a different port on your sandbox.
+
+To fix this, add a conditional in the `webSocketURL` of your `webpack/config.dev.js` to handle the different ports:
+
+```jsx
+///... Rest of webpack/config.dev.js
+
+module.exports = {
+  devServer: {
+    host: "::",
+    port: 3000,
+    allowedHosts: [".bl.run", ".beamlit.net", "localhost", "127.0.0.1"],
+    client: {
+      webSocketURL: {
+        port: process.env.BL_CLOUD === "true" ? 443 : 3000,
+      },
+    },
+    headers: {
+      ...
+    },
+  },
+  /// ... Rest of webpack/config.dev.js
+```
