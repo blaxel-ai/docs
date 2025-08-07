@@ -49,22 +49,8 @@ components:
           description:
             type: string
             description: Description, small description computed from the prompt
-          functions:
-            $ref: '#/components/schemas/FunctionsList'
-          knowledgebase:
-            type: string
-            description: Knowledgebase Name
-          model:
-            type: string
-            description: Model name
-          prompt:
-            type: string
-            description: Prompt, describe what your agent does
           repository:
             $ref: '#/components/schemas/Repository'
-          storeId:
-            type: string
-            description: Store id
           triggers:
             $ref: '#/components/schemas/Triggers'
     ApiKey:
@@ -196,6 +182,57 @@ components:
         name:
           type: string
           description: Country code
+    CustomDomain:
+      type: object
+      description: |-
+        Custom domain for preview deployments
+        The custom domain represents a base domain (e.g., example.com) that will be used
+        to serve preview deployments. Each preview will be accessible at a subdomain:
+        <preview-id>.preview.<base-domain> (e.g., abc123.preview.example.com)
+      properties:
+        metadata:
+          $ref: '#/components/schemas/CustomDomainMetadata'
+        spec:
+          $ref: '#/components/schemas/CustomDomainSpec'
+    CustomDomainMetadata:
+      type: object
+      description: Custom domain metadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Display name for the custom domain
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Domain name (e.g., "example.com")
+          workspace:
+            type: string
+            description: Workspace name
+    CustomDomainSpec:
+      type: object
+      description: Custom domain specification
+      properties:
+        cnameTarget:
+          type: string
+          description: CNAME target for the domain
+        lastVerifiedAt:
+          type: string
+          description: Last verification attempt timestamp
+        status:
+          type: string
+          description: Current status of the domain (pending, verified, failed)
+        txtRecords:
+          type: object
+          description: Map of TXT record names to values for domain verification
+          additionalProperties:
+            type: string
+        verificationError:
+          type: string
+          description: Error message if verification failed
     Entrypoint:
       type: object
       description: Entrypoint of the artifact
@@ -349,11 +386,6 @@ components:
               $ref: '#/components/schemas/FunctionKit'
           schema:
             $ref: '#/components/schemas/FunctionSchema'
-    FunctionsList:
-      type: array
-      items:
-        type: string
-        description: Function name
     HistogramBucket:
       type: object
       description: Histogram bucket
@@ -645,16 +677,6 @@ components:
       - properties:
           triggers:
             $ref: '#/components/schemas/Triggers'
-    JobsChart:
-      description: Jobs chart
-      properties:
-        failed:
-          $ref: '#/components/schemas/JobsChartValue'
-          description: Failed
-        success:
-          $ref: '#/components/schemas/JobsChartValue'
-          description: Success
-      type: object
     JobsChartValue:
       type: object
       description: Jobs CPU usage
@@ -665,22 +687,6 @@ components:
         value:
           type: number
           description: Metric value
-    JobsExecutions:
-      description: Jobs executions
-      properties:
-        failed:
-          description: Failed executions
-          type: integer
-        running:
-          description: Running executions
-          type: integer
-        success:
-          description: Success executions
-          type: integer
-        total:
-          description: Total executions
-          type: integer
-      type: object
     JobsNetworkChart:
       type: object
       description: Jobs chart
@@ -710,22 +716,6 @@ components:
         total:
           $ref: '#/components/schemas/JobsChartValue'
           description: Total
-    JobsTasks:
-      description: Jobs tasks
-      properties:
-        failed:
-          description: Failed executions
-          type: integer
-        running:
-          description: Running executions
-          type: integer
-        success:
-          description: Success executions
-          type: integer
-        total:
-          description: Total executions
-          type: integer
-      type: object
     JobsTotal:
       type: object
       description: Jobs executions
@@ -745,54 +735,6 @@ components:
         total:
           type: integer
           description: Total executions
-    Knowledgebase:
-      type: object
-      description: Knowledgebase
-      properties:
-        events:
-          $ref: '#/components/schemas/CoreEvents'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          $ref: '#/components/schemas/KnowledgebaseSpec'
-        status:
-          type: string
-          description: Knowledgebase status
-    KnowledgebaseSpec:
-      type: object
-      description: Knowledgebase specification
-      properties:
-        collectionName:
-          type: string
-          description: Collection name
-        embeddingModel:
-          type: string
-          description: Embedding model
-        embeddingModelType:
-          type: string
-          description: Embedding model type
-        enabled:
-          type: boolean
-          description: Enable or disable the agent
-        integrationConnections:
-          $ref: '#/components/schemas/IntegrationConnectionsList'
-        options:
-          type: object
-          description: Options specific to the knowledge base
-          additionalProperties:
-            type: string
-        policies:
-          $ref: '#/components/schemas/PoliciesList'
-        revision:
-          $ref: '#/components/schemas/RevisionConfiguration'
-        sandbox:
-          type: boolean
-          description: Sandbox mode
-    KnowledgebasesList:
-      type: array
-      items:
-        type: string
-        description: Knowledgebase name
     LastNRequestsMetric:
       type: object
       description: Last N requests
@@ -1298,6 +1240,9 @@ components:
       type: object
       description: Preview of a Resource
       properties:
+        customDomain:
+          type: string
+          description: Custom domain bound to this preview
         port:
           type: integer
           description: Port of the preview
@@ -2430,6 +2375,141 @@ paths:
       summary: List all configurations
       tags:
       - configurations
+  /customdomains:
+    get:
+      operationId: ListCustomDomains
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CustomDomain'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:list
+      summary: List all custom domains
+      tags:
+      - customdomains
+    post:
+      operationId: CreateCustomDomain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:create
+      summary: Create custom domain
+      tags:
+      - customdomains
+  /customdomains/{domainName}:
+    delete:
+      operationId: DeleteCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:delete
+      summary: Delete custom domain
+      tags:
+      - customdomains
+    get:
+      operationId: GetCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:get
+      summary: Get custom domain
+      tags:
+      - customdomains
+    put:
+      operationId: UpdateCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:update
+      summary: Update custom domain
+      tags:
+      - customdomains
+  /customdomains/{domainName}/verify:
+    post:
+      operationId: VerifyCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - customdomains:update
+      summary: Verify custom domain
+      tags:
+      - customdomains
   /functions:
     get:
       operationId: ListFunctions
@@ -2870,135 +2950,6 @@ paths:
       summary: List job revisions
       tags:
       - jobs
-  /knowledgebases:
-    get:
-      description: Returns a list of all knowledgebases in the workspace.
-      operationId: ListKnowledgebases
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Knowledgebase'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - knowledgebases:list
-      summary: List knowledgebases
-      tags:
-      - knowledgebases
-    post:
-      description: Creates an knowledgebase.
-      operationId: CreateKnowledgebase
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Knowledgebase'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Knowledgebase'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - knowledgebases:create
-      summary: Create knowledgebase
-      tags:
-      - knowledgebases
-  /knowledgebases/{knowledgebaseName}:
-    delete:
-      description: Deletes an knowledgebase by Name.
-      operationId: DeleteKnowledgebase
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Knowledgebase'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - knowledgebases:delete
-      summary: Delete knowledgebase
-      tags:
-      - knowledgebases
-    get:
-      description: Returns an knowledgebase by Name.
-      operationId: GetKnowledgebase
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Knowledgebase'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - knowledgebases:get
-      summary: Get knowledgebase
-      tags:
-      - knowledgebases
-    parameters:
-    - description: Name of the knowledgebase
-      in: path
-      name: knowledgebaseName
-      required: true
-      schema:
-        type: string
-    put:
-      description: Updates an knowledgebase.
-      operationId: UpdateKnowledgebase
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Knowledgebase'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Knowledgebase'
-          description: successful operation
-      security:
-      - BearerAuth:
-        - knowledgebases:update
-      summary: Update knowledgebase
-      tags:
-      - knowledgebases
-  /knowledgebases/{knowledgebaseName}/revisions:
-    get:
-      description: Returns revisions for a knowledgebase by name.
-      operationId: ListKnowledgebaseRevisions
-      parameters:
-      - description: Name of the knowledgebase
-        in: path
-        name: knowledgebaseName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/RevisionMetadata'
-                type: array
-          description: successful operation
-      security:
-      - BearerAuth:
-        - models:list
-      summary: List knowledgebase revisions
-      tags:
-      - knowledgebases
   /locations:
     get:
       description: Returns a list of all locations available with status.
@@ -3515,6 +3466,8 @@ paths:
       summary: Create Sandbox
       tags:
       - compute
+      x-amazon-apigateway-integration:
+        ref: '#/components/x-amazon-apigateway-integrations/sandboxcreation'
   /sandboxes/{sandboxName}:
     delete:
       description: Deletes a Sandbox by name.
