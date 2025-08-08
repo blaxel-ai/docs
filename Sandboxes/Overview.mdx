@@ -85,6 +85,56 @@ The following ports are reserved by Blaxel's system:
 
 You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter.
 
+### Expiration date
+
+Set **time-to-live (TTL)** on the sandbox to **automatically** **delete** it after a specific period using the `ttl` parameter, or at a specific date using the `expiresAt`/`expires_at` parameter.
+
+The `ttl` parameter accepts a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
+
+<Info>This differs from the automatic shut down (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.</Info>
+
+<CodeGroup>
+
+```typescript TypeScript {10-12}
+
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/prod-base:latest",
+  memory: 4096,
+  ports: [{ target: 3000, protocol: "HTTP" }],
+  ttl: "60s", // Total duration before auto-deletion. Supported units: s, m, h, d, w
+  // OR
+  // expiresAt: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+});
+
+// Wait for deployment
+await sandbox.wait();
+```
+
+```python Python {10-12}
+
+from blaxel.core import SandboxInstance
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/prod-base:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000 }],
+  "ttl": "60s", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
+  ## OR
+  ## expires_at: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+})
+
+# Wait for deployment
+await sandbox.wait()
+```
+
+</CodeGroup>
+
 ## Retrieve an existing sandbox
 
 To reconnect to an existing sandbox, simply provide its name:
