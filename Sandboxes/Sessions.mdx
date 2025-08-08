@@ -71,7 +71,8 @@ The following example (see [full app on GitHub](https://github.com/blaxel-ai/sdk
 
 ### Server code (backend)
 
-```tsx
+```typescript expandable
+
 import { NextResponse } from 'next/server';
 import { SandboxInstance } from "@blaxel/core";
 
@@ -117,11 +118,13 @@ export async function GET() {
     preview_url: preview.spec?.url
   });
 }
+
 ```
 
 ### Client code (frontend)
 
-```tsx
+```typescript expandable
+
 'use client'
 
 import { SandboxInstance } from "@blaxel/core";
@@ -173,4 +176,5 @@ export default function SandboxClient() {
     </div>
   );
 }
+
 ```

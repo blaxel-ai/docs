@@ -212,7 +212,8 @@ If you're running a Webpack server and can't connect to it via WebSocket from yo
 
 To fix this, add a conditional in the `webSocketURL` of your `webpack/config.dev.js` to handle the different ports:
 
-```jsx
+```javascript highlight={9-13}
+
 ///... Rest of webpack/config.dev.js
 
 module.exports = {
@@ -230,4 +231,5 @@ module.exports = {
     },
   },
   /// ... Rest of webpack/config.dev.js
+
 ```
