@@ -216,7 +216,7 @@ components:
       type: object
       description: Custom domain specification
       properties:
-        cnameTarget:
+        cnameRecords:
           type: string
           description: CNAME target for the domain
         lastVerifiedAt:
