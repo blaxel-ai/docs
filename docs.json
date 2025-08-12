@@ -257,7 +257,9 @@
               "cli-reference/bl_serve",
               "cli-reference/bl_create-agent-app",
               "cli-reference/bl_create-job",
-              "cli-reference/bl_create-mcp-server"
+              "cli-reference/bl_create-mcp-server",
+              "cli-reference/bl_create-sandbox",
+              "cli-reference/bl_connect_sandbox"
             ]
           },
           {
