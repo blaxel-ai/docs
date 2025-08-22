@@ -164,7 +164,6 @@
           {
             "group": "Administration & security",
             "pages": [
-              "Model-Governance/Policies",
               {
                 "group": "Workspaces and permissions",
                 "pages": [
@@ -173,11 +172,13 @@
                 ]
               },
               "Security/Access-tokens",
+              "Model-Governance/Policies",
               {
                 "group": "Infrastructure",
                 "pages": [
                   "Infrastructure/Global-Inference-Network",
-                  "Infrastructure/Gens"
+                  "Infrastructure/Gens",
+                  "Infrastructure/Custom-domains"
                 ]
               }
             ]
