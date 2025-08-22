@@ -179,7 +179,6 @@ async with httpx.AsyncClient() as client:
 Just like for sandboxes, this helper function either retrieves an existing preview or creates a new one if it doesn't exist. Blaxel first checks for an existing preview with the provided `name` and either retrieves it or creates a new one using your specified configuration.
 
 <CodeGroup>
-
 ```typescript TypeScript
 const preview = await sandbox.previews.createIfNotExists({
     metadata: {
@@ -199,6 +198,42 @@ preview = await sandbox.previews.create_if_not_exists({
     "spec": {
         "port": 443,
         "public": False
+    }
+})
+```
+</CodeGroup>
+
+## Custom domains
+
+You can set up a custom domain for your sandbox preview.
+
+To do this:
+
+- Register a custom domain to your Blaxel workspace and complete the verification process
+- Use this verified custom domain when creating a new preview
+
+<CodeGroup>
+```typescript TypeScript {8}
+const preview = await sandbox.previews.create({
+    metadata: {
+        name: "preview-custom-domain"
+    },
+    spec: {
+        port: 443,
+        public: false,
+        customDomain: ‘your.custom.domain.dev’
+    }
+})
+```
+```python Python {8}
+preview = await sandbox.previews.create({
+    "metadata": {
+        "name": "preview-custom-domain"
+    },
+    "spec": {
+        "port": 443,
+        "public": True,
+        "customDomain": "your.custom.domain.dev”
     }
 })
 ```

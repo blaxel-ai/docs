@@ -183,6 +183,17 @@ bl apply -f ./my-deployment.yaml
 
 Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
 
+## Troubleshooting
+
+### Wrong port or host
+
+```
+Default STARTUP TCP probe failed 1 time consecutively for container "agent" on port 80. The instance was not started.
+Connection failed with status DEADLINE_EXCEEDED.
+```
+
+If you encounter this error when deploying your agent on Blaxel, ensure that your agent properly exposes an API server that binds to a host and port with the **required** environment variables: `BL_SERVER_HOST` & `BL_SERVER_PORT`. Blaxel automatically injects these variables during deployment.
+
 <Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
 Learn how to run consumers’ inference requests on your agent. 
 </Card>
