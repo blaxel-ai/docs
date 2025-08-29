@@ -1784,6 +1784,10 @@ components:
         status:
           type: string
           description: Sandbox status
+        ttl:
+          type: integer
+          description: TTL timestamp for automatic deletion (optional, nil means no
+            auto-deletion)
     SandboxDefinition:
       type: object
       description: Sandbox definition for admin store operations
@@ -1829,7 +1833,10 @@ components:
       description: Sandbox specification
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
-      - {}
+      - properties:
+          volumes:
+            $ref: '#/components/schemas/VolumeAttachments'
+            description: Volumes to attach to the sandbox
     SandboxStoreDefinitionName:
       description: Name of a Sandbox definition
     ServerlessConfig:
@@ -2147,6 +2154,63 @@ components:
       description: Triggers to use your agent
       items:
         $ref: '#/components/schemas/Trigger'
+    Volume:
+      type: object
+      description: Volume resource for persistent storage
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+          description: Events are loaded from the events table, not stored in volume
+            table
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeSpec'
+        state:
+          $ref: '#/components/schemas/VolumeState'
+        status:
+          type: string
+          description: Volume status computed from events
+        terminatedAt:
+          type: string
+          description: Timestamp when the volume was marked for termination
+    VolumeAttachment:
+      type: object
+      description: Volume attachment configuration for sandbox
+      properties:
+        mountPath:
+          type: string
+          description: Mount path in the container
+        name:
+          type: string
+          description: Name of the volume to attach
+        readOnly:
+          type: boolean
+          description: Whether the volume is mounted as read-only
+    VolumeAttachments:
+      type: array
+      items:
+        $ref: '#/components/schemas/VolumeAttachment'
+        description: Volume attachments for sandbox
+    VolumeSpec:
+      type: object
+      description: Volume specification - immutable configuration
+      properties:
+        region:
+          type: string
+          description: AWS region where the volume should be created (e.g. us-west-2,
+            eu-west-1)
+        size:
+          type: integer
+          description: Size of the volume in MB
+    VolumeState:
+      type: object
+      description: Volume state - mutable runtime state
+      properties:
+        attachedTo:
+          type: string
+          description: Resource this volume is attached to (e.g. "sandbox:my-sandbox",
+            "model:my-model")
     WebsocketChannel:
       type: object
       description: WebSocket connection details
@@ -4226,6 +4290,111 @@ paths:
       summary: Update user role in workspace
       tags:
       - workspaces
+  /volumes:
+    get:
+      description: Returns a list of all volumes in the workspace.
+      operationId: ListVolumes
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Volume'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumes:list
+      summary: List volumes
+      tags:
+      - volumes
+    post:
+      description: Creates a volume.
+      operationId: CreateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumes:create
+      summary: Create volume
+      tags:
+      - volumes
+  /volumes/{volumeName}:
+    delete:
+      description: Deletes a volume by name.
+      operationId: DeleteVolume
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumes:delete
+      summary: Delete volume
+      tags:
+      - volumes
+    get:
+      description: Returns a volume by name.
+      operationId: GetVolume
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumes:get
+      summary: Get volume
+      tags:
+      - volumes
+    parameters:
+    - description: Name of the volume
+      in: path
+      name: volumeName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Update a volume by name.
+      operationId: UpdateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        "405":
+          description: Method not allowed - volume updates are not supported
+      security:
+      - BearerAuth:
+        - volumes:update
+      summary: Update volume (Not Implemented)
+      tags:
+      - volumes
   /workspaces:
     get:
       description: Returns a list of all workspaces.

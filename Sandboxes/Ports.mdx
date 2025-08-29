@@ -34,9 +34,6 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   ports: [{ target: 3000 }]
 });
-
-// Wait for deployment
-await sandbox.wait();
 ```
 
 ```python Python {8}
@@ -49,9 +46,6 @@ sandbox = await SandboxInstance.create({
   "memory": 4096,
   "ports": [{ "target": 3000 }]
 })
-
-# Wait for deployment
-await sandbox.wait()
 ```
 
 </CodeGroup>

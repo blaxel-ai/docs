@@ -38,8 +38,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
     { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
   ]
 });
-
-await sandbox.wait();
 ```
 ```python Python
 import os
@@ -58,7 +56,6 @@ sandbox = await SandboxInstance.create_if_not_exists({
     { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
   ]
 })
-await sandbox.wait()
 ```
 </CodeGroup>
 

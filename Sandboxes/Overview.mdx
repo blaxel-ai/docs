@@ -45,9 +45,6 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }]
 });
-
-// Wait for deployment
-await sandbox.wait();
 ```
 
 ```python Python
@@ -60,14 +57,9 @@ sandbox = await SandboxInstance.create({
   "memory": 4096,
   "ports": [{ "target": 3000 }]
 })
-
-# Wait for deployment
-await sandbox.wait()
 ```
 
 </CodeGroup>
-
-While `SandboxInstance.create()` waits for the creation to be acknowledged, the function `sandbox.wait` allows to wait for the sandbox to be fully deployed and ready on Blaxel. 
 
 ### Images
 
@@ -109,9 +101,6 @@ const sandbox = await SandboxInstance.create({
   // OR
   // expiresAt: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 });
-
-// Wait for deployment
-await sandbox.wait();
 ```
 
 ```python Python {10-12}
@@ -128,9 +117,6 @@ sandbox = await SandboxInstance.create({
   ## OR
   ## expires_at: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 })
-
-# Wait for deployment
-await sandbox.wait()
 ```
 
 </CodeGroup>
@@ -175,8 +161,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }]
 });
-
-await sandbox.wait();
 ```
 
 ```python Python
@@ -189,8 +173,6 @@ sandbox = await SandboxInstance.create_if_not_exists({
   "memory": 4096,
   "ports": [{ "target": 3000, "protocol": "HTTP" }]
 })
-
-await sandbox.wait()
 ```
 
 </CodeGroup>

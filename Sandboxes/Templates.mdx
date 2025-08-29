@@ -198,9 +198,6 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   ports: [{ name: "nextjs-dev", target: 3000 }, { name: "another-api", target: 8888 }]
 });
-
-// Wait for deployment
-await sandbox.wait();
 ```
 
 ```python Python
@@ -212,9 +209,6 @@ sandbox = await SandboxInstance.create({
   "memory": 4096,
   "ports": [{ "name": "nextjs-dev", "target": 3000 }, { "name": "another-api", "target": 8888 }]
 })
-
-# Wait for deployment
-await sandbox.wait()
 ```
 
 </CodeGroup>
