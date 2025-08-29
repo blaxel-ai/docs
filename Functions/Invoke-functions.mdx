@@ -28,7 +28,35 @@ By default, MCP servers deployed on Blaxel aren’t public. It is necessary to a
 
 The evaluation of authentication/authorization for messages is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Info>Making an MCP server publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.</Info>
+You can make an MCP server **public**, meaning it will bypass Blaxel authentication and you will have to implement your own authentication inside the server. This can be done through the `blaxel.toml` configuration file.
+
+<Accordion title="blaxel.toml reference">
+
+The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory. 
+
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+
+```toml
+name = "my-mcp-server"
+workspace = "my-workspace"
+type = "function"
+
+[env]
+DEFAULT_CITY = "San Francisco"
+
+[[triggers]]
+  id = "trigger-my-mcp"
+  type = "http"
+[triggers.configuration]
+  path = "functions/my-mcp" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}/
+  authenticationType = "public"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the MCP servers. You can also make them either private (default) or public (`authenticationType = "public"`).
+
+</Accordion>
 
 ### Timeout limit
 
