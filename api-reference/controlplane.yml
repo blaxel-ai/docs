@@ -247,6 +247,10 @@ components:
         env:
           type: object
           description: Env of the entrypoint
+        superGatewayArgs:
+          type: array
+          description: Super Gateway args of the entrypoint
+          items: {}
     Flavor:
       type: object
       description: A type of hardware available for deployments
@@ -379,13 +383,10 @@ components:
             type: string
             description: Function description, very important for the agent function
               to work with an LLM
-          kit:
-            type: array
-            description: Function kits
-            items:
-              $ref: '#/components/schemas/FunctionKit'
           schema:
             $ref: '#/components/schemas/FunctionSchema'
+          triggers:
+            $ref: '#/components/schemas/Triggers'
     HistogramBucket:
       type: object
       description: Histogram bucket
@@ -1777,6 +1778,9 @@ components:
       properties:
         events:
           $ref: '#/components/schemas/CoreEvents'
+        lastUsedAt:
+          type: string
+          description: Last time the sandbox was used (read-only, managed by the system)
         metadata:
           $ref: '#/components/schemas/Metadata'
         spec:
