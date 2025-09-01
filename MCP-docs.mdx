@@ -17,13 +17,23 @@ Alternatively you can also use the native AI assistant built into this documenta
 
 ## Option 1: Install the MCP server
 
-Open a terminal and run the following command to install the MCP server locally:
+### For Cursor
 
-```bash
-npx mint-mcp add blaxel
+1. Open **Cursor Settings**
+2. Go to **MCP & Integrations**
+3. Click **”+ Add a custom MCP server”**
+4. Add this configuration:
+
+```json
+{
+  "mcpServers": {
+    ... // Your other MCP servers
+    "blaxel-docs": {
+      "url": "https://docs.blaxel.ai/mcp"
+    }
+  }
+}
 ```
-
-Everything will be set up automatically.
 
 ## Option 2: Copy-paste llms-full.txt
 
