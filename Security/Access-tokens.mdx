@@ -12,9 +12,48 @@ User access tokens can be used in order to authenticate to Blaxel by API or CLI.
 
 Blaxel employs two main authentication paradigms: **short-lived tokens** (OAuth) and **long-lived tokens** (API keys).
 
+Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console. 
+
 **OAuth tokens** are recommended for security reasons, as their duration is only of 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
 
-Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console. 
+## API keys
+
+Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration is infinite.
+
+### Using API keys
+
+API keys can be used in the Blaxel APIs, CLI and SDK.
+
+**To authenticate in the SDKs**, use the following two variables **`BL_WORKSPACE`** and **`BL_API_KEY`**, which can be set in one of these sources:
+
+1. your **`.env`** file
+2. your machine's environment variables
+3. the local configuration file created when you log in through the CLI (see below)
+
+**To authenticate in the CLI** use this command
+
+```
+export BL_API_KEY=YOUR-API-KEY
+bl login YOUR-WORKSPACE
+```
+
+**To authenticate in the APIs**, use the API key as an authorization bearer in the headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs. For example, to list models:
+
+```
+curl 'https://api.blaxel.ai/v0/models' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Authorization: Bearer YOUR-API-KEY'
+```
+
+### Manage API keys
+
+You can create private API keys for your Blaxel account to authenticate directly when using the Blaxel APIs or CLI. Your [permissions in each workspace](Workspace-access-control) will be the ones given to your account in each of them.
+
+API keys can be managed from the Blaxel console in **Profile > Security**.
+
+![api-key-create.png](Access-tokens/api-key-create.png)
+
+For production-grade access to workspace resources that should be independent of individual users, it's strongly recommended to use [service accounts](Service-accounts) in the workspace.
 
 ## OAuth 2.0 tokens
 
@@ -93,38 +132,3 @@ console.log(settings.token)
 ```
 
 *Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [is done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*
-
-## API keys
-
-Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration is infinite.
-
-### Manage API keys
-
-You can create private API keys for your Blaxel account to authenticate directly when using the Blaxel APIs or CLI. Your [permissions in each workspace](Workspace-access-control) will be the ones given to your account in each of them.
-
-API keys can be managed from the Blaxel console in **Profile > Security**.
-
-![api-key-create.png](Access-tokens/api-key-create.png)
-
-For production-grade access to workspace resources that should be independent of individual users, it's strongly recommended to use [service accounts](Service-accounts) in the workspace.
-
-### Using API keys
-
-API keys can be used in both the Blaxel APIs and CLI. 
-
-**To authenticate in the APIs**, use the API key as an authorization bearer in the headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs. For example, to list models:
-
-```
-curl 'https://api.blaxel.ai/v0/models' \
-  -H 'Accept: application/json, text/plain, */*' \
-  -H 'Authorization: Bearer YOUR-API-KEY'
-```
-
-**To authenticate in the CLI** use this command
-
-```
-export BL_API_KEY=YOUR-API-KEY
-bl login YOUR-WORKSPACE
-```
-
-You will then be authenticated in this terminal session.

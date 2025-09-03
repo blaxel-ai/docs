@@ -97,7 +97,7 @@ const sandbox = await SandboxInstance.create({
   image: "blaxel/prod-base:latest",
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }],
-  ttl: "60s", // Total duration before auto-deletion. Supported units: s, m, h, d, w
+  ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
   // OR
   // expiresAt: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 });
@@ -113,7 +113,7 @@ sandbox = await SandboxInstance.create({
   "image": "blaxel/prod-base:latest",
   "memory": 4096,
   "ports": [{ "target": 3000 }],
-  "ttl": "60s", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
+  "ttl": "24h", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
   ## OR
   ## expires_at: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 })

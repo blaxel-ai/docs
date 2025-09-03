@@ -4375,30 +4375,6 @@ paths:
       required: true
       schema:
         type: string
-    put:
-      description: Update a volume by name.
-      operationId: UpdateVolume
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Volume'
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Volume'
-          description: successful operation
-        "405":
-          description: Method not allowed - volume updates are not supported
-      security:
-      - BearerAuth:
-        - volumes:update
-      summary: Update volume (Not Implemented)
-      tags:
-      - volumes
   /workspaces:
     get:
       description: Returns a list of all workspaces.
