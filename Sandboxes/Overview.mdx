@@ -12,7 +12,7 @@ Sandboxes are fast-launching virtual machines that both humans and AI agents can
 
 They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code — making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
 
-Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after one second of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes.
+Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after one second of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 ## Create a sandbox
 
@@ -252,13 +252,20 @@ tools = await bl_tools([f"sandbox/{sandbox_name}"])
 
 ## Sandbox statuses
 
-Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down top `standby` **after one second of inactivity**, maintaining their previous state after scaling down.
+Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down top `standby` **after a few seconds of inactivity**, maintaining their previous state after scaling down.
 
 Here is the summary on the possible statuses for a sandbox:
 
-- **`standby`**: The sandbox is created but is hibernating. You are not charged while a sandbox is in standby mode. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
+- **`standby`**: The sandbox is created but is hibernating. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
+    - **Cost**: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
 - **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
-- **`stopped`**: The sandbox is shut down and **requires manual restart** to access its API.
+    - **Cost**: You are for CPU/memory and storage while a sandbox is in active mode.
+- **`stopped`**: The sandbox is shut down and **requires manual restart** to access its API. This is useful if you want to deactivate a sandbox’s preview URLs.
+    - **Cost**: You are not charged for CPU/memory while a sandbox is in stopped mode. However, you are charged for the storage of the snapshot and/or the volumes.
+
+The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds. 
+
+Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
 
 <CardGroup>
 <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
@@ -281,6 +288,9 @@ Render code in real-time via a direct preview URL.
 </Card>
 <Card title="Sessions" icon="user" href="/Sandboxes/Sessions">
 Manage temporary sessions to connect to sandboxes from a frontend client.
+</Card>
+<Card title="Volumes (private preview)" icon="database" href="/Sandboxes/Volumes">
+Attach volumes to sandboxes to persist files.
 </Card>
 <Card title="Templates" icon="box" href="/Sandboxes/Templates">
 Create custom sandbox templates.
