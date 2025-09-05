@@ -43,7 +43,7 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/prod-base:latest",  // public or custom image
   memory: 4096, // in MB
-  ports: [{ target: 3000, protocol: "HTTP" }], // ports to expose, so you can create a preview URL on this port
+  ports: [{ target: 3000, protocol: "HTTP" }], // ports to expose
   region: "us-was-1" // if not specified, Blaxel will choose a default region
 });
 ```
@@ -56,9 +56,9 @@ sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
   "image": "blaxel/prod-base:latest", # public or custom image
   "memory": 4096, # in MB
-  "ports": [{ "target": 3000 }], # ports to expose, so you can create a preview URL on this port
-})
+  "ports": [{ "target": 3000 }], # ports to expose
   "region": "us-was-1" # if not specified, Blaxel will choose a default region
+})
 ```
 
 </CodeGroup>
@@ -77,7 +77,7 @@ The following ports are reserved by Blaxel's system:
 - **80**: Reserved for system operations
 - **8080**: Reserved for sandbox API functionality
 
-You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter.
+You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox, typically to create a [preview URL](Preview-url) on them.
 
 ### Expiration date
 
