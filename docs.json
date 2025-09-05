@@ -133,7 +133,7 @@
             "group": "Integrations",
             "pages": [
               "Integrations",
-              "oauth-flow",
+              "Integrations/oauth-flow",
               {
                 "group": "Model providers integrations",
                 "pages": [
@@ -177,7 +177,7 @@
               {
                 "group": "Infrastructure",
                 "pages": [
-                  "Infrastructure/Global-Inference-Network",
+                  "Infrastructure/Regions",
                   "Infrastructure/Gens",
                   "Infrastructure/Custom-domains"
                 ]
