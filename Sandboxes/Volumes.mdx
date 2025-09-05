@@ -36,7 +36,8 @@ import { SandboxInstance, VolumeInstance } from "@blaxel/core";
 
 const volume = await VolumeInstance.create({
   name: "my-volume",
-  size: 2048 // in MB
+  size: 2048,          // in MB
+  region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
 });
 ```
 
@@ -71,10 +72,11 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/prod-nextjs:latest",
   memory: 4096,
+  region: "us-pdx-1",     // Must be the same region as the created volume
   volumes: [{
-    name: "my-volume", // Must match the name of the created volume
-    mountPath: "/app",          // Directory inside the sandbox
-    readOnly: false             // Set to true to prevent writes
+    name: "my-volume"     // Must match the name of the created volume
+    mountPath: "/app"     // Directory inside the sandbox
+    readOnly: false       // Set to true to prevent writes
   }],
   // ... other sandbox properties
 });
