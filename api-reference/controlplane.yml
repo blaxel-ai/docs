@@ -222,6 +222,9 @@ components:
         lastVerifiedAt:
           type: string
           description: Last verification attempt timestamp
+        region:
+          type: string
+          description: Region that the custom domain is associated with
         status:
           type: string
           description: Current status of the domain (pending, verified, failed)
@@ -1256,6 +1259,9 @@ components:
         public:
           type: boolean
           description: Whether the preview is public
+        region:
+          type: string
+          description: Region where the preview is deployed, this is readonly
         requestHeaders:
           type: object
           description: Those headers will be set in all requests to your preview.
@@ -1838,6 +1844,10 @@ components:
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
       - properties:
+          region:
+            type: string
+            description: Region where the sandbox should be created (e.g. us-pdx-1,
+              eu-lon-1)
           volumes:
             $ref: '#/components/schemas/VolumeAttachments'
             description: Volumes to attach to the sandbox
@@ -2202,8 +2212,7 @@ components:
       properties:
         region:
           type: string
-          description: AWS region where the volume should be created (e.g. us-west-2,
-            eu-west-1)
+          description: Region where the volume should be created (e.g. us-pdx-1, eu-lon-1)
         size:
           type: integer
           description: Size of the volume in MB

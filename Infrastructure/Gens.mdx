@@ -2,15 +2,15 @@
 
 title: 'Generations'
 
-description: 'Empower your agents with AI models from anywhere.'
+description: 'Run your workloads on one of our infrastructure generations.'
 
 ---
 
-All workloads deployed on Blaxel run on one of the available infrastructure generations. Depending on the workload type, not all generations may be available. You can set a default generation value in your [workspace](../Security/Workspace-access-control), which applies when creating new resources unless overridden. Choose the generation based on which features best suit your specific use case.
+Blaxel features two infrastructure generations on which deployed workloads run. Depending on the workload type, not all generations may be available. You can set a default generation value in your [workspace](../Security/Workspace-access-control), which applies when creating new resources unless overridden. Choose the generation based on which features best suit your specific use case.
 
 **Mk 2 infrastructure** features extensive global distribution, with more than 15 points of presence worldwide.
 
-**Mk 3 infrastructure (coming soon!)** delivers dramatically lower cold starts, with sub-20-ms boot times for workloads. It is currently available in private Alpha release. [Contact us](http://blaxel.ai/contact?purpose=mk3) to get access.
+**Mk 3 infrastructure** delivers dramatically lower cold starts, with sub-25-ms boot times for workloads. It currently requires quotas which are not granted by default: [contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+Mark+3+because+&purpose=mk3&origin=docs) to get access.
 
 ## How to choose an infrastructure generation
 
@@ -30,21 +30,24 @@ Mark 2 infrastructure is currently available to run the following workloads:
 
 - [agents](../Agents/Overview)
 - [MCP servers](../Functions/Overview)
+- [batch jobs](../Jobs/Overview)
 
 ### Mark 3 infrastructure
 
-Mk 3 infrastructure leverages Firecracker-based micro VMs to run code with mission-critical low cold-starts. Mk 3 is currently available in private Alpha.
+Mk 3 infrastructure leverages micro VMs to run with critical-low cold-starts. 
 
 You should choose Mk 3 infrastructure if:
 
-- low latency is important to your use case (sub-20ms boot times)
+- low latency is important to your use case (sub-25ms boot times)
 
 Mark 3 infrastructure is currently available to run the following workloads:
 
 - [sandboxes](../Sandboxes/Overview)
-- *coming soon: [agents](../Agents/Overview) and [MCP servers](../Functions/Overview)*
+- [agents](../Agents/Overview)
+- [MCP servers](../Functions/Overview)
+- *coming soon: [batch jobs](../Jobs/Overview)*
 
-<Warning>Mark 3 infrastructure is currently in Alpha release.</Warning>
+<Warning>Mark 3 infrastructure currently requires quotas which are not granted by default. [Contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+Mark+3+because+&purpose=mk3&origin=docs) to get access.</Warning>
 
 ## What about Mk 1
 
