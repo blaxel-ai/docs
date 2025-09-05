@@ -13,10 +13,10 @@ You can do this via a **preview URL** that routes to a specific port on your san
 They will look something like this:
 
 ```
-https://tkmu0oj2bf6iuoag6mmlt8.preview.bl.run
+https://tkmu0oj2bf6iuoag6mmlt8.us-east-1.preview.bl.run
 ```
 
-Setting a **custom domain** on the preview URL is a feature coming soon!
+You can set a **custom domain** on a preview URL (see down below).
 
 ## Current limitations of real-time previews
 
@@ -205,9 +205,9 @@ preview = await sandbox.previews.create_if_not_exists({
 
 ## Custom domains
 
-You can set up a custom domain for your sandbox preview.
+<Warning>Custom domains are currently only available in [*us-west-2* region](../Infrastructure/Regions). Additional regions are coming soon.</Warning>
 
-To do this:
+To set up a custom domain for your sandbox preview:
 
 - Register a [custom domain](../Infrastructure/Custom-domains) to your Blaxel workspace and complete the verification process
 - Use this verified custom domain when creating a new preview:
