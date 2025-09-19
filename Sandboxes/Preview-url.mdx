@@ -26,6 +26,7 @@ JavaScript module bundlers handle real-time previewing. Here are the key compati
 - [Webpack](https://webpack.js.org/) has been tested and works
 - [Turbopack](https://nextjs.org/docs/app/api-reference/turbopack) currently doesn't work as it doesn't support ping-pong (see [issue raised to Vercel](https://github.com/vercel/next.js/discussions/78947))
 - Blaxel has a **15-minute connection timeout**. To maintain previews beyond this limit, ensure your bundler implements automatic reconnection
+- You cannot create a preview on **port 80** which is reserved for system
 
 ## Private preview URLs
 

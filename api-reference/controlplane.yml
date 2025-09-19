@@ -109,6 +109,10 @@ components:
           type: array
           description: Private locations managed with blaxel operator
           items: {}
+        regions:
+          type: array
+          description: Regions
+          items: {}
     Continent:
       type: object
       description: Continent
@@ -254,6 +258,19 @@ components:
           type: array
           description: Super Gateway args of the entrypoint
           items: {}
+    ExpirationPolicy:
+      type: object
+      description: Expiration policy for sandbox lifecycle management
+      properties:
+        action:
+          type: string
+          description: Action to take when policy is triggered
+        type:
+          type: string
+          description: Type of expiration policy
+        value:
+          type: string
+          description: Duration value (e.g., '1h', '24h', '7d')
     Flavor:
       type: object
       description: A type of hardware available for deployments
@@ -792,6 +809,9 @@ components:
         location:
           type: string
           description: Name of the location
+        region:
+          type: string
+          description: Region of the location
         status:
           type: string
           description: Status of the location
@@ -908,6 +928,9 @@ components:
             description: Model name
           plan:
             description: Plan
+          url:
+            type: string
+            description: URL
           workspace:
             type: string
             description: Workspace name
@@ -1391,6 +1414,28 @@ components:
       type: object
       additionalProperties:
         $ref: '#/components/schemas/PublicIp'
+    Region:
+      type: object
+      description: Region
+      properties:
+        allowed:
+          type: string
+          description: Region display name
+        continent:
+          type: string
+          description: Region display name
+        country:
+          type: string
+          description: Region display name
+        infoGeneration:
+          type: string
+          description: Region display name
+        location:
+          type: string
+          description: Region display name
+        name:
+          type: string
+          description: Region name
     Repository:
       type: object
       description: Repository
@@ -1838,12 +1883,24 @@ components:
         url:
           type: string
           description: URL of the definition
+    SandboxLifecycle:
+      type: object
+      description: Lifecycle configuration for sandbox management
+      properties:
+        expirationPolicies:
+          type: array
+          description: List of expiration policies
+          items:
+            $ref: '#/components/schemas/ExpirationPolicy'
     SandboxSpec:
       type: object
       description: Sandbox specification
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
       - properties:
+          lifecycle:
+            $ref: '#/components/schemas/SandboxLifecycle'
+            description: Lifecycle configuration for the sandbox
           region:
             type: string
             description: Region where the sandbox should be created (e.g. us-pdx-1,

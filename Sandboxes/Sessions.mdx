@@ -10,6 +10,14 @@ In many situations, you’ll need to operate a sandbox from a frontend client. W
 
 Sessions are created for a sandbox from a backend server (using Blaxel credentials) and then shared with the frontend client, allowing the browser to connect to the sandbox.
 
+From a session, you can:
+
+- only interact with the [sandbox API](https://docs.blaxel.ai/api-reference/filesystem/get-file-or-directory-information) (i.e. manage the sandbox filesystem, processes and logs).
+
+From a session, you cannot: 
+
+- interact with Blaxel API to create other preview URLs or sessions. These operations must be done server-side.
+
 ## Basic example
 
 Create a temporary backend session to access a sandbox instance from your client application. Main parameter for this is `expiresAt`, a `Date()` corresponding to the expiration date.
