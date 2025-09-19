@@ -12,7 +12,9 @@ Sandboxes are fast-launching virtual machines that both humans and AI agents can
 
 They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code — making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
 
-Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after a few seconds of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
+Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after a few seconds of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
+
+![sb lifecycle.drawio.png](Overview/sb_lifecycle.drawio.png)
 
 ## Create a sandbox
 
@@ -79,6 +81,10 @@ The following ports are reserved by Blaxel's system:
 
 You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox, typically to create a [preview URL](Preview-url) on them.
 
+### Regions
+
+Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. If you don't specify a region, Blaxel will automatically use a default region.
+
 ### Expiration date
 
 Set **time-to-live (TTL)** on the sandbox to **automatically** **delete** it after a specific period using the `ttl` parameter, or at a specific date using the `expiresAt`/`expires_at` parameter.
@@ -102,7 +108,7 @@ const sandbox = await SandboxInstance.create({
   region: "us-pdx-1",
   ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
   // OR
-  // expiresAt: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  // expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 });
 ```
 
@@ -119,7 +125,7 @@ sandbox = await SandboxInstance.create({
   "region": "us-pdx-1",
   "ttl": "24h", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
   ## OR
-  ## expires_at: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  ## expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
 })
 ```
 
@@ -265,7 +271,7 @@ Here is the summary on the possible statuses for a sandbox:
 - **`standby`**: The sandbox is created but is hibernating. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
     - **Cost**: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
 - **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
-    - **Cost**: You are for CPU/memory and storage while a sandbox is in active mode.
+    - **Cost**: You are charged for CPU/memory and storage while a sandbox is in active mode.
 - **`stopped`**: The sandbox is shut down and **requires manual restart** to access its API. This is useful if you want to deactivate a sandbox’s preview URLs.
     - **Cost**: You are not charged for CPU/memory while a sandbox is in stopped mode. However, you are charged for the storage of the snapshot and/or the volumes.
 
