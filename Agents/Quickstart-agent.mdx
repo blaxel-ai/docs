@@ -1,0 +1,106 @@
+---
+
+title: 'Quickstart: run an agent on Blaxel'
+
+description: 'Deploy and run your existing code as a serverless auto-scalable API.'
+
+---
+
+Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework. 
+
+Follow these steps to get your AI agent up and running on Blaxel.
+
+## 1. Create configuration files
+
+At the root of your project repository, create a `blaxel.toml` file and a `.env` file for your sensitive environment variables.
+
+**Example `blaxel.toml`:**
+
+```toml
+type = "agent"
+
+[runtime]
+generation = "mk3"
+memory = 4096
+
+[env]
+MY_NON_SENSITIVE_ENV = "MY_NON_SENSITIVE_ENV"
+```
+
+## 2. Update host and port in your code
+
+Ensure your app listens on the host and port provided by Blaxel. Update your code accordingly:
+
+```jsx
+const port = parseInt(process.env.BL_SERVER_PORT || "80");
+const host = process.env.BL_SERVER_HOST || "0.0.0.0";
+```
+
+## 3. Deploy your agent
+
+When deploying, there are two possible scenarios:
+
+### Option A: You already have a `Dockerfile`
+
+Blaxel will automatically use it to build your agent. Just run:
+
+```bash
+bl deploy
+```
+
+### Option B: No `Dockerfile`
+
+If you don’t want to create one, add the following scripts to your `package.json`:
+
+> Depending on your setup, not all scripts are required. For TypeScript projects, all four are commonly used.
+> 
+- **`start`**: Runs the server locally via TypeScript without needing a build step (useful for dev).
+- **`build`**: Builds the project (triggered automatically during deployment).
+- **`prod`**: Starts the server in production from the `dist` folder (requires a build first).
+- **`dev`**: Same as `start`, but with hot-reload for instant updates while developing.
+
+Then run:
+
+```bash
+bl deploy
+```
+
+## 4. (Optional) Enable telemetry
+
+If you need telemetry, just import it in your app’s entrypoint:
+
+```jsx
+import "@blaxel/telemetry";
+```
+
+## 5. (Optional) Run locally with Blaxel CLI
+
+If you want to run your agent locally and start using the SDK, make sure the `start` and `dev` scripts are defined, then run:
+
+```bash
+bl serve
+# or
+bl serve --hotreload
+```
+
+✅ That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.
+
+## Resources
+
+Want the complete guide on developing and deploying agents on Blaxel? Check out the following resources:
+
+<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
+Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
+Complete guide for using the Python SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
+Complete guide for deploying AI agents on Blaxel.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="/Agents/Variables-and-secrets">
+Complete guide for managing variables and secrets when deploying on Blaxel.
+</Card>

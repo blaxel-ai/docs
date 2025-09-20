@@ -39,8 +39,7 @@
                 "pages": [
                   "Agents/Develop-an-agent",
                   "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py",
-                  "Agents/Variables-and-secrets"
+                  "Agents/Develop-an-agent-py"
                 ]
               },
               {
@@ -61,6 +60,7 @@
                   "Agents/Integrate-in-apps/CopilotKit"
                 ]
               },
+              "Agents/Variables-and-secrets",
               {
                 "group": "Frameworks",
                 "pages": [
@@ -103,7 +103,6 @@
             "pages": [
               "Functions/Overview",
               "Functions/Create-MCP-server",
-              "Functions/Variables-and-secrets",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
               {
@@ -112,6 +111,7 @@
                   "Functions/Integrate-in-apps/Toolprint"
                 ]
               },
+              "Functions/Variables-and-secrets",
               "Functions/oauth-flow-mcp"
             ]
           },

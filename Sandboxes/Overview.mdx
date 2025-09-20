@@ -87,15 +87,17 @@ Select the [region](../Infrastructure/Regions) where you want to deploy your san
 
 ### Expiration date
 
-Set **time-to-live (TTL)** on the sandbox to **automatically** **delete** it after a specific period using the `ttl` parameter, or at a specific date using the `expires` parameter.
+Set time-to-live & expiration policies on a sandbox to **automatically** **delete** it based on specific conditions:
 
-The `ttl` parameter accepts a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
+- expire at a specific date using the `expires` parameter.
+- expire after a total maximum lifetime using the `ttl` parameter
+- expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
 
-<Info>This differs from the automatic shut down (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.</Info>
+<Info>This differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.</Info>
 
 <CodeGroup>
 
-```typescript TypeScript {10-12}
+```typescript TypeScript {11-23}
 
 import { SandboxInstance } from "@blaxel/core";
 
@@ -109,10 +111,20 @@ const sandbox = await SandboxInstance.create({
   ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
   // OR
   // expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  // AND/OR
+  lifecycle: {
+    expirationPolicies: [
+      {
+        type: "ttl-idle",
+        value: "30m",  // Delete after 30 minutes of inactivity. Supported units: s, m, h, d, w
+        action: "delete"
+      }
+    ]
+  }
 });
 ```
 
-```python Python {10-12}
+```python Python {11-23}
 
 from blaxel.core import SandboxInstance
 
@@ -126,10 +138,24 @@ sandbox = await SandboxInstance.create({
   "ttl": "24h", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
   ## OR
   ## expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  ## OR
+  "lifecycle": SandboxLifecycle(
+    expiration_policies=[
+      ExpirationPolicy(
+        type_="ttl-idle",
+        value="30m",  # Delete after 30 minutes of inactivity. Supported units: s, m, h, d, w
+        action="delete"
+      )
+    ]
+  )
 })
 ```
 
 </CodeGroup>
+
+<Tip>Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the API reference for a full documentation. You can combine multiple expiration policies: whichever condition is met first will trigger the action.</Tip>
+
+The TTL-type parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
 
 ## Retrieve an existing sandbox
 
