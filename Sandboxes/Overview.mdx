@@ -111,7 +111,7 @@ const sandbox = await SandboxInstance.create({
   ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
   // OR
   // expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
-  // AND/OR
+  // OR / AND
   lifecycle: {
     expirationPolicies: [
       {
@@ -138,7 +138,7 @@ sandbox = await SandboxInstance.create({
   "ttl": "24h", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
   ## OR
   ## expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
-  ## OR
+  ## OR / AND
   "lifecycle": SandboxLifecycle(
     expiration_policies=[
       ExpirationPolicy(
