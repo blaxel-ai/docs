@@ -1524,6 +1524,9 @@ components:
       type: object
       description: Resource
       properties:
+        infrastructureGeneration:
+          type: string
+          description: Region of the resource
         name:
           type: string
           description: Name of the resource
@@ -1533,6 +1536,9 @@ components:
         workspace:
           type: string
           description: Workspace of the resource
+        workspaceId:
+          type: string
+          description: Workspace ID of the resource
     ResourceLog:
       type: object
       description: Log for a resource deployment (eg. model deployment, function deployment)
