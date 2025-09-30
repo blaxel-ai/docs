@@ -162,10 +162,10 @@ Blaxel is the ultimate toolkit for AI agent builders, letting you create and dep
 Let’s initialize a first app. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
 
 ```bash
-bl create-agent-app my-agent
+bl new agent
 ```
 
-You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent) in `/src/agent.py` or `/src/agent.ts`. A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`. 
+You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`. 
 
 </Accordion>
 
@@ -175,7 +175,7 @@ You can now develop your agent application using any framework you want (or none
 Let’s initialize a first batch job definition. The following command creates a **pre-scaffolded local repository** ready for developing and deploying your job on Blaxel.
 
 ```bash
-bl create-job myjob
+bl new job
 ```
 
 You can now develop your job and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to leverage other Blaxel deployments in `/src/index.py` or `/src/index.ts`.
@@ -237,7 +237,7 @@ Read the guide for creating and connecting to sandboxes using Blaxel SDK.
 You can quickly **initialize a new MCP server from scratch** by using CLI command `bl create-mcp-server`. This will create a pre-scaffolded local repo where your entire code can be added.
 
 ```bash
-bl create-mcp-server my-mcp
+bl new mcp
 ```
 
 You can now [develop your MCP server](Functions/Create-MCP-server) using the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) in `/src/server.py` or `/src/server.ts`.
@@ -324,7 +324,7 @@ Your workload is made available as a **serverless auto scalable** **global endpo
 Run a first inference on your Blaxel agent with the following command:
 
 ```bash
-bl chat my-agent
+bl chat <<AGENT-NAME>>
 ```
 
 This gives you a chat-like interface where you can interact with your agent! To use this when serving locally, just add option `--local` .
@@ -332,7 +332,7 @@ This gives you a chat-like interface where you can interact with your agent! To 
 Alternatively, you can send requests to your production agent by running:
 
 ```bash
-bl run agent my-agent --data '{"inputs":"Hello world!"}'
+bl run agent <<AGENT-NAME>> --data '{"inputs":"Hello world!"}'
 ```
 
 Or by directly calling the [global endpoint](Agents/Query-agents).
@@ -345,7 +345,7 @@ Trigger an execution of your batch job by running:
 
 ```bash
 # Run a job using Blaxel CLI with --data argument
-bl run job jobs-ts --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
+bl run job <<JOB-NAME>> --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
 ```
 
 </Accordion>

@@ -1679,6 +1679,15 @@ components:
           type: number
           description: Number of requests per second for the resource globally for
             the previous period
+        sandboxesCpuUsage:
+          type: array
+          description: CPU usage over time for sandboxes
+          items: {}
+        sandboxesRamUsage:
+          type: array
+          description: RAM usage over time for sandboxes with memory, value, and percent
+            metrics
+          items: {}
         tokenRate:
           $ref: '#/components/schemas/TokenRateMetrics'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -1898,6 +1907,22 @@ components:
           description: List of expiration policies
           items:
             $ref: '#/components/schemas/ExpirationPolicy'
+    SandboxMetrics:
+      type: object
+      description: Enhanced sandbox metrics with memory, value, and percent data
+      properties:
+        memory:
+          type: number
+          description: Memory limit in bytes (from query A)
+        percent:
+          type: number
+          description: Memory usage percentage (from formula F1)
+        timestamp:
+          type: string
+          description: Metric timestamp
+        value:
+          type: number
+          description: Memory usage in bytes (from query B)
     SandboxSpec:
       type: object
       description: Sandbox specification

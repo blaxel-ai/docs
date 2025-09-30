@@ -27,7 +27,7 @@ Jobs allow you to run many AI tasks in parallel using batch processing.
 You can quickly **initialize a new job from scratch** by using CLI command `bl create-job`. 
 
 ```bash
-bl create-job myjob
+bl new job
 ```
 
 This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `index.ts`. 
@@ -64,10 +64,10 @@ Start the job locally:
 
 ```bash
 # Run the job with a sample batch file
-bl run job jobs-ts --local --file batches/sample-batch.json
+bl run job <<JOB-NAME>> --local --file batches/sample-batch.json
 
 # Or directly with --data argument
-bl run job jobs-ts --local --data '{"tasks": [{"name": "John"}]}'
+bl run job <<JOB-NAME>> --local --data '{"tasks": [{"name": "John"}]}'
 
 # Or without blaxel CLI
 pnpm start --name John
@@ -176,7 +176,7 @@ Start a batch job execution by running:
 
 ```bash
 # Run a job using Blaxel CLI with --data argument
-bl run job jobs-ts --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
+bl run job <<JOB-NAME>> --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
 ```
 
 You can cancel a job execution from the Blaxel Console or via API.
