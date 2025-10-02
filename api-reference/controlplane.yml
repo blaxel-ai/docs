@@ -312,87 +312,6 @@ components:
         status:
           type: string
           description: Function status
-    FunctionKit:
-      type: object
-      description: Function kit
-      properties:
-        description:
-          type: string
-          description: Description of the function kit, very important for the agent
-            to work with your kit
-        name:
-          type: string
-          description: The kit name, very important for the agent to work with your
-            kit
-        schema:
-          $ref: '#/components/schemas/FunctionSchema'
-    FunctionSchema:
-      type: object
-      description: Function schema
-      properties:
-        allOf:
-          type: array
-          description: List of schemas that this schema extends
-          items: {}
-        anyOf:
-          type: array
-          description: List of possible schemas, any of which this schema could be
-          items: {}
-        description:
-          type: string
-          description: Description of the schema
-        enum:
-          type: array
-          description: Enum values
-          items:
-            type: string
-        format:
-          type: string
-          description: Format of the schema
-        items:
-          $ref: '#/components/schemas/FunctionSchema'
-        maxLength:
-          type: number
-          description: Maximum length for string types
-        maximum:
-          type: number
-          description: Maximum value for number types
-        minLength:
-          type: number
-          description: Minimum length for string types
-        minimum:
-          type: number
-          description: Minimum value for number types
-        not:
-          type: object
-          description: Schema that this schema must not be
-        oneOf:
-          type: array
-          description: List of schemas, one of which this schema must be
-          items: {}
-        pattern:
-          type: string
-          description: Pattern for string types
-        properties:
-          type: object
-          description: Properties of the schema
-          additionalProperties:
-            $ref: '#/components/schemas/FunctionSchema'
-        required:
-          type: array
-          description: Required properties of the schema
-          items:
-            type: string
-        title:
-          type: string
-          description: Title of the schema
-        type:
-          type: string
-          description: Type of the schema
-    FunctionSchemaOrBool:
-      type: object
-      description: Helper type for AdditionalProperties which can be either a boolean
-        or a schema
     FunctionSpec:
       type: object
       description: Function specification
@@ -403,8 +322,10 @@ components:
             type: string
             description: Function description, very important for the agent function
               to work with an LLM
-          schema:
-            $ref: '#/components/schemas/FunctionSchema'
+          transport:
+            type: string
+            description: Transport compatibility for the MCP, can be "websocket" or
+              "http-stream"
           triggers:
             $ref: '#/components/schemas/Triggers'
     HistogramBucket:
@@ -891,6 +812,10 @@ components:
           name:
             type: string
             description: Name of the artifact
+          transport:
+            type: string
+            description: Transport compatibility for the MCP, can be "websocket" or
+              "http-stream"
           url:
             type: string
             description: URL of the artifact
@@ -4493,7 +4418,7 @@ paths:
       - workspaces
     post:
       description: Creates a workspace.
-      operationId: CreateWorspace
+      operationId: CreateWorkspace
       requestBody:
         content:
           application/json:

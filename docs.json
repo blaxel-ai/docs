@@ -27,7 +27,8 @@
             "pages": [
               "Overview",
               "Get-started",
-              "MCP-docs"
+              "MCP-docs",
+              "MCP-server"
             ]
           },
           {
