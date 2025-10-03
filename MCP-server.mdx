@@ -26,14 +26,14 @@ https://api.blaxel.ai/v0/mcp
 
 Clients connect over HTTP(S) and stream MCP messages. Authentication is provided via headers.
 
-## Authentication headers
+### Authentication headers
 
 Provide your [API key](Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 
-## Setup
+## Installation
 
 ### Cursor
 
@@ -81,11 +81,13 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 }
 ```
 
-## Selecting a workspace
+## Using the MCP server
+
+### Selecting a workspace
 
 If your account has multiple workspaces, set the active workspace by including the `X-Blaxel-Workspace` header. If omitted, your AI app may prompt you to specify one when a tool is invoked.
 
-## Example prompts
+### Example prompts
 
 Ask your AI app to perform actions using Blaxel MCP tools, for example:
 
@@ -93,15 +95,13 @@ Ask your AI app to perform actions using Blaxel MCP tools, for example:
 - Create a new MCP server named search with blaxel-search integration
 - Invite test@mydomain.com to my workspace
 
-## Supported actions
+### Supported actions
 
 The Blaxel MCP server exposes tools for common platform operations.
 
-You can list, create and remove services (Agent, MCP, Jobs, Models, Sandboxes…), manage users and service account. And much more to come
+You can list, create and remove services (Sandboxes, Agents, MCP Servers, Jobs, Models, …), as well as manage users and service accounts.
 
-See the open-source definitions for the latest list and schemas.
-
-- Source repository: `https://github.com/blaxel-ai/blaxel-mcp-server`
+See the [open-source definitions](https://github.com/blaxel-ai/blaxel-mcp-server) for the latest list and schemas.
 
 ## Running locally
 
@@ -112,6 +112,4 @@ Prefer using the hosted server at `https://api.blaxel.ai/v0/mcp`. If you must ru
 - The server requires a valid API key.
 - When using multiple workspaces, `X-Blaxel-Workspace` must be provided to disambiguate.
 
-## References
-
-- Blaxel MCP Server source: `https://github.com/blaxel-ai/blaxel-mcp-server`
+Check out Blaxel MCP server’s [source here](https://github.com/blaxel-ai/blaxel-mcp-server).

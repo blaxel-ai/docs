@@ -8,22 +8,22 @@ sidebarTitle: "Overview"
 
 ---
 
-Blaxel is a **cloud infrastructure built for AI agents**. Our computing platform gives AI Builders the services, infra, and developer experience optimized to build and deploy agentic AI — with a twist: your agents can also take the wheel.
+Blaxel is a **cloud computing infrastructure built for AI agents**. Our computing platform provides compute runtimes and hosting services that AI can use — from code sandboxes to background task infrastructure.
 
 <Frame>
 <img src="/img/general/overview-2025-05.png" />
 </Frame>
 
-An *AI agent* is any application that leverages generative AI models to take autonomous actions in the real world—whether by interacting with humans or using APIs to read and write data. 
+An *AI agent* is any application that leverages generative AI models to take autonomous actions in the real world. These agents often require computing power to execute their interactions.
 
 <Accordion title="Some examples of agents include…">
 
 - **Conversational agents** that are able to take action in the world while keeping a human in the loop for activation or validation: for example code generation agents with real-time previews.
 - **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured video files and uses an AI model to extract structured data then act on it.
-- **RAG agents**: for example, a chatbot assistant that can better answer consumers’ queries by autonomously accessing relevant documentation or database.
+- **RAG agents**: for example, a chatbot assistant that can better answer consumers’ queries by autonomously running scripts to access a relevant databases.
 - **Autonomous system agents** that handle machine-to-machine workflows: like a smart traffic monitoring system that analyzes video feeds, detects accidents in real-time, and automatically dispatches emergency services with AI-generated incident reports.
 
-Blaxel provides cloud services that give production-grade multi-agents their own computing environments including code sandboxes, tool servers, and LLMs. It offers infrastructure to run these agents on a global network that makes them run fast and reliably.
+Blaxel’s infrastructure platform gives production-grade agents their own computing environments including code sandboxes, tool servers, and LLMs. It offers infrastructure to run these agents on a global network that makes them run fast and reliably.
 
 </Accordion>
 
@@ -31,28 +31,35 @@ This portal provides comprehensive documentation and API, SDK and CLI reference 
 
 ## Essential concepts
 
-Blaxel is a cloud designed for agentic AI. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build agentic systems exactly the way you want.
+Blaxel is a cloud designed for agentic AI. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build reliable agentic systems exactly the way you want.
 
-Blaxel consists of modular services that are engineered to work seamlessly together — but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power agents.
+Blaxel consists of modular services that are engineered to work seamlessly together, but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power agents.
 
 ### The building blocks
 
-At the heart of Blaxel is our flagship **Agents Hosting** service. Agents Hosting lets you deploy your AI agents as serverless auto scalable endpoints. 
+At the heart of Blaxel is our flagship **Sandbox** service. They are secure instant-launching compute environments that you can use for running AI code.
 
-- Completely framework agnostic. Just bring your code, Blaxel builds it and runs it for you.
-- Asynchronous endpoints with automatic queuing and retries
-- Full observability — out-of-the-box
+- Automatic scale-to-zero after 5s inactivity, resume from standby under 25ms even after weeks.
+- Micro-VMs with full access to file system, processes and logs — and native support for Zero Data Retention (ZDR).
+- Preview URLs with your own custom domain.
 
 The rest of Blaxel’s cloud services include:
 
-- **Sandboxes** - MicroVMs with near-instant cold starts that provide agents with their own compute runtime to execute code or run commands.
+- **Agents Hosting** - Deploy your AI agents as serverless auto scalable endpoints. Completely framework agnostic: just bring your code, Blaxel builds it and runs it for you.
 - **Batch Jobs** - Scalable compute engine designed for agents to schedule and execute many AI processing tasks in parallel in the background
 - **MCP Servers Hosting** - Deploy custom tool servers on a fast-starting infrastructure to extend your agents' capabilities.
 - **Model Gateway** - Intelligent routing layer to LLM providers with built-in telemetry, token cost control, and fallbacks capabilities
+- **Full observability** — out-of-the-box
 
-### The Blaxel method
+### A cloud built for agents
 
-As the ultimate AI builder's playground, Blaxel doesn’t require you to learn and adopt a framework or architecture. However, we do recommend best-practices from our experience working with top AI teams and aim to provide guardrails and framing when you build your agents.
+Agents will transform how we work in the coming years. Traditional cloud providers weren't designed to handle them and their one-size-fits-all architecture holds them back. We built Blaxel to fix that. 
+
+Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through [MCP servers](MCP-server), allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
+
+<Accordion title="The Blaxel method">
+
+As the ultimate AI builder's toolkit, Blaxel doesn’t require you to learn and adopt a framework or architecture. However, we do recommend best-practices from our experience working with top AI teams and aim to provide guardrails and framing when you build your agents.
 
 - Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel—but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDK allows builders to split services and connect them from your code.
 - You can call LLM providers directly from your code, but we recommend you go through Blaxel’s Model Gateway for telemetry.
@@ -61,15 +68,11 @@ As the ultimate AI builder's playground, Blaxel doesn’t require you to learn a
 - Agentic systems naturally connect with many services both inside and outside your network, mixing North-South and East-West traffic in cloud terms. Strong observability is essential for reliability.
 - Reliability is the biggest challenge in agentic AI. Focus on fine-tuning your prompts, tool calls, data access, and orchestration logic—Blaxel will handle the execution.
 
-### A cloud built for agents
-
-Agents will transform how we work in the coming years. Traditional cloud providers weren't designed to handle them and their one-size-fits-all architecture holds them back. We built Blaxel to fix that. 
-
-Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through MCP servers, allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
+</Accordion>
 
 ### Which component should I use?
 
-When building your agentic system, you'll need to make architecture design choices. Blaxel offers several compute options, summarized below in order of latency performance:
+When building your agentic system, you'll need to make architecture design choices. Blaxel offers several high-perf compute options, summarized below in order of latency performance:
 
 - [**Sandboxes**](Sandboxes/Overview): Perfect for maximum workload flexibility. These micro VMs provide full access to filesystem, network, and processes, booting from hibernation in under 25ms.
 - [**Agents Hosting (sync mode)**](https://docs.blaxel.ai/Agents/Query-agents#default-synchronous-endpoint): Ideal for running HTTP API services that process requests within a few seconds.
@@ -78,11 +81,11 @@ When building your agentic system, you'll need to make architecture design choic
 
 | **Product** | **Typical use** | **Typical workload duration** | **Boot time** | **Input type** |
 | --- | --- | --- | --- | --- |
+| Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms (from standby) | Fully custom |
 | Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~2-4s | Custom API endpoints |
 | Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~5s | Custom API endpoints |
 | Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific input parameters |
-| Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms | Fully custom |
-| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 15 mins**) | ~2-4s | API following MCP  |
+| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 10 mins**) | ~2-4s | API following MCP  |
 
 ## The Blaxel powerhouse
 
@@ -98,11 +101,11 @@ You might want to start with any of the following articles:
 
 - [**Get started**](Get-started): Deploy your first workload on Blaxel in just 3 minutes.
 - **Product Documentation**
-    - [**Agents Hosting**](Agents/Overview): Build and run AI agents that can scale.
-    - [**MCP Servers Hosting**](Functions/Overview): Expose capabilities and execute tool calls for your AI agents.
-    - [**Model APIs:**](Models/Overview) Learn about supported model types.
-    - [**Sandboxes**](Sandboxes/Overview): Equip your agents with blazing-fast virtual machines to run commands and code.
-    - [**Batch jobs**](Jobs/Overview): Scheduled jobs of batch processing tasks for your AI workflows.
+    - [**Sandboxes**](Sandboxes/Overview): Equip your agents with fast & secure virtual machines to run AI code.
+    - [**Agents Hosting**](Agents/Overview): Host and run AI agents as serverless auto-scalable endpoints.
+    - [**Batch jobs**](Jobs/Overview): Background tasks for your AI workflows that run in batches.
+    - [**MCP Servers Hosting**](Functions/Overview): Expose capabilities and execute tool calls using MCP.
+    - [**Model APIs:**](Models/Overview) Learn about supported model types on our global AI gateway.
     - [**Integrations:**](Integrations/HuggingFace) Discover how Blaxel works with other tools, frameworks, and platforms.
     - [**Observability**](Observability/Overview): Monitor logs, traces and metrics for your agent runs.
     - [**Policies Governance**](Model-Governance/Policies)[:](Model-Governance/Environments) Manage your AI deployment strategies.

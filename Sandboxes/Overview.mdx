@@ -4,13 +4,13 @@ title: 'Sandboxes'
 
 sidebarTitle: "Overview"
 
-description: 'Lightweight virtual machines where both you and your agents can run code with sub-25ms cold starts.'
+description: 'Lightweight virtual machines where your agents can run AI code with sub-25ms cold starts.'
 
 ---
 
-Sandboxes are fast-launching virtual machines that both humans and AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available to agents.
+Sandboxes are fast-launching virtual machines that AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
 
-They natively serve as **sandboxed compute runtimes for agents**. You can securely run untrusted code inside these VMs — particularly AI-generated code — making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
+They natively serve as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
 
 Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after a few seconds of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
 
