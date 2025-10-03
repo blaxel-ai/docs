@@ -2,19 +2,15 @@
 
 title: 'Get started'
 
-description: 'Deploy your first workload on Blaxel.'
+description: 'Deploy your first Blaxel compute environment.'
 
 ---
 
-<Frame>
-<img src="/img/general/sandboxes-dark.png" />
-</Frame>
-
-[Blaxel](https://app.blaxel.ai/) is a computing platform where AI builders can **deploy AI agents easily**. This tutorial demonstrates how to deploy your first workload on Blaxel.
+Blaxel is a **cloud computing infrastructure built for AI agents**. Our computing platform provides compute runtimes and hosting services that AI can use — from code sandboxes to background task infrastructure.
 
 ## Quickstart
 
-Welcome there! 👋 Make sure you have created an account on Blaxel (here → [https://app.blaxel.ai](https://app.blaxel.ai)), and created a first [workspace](Security/Workspace-access-control). Retrieve the workspace ID.
+Welcome there! 👋 Make sure you have created an account on Blaxel (here → [https://app.blaxel.ai](https://app.blaxel.ai)), and created a first [workspace](Security/Workspace-access-control) (you’ll need the workspace ID).
 
 <Steps>
 
@@ -127,60 +123,27 @@ Open a terminal and login to Blaxel using this command:
 bl login
 ```
 
-</Accordion>
+<Accordion title="Learn more about authentication on Blaxel">
 
-</Step>
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
-<Step title="Install a package manager (if not done already)">
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](cli-reference/introduction) (or deploy on Blaxel)
 
-<AccordionGroup>
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
-<Accordion title="Python: install pip">
-Follow the [pip documentation](https://pip.pypa.io/en/stable/installation/) for guidance on how to install **pip**, if not already installed.
-
-</Accordion>
-
-<Accordion title="TypeScript: install npm">
-Follow the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for guidance on how to install **npm,** if not already installed.
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
 
 </Accordion>
-
-</AccordionGroup>
+</Accordion>
 
 </Step>
 
 <Step title="Create your first resource">
 
-Blaxel is the ultimate toolkit for AI agent builders, letting you create and deploy resources on a purpose-built infrastructure for agentics.
-
-<AccordionGroup>
-
-<Accordion title="Create an agent application" icon="robot">
-
-<Warning>In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
-
-Let’s initialize a first app. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
-
-```bash
-bl new agent
-```
-
-You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`. 
-
-</Accordion>
-
-<Accordion title="Create a batch job" icon="list-check">
-<Warning>In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
-
-Let’s initialize a first batch job definition. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your job on Blaxel.
-
-```bash
-bl new job
-```
-
-You can now develop your job and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to leverage other Blaxel deployments in `/src/index.py` or `/src/index.ts`.
-
-</Accordion>
+Blaxel is the ultimate toolkit for AI agent builders. Our flagship product is the **Sandbox**, though you can also run the rest of your agentic workloads on our cloud.
 
 <Accordion title="Create a sandbox" icon="box">
 Sandboxes can be created programmatically using Blaxel SDK. Install the SDK:
@@ -225,9 +188,79 @@ bun add @blaxel/core
 
 </CodeGroup>
 
-<Card title="Learn how to create sandboxes" icon="box" href="/Sandboxes/Overview">
-Read the guide for creating and connecting to sandboxes using Blaxel SDK.
+Create your first sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/prod-base:latest",   // public or custom image
+  memory: 4096,   // in MB
+  ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
+  region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/prod-base:latest",   # public or custom image
+  "memory": 4096,   # in MB
+  "ports": [{ "target": 3000 }],   # ports to expose
+  "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
+})
+```
+
+</CodeGroup>
+
+<Card title="Learn how to manage sandboxes" icon="box" href="/Sandboxes/Overview">
+Read the complete guide for creating & connecting to sandboxes using Blaxel SDK.
 </Card>
+</Accordion>
+
+Or deploy another type of resource:
+
+<Accordion title="Deploy an agent, batch job or MCP server">
+
+Deploy your agent’s components on a purpose-built computing infrastructure for agentics.
+
+<Steps>
+<Step title="Create the resource">
+
+<AccordionGroup>
+
+<Accordion title="Create an agent app" icon="robot">
+
+<Warning>In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
+
+Let’s initialize a first app. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
+
+```bash
+bl new agent
+```
+
+You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`. 
+
+</Accordion>
+
+<Accordion title="Create a batch job" icon="list-check">
+<Warning>In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
+
+Let’s initialize a first batch job definition. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your job on Blaxel.
+
+```bash
+bl new job
+```
+
+You can now develop your job and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to leverage other Blaxel deployments in `/src/index.py` or `/src/index.ts`.
+
 </Accordion>
 
 <Accordion title="Create an MCP server" icon="screwdriver-wrench">
@@ -315,39 +348,34 @@ Your workload is made available as a **serverless auto scalable** **global endpo
 
 </Step>
 
-<Step title="Make a first inference">
+<Step title="Query your deployment">
 
 <AccordionGroup>
 
 <Accordion title="Agent: send an invocation request" icon="robot">
 
-Run a first inference on your Blaxel agent with the following command:
+Run an inference from a terminal with the following command:
 
 ```bash
 bl chat <<AGENT-NAME>>
 ```
 
-This gives you a chat-like interface where you can interact with your agent! To use this when serving locally, just add option `--local` .
+This gives you a chat-like interface where you can interact with your agent. To use this when serving locally, just add option `--local` .
 
-Alternatively, you can send requests to your production agent by running:
-
-```bash
-bl run agent <<AGENT-NAME>> --data '{"inputs":"Hello world!"}'
-```
-
-Or by directly calling the [global endpoint](Agents/Query-agents).
+Alternatively, **just call the** [global endpoint](Agents/Query-agents).
 
 </Accordion>
 
 <Accordion title="Job: execute the job" icon="list-check">
 
-Trigger an execution of your batch job by running:
+Trigger an execution of your batch job from a terminal by running:
 
 ```bash
 # Run a job using Blaxel CLI with --data argument
 bl run job <<JOB-NAME>> --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
 ```
 
+Alternatively, **just call the** [global endpoint](Jobs/Overview).
 </Accordion>
 
 <Accordion title="MCP server: test the server" icon="screwdriver-wrench">
@@ -367,6 +395,12 @@ Read more about [how to connect to the server here](Functions/Invoke-functions).
 </Accordion>
 
 </AccordionGroup>
+
+</Step>
+
+</Steps>
+
+</Accordion>
 
 </Step>
 
