@@ -98,7 +98,6 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <CodeGroup>
 
 ```typescript TypeScript {11-23}
-
 import { SandboxInstance } from "@blaxel/core";
 
 // Create a new sandbox
@@ -125,8 +124,7 @@ const sandbox = await SandboxInstance.create({
 ```
 
 ```python Python {11-23}
-
-from blaxel.core import SandboxInstance
+from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
 
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
