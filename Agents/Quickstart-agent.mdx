@@ -50,14 +50,46 @@ bl deploy
 
 ### Option B: No `Dockerfile`
 
-If you don’t want to create one, add the following scripts to your `package.json`:
+If you don’t want to create one, add the following scripts to your `package.json`.
 
-> Depending on your setup, not all scripts are required. For TypeScript projects, all four are commonly used.
-> 
-- **`start`**: Runs the server locally via TypeScript without needing a build step (useful for dev).
-- **`build`**: Builds the project (triggered automatically during deployment).
-- **`prod`**: Starts the server in production from the `dist` folder (requires a build first).
-- **`dev`**: Same as `start`, but with hot-reload for instant updates while developing.
+Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+
+- `start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `build` : build the project. It is done automatically when deploying.
+- `prod` : start the server remotely from the dist folder, the project needs to be have been built before.
+- `dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
+
+The remaining fields in package.json follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+
+```json
+{
+  "name": "name",
+  "version": "1.0.0",
+  "description": "<no value>",
+  "keywords": [],
+  "license": "MIT",
+  "author": "cdrappier",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "prod": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.2.5",
+    "@blaxel/sdk": "0.1.1-preview.9",
+    "ai": "^4.1.61",
+    "fastify": "^5.2.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.11",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
+```
 
 Then run:
 
