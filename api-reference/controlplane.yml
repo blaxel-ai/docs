@@ -88,8 +88,10 @@ components:
       description: Billable time metric
       properties:
         billableTime:
-          type: number
+          type: array
           description: Billable time
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         totalAllocation:
           type: number
           description: Total memory allocation in GB-seconds
@@ -100,19 +102,23 @@ components:
         continents:
           type: array
           description: Continents
-          items: {}
+          items:
+            $ref: '#/components/schemas/Continent'
         countries:
           type: array
           description: Countries
-          items: {}
+          items:
+            $ref: '#/components/schemas/Country'
         privateLocations:
           type: array
           description: Private locations managed with blaxel operator
-          items: {}
+          items:
+            $ref: '#/components/schemas/PrivateLocation'
         regions:
           type: array
           description: Regions
-          items: {}
+          items:
+            $ref: '#/components/schemas/Region'
     Continent:
       type: object
       description: Continent
@@ -582,32 +588,41 @@ components:
         billableTime:
           type: array
           description: Billable time
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         cpuUsage:
           type: array
           description: CPU usage
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         executionsChart:
-          type: object
+          type: array
           description: Executions chart
+          items:
+            $ref: '#/components/schemas/JobsSuccessFailedChart'
         executionsRunning:
           type: array
           description: Executions running
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         executionsTotal:
           type: object
           description: Total executions
         ramUsage:
           type: array
           description: RAM usage
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         tasksChart:
-          type: object
+          type: array
           description: Tasks chart
+          items:
+            $ref: '#/components/schemas/JobsSuccessFailedChart'
         tasksRunning:
           type: array
           description: Tasks running
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         tasksTotal:
           type: object
           description: Total tasks
@@ -634,11 +649,15 @@ components:
       description: Jobs chart
       properties:
         received:
-          $ref: '#/components/schemas/JobsChartValue'
+          type: array
           description: Received
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         sent:
-          $ref: '#/components/schemas/JobsChartValue'
+          type: array
           description: Sent
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
     JobsSuccessFailedChart:
       type: object
       description: Jobs chart
@@ -701,8 +720,10 @@ components:
       description: Latency metrics
       properties:
         globalHistogram:
-          $ref: '#/components/schemas/HistogramBucket'
+          type: array
           description: Global histogram
+          items:
+            $ref: '#/components/schemas/HistogramBucket'
         globalStats:
           $ref: '#/components/schemas/HistogramStats'
           description: Global stats
@@ -892,10 +913,13 @@ components:
         items:
           type: array
           description: Historical requests for all resources globally
-          items: {}
+          items:
+            $ref: '#/components/schemas/RequestTotalResponseData'
         lastNRequests:
-          type: integer
+          type: array
           description: Metric value
+          items:
+            $ref: '#/components/schemas/LastNRequestsMetric'
         models:
           type: object
           description: Metrics for models
@@ -1054,6 +1078,10 @@ components:
     PodTemplateSpec:
       type: object
       description: Pod template specification
+    Policies:
+      type: array
+      items:
+        $ref: '#/components/schemas/Policy'
     PoliciesList:
       type: array
       items:
@@ -1395,7 +1423,10 @@ components:
       description: Request duration over time metrics
       properties:
         requestDurationOverTime:
-          $ref: '#/components/schemas/RequestDurationOverTimeMetric'
+          type: array
+          description: Request duration over time
+          items:
+            $ref: '#/components/schemas/RequestDurationOverTimeMetric'
     RequestTotalByOriginMetric:
       type: object
       description: Request total by origin metric
@@ -1413,7 +1444,8 @@ components:
         items:
           type: array
           description: Historical requests for all resources globally
-          items: {}
+          items:
+            $ref: '#/components/schemas/RequestTotalResponseData'
         requestTotal:
           type: number
           description: Number of requests for all resources globally
@@ -1543,9 +1575,11 @@ components:
           description: Historical requests (in last 24 hours) for the model deployment
             globally
         lastNRequests:
-          $ref: '#/components/schemas/ArrayMetric'
+          type: array
           description: Historical requests (in last 24 hours) for the model deployment
             globally
+          items:
+            $ref: '#/components/schemas/LastNRequestsMetric'
         latency:
           $ref: '#/components/schemas/LatencyMetric'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -1607,12 +1641,14 @@ components:
         sandboxesCpuUsage:
           type: array
           description: CPU usage over time for sandboxes
-          items: {}
+          items:
+            $ref: '#/components/schemas/JobsChartValue'
         sandboxesRamUsage:
           type: array
           description: RAM usage over time for sandboxes with memory, value, and percent
             metrics
-          items: {}
+          items:
+            $ref: '#/components/schemas/SandboxMetrics'
         tokenRate:
           $ref: '#/components/schemas/TokenRateMetrics'
           description: Historical requests (in last 24 hours) for the model deployment
@@ -2078,7 +2114,10 @@ components:
       description: Time to first token over time metrics
       properties:
         timeToFirstTokenOverTime:
-          $ref: '#/components/schemas/RequestDurationOverTimeMetric'
+          type: array
+          description: Time to first token over time
+          items:
+            $ref: '#/components/schemas/RequestDurationOverTimeMetric'
     TokenRateMetric:
       type: object
       description: Token rate metric
@@ -2106,14 +2145,20 @@ components:
       description: Token rate metrics
       properties:
         tokenRate:
-          $ref: '#/components/schemas/TokenRateMetric'
+          type: array
           description: Token rate
+          items:
+            $ref: '#/components/schemas/TokenRateMetric'
         tokenRateInput:
-          $ref: '#/components/schemas/TokenRateMetric'
+          type: array
           description: Token rate input
+          items:
+            $ref: '#/components/schemas/TokenRateMetric'
         tokenRateOutput:
-          $ref: '#/components/schemas/TokenRateMetric'
+          type: array
           description: Token rate output
+          items:
+            $ref: '#/components/schemas/TokenRateMetric'
     TokenTotalMetric:
       type: object
       description: Token total metric
@@ -2229,6 +2274,9 @@ components:
         size:
           type: integer
           description: Size of the volume in MB
+        template:
+          type: string
+          description: Volume template with revision (e.g. "mytemplate:1" or "mytemplate:latest")
     VolumeState:
       type: object
       description: Volume state - mutable runtime state
@@ -2237,6 +2285,76 @@ components:
           type: string
           description: Resource this volume is attached to (e.g. "sandbox:my-sandbox",
             "model:my-model")
+    VolumeTemplate:
+      type: object
+      description: Volume template for creating pre-configured volumes
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeTemplateSpec'
+        state:
+          $ref: '#/components/schemas/VolumeTemplateState'
+        versions:
+          type: array
+          description: List of versions for this template
+          items:
+            $ref: '#/components/schemas/VolumeTemplateVersion'
+    VolumeTemplateSpec:
+      type: object
+      description: Volume template specification
+      properties:
+        defaultSize:
+          type: integer
+          description: Default size of the volume in MB
+        description:
+          type: string
+          description: Description of the volume template
+    VolumeTemplateState:
+      type: object
+      description: Volume template state
+      properties:
+        lastVersionUploadedAt:
+          type: string
+          description: Timestamp of last version upload
+        latestVersion:
+          type: string
+          description: Current/latest S3 version ID
+        status:
+          type: string
+          description: Status of the volume template (created, ready, error)
+        versionCount:
+          type: integer
+          description: Total number of versions for this template
+    VolumeTemplateVersion:
+      type: object
+      description: Volume template version tracking individual versions of template
+        content
+      properties:
+        bucket:
+          type: string
+          description: S3 bucket name where this version is stored
+        contentSize:
+          type: integer
+          description: Size of the template content in bytes
+        name:
+          type: string
+          description: Name of the template version
+        region:
+          type: string
+          description: AWS region where this version is stored
+        status:
+          type: string
+          description: Status of the version (CREATED, READY, FAILED)
+        templateName:
+          type: string
+          description: Template name this version belongs to
+        versionId:
+          type: string
+          description: S3 version ID for this template version
+        workspace:
+          type: string
+          description: Workspace name
     WebsocketChannel:
       type: object
       description: WebSocket connection details
@@ -2294,6 +2412,13 @@ components:
             description: Workspace write region
           runtime:
             $ref: '#/components/schemas/WorkspaceRuntime'
+          status:
+            type: string
+            description: Workspace status (created, account_binded, account_configured,
+              workspace_configured, ready, error)
+          statusReason:
+            type: string
+            description: Reason for current status (only set for error status)
     WorkspaceRuntime:
       type: object
       description: Workspace runtime
@@ -4316,6 +4441,181 @@ paths:
       summary: Update user role in workspace
       tags:
       - workspaces
+  /volume_templates:
+    get:
+      description: Returns a list of all volume templates.
+      operationId: ListVolumeTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VolumeTemplate'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumeTemplates:list
+      summary: List volume templates
+      tags:
+      - volumeTemplates
+    post:
+      description: Creates a volume template.
+      operationId: CreateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (if upload=true)
+              schema:
+                type: string
+      security:
+      - BearerAuth:
+        - volumeTemplates:create
+      summary: Create volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}:
+    delete:
+      description: Deletes a volume template by name.
+      operationId: DeleteVolumeTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumeTemplates:delete
+      summary: Delete volume template
+      tags:
+      - volumeTemplates
+    get:
+      description: Returns a volume template by name.
+      operationId: GetVolumeTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumeTemplates:get
+      summary: Get volume template
+      tags:
+      - volumeTemplates
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Creates or updates a volume template.
+      operationId: UpdateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (only when
+                upload=true)
+              schema:
+                type: string
+      security:
+      - BearerAuth:
+        - volumeTemplates:upsert
+      summary: Create or update volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}/versions/{versionName}:
+    delete:
+      description: Deletes a specific version of a volume template.
+      operationId: DeleteVolumeTemplateVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  template:
+                    $ref: '#/components/schemas/VolumeTemplate'
+                type: object
+          description: Version deleted successfully
+        "400":
+          description: Cannot delete the only version
+        "404":
+          description: Version not found
+      security:
+      - BearerAuth:
+        - volumeTemplates:delete
+      summary: Delete volume template version
+      tags:
+      - volumeTemplates
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    - description: Name of the version to delete
+      in: path
+      name: versionName
+      required: true
+      schema:
+        type: string
   /volumes:
     get:
       description: Returns a list of all volumes in the workspace.

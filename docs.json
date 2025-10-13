@@ -52,8 +52,20 @@
                   "Sandboxes/Sessions"
                 ]
               },
-              "Sandboxes/Volumes",
+              {
+                "group": "Volumes",
+                "pages": [
+                  "Sandboxes/Volumes",
+                  "Sandboxes/Volumes-templates"
+                ]
+              },
               "Sandboxes/Templates"
+            ]
+          },
+          {
+            "group": "Batch Jobs",
+            "pages": [
+              "Jobs/Overview"
             ]
           },
           {
@@ -102,12 +114,6 @@
                   "Frameworks/ADK"
                 ]
               }
-            ]
-          },
-          {
-            "group": "Batch Jobs \ud83c\udd95",
-            "pages": [
-              "Jobs/Overview"
             ]
           },
           {
