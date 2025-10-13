@@ -16,6 +16,8 @@ While Blaxel automatically snapshots the full state of a sandbox at scale down a
 
 ## Create & delete a volume
 
+### Create
+
 To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). This volume exists independently of any sandbox.
 
 <Accordion title="Set up authentication to Blaxel">
@@ -42,6 +44,8 @@ const volume = await VolumeInstance.create({
   region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
 });
 ```
+
+### Manage volumes
 
 To delete a volume:
 
