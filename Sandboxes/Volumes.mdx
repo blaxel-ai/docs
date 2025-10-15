@@ -12,7 +12,7 @@ description: 'Persist files long-term by attaching and using volumes.'
 
 Blaxel Volumes provide **persistent storage that survives sandbox destruction and recreation**, enabling stateful development environments and data retention across VM lifecycle events. 
 
-While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in a warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years.
+While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in a warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](Volumes-templates) to start from a pre-populated filesystem.
 
 ## Create & delete a volume
 
@@ -44,6 +44,19 @@ const volume = await VolumeInstance.create({
   region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
 });
 ```
+
+You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files. 
+
+```tsx
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:1"  // Use template-name:revision or template-name:latest
+});
+```
+
+<Card title="Manage volume templates" icon="database" href="/Sandboxes/Volumes-templates">
+Create volumes containing the same set of files every time.
+</Card>
 
 ### Manage volumes
 
