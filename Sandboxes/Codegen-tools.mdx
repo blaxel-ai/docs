@@ -28,7 +28,7 @@ import { SandboxInstance } from "@blaxel/core";
 // Create sandbox with Morph API key for fast code edits
 const sandbox = await SandboxInstance.createIfNotExists({
   name: "codegen-sandbox",
-  image: "blaxel/prod-nextjs:latest",
+  image: "blaxel/nextjs:latest",
   memory: 4096,
   ports: [
     { name: "preview", target: 3000 }
@@ -46,7 +46,7 @@ from blaxel.core import SandboxInstance
 # Create sandbox with Morph API key for fast code edits
 sandbox = await SandboxInstance.create_if_not_exists({
   "name": "codegen-sandbox",
-  "image": "blaxel/prod-nextjs:latest",
+  "image": "blaxel/nextjs:latest",
   "memory": 4096,
   "ports": [
     { "name": "preview", "target": 3000 }

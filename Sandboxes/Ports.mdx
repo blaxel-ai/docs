@@ -30,7 +30,7 @@ import { SandboxInstance } from "@blaxel/core";
 // Create a new sandbox
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
-  image: "blaxel/prod-base:latest",
+  image: "blaxel/base-image:latest",
   memory: 4096,
   ports: [{ target: 3000 }]
 });
@@ -42,7 +42,7 @@ from blaxel.core import SandboxInstance
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
-  "image": "blaxel/prod-base:latest",
+  "image": "blaxel/base-image:latest",
   "memory": 4096,
   "ports": [{ "target": 3000 }]
 })

@@ -99,7 +99,7 @@ export async function GET() {
   // Get or create sandbox
   const sandbox = await SandboxInstance.createIfNotExists({
     name: SANDBOX_NAME,
-    image: "blaxel/prod-base:latest",
+    image: "blaxel/base-image:latest",
     memory: 4096,
     ports: [
       { name: "preview", target: 3000 }

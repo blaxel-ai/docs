@@ -89,7 +89,7 @@ Each configuration must include the `name` of the volume to attach and the `moun
 ```tsx
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
-  image: "blaxel/prod-nextjs:latest",
+  image: "blaxel/nextjs:latest",
   memory: 4096,
   region: "us-pdx-1",     // Must be the same region as the created volume
   volumes: [{

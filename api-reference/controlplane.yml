@@ -813,6 +813,9 @@ components:
           form:
             type: object
             description: Form of the artifact
+          hidden:
+            type: boolean
+            description: If the artifact is hidden
           hiddenSecrets:
             type: array
             description: Hidden secrets of the artifact
@@ -1839,6 +1842,9 @@ components:
         enterprise:
           type: boolean
           description: If the definition is enterprise
+        hidden:
+          type: boolean
+          description: If the definition is hidden
         icon:
           type: string
           description: Icon of the definition
@@ -1856,6 +1862,9 @@ components:
           description: Name of the artifact
         ports:
           $ref: '#/components/schemas/Ports'
+        tags:
+          type: string
+          description: Tags of the definition
         url:
           type: string
           description: URL of the definition

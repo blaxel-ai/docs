@@ -43,7 +43,7 @@ import { SandboxInstance } from "@blaxel/core";
 // Create a new sandbox
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
-  image: "blaxel/prod-base:latest",   // public or custom image
+  image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
   ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
   region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
@@ -56,7 +56,7 @@ from blaxel.core import SandboxInstance
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
-  "image": "blaxel/prod-base:latest",   # public or custom image
+  "image": "blaxel/base-image:latest",   # public or custom image
   "memory": 4096,   # in MB
   "ports": [{ "target": 3000 }],   # ports to expose
   "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
@@ -67,7 +67,7 @@ sandbox = await SandboxInstance.create({
 
 ### Images
 
-<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/prod-{NAME}:latest` (e.g. *blaxel/prod-base:latest*).</Info>
+<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/{NAME}:latest` (e.g. *blaxel/nextjs:latest*).</Info>
 
 [Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts. 
 
@@ -103,7 +103,7 @@ import { SandboxInstance } from "@blaxel/core";
 // Create a new sandbox
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
-  image: "blaxel/prod-base:latest",
+  image: "blaxel/base-image:latest",
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }],
   region: "us-pdx-1",
@@ -129,7 +129,7 @@ from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
-  "image": "blaxel/prod-base:latest",
+  "image": "blaxel/base-image:latest",
   "memory": 4096,
   "ports": [{ "target": 3000 }],
   "region": "us-pdx-1",
@@ -191,7 +191,7 @@ import { SandboxInstance } from "@blaxel/core";
 // Create sandbox if it doesn't exist
 const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-sandbox",
-  image: "blaxel/prod-base:latest",
+  image: "blaxel/base-image:latest",
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }],
   region: "us-pdx-1"
@@ -204,7 +204,7 @@ from blaxel.core import SandboxInstance
 # Create sandbox if it doesn't exist
 sandbox = await SandboxInstance.create_if_not_exists({
   "name": "my-sandbox",
-  "image": "blaxel/prod-base:latest",
+  "image": "blaxel/base-image:latest",
   "memory": 4096,
   "ports": [{ "target": 3000, "protocol": "HTTP" }],
   "region": "us-pdx-1"

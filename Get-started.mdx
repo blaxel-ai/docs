@@ -199,7 +199,7 @@ async function main() {
   // Create a new sandbox
   const sandbox = await SandboxInstance.createIfNotExists({
     name: "my-sandbox",
-    image: "blaxel/prod-base:latest",   // public or custom image
+    image: "blaxel/base-image:latest",   // public or custom image
     memory: 4096,   // in MB
     ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
     region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
@@ -218,7 +218,7 @@ async def main():
     # Create a new sandbox
     sandbox = await SandboxInstance.create_if_not_exists({
       "name": "my-sandbox",
-      "image": "blaxel/prod-base:latest",   # public or custom image
+      "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
       "ports": [{ "target": 3000 }],   # ports to expose
       "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
