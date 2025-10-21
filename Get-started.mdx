@@ -195,27 +195,38 @@ Create your first sandbox:
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-// Create a new sandbox
-const sandbox = await SandboxInstance.create({
-  name: "my-sandbox",
-  image: "blaxel/prod-base:latest",   // public or custom image
-  memory: 4096,   // in MB
-  ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
-  region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
-});
+async function main() {
+  // Create a new sandbox
+  const sandbox = await SandboxInstance.createIfNotExists({
+    name: "my-sandbox",
+    image: "blaxel/prod-base:latest",   // public or custom image
+    memory: 4096,   // in MB
+    ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
+    region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
+  });
+  console.log("Sandbox created:", {sandbox});
+}
+
+main().catch(console.error);
 ```
 
 ```python Python
+import asyncio
 from blaxel.core import SandboxInstance
 
-# Create a new sandbox
-sandbox = await SandboxInstance.create({
-  "name": "my-sandbox",
-  "image": "blaxel/prod-base:latest",   # public or custom image
-  "memory": 4096,   # in MB
-  "ports": [{ "target": 3000 }],   # ports to expose
-  "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
-})
+async def main():
+    # Create a new sandbox
+    sandbox = await SandboxInstance.create_if_not_exists({
+      "name": "my-sandbox",
+      "image": "blaxel/prod-base:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # ports to expose
+      "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
+    })
+    print(f"Sandbox created: {sandbox}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </CodeGroup>
