@@ -65,7 +65,17 @@
           {
             "group": "Batch Jobs",
             "pages": [
-              "Jobs/Overview"
+              "Jobs/Overview",
+              "Jobs/Develop-a-job",
+              {
+                "group": "Deploy a job",
+                "pages": [
+                  "Agents/Deploy-a-job",
+                  "Agents/Deploy-dockerfile-jobs",
+                  "Agents/Deploy-multiple-jobs"
+                ]
+              },
+              "Jobs/Variables-and-secrets-jobs"
             ]
           },
           {

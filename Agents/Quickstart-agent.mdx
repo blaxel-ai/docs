@@ -12,7 +12,7 @@ Follow these steps to get your AI agent up and running on Blaxel.
 
 ## 1. Create configuration files
 
-At the root of your project repository, create a `blaxel.toml` file and a `.env` file for your sensitive environment variables.
+At the root of your project repository, create a `blaxel.toml` file for configuration, and a `.env` file for your sensitive [environment variables](Variables-and-secrets).
 
 **Example `blaxel.toml`:**
 
@@ -99,10 +99,18 @@ bl deploy
 
 ## 4. (Optional) Enable telemetry
 
-If you need telemetry, just import it in your app’s entrypoint:
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply import the SDK in your project's entry point.
 
-```jsx
+**For TypeScript:**
+
+```tsx
 import "@blaxel/telemetry";
+```
+
+**For Python:**
+
+```bash
+import blaxel.core
 ```
 
 ## 5. (Optional) Run locally with Blaxel CLI
@@ -115,7 +123,7 @@ bl serve
 bl serve --hotreload
 ```
 
-✅ That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.
+That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.
 
 ## Resources
 

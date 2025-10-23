@@ -2,7 +2,7 @@
 
 title: 'Deploy agents'
 
-description: 'Ship your custom AI agents on Blaxel in a few clicks.'
+description: 'Host your custom AI agents on Blaxel as serverless autoscalable endpoints.'
 
 ---
 
@@ -76,6 +76,14 @@ You can connect a GitHub repository to Blaxel to automatically deploy updates wh
 
 <Card title="Deploy from GitHub" icon="github" href="/Agents/Github-integration">
 Learn how to synchronize your GitHub repository to automatically deploy updates.
+</Card>
+
+### Deploy multiple resources at once
+
+Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](Deploy-multiple) with shared dependencies.
+
+<Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
+Deploy multiple agents & MCP servers with shared context from a single repository.
 </Card>
 
 ## Reference for deployment life-cycle
@@ -195,5 +203,5 @@ Connection failed with status DEADLINE_EXCEEDED.
 If you encounter this error when deploying your agent on Blaxel, ensure that your agent properly exposes an API server that binds to a host and port with the **required** environment variables: `BL_SERVER_HOST` & `BL_SERVER_PORT`. Blaxel automatically injects these variables during deployment.
 
 <Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
-Learn how to run consumers’ inference requests on your agent. 
+Learn how to run inference requests on your agent. 
 </Card>
