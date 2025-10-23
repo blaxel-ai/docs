@@ -14,7 +14,17 @@ They natively serve as **sandboxed compute runtimes for agents**. You can secure
 
 Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after a few seconds of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
 
-![sb lifecycle.drawio.png](Overview/sb_lifecycle.drawio.png)
+<img
+className="block dark:hidden"
+src="/img/general/sbx-lifecycle-light.png"
+alt="Lifecycle of Blaxel Sandboxes"
+/>
+
+<img
+className="hidden dark:block"
+src="/img/general/sbx-lifecycle-dark.png"
+alt="Lifecycle of Blaxel Sandboxes"
+/>
 
 ## Create a sandbox
 
