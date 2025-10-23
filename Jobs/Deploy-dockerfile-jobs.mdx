@@ -2,11 +2,11 @@
 
 title: 'Deploy with a Dockerfile'
 
-description: 'Ship your AI agent on Blaxel using a custom Dockerfile.'
+description: 'Ship your AI batch job on Blaxel using a custom Dockerfile.'
 
 ---
 
-Blaxel allows you to customize your deployments ([agents](Overview), [MCP servers](../Functions/Overview), and [batch jobs](../Jobs/Overview)) using a Dockerfile at the root level of your project.
+Blaxel allows you to customize your deployments ([agents](../Agents/Overview), [MCP servers](../Functions/Overview), and [batch jobs](Overview)) using a Dockerfile at the root level of your project.
 
 ## Overview
 
@@ -19,7 +19,7 @@ By default, Blaxel builds and deploys your application using predefined containe
 
 A Dockerfile at the root of your project gives you full control over the container image that will run your workload on Blaxel's infrastructure.
 
-1. Navigate to the root directory of your Blaxel project ([agent](Overview), [MCP server](../Functions/Overview), or [batch job](../Jobs/Overview))
+1. Navigate to the root directory of your Blaxel project ([agent](../Agents/Overview), [MCP server](../Functions/Overview), or [batch job](Overview))
 2. Create a file named `Dockerfile` (case-sensitive)
 
 ## Dockerfile Structure
@@ -76,17 +76,17 @@ ENTRYPOINT ["npx", "pnpm", "start"]
 
 ### Entrypoint
 
-For [Agents Hosting](Overview) and [MCP Servers Hosting](../Functions/Overview):
+For [Agents Hosting](../Agents/Overview) and [MCP Servers Hosting](../Functions/Overview):
 
 - The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port).
 
-For [Batch Jobs](../Jobs/Overview):
+For [Batch Jobs](Overview):
 
 - The entrypoint must run a function that terminates—if it runs infinitely, your job will continue until it hits the execution timeout.
 
 ### Environment variables
 
-[Environment variables](Variables-and-secrets) configured in the Blaxel platform will be automatically injected into your container at runtime. You do not need to specify them in your Dockerfile.
+[Environment variables](../Agents/Variables-and-secrets) configured in the Blaxel platform will be automatically injected into your container at runtime. You do not need to specify them in your Dockerfile.
 
 ## Test locally
 
@@ -110,8 +110,8 @@ bl deploy
 
 ## Deploy multiple resources with shared files
 
-Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](Deploy-multiple) with shared dependencies.
+Using a custom Dockerfile allows for [deploying multiple jobs from the same repository](Deploy-multiple-jobs) with shared dependencies.
 
-<Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
-Deploy multiple agents & MCP servers with shared context from a single repository.
+<Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Jobs/Deploy-multiple-jobs">
+Deploy multiple jobs with shared context from a single repository.
 </Card>

@@ -1,0 +1,66 @@
+---
+
+title: 'Development guide'
+
+description: 'Run custom AI batch jobs on Blaxel.'
+
+---
+
+Jobs allow you to run many AI tasks in parallel using batch processing. Read the [introduction for a lexicon on jobs, tasks, and executions](Overview).
+
+## Quickstart
+
+<Warning>It is required to have *npm* (TypeScript) *or uv* (Python) installed to use the following command.</Warning>
+
+You can quickly **initialize a new job from scratch** by using CLI command `bl new`. 
+
+```bash
+bl new job
+```
+
+This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `index.ts`. 
+
+<CodeGroup>
+```typescript index.ts
+import { blStartJob, withSpan } from '@blaxel/core'; // You can load any Blaxel SDK function
+import '@blaxel/telemetry'; // This import is required to connect all the metrics and tracing with blaxel platform
+import step1 from './steps/step1';
+import step2 from './steps/step2';
+import step3 from './steps/step3';
+
+type JobArguments = {
+  name: string;
+}
+
+async function myJob({name}: JobArguments) {
+  console.log(`Hello, world ${name}!`);
+
+  // You can call standard Javascript functions
+  await step1();
+  await step2();
+  ...
+}
+
+// You need to use a Blaxel SDK function to wrap your job, this is the only requirement to make it work with Blaxel 
+blStartJob(myJob);
+
+```
+
+</CodeGroup>
+
+Start the job locally:
+
+```bash
+# Run the job with a sample batch file
+bl run job <<JOB-NAME>> --local --file batches/sample-batch.json
+
+# Or directly with --data argument
+bl run job <<JOB-NAME>> --local --data '{"tasks": [{"name": "John"}]}'
+
+# Or without blaxel CLI
+pnpm start --name John
+```
+
+<Card title="Deploy a job" icon="server" href="/Jobs/Deploy-a-job">
+Learn how to deploy your AI batch jobs on Blaxel as a serverless auto-scalable endpoint.
+</Card>
