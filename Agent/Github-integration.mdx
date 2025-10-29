@@ -1,0 +1,27 @@
+---
+
+title: 'Deploy from GitHub'
+
+description: 'Automatically deploy your GitHub repository with Blaxel.'
+
+---
+
+As your project is ready to go to production, a typical way to manage CI/CD for your agents is to synchronize them with a GitHub repo. You can connect a GitHub repository to Blaxel to automatically deploy updates whenever changes are pushed to the *main* branch.
+
+This integration is only available to deploy [agents](Overview).
+
+## Set up GitHub integration
+
+The simplest way to start is connecting your GitHub repository through the Blaxel Console. 
+
+![github.png](Github-integration/github.png)
+
+Requirements:
+
+- Authenticate with a GitHub account that **shares the same public email address** as your current Blaxel login
+
+This creates a GitHub action in your repository that connects to your Blaxel workspace to automatically launch a deployment when a push is made on the *main* branch.
+
+### Deploy from a specific branch
+
+At the moment, you can only deploy from *main*. Reach out to Blaxel if you need to deploy from other branches.

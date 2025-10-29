@@ -1,0 +1,146 @@
+---
+
+title: 'Quickstart: run an agent on Blaxel'
+
+description: 'Deploy and run your existing code as a serverless auto-scalable API.'
+
+---
+
+Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework. 
+
+Follow these steps to get your AI agent up and running on Blaxel.
+
+## 1. Create configuration files
+
+At the root of your project repository, create a `blaxel.toml` file for configuration, and a `.env` file for your sensitive [environment variables](Variables-and-secrets).
+
+**Example `blaxel.toml`:**
+
+```toml
+type = "agent"
+
+[runtime]
+generation = "mk3"
+memory = 4096
+
+[env]
+MY_NON_SENSITIVE_ENV = "MY_NON_SENSITIVE_ENV"
+```
+
+## 2. Update host and port in your code
+
+Ensure your app listens on the host and port provided by Blaxel. Update your code accordingly:
+
+```jsx
+const port = parseInt(process.env.BL_SERVER_PORT || "80");
+const host = process.env.BL_SERVER_HOST || "0.0.0.0";
+```
+
+## 3. Deploy your agent
+
+When deploying, there are two possible scenarios:
+
+### Option A: You already have a `Dockerfile`
+
+Blaxel will automatically use it to build your agent. Just run:
+
+```bash
+bl deploy
+```
+
+### Option B: No `Dockerfile`
+
+If you don’t want to create one, add the following scripts to your `package.json`.
+
+Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+
+- `start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `build` : build the project. It is done automatically when deploying.
+- `prod` : start the server remotely from the dist folder, the project needs to be have been built before.
+- `dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
+
+The remaining fields in package.json follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+
+```json
+{
+  "name": "name",
+  "version": "1.0.0",
+  "description": "<no value>",
+  "keywords": [],
+  "license": "MIT",
+  "author": "cdrappier",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "prod": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.2.5",
+    "@blaxel/sdk": "0.1.1-preview.9",
+    "ai": "^4.1.61",
+    "fastify": "^5.2.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.11",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
+```
+
+Then run:
+
+```bash
+bl deploy
+```
+
+## 4. (Optional) Enable telemetry
+
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply import the SDK in your project's entry point.
+
+**For TypeScript:**
+
+```tsx
+import "@blaxel/telemetry";
+```
+
+**For Python:**
+
+```bash
+import blaxel.core
+```
+
+## 5. (Optional) Run locally with Blaxel CLI
+
+If you want to run your agent locally and start using the SDK, make sure the `start` and `dev` scripts are defined, then run:
+
+```bash
+bl serve
+# or
+bl serve --hotreload
+```
+
+That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.
+
+## Resources
+
+Want the complete guide on developing and deploying agents on Blaxel? Check out the following resources:
+
+<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
+Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
+Complete guide for using the Python SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
+Complete guide for deploying AI agents on Blaxel.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="/Agents/Variables-and-secrets">
+Complete guide for managing variables and secrets when deploying on Blaxel.
+</Card>

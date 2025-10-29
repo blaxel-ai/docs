@@ -1,0 +1,136 @@
+---
+
+title: 'Volume templates'
+
+description: 'Pre-populate volumes with files for faster environment setup.'
+
+---
+
+<Warning>Blaxel Volumes and Volume Templates are currently in private preview. Please [contact us](https://blaxel.ai/contact?message=I+would+like+to+get+access+to+volumes+because+&purpose=volumes&origin=docs) if you would like to get access before the public release date.</Warning>
+
+Volume templates let you create **pre-populated [volumes](Volumes) with files and directories**, improving copy performance by up to 90% compared to `cp -r`. Use them to build development environments with pre-installed dependencies, datasets, or application code.
+
+## Create a volume template
+
+### Initialize a new template
+
+To create a new volume template, use the following command:
+
+```bash
+bl new volume-template mytemplate
+```
+
+This creates a folder named `mytemplate` containing a `blaxel.toml` file with the following configuration:
+
+```toml
+type = "volume-template"
+directory = "."          # Root of your volume - everything at and below this level will be copied
+defaultSize = 2048       # Default size in MB for volumes created from this template
+```
+
+The `directory` field specifies which folder’s contents will be included in the template:
+- `"."` (default) - Includes everything in the template folder
+- `"app"` - Includes only files inside the `app` subdirectory
+- `"src/data"` - Includes only files inside the `src/data` subdirectory
+
+For example, if you want to include only your application code without configuration files:
+
+```toml
+type = "volume-template"
+directory = "app"        # Only files inside the 'app' folder will be copied
+defaultSize = 2048
+```
+
+### Deploy a volume template
+
+Deploy your volume template to make it available for creating other volumes:
+
+```bash
+bl deploy
+```
+
+To preview the deployment without making changes:
+
+```bash
+bl deploy --dryrun
+```
+
+Each deployment creates a new revision of your template. Revisions are auto-incremented and versioned for rollback capabilities.
+
+## Use volume templates
+
+Once deployed, you can create volumes from your template:
+
+```tsx
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:1"  // Use template-name:revision or template-name:latest
+});
+```
+
+Override the default volume size if needed:
+
+```tsx
+// Example with a custom size
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  size: 4096  // Override the default size if needed
+});
+```
+
+Template revisions are incremental and auto-generated. The system maintains a limited number of versions for each template.
+
+## Manage volume templates
+
+List all available templates in your workspace:
+
+```bash
+bl get volumetemplates
+```
+
+View details of a specific template, including size requirements:
+
+```bash
+bl get volumetemplate mytemplate
+```
+
+### Size constraints
+
+Volumes must be provisioned with sufficient space for the template content. If a volume is smaller than the template data, creation will fail with an error.
+
+Always add a delta (extra space) to your volume size beyond the template content size. This ensures you can add files to the volume after it’s attached to a sandbox. We recommend provisioning at least 20-30% extra space.
+
+To check your template directory size before deployment:
+
+```bash
+du -sh mytemplate
+```
+
+For example, if your template is 1.5GB, create volumes with at least 2GB of space:
+
+```tsx
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  size: 2048  // 2GB for a 1.5GB template - leaves 500MB for new files
+});
+```
+
+This helps you set an appropriate `defaultSize` in your `blaxel.toml` or specify the correct size when creating volumes.
+
+### Delete a template
+
+To delete a volume template and all its associated revisions:
+
+```bash
+bl delete volumetemplate mytemplate
+```
+
+Deleting a template does not affect existing volumes created from that template. However, you won’t be able to create new volumes from deleted templates.
+
+## **Limitations**
+
+Volume templates **do not handle symlinks or hardlinks**, which may cause unexpected behavior. In addition, symlinks pointing outside the template (for example, `symlink -> /etc/hosts`) are explicitly forbidden. In these cases, use a copy instead.
+
+As a result, using package managers like `pnpm` or `uv` may also behave unexpectedly if dependencies are vendored within the template.

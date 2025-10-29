@@ -1,0 +1,76 @@
+---
+
+title: 'Ports'
+
+description: 'Expose specific ports on your sandbox and connect to them.'
+
+---
+
+Your sandbox, just like any virtual machine, can **expose ports**. These ports let you connect to a process or app running in the sandbox. 
+
+## Reserved ports
+
+The following ports are reserved by Blaxel's system:
+
+- **443**: This port hosts the main [sandbox API](https://docs.blaxel.ai/api-reference/filesystem/get-file-or-directory-information) and is exposed via HTTPS
+- **80**: Reserved for system operations
+- **8080**: Reserved for sandbox API functionality
+
+You can expose and use any other port on your sandbox.
+
+## Expose a port
+
+You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox, typically to create a [preview URL](Preview-url) on them.
+
+<CodeGroup>
+
+```typescript TypeScript {8}
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  ports: [{ target: 3000 }]
+});
+```
+
+```python Python {8}
+from blaxel.core import SandboxInstance
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000 }]
+})
+```
+
+</CodeGroup>
+
+## Access the sandbox on a specific port
+
+### Via the sandbox API
+
+This option requires your request to be [authenticated](../Security/Access-tokens). You can access your sandbox on a specific port through the sandbox API using the following URL format:
+
+```
+https://run.blaxel.ai/{workspace_id}/sandboxes/{sandbox_id}/port/{port_number}
+```
+
+For example to connect to port 3000 on my-sandbox: `https://run.blaxel.ai/my-workspace/sandboxes/my-sandbox/port/3000`
+
+### Via a preview URL
+
+[Preview URLs](Preview-url) provide a simple URL that maps to an internal port of your sandbox. You can either make this URL fully public or secure it with token-based authentication.
+
+Generally speaking:
+
+- for file and process management in your sandbox, use the sandbox API or SDK.
+- to access running applications within the sandbox *(such as a NextJS preview server on port 3000)*, use a preview URL instead.
+
+<Card title="Create preview URLs" icon="eye" href="/Sandboxes/Preview-url">
+Expose applications running within the sandbox via a direct preview URL.
+</Card>

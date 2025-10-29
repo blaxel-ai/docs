@@ -1,0 +1,120 @@
+---
+
+title: 'LlamaIndex'
+
+description: 'Learn how to leverage Blaxel with LlamaIndex agents.'
+
+---
+
+You can deploy your [LlamaIndex](https://www.llamaindex.ai/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+
+## Get started with LlamaIndex on Blaxel
+
+To get started with LlamaIndex on Blaxel:
+
+- if you already have a LlamaIndex agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
+- else initialize an example project in LlamaIndex by using the following Blaxel CLI command and selecting the *LlamaIndex hello world:*
+
+```bash
+bl new agent
+```
+
+[Deploy](../Agents/Deploy-an-agent) it by running:
+
+```bash
+bl deploy
+```
+
+## Develop a LlamaIndex agent using Blaxel features
+
+While building your agent in LlamaIndex, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
+
+- [MCP servers](../Functions/Overview)
+- [LLMs](../Models/Overview)
+- [other agents](../Agents/Overview)
+
+### Connect to MCP servers
+
+Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
+
+Run the following command to retrieve tools in LlamaIndex format:
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.llamaindex import bl_tools
+
+await bl_tools(['mcp-server-name'])
+
+```
+
+```typescript TypeScript
+
+import { blTools } from '@blaxel/llamaindex';
+
+const tools = await blTools(['mcp-server-name'])
+
+```
+
+</CodeGroup>
+
+### Connect to LLMs
+
+Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid managing model API connections yourself. All credentials remain securely stored on the platform.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.llamaindex import bl_model
+
+model = await bl_model("model-api-name")
+
+```
+
+```typescript TypeScript
+
+import { blModel } from "@blaxel/llamaindex";
+
+const model = await blModel("model-api-name");
+
+```
+
+</CodeGroup>
+
+### Connect to other agents
+
+Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK](../sdk-reference/introduction). This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.core.agents import bl_agent
+
+response = await bl_agent("agent-name").run(input);
+
+```
+
+```typescript TypeScript
+
+import { blAgent } from "@blaxel/core";
+
+const myAgentResponse = await blAgent("agent-name").run(input);
+
+```
+
+</CodeGroup>
+
+### Host your agent on Blaxel
+
+You can [deploy](../Agents/Deploy-an-agent) your agent on Blaxel, enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
+
+Either run the following CLI command from the root of your agent repository.
+
+```bash
+bl deploy
+```
+
+Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on *main*.

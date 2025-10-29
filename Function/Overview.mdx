@@ -1,0 +1,56 @@
+---
+
+title: 'MCP servers'
+
+sidebarTitle: "Overview"
+
+description: 'Deploy MCP servers as serverless APIs to equip your agents with tools.'
+
+---
+
+MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to **equip agents with tools** to interact with the world. 
+
+## Essentials
+
+MCP Server Hosting is a **serverless computing service that allows you to host remote MCP servers** without having to manage infrastructure. It gives you full observability and tracing out of the box.
+
+You only provide the MCP server code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. The deployed server implements Blaxel’s customized WebSockets transport layer.
+
+Blaxel SDK allows to r**etrieve the tools from an MCP server in your code**. When both an agent and MCP server run on Blaxel, the tool call in the MCP server is execute separately from the agent logic. This ensures not only optimal resource utilization, but also better design practice for your agentic system.
+
+### Requirements & limitations
+
+- Your MCP server must implement Blaxel’s customized WebSockets transport layer.
+
+- Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+
+## MCP hosting on Blaxel
+
+Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature cloud deployment capabilities.
+
+MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
+
+<Info>For developers interested in the technical details, our implementation is available open-source through [Blaxel's Supergateway](https://github.com/blaxel-ai/supergateway) and [Blaxel's SDK](https://github.com/blaxel-ai/toolkit/blob/main/sdk-ts/src/functions/mcp.ts).</Info>
+
+There are two routes you can take when hosting MCPs on Blaxel:
+
+- Use one of the pre-built MCP servers from the Blaxel Store
+- Deploy a custom MCP server from your code
+
+<Card title="Developing an MCP server" icon="code" href="/Functions/Create-MCP-server">
+Read our guide for developing a custom MCP server with Blaxel.
+</Card>
+
+<Card title="Host an MCP server on Blaxel" icon="rocket" href="/Functions/Deploy-a-function">
+Read our guide for deploying your custom MCP server to Blaxel.
+</Card>
+
+<Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run tool calls through your MCP server. 
+</Card>
+
+## Examples
+
+<Card title="Implement semantic tool search" icon="screwdriver-wrench" href="/Functions/Integrate-in-apps/Toolprint">
+This example highlights how to use Toolprint for semantic tool selection to enable effective function calling even with a high number of tools.
+</Card>

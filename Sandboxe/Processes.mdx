@@ -1,0 +1,216 @@
+---
+
+title: 'Process execution'
+
+description: 'Execute and manage processes in sandboxes.'
+
+---
+
+Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
+
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
+
+## Execute processes and commands
+
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+
+</Accordion>
+
+### Execute command
+
+Execute shell commands using the TypeScript SDK:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Execute command
+const process = await sandbox.process.exec({
+  command: "echo 'Hello, World!'"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Execute command
+process = await sandbox.process.exec({
+  "command": "echo 'Hello, World!'"
+})
+```
+
+</CodeGroup>
+
+Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter. 
+
+### Use process names
+
+When starting a process (running a command), you can specify a **process name**. This lets you interact with the process—such as retrieving logs or process information—without needing to store the process ID on your end.
+
+<CodeGroup>
+
+```typescript TypeScript {2}
+const process = await sandbox.process.exec({
+  name: "hello-process",
+  command: "echo 'Hello, World!'"
+});
+const processInfo = await sandbox.process.get("hello-process");
+```
+
+```python Python {2}
+process = await sandbox.process.exec({
+  "name": "hello-process",
+  "command": "echo 'Hello, World!'"
+})
+process_info = await sandbox.process.get("hello-process")
+```
+
+</CodeGroup>
+
+You can use either the process name or the process ID to get information about the process:
+
+<CodeGroup>
+
+```typescript TypeScript
+const completedProcess = await sandbox.process.get("hello-process");
+if (completedProcess.status === "completed") {
+  // ...
+}
+```
+
+```python Python
+completed_process = await sandbox.process.get("hello-process")
+if completed_process.status == "completed":
+    # ...
+```
+
+</CodeGroup>
+
+You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
+
+### Wait for process completion
+
+You can wait for process completion when executing it:
+
+<CodeGroup>
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "build-process",
+  command: "npm run build",
+  waitForCompletion: true,
+  timeout: 60000 // 60 seconds
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "build-process",
+  "command": "npm run build",
+  "wait_for_completion": True,
+  "timeout": 60000  # 60 seconds
+})
+```
+
+</CodeGroup>
+
+When waiting for completion, the process execution object will contain a `.logs` object which [surfaces both *stdout* and *stderr*](Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
+
+<Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 100 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
+
+You can also wait for a process after it has started:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "long-task",
+  command: "sleep 10"
+});
+
+// Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", {
+  maxWait: 600000,
+  interval: 5000
+});
+```
+
+```python Python
+await sandbox.process.exec({
+  "name": "long-task",
+  "command": "sleep 10"
+})
+
+# Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", max_wait=600000, interval=5000)
+```
+
+</CodeGroup>
+
+Set a long completion duration if your process is expected to take longer.
+
+### Wait for ports
+
+In some cases, you may want to wait for a port to be opened while running — for example if you are running `npm run dev` and want to wait for port 3000 to be open.
+
+<CodeGroup>
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "dev-server",
+  command: "npm run dev",
+  waitForPorts: [3000]
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "dev-server",
+  "command": "npm run dev",
+  "wait_for_ports": [3000]
+})
+```
+
+</CodeGroup>
+
+### Kill process
+
+Kill a process immediately by running:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.process.kill("test")
+```
+
+```python Python
+await sandbox.process.kill("test")
+```
+
+</CodeGroup>
+
+### Process statuses
+
+A process can have either of the following status:
+
+- `running`
+- `completed`
+- `failed`
+- `killed`
+- `stopped`

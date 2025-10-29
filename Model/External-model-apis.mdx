@@ -1,0 +1,33 @@
+---
+
+title: 'External model APIs'
+
+description: 'Control & secure access to AI models from top providers behind Blaxel Global Inference Network.'
+
+---
+
+You can query any LLM or other generative AI model from top API providers via Blaxel, in order to benefit from a **unified layer of access control and telemetry,** especially when running whole AI agents. 
+
+## Creating a model endpoint on Blaxel
+
+Adding model endpoints from external providers on Blaxel gives you single endpoints to call the model on the same base URL, rather than calling each provider separately. Blaxel handles the authentication, authorization and monitoring automatically for you.
+
+This is done in a two step process:
+
+1. First, you need to create a workspace integration that will contain the credentials to connect to your model API provider. Check out the dedicated documentation for each available integration.
+2. Second, you can create a dedicated endpoint for a specific model from this provider. You will need to choose the model from the list of available models for the provider.
+
+![Screenshot 2024-12-05 at 6.59.49 PM.png](External-model-apis/c36458c0-c3e5-48bd-988a-62213d7dd489.png)
+
+You can then query the model using its [dedicated global inference endpoint](Query-a-model). Any call to this endpoint will be passed to the underlying provider.
+
+## Provider reference
+
+The following providers are available:
+
+- [OpenAI](../Integrations/OpenAI)
+- [Anthropic](../Integrations/Anthropic)
+- [Mistral AI](../Integrations/MistralAI)
+- [Cohere](../Integrations/Cohere)
+- [xAI](../Integrations/xAI)
+- [DeepSeek](../Integrations/DeepSeek)

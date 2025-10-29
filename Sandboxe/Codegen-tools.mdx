@@ -1,0 +1,105 @@
+---
+
+title: 'File management for codegen'
+
+description: 'Tools and functions that are optimized for AI codegen use cases.'
+
+---
+
+Blaxel Sandboxes provide tools for managing files and their contents, specialized for code generation ("*codegen*") use cases. These tools are accessible exclusively through the [sandboxes' MCP server](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox).
+
+## Fast apply of file edits
+
+With this tool, you can **apply code changes** suggested by an LLM to your existing code files fast (2000+ tokens/second).
+
+Traditional code generation requires generating the entire files every time, which can be slower for large files. With this approach your LLM only generates the specific changes needed, and this tool applies them to the original file.
+
+### Get started
+
+Fast apply of file edits is powered by [MorphLLM](https://morphllm.com/), and requires you to bring your own Morph account. 
+
+Make sure to pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox with Morph API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
+    { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
+  ]
+});
+```
+```python Python
+import os
+from blaxel.core import SandboxInstance
+
+# Create sandbox with Morph API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
+    { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
+  ]
+})
+```
+</CodeGroup>
+
+<Note>If you do not pass the MORPH_API_KEY, this specific tool will not be available.</Note>
+
+### Use the tool
+
+Call the `codegenEditFile` tool on the **[MCP server of a sandbox](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox)** to fast-apply a targeted edit to a specified file, with instructions and partial contents.
+
+Use Blaxel SDK to retrieve the tool in any [compatible agent framework](../Frameworks/Overview) (here in AI SDK format):
+
+<CodeGroup>
+```typescript TypeScript
+import { blTools } from '@blaxel/vercel';
+
+// Get codegen tools from sandbox MCP
+const allTools = await blTools([`sandboxes/${sandbox.metadata.name}`]);
+
+// Filter for specific codegen tools
+const codegenTools = Object.fromEntries(
+  Object.entries(allTools).filter(([key]) =>
+    key.startsWith('codegen')
+  )
+);
+```
+```python Python
+from blaxel.langgraph import bl_tools
+
+# Get codegen tools from sandbox MCP
+all_tools = await bl_tools([f"sandboxes/{sandbox.metadata.name}"])
+
+# Filter for specific codegen tools
+codegen_tools = [tool for tool in all_tools if tool.name.startswith("codegen")]
+```
+</CodeGroup>
+
+## Other tools built for codegen
+
+Use the following codegen-optimized functions by making tool calls through the MCP server of a sandbox. See example above on how to retrieve and execute the tools.
+
+1. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
+2. `codegenFileSearch` - Fast fuzzy filename search in the project.
+3. `codegenGrepSearch` - Run fast, exact regex/text searches on files for locating patterns or strings.
+4. `codegenListDir` - List contents of a directory in the project.
+5. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
+6. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
+7. `codegenReapply` - Retry the application of the last edit, in case it previously failed.

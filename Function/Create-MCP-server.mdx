@@ -1,0 +1,212 @@
+---
+
+title: 'Develop a custom MCP server'
+
+description: 'Create your own custom MCP Servers.'
+
+---
+
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
+
+You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** **or Python** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
+
+## Quickstart
+
+<Warning>It is required to have *npm* (TypeScript) or *uv* (Python) installed to use the following command.</Warning>
+
+You can quickly **initialize a new MCP server from scratch** by using CLI command `bl new`. This initializes a new pre-scaffolded local repo where your entire code can be added.
+
+```bash
+bl new mcp
+```
+
+You can test it by running the following command which launches **both** the MCP server and a web application to query it ([MCP Inspector](https://github.com/modelcontextprotocol/inspector), managed by MCP) locally.
+
+<CodeGroup>
+
+```shell TypeScript
+
+pnpm inspect
+
+```
+
+```shell Python
+
+BL_DEBUG=true uv run mcp dev src/server.py
+
+```
+
+</CodeGroup>
+
+The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply [serve the server](Deploy-a-function) locally by running `bl serve --hotreload`.
+
+## Develop the MCP server logic
+
+<AccordionGroup>
+<Accordion title="Develop in TypeScript" icon="js">
+
+If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
+
+The main component you'll need to modify is the tool definition:
+
+```typescript server.ts {12-25}
+
+import { BlaxelMcpServerTransport } from "@blaxel/core";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({
+  name: "mymcp",
+  version: "1.0.0",
+  description: ""
+});
+
+server.tool(
+  "hello_world",
+  "Say hello to a person",
+  {
+    firstname: z.string()
+  },
+  async ({firstname}) => {
+    console.info(`Hello world called`);
+    return {
+      content: [{ type: "text", text: `Hello ${firstname}` }]
+    }
+  }
+);
+
+function main() {
+  let transport;
+  if (process.env.BL_SERVER_PORT) {
+    transport = new BlaxelMcpServerTransport();
+  } else {
+    transport = new StdioServerTransport();
+  }
+  server.connect(transport);
+  console.info("Server started");
+}
+
+main();
+
+```
+
+Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
+
+</Accordion>
+
+<Accordion title="Develop in Python" icon="python">
+
+If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
+
+The main component you'll need to modify is the tool definition:
+
+```python server.py {11-19}
+
+from blaxel.core import env
+from blaxel.core.mcp.server import FastMCP
+
+from typing import Annotated
+from logging import getLogger
+
+mcp = FastMCP("mcp-helloworld-python")
+logger = getLogger(__name__)
+
+@mcp.tool()
+def hello_world(
+    first_name: Annotated[
+        str,
+        "First name of the user",
+    ],
+) -> str:
+    """Say hello to the user"""
+    return f"Hello {first_name}!"
+
+if not env["BL_DEBUG"]:
+    mcp.run(transport="ws")
+
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+<Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
+Read our complete guide for deploying your custom MCP server on Blaxel.
+</Card>
+
+## Template directory reference
+
+### blaxel.toml
+
+The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory. 
+
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+
+```toml
+name = "my-mcp-server"
+workspace = "my-workspace"
+type = "function"
+
+[env]
+DEFAULT_CITY = "San Francisco"
+
+[[triggers]]
+  id = "trigger-my-mcp"
+  type = "http"
+[triggers.configuration]
+  path = "functions/my-mcp" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}/
+  authenticationType = "public"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the MCP servers. You can also make them either private (default) or public (`authenticationType = "public"`).
+
+<AccordionGroup>
+<Accordion title="Define entrypoints in Python" icon="python">
+
+Additionally, when developing in Python, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server. 
+
+```toml
+...
+
+[entrypoint]
+prod = ".venv/bin/python3 src/server.py"
+dev = "npx nodemon --exec uv run python src/server.py"
+
+...
+```
+
+- `prod`:  this is the command that will be used to serve your MCP server
+
+```bash
+.venv/bin/python3 src/server.py
+```
+
+- `dev`: same as prod in dev mode, it will be used with the command `--hotreload`. Example:
+
+```bash
+npx nodemon --exec uv run python src/server.py
+```
+
+This `entrypoint` section is optional. If not specified, Blaxel will automatically detect in the MCP server’s content and configure your server’s startup settings.
+
+</Accordion>
+
+<Accordion title="Define entrypoints in TypeScript" icon="js">
+
+In TypeScript, entrypoints are managed in the `scripts` in the `package.json` file at the root of the directory.
+
+- `scripts.start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `scripts.build` : build the project. It is done automatically when deploying.
+- `scripts.prod` : start the server remotely on Blaxel from the dist folder, the project needs to be have been built before.
+- `scripts.dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
+
+The remaining fields in *package.json* follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+</Accordion>
+</AccordionGroup>
+
+<Card title="Deploy your MCP server" icon="rocket" href="/Functions/Deploy-a-function">
+Read our complete guide for deploying your custom MCP server on Blaxel.
+</Card>

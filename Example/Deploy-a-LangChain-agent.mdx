@@ -1,0 +1,361 @@
+---
+
+title: 'Deploy a LangChain agent (SDK v1)'
+
+description: 'Deploy your first LangChain AI agent on Blaxel.'
+
+---
+
+<Warning>This tutorial uses v1 of the Blaxel SDK. A new version of the tutorial will be released soon with v2.</Warning>
+
+This tutorial shows how to deploy a custom [LangChain](https://python.langchain.com/docs/introduction/) AI agent directly from your IDE using Blaxel CLI. 
+
+Your agent will typically include these key components:
+
+- A **core agent logic algorithm** → Blaxel will deploy this as an [Agent](../Agents/Overview)
+- A **set of tools that the agent can use** → Blaxel will deploy these in sandboxed environments as [Functions](../Functions/Overview)
+- A **chat model that powers the agent** → Blaxel can request a [Blaxel model API](../Models/Overview) upon LLM calling.
+
+When the main agent runs, Blaxel orchestrates everything in secure, sandboxed environments, providing complete traceability of all requests and production-grade scalability.
+
+## **Prerequisites**
+
+- A Blaxel workspace
+- [Blaxel CLI installed](../cli-reference/introduction) on your machine and [logged in](https://docs.blaxel.ai/cli-reference/bl_login) to your workspace
+
+## **Guide**
+
+### (Optional) Quickstart from a template
+
+<Warning>In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.</Warning>
+
+Let’s initialize a first app. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
+
+```bash
+bl new agent
+```
+
+Select your model API, choose the *Custom* template, and press Enter to create the repo. 
+
+### Add your agent code
+
+Add or import the script files containing your LangChain agent. Here's an example using a simple LangChain React agent:
+
+<CodeGroup>
+
+```python agent.py (Python)
+
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+from customfunctions.helloworld import helloworld
+
+chat = ChatOpenAI()
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
+
+```
+
+```typescript agent.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Note that this code references a custom tool from another folder that we assume you developed too: `customfunctions.helloworld.helloworld`. By default, this function **would not** be deployed as a separate component. See next section for instructions on deploying it in its own sandboxed environment to trace request usage.
+
+The next step is to use [the Blaxel SDK](../Agents/Develop-an-agent) to specify which function should be deployed on Blaxel. You'll need two key elements:
+
+- Create a **main async function** to handle agent execution—this will be your default entry point for serving and deployment.
+- Add the **`@agent` decorator** to designate your main agent function for Blaxel serving.
+
+Here's an example showing the main async function:
+
+<CodeGroup>
+
+```python agent.py (Python) {2,12-24}
+
+from fastapi import Request
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+from customfunctions.helloworld import helloworld
+
+chat = ChatOpenAI()
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
+
+async def main(request: Request):
+    body = await request.json()
+    agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+    if body.get("inputs"):
+        body["input"] = body["inputs"]
+
+    agent_body = {"messages": [("user", body["input"])]}
+    responses = []
+
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
+        responses.append(chunk)
+    content = responses[-1]
+    return content["agent"]["messages"][-1].content
+
+```
+
+```typescript agent.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Read [our reference for the main agent function to serve](../Agents/Develop-an-agent).
+
+Then, here’s an example adding the Blaxel decorator:
+
+<CodeGroup>
+
+```python agent.py (Python) {2,12}
+from fastapi import Request
+from blaxel.core.agents import agent
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+from customfunctions.helloworld import helloworld
+
+chat = ChatOpenAI()
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=[helloworld], checkpointer=memory)
+
+@agent(override_agent=custom_agent, agent={"metadata": {"name": "my-agent"}})
+async def main(request: Request):
+    body = await request.json()
+    agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+    if body.get("inputs"):
+        body["input"] = body["inputs"]
+
+    agent_body = {"messages": [("user", body["input"])]}
+    responses = []
+
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
+        responses.append(chunk)
+    content = responses[-1]
+    return content["agent"]["messages"][-1].content
+
+```
+
+```typescript agent.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Read [our reference for @agent decorator](../Agents/Develop-an-agent).
+
+At this time: 
+
+- your agent is ready to be deployed on Blaxel
+- functions (tool calls) and model APIs **are not ready** to be deployed on separate sandboxed environments.
+
+To get total observability and traceability on the requests of your agent, it's recommended to use a microservices-like architecture where each component runs independently in its own environment. **Blaxel helps you cross this last mile with just a few lines of code.**
+
+### Sandbox the tool call execution
+
+To deploy your tool on Blaxel, the simplest way is to place the main function's file in the `src/functions/` folder.
+
+Here’s an example with the helloworld custom tool from the previous code snippets:
+
+<CodeGroup>
+
+```python src/functions/helloworld.py (Python)
+
+async def helloworld(query: str):
+    """
+    A useful tool that says hello to the world.
+    """
+    return "Hello, world!"
+
+```
+
+```typescript src/functions/helloworld.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Now, add the `@function` decorator to specify the default entry point for serving and deployment of the function.
+
+<CodeGroup>
+
+```python src/functions/helloworld.py (Python) {1-3}
+from blaxel.functions import function
+
+@function()
+async def helloworld(query: str):
+    """
+    A useful tool that says hello to the world.
+    """
+    return "Hello, world!"
+
+```
+
+```typescript src/functions/helloworld.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Functions placed in the `src/functions/` folder will automatically be deployed as custom functions and can be made available to the agent during execution by calling `get_functions()` . The final step is to update the tool binding from the main agent file:
+
+<CodeGroup>
+
+```python agent.py (Python) {3,9,11}
+from fastapi import Request
+from blaxel.agents import agent
+from blaxel.functions import get_functions
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+chat = ChatOpenAI()
+functions = get_functions(warning=False)
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
+
+@agent(override_agent=custom_agent)
+async def main(request: Request):
+    body = await request.json()
+    agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+    if body.get("inputs"):
+        body["input"] = body["inputs"]
+
+    agent_body = {"messages": [("user", body["input"])]}
+    responses = []
+
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
+        responses.append(chunk)
+    content = responses[-1]
+    return content["agent"]["messages"][-1].content
+
+```
+
+```typescript agent.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+Read [our reference for get_functions()](../Agents/Develop-an-agent).
+
+### Sandbox the model API call
+
+Use the [Blaxel console](https://app.blaxel.ai) to create the corresponding **integration connection** to your LLM provider, using one of the supported [integrations](../Integrations/OpenAI).
+
+Then create a [model API](../Models/Overview) using your integration, and **deploy** it. Here’s an example from the Blaxel console using an OpenAI model:
+
+![Screenshot 2024-12-13 at 4.03.53 PM.png](Deploy-a-LangChain-agent/Screenshot_2024-12-13_at_4.03.53_PM.png)
+
+Model APIs can be made available to the agent during execution by calling `get_chat_model()` :
+
+<CodeGroup>
+
+```python agent.py (Python) {4,8}
+from fastapi import Request
+from blaxel.agents import agent
+from blaxel.functions import get_functions
+from blaxel.agents.chat import get_chat_model
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+chat = get_chat_model("your-model-name-on-blaxel")
+functions = get_functions(warning=False)
+memory = MemorySaver()
+custom_agent = create_react_agent(chat, tools=functions, checkpointer=memory)
+
+@agent(override_agent=custom_agent)
+async def main(request: Request):
+    body = await request.json()
+    agent_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+    if body.get("inputs"):
+        body["input"] = body["inputs"]
+
+    agent_body = {"messages": [("user", body["input"])]}
+    responses = []
+
+    async for chunk in custom_agent.astream(agent_body, config=agent_config):
+        responses.append(chunk)
+    content = responses[-1]
+    return content["agent"]["messages"][-1].content
+
+```
+
+```typescript agent.ts (TypeScript)
+
+Work in progress
+
+```
+
+</CodeGroup>
+
+At this time: your agent, functions and model API are ready to be deployed on Blaxel in sandboxed environments.
+
+### Test and deploy your AI agent
+
+Run the following command to serve your agent locally:
+
+```bash
+cd my-agent;
+bl serve --hotreload;
+```
+
+Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`.
+
+To push to Blaxel, run the following command. Blaxel will handle the build and deployment:
+
+```bash
+bl deploy
+```
+
+That’s it! 🌎 🌏 🌍 Your agent is now **distributed and available** across the entire Blaxel global infrastructure! [Global Inference Network](../Infrastructure/Global-Inference-Network) significantly speeds up inferences by executing your agent’s workloads in sandboxed environments and smartly routing requests based on your policies.
+
+### Make a first inference
+
+Run a first inference on your Blaxel agent with the following command:
+
+```bash
+bl run agent my-agent --data '{"inputs":"Hello world!"}'
+```
+
+<Tip>Your agent is available behind a **global endpoint**. Read [this guide](../Agents/Query-agents) on how to use it for HTTP requests.</Tip>
+
+You can also run inference requests on your agent (or each function or model API) from the Blaxel console by using the Playground on the console.
+
+## Next steps
+
+You are ready to run AI with Blaxel! Here’s a curated list of guides which may be helpful for you to make the most of Blaxel, but feel free to explore the product on your own! 
+
+<Card title="Create agentic code sandboxes" icon="box" href="/Sandboxes/Overview">
+Complete guide for spawning sandboxed VMs for your agents to access.
+</Card>
+
+<Card title="Schedule and execute batch tasks" icon="list-check" href="/Jobs/Overview">
+Complete guide for creating and running batch jobs from your agents.
+</Card>
+
+<Card title="Host serverless agents" icon="earth-americas" href="/Agents/Overview">
+Complete guide for deploying AI agents on Blaxel.
+</Card>
+
+<Card title="Enforce policies" icon="server" href="/Model-Governance/Policies">
+Complete guide for managing deployment and routing policies on the Global Agentics Network.
+</Card>

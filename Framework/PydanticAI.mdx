@@ -1,0 +1,96 @@
+---
+
+title: 'PydanticAI'
+
+description: 'Learn how to leverage Blaxel with PydanticAI agents.'
+
+---
+
+You can deploy your [PydanticAI](https://ai.pydantic.dev/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+
+## Get started with PydanticAI on Blaxel
+
+To get started with PydanticAI on Blaxel:
+
+- if you already have a PydanticAI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
+- else initialize an example project in PydanticAI by using the following Blaxel CLI command and selecting the *PydanticAI hello world:*
+
+```bash
+bl new agent
+```
+
+[Deploy](../Agents/Deploy-an-agent) it by running:
+
+```bash
+bl deploy
+```
+
+## Develop a PydanticAI agent using Blaxel features
+
+While building your agent in PydanticAI, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
+
+- [MCP servers](../Functions/Overview)
+- [LLMs](../Models/Overview)
+- [other agents](../Agents/Overview)
+
+### Connect to MCP servers
+
+Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
+
+Run the following command to retrieve tools in PydanticAI format:
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.pydantic import bl_tools
+
+await bl_tools(['mcp-server-name'])
+
+```
+
+</CodeGroup>
+
+### Connect to LLMs
+
+Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid managing model API connections yourself. All credentials remain securely stored on the platform.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.pydantic import bl_model
+
+model = await bl_model("model-api-name")
+
+```
+
+</CodeGroup>
+
+### Connect to other agents
+
+Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK](../sdk-reference/introduction). This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
+
+<CodeGroup>
+
+```python Python
+
+from blaxel.core.agents import bl_agent
+
+response = await bl_agent("agent-name").run(input);
+
+```
+
+</CodeGroup>
+
+### Host your agent on Blaxel
+
+You can [deploy](../Agents/Deploy-an-agent) your agent on Blaxel, enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
+
+Either run the following CLI command from the root of your agent repository.
+
+```bash
+bl deploy
+```
+
+Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on *main*.

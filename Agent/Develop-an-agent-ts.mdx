@@ -1,0 +1,448 @@
+---
+
+title: 'Develop agents in TypeScript'
+
+description: 'Use the Blaxel SDK to develop and run a custom agent in TypeScript.'
+
+---
+
+You can bring your **custom agents developed in TypeScript** and deploy them to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), [GitHub app](Github-integration), GitHub action, etc.). You can develop agents using frameworks like LangChain, AI SDK, Mastra; or your own custom code.
+
+## Quickstart
+
+<Warning>It is required to have *npm* installed to use the following command.</Warning>
+
+You can quickly **initialize a new project from scratch** by using CLI command `bl new`. 
+
+```bash
+bl new agent
+```
+
+This will create a pre-scaffolded local repo where your entire code can be added. You can choose the base agentic framework for the template.
+
+In the generated folder, you'll find a standard server in the entrypoint file `index.ts`. While you typically won't need to modify this file, you can add specific logic there if needed. Your main work will focus on the `agent.ts` file. Blaxel's development paradigm lets you leverage its hosting capabilities without modifying your agent's core logic.
+
+### Requirements & limitations
+
+Agents Hosting have few requirements or limitations:
+
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port). **These two environment variables are required for the host+port combo.**
+    - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
+
+- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+
+- The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
+
+## Accessing resources with Blaxel SDK
+
+[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
+
+### Connect to a model API
+
+Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
+
+```tsx
+/// Optional: enable automatic telemetry
+import "@blaxel/telemetry"
+
+import { blModel } from "@blaxel/{FRAMEWORK_NAME}";
+
+const model = await blModel("Model-name-on-Blaxel");
+```
+
+The model is automatically converted to your chosen framework's format based on the `FRAMEWORK_NAME` specified in the import.
+
+Available frameworks :
+
+- [LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html) : `langgraph`
+- [LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool) : `llamaindex`
+- [VercelAI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling) : `vercel`
+- [Mastra](https://mastra.ai/docs/reference/agents/createTool): `mastra`
+
+For example, to connect to model `my-model` in a *LlamaIndex* agent:
+
+```tsx
+import { blModel } from "@blaxel/llamaindex";
+
+const model = await blModel("my-model");
+```
+
+### Connect to tools
+
+Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following method retrieves all the tools discoverable in the tool server.
+
+```tsx
+import { blTools } from "@blaxel/{FRAMEWORK_NAME}";
+
+await blTools(['Tool-Server-name-on-Blaxel'])
+```
+
+Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool)), `vercel` ([Vercel AI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling)) and `mastra` ([Mastra](https://mastra.ai/docs/reference/agents/createTool)).
+
+You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
+
+1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](../Functions/Create-MCP-server))
+2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")
+
+<CodeGroup>
+
+```typescript agent.ts (Vercel AI)
+
+import { blModel, blTools } from '@blaxel/vercel';
+import { streamText, tool } from 'ai';
+import { z } from 'zod';
+interface Stream {
+  write: (data: string) => void;
+  end: () => void;
+}
+
+export default async function agent(input: string, stream: Stream): Promise<void> {
+  const response = streamText({
+    experimental_telemetry: { isEnabled: true },
+    // Load model API dynamically from Blaxel:
+    model: await blModel("gpt-4o-mini"),
+    tools: {
+      // Load tools dynamically from Blaxel:
+      ...await blTools(['blaxel-search']),
+      // And here's an example of a tool defined locally for Vercel AI:
+      "weather": tool({
+        description: "Get the weather in a specific city",
+        parameters: z.object({
+          city: z.string(),
+        }),
+        execute: async (args: { city: string }) => {
+          console.debug("TOOL CALLING: local weather", args);
+          return `The weather in ${args.city} is sunny`;
+        },
+      }),
+    },
+    system: "You are an agent that will give the weather when a city is provided, and also do a quick search about this city.",
+    messages: [
+      { role: 'user', content: input }
+    ],
+    maxSteps: 5,
+  });
+
+  for await (const delta of response.textStream) {
+    stream.write(delta);
+  }
+  stream.end();
+}
+
+```
+```typescript agent.ts (LlamaIndex)
+
+import { blModel, blTools } from '@blaxel/llamaindex';
+import { agent, AgentStream, tool, ToolCallLLM } from "llamaindex";
+import { z } from "zod";
+interface Stream {
+  write: (data: string) => void;
+  end: () => void;
+}
+
+export default async function myagent(input: string, stream: Stream): Promise<void> {
+  const streamResponse = agent({
+    // Load model API dynamically from Blaxel:
+    llm: await blModel("gpt-4o-mini") as unknown as ToolCallLLM,
+    // Load tools dynamically from Blaxel:
+    tools: [...await blTools(['blaxel-search']),
+      // And here's an example of a tool defined locally for LlamaIndex:
+      tool({
+        name: "weather",
+        description: "Get the weather in a specific city",
+        parameters: z.object({
+          city: z.string(),
+        }),
+        execute: async (input) => {
+          console.debug("TOOL CALLING: local weather", input)
+          return `The weather in ${input.city} is sunny`;
+        },
+      })
+    ],
+    systemPrompt: "If the user asks for the weather, use the weather tool.",
+  }).run(input);
+
+  for await (const event of streamResponse) {
+    if (event instanceof AgentStream) {
+      for (const chunk of event.data.delta) {
+        stream.write(chunk);
+      }
+    }
+  }
+  stream.end();
+}
+```
+
+```typescript agent.ts (LangChain/LangGraph)
+
+import { blModel, blTools } from '@blaxel/langgraph';
+import { HumanMessage } from "@langchain/core/messages";
+import { tool } from "@langchain/core/tools";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { z } from "zod";
+interface Stream {
+  write: (data: string) => void;
+  end: () => void;
+}
+
+export default async function agent(input: string, stream: Stream): Promise<void> {
+  const streamResponse = await createReactAgent({
+    // Load model API dynamically from Blaxel:
+    llm: await blModel("gpt-4o-mini"),
+    prompt: "If the user asks for the weather, use the weather tool.",
+    // Load tools dynamically from Blaxel:
+    tools: [
+      ...await blTools(['blaxel-search']),
+      // And here's an example of a tool defined locally for LangChain:
+      tool(async (input: any) => {
+        console.debug("TOOL CALLING: local weather", input)
+        return `The weather in ${input.city} is sunny`;
+      },{
+        name: "weather",
+        description: "Get the weather in a specific city",
+        schema: z.object({
+          city: z.string(),
+        })
+      })
+    ],
+  }).stream({
+    messages: [new HumanMessage(input)],
+  });
+
+  for await (const chunk of streamResponse) {
+    if(chunk.agent) for(const message of chunk.agent.messages) {
+      stream.write(message.content)
+    }
+  }
+  stream.end();
+}
+```
+
+```typescript agent.ts (Mastra)
+
+import { blModel, blTools } from "@blaxel/mastra";
+import { createTool } from "@mastra/core/tools";
+import { Agent } from "@mastra/core/agent";
+import { z } from "zod";
+
+interface Stream {
+  write: (data: string) => void;
+  end: () => void;
+}
+
+export default async function agent(
+  input: string,
+  stream: Stream
+): Promise<void> {
+  const agent = new Agent({
+    name: "blaxel-agent-mastra",
+    // Load model API dynamically from Blaxel:
+    model: await blModel("sandbox-openai"),
+    // Load tools dynamically from Blaxel:
+    tools: {
+      ...(await blTools(["blaxel-search"])),
+      // And here's an example of a tool defined locally for Mastra:
+      weatherTool: createTool({
+        id: "weatherTool",
+        description: "Get the weather in a specific city",
+        inputSchema: z.object({
+          city: z.string(),
+        }),
+        outputSchema: z.object({
+          weather: z.string(),
+        }),
+        execute: async ({ context }) => {
+          return { weather: `The weather in ${context.city} is sunny` };
+        },
+      }),
+    },
+    instructions: "If the user asks for the weather, use the weather tool.",
+  });
+
+  const response = await agent.stream([{ role: "user", content: input }]);
+
+  for await (const delta of response.textStream) {
+    stream.write(delta);
+  }
+  stream.end();
+}
+
+```
+
+</CodeGroup>
+
+### Connect to another agent (multi-agent chaining)
+
+Rather than using a "quick and dirty" approach where you would combine all your agents and capabilities into a single deployment, Blaxel provides a structured development paradigm based on two key principles:
+
+- Agents can grow significantly in complexity. Monolithic architectures make long-term maintenance difficult.
+- Individual agents should be reusable across multiple projects.
+
+Blaxel lets you organize your software with a microservice architecture for handoffs, allowing you to call one agent from another using `blAgent().run()` rather than combining all functionality into a single codebase.
+
+```tsx
+import { blAgent } from "@blaxel/core";
+
+const myFirstAgentResponse = await blAgent("firstAgent").run(input);
+const mySecondAgentResponse = await blAgent("secondAgent").run(myFirstAgentResponse);
+```
+
+## Customize the agent deployment
+
+You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory. 
+
+Read the file structure section down below for more details.
+
+<Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
+</Card>
+
+## Instrumentation
+
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply import the SDK in your project's entry point.
+
+```tsx
+import "@blaxel/telemetry";
+```
+
+When agents and tools are deployed on Blaxel, request logging and tracing happens automatically.
+
+To add your own custom logs that you can view in the Blaxel Console, use the default console logger or any logging library (pino, winston, …).
+
+```tsx
+console.info("my-log")
+```
+
+## Template directory reference
+
+### Overview
+
+```
+package.json            # Mandatory. This file is the standard package.json file, it defines the entrypoint of the project and dependencies.
+blaxel.toml             # This file lists configurations dedicated to Blaxel to customize the deployment. It is not mandatory.
+tsconfig.json           # This file is the standard tsconfig.json file, only needed if you use TypeScript.
+.blaxel                 # This folder allows you to define custom resources using the Blaxel API specifications. These resources will be deployed along with your agent.
+├── blaxel-search.yaml  # Here, blaxel-search is a sandbox Web search tool we provide so you can develop your first agent. It has a low rate limit, so we recommend you use a dedicated MCP server for production.
+src/
+└── index.ts            # This file is the standard entrypoint of the project. It is used to start the server and create an endpoint bound with agent.ts file.
+├── agent.ts            # This file is the main file of your agent. It is loaded from index.ts. In the template, all the agent logic is implemented here.
+
+```
+
+### package.json
+
+Here the most notable imports are the scripts. They are used for the `bl serve` and `bl deploy` commands.
+
+```json
+{
+  "name": "name",
+  "version": "1.0.0",
+  "description": "<no value>",
+  "keywords": [],
+  "license": "MIT",
+  "author": "cdrappier",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "prod": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.2.5",
+    "@blaxel/sdk": "0.1.1-preview.9",
+    "ai": "^4.1.61",
+    "fastify": "^5.2.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.11",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
+```
+
+Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+
+- `start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `build` : build the project. It is done automatically when deploying.
+- `prod` : start the server remotely from the dist folder, the project needs to be have been built before.
+- `dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
+
+The remaining fields in package.json follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+
+### blaxel.toml
+
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+
+```toml
+name = "my-agent"
+workspace = "my-workspace"
+type = "agent"
+
+agents = []
+functions = ["blaxel-search"]
+models = ["gpt-4o-mini"]
+
+[env]
+DEFAULT_CITY = "San Francisco"
+
+[runtime]
+timeout = 900
+memory = 1024
+
+[[triggers]]
+  id = "trigger-async-my-agent"
+  type = "http-async"
+[triggers.configuration]
+  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE} 
+  retry = 1
+
+[[triggers]]
+  id = "trigger-my-agent"
+  type = "http"
+[triggers.configuration]
+  path = "agents/my-agent/sync"
+  retry = 1
+  authenticationType = "public"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). 
+A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+
+## Troubleshooting
+
+### Wrong port or host
+
+```
+Default STARTUP TCP probe failed 1 time consecutively for container "agent" on port 80. The instance was not started.
+Connection failed with status DEADLINE_EXCEEDED.
+```
+
+If you encounter this error when deploying your agent on Blaxel, ensure that your agent properly exposes an API server that binds to a host and port with the **required** environment variables: `BL_SERVER_HOST` & `BL_SERVER_PORT`. Blaxel automatically injects these variables during deployment.
+
+For example, if your current server code looks something like this:
+
+```tsx
+app.listen({ port: Number(process.env.PORT) || 3000 }, (err, addr) =>
+...
+```
+
+Then change to:
+
+```tsx
+const port = parseInt(env.BL_SERVER_PORT || "80");
+const host = env.BL_SERVER_HOST || "0.0.0.0";
+
+app.listen({ host, port }, (err, addr) =>
+...
+```
+
+<Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
+</Card>

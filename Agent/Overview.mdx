@@ -1,0 +1,84 @@
+---
+
+title: 'Agents Hosting'
+
+sidebarTitle: "Overview"
+
+description: 'Deploy your agents as serverless auto-scalable endpoints.'
+
+---
+
+Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework. 
+
+An *AI agent* is any application that leverages generative AI models to take autonomous actions in the real world. These agents often require computing power to execute their interactions.
+
+## Essentials
+
+Agents Hosting is a **serverless computing service that allows you to host any application** without having to manage infrastructure. It gives you full observability and tracing out of the box.
+
+It doesn't force you into any kind of workflow or shaped box — you can host any app on Blaxel as long as it exposes an HTTP API. This makes Blaxel completely agnostic of the framework used to develop your workflow or agent.
+
+Blaxel optimizes the experience specifically for agentic AI use cases, delivering a fully serverless experience even for the longer-running tasks typical of AI agents. For example, telemetry focuses on crucial agent metrics like end-to-end latency and time-to-first-token. 
+
+### Main features
+
+Some features of running workloads on Agents Hosting:
+
+- a default invocation endpoint for synchronous requests
+- an asynchronous invocation endpoint, for agent workloads lasting from dozens of seconds to 10 minutes
+- full logging, telemetry and tracing — out-of-the-box
+- revisions manage your agents’ lifecycle across iterations. You can ship as a new revision and rollback instantly
+- an SDK to connect to other Blaxel resources (like [models](../Models/Overview) and [tools](../Functions/Overview)) with adapters to most popular [agent frameworks](../Frameworks/Overview)
+
+### Requirements & limitations
+
+Agents Hosting have few requirements or limitations:
+
+- Agents Hosting only supports applications developed in **Python** and in **TypeScript**.
+
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port). **These two environment variables are required for the host+port combo.**
+    - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
+
+- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+
+- The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
+
+## Deploy your agent to Blaxel
+
+[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
+
+This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
+
+<Card title="Quickstart" icon="bolt" href="/Agents/Quickstart-agent">
+Quick-start guide to deploy your existing agent code as a serverless API on Blaxel.
+</Card>
+
+<CardGroup cols={2}>
+
+<Card title="Develop an agent using Blaxel resources" icon="robot" href="/Agents/Develop-an-agent">
+Read our full guide for developing AI agents leveraging Blaxel developer tools.
+</Card>
+
+<Card title="Deploy an agent on Blaxel" icon="rocket" href="/Agents/Deploy-an-agent">
+Read our full guide on deploying your agent to Blaxel.
+</Card>
+
+</CardGroup>
+
+## Use your agents in your apps
+
+Once your agent is deployed on Blaxel, you can start using it in your applications. 
+
+Whether you need to process individual inference requests or integrate the agent into a larger application workflow, **Blaxel provides flexible options for interaction**. Learn how to authenticate requests, handle responses, and optimize your agent's performance in production environments.
+
+<CardGroup cols={2}>
+
+<Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
+Learn how to run inference requests on your agent. 
+</Card>
+
+<Card title="Integrate in apps" icon="display" href="/Agents/Integrate-in-apps">
+Learn how to integrate and use your Blaxel agents in your downstream applications . 
+</Card>
+
+</CardGroup>

@@ -1,0 +1,117 @@
+---
+
+title: 'Deploy with a Dockerfile'
+
+description: 'Ship your AI agent on Blaxel using a custom Dockerfile.'
+
+---
+
+Blaxel allows you to customize your deployments ([agents](Overview), [MCP servers](../Functions/Overview), and [batch jobs](../Jobs/Overview)) using a Dockerfile at the root level of your project.
+
+## Overview
+
+By default, Blaxel builds and deploys your application using predefined container images optimized for agent workloads. However, you may need to:
+
+- Install additional system dependencies
+- Configure custom environment settings
+- Use specific versions of runtime environments
+- Include proprietary libraries or tools
+
+A Dockerfile at the root of your project gives you full control over the container image that will run your workload on Blaxel's infrastructure.
+
+1. Navigate to the root directory of your Blaxel project ([agent](Overview), [MCP server](../Functions/Overview), or [batch job](../Jobs/Overview))
+2. Create a file named `Dockerfile` (case-sensitive)
+
+## Dockerfile Structure
+
+Your Dockerfile should follow these guidelines for compatibility with Blaxel's infrastructure:
+
+```Dockerfile Python
+
+# Start from a base Python image
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /blaxel
+
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y \\
+    build-essential \\
+    # Add any other system dependencies here \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY pyproject.toml uv.lock /blaxel/
+
+RUN pip install uv && uv sync --refresh
+
+# Copy application code
+COPY . .
+
+# Set env variable to use the virtual environment
+ENV PATH="/blaxel/python/.venv/bin:$PATH"
+
+# Command to run when container starts, it need to provide a server running on port 80 for agent and MCP server
+ENTRYPOINT [".venv/bin/python3", "-m", "src"]
+```
+
+```Dockerfile TypeScript/JavaScript
+
+# Start from a Node.js base image
+FROM node:22-alpine
+
+# Set working directory
+WORKDIR /blaxel
+
+# Copy package files for better caching
+COPY package.json pnpm-lock.yaml /blaxel/
+RUN npx pnpm install
+
+# Copy application code
+COPY . .
+
+# Command to run when container starts, it need to provide a server running on port 80 for agent and MCP server
+ENTRYPOINT ["npx", "pnpm", "start"]
+```
+
+### Entrypoint
+
+For [Agents Hosting](Overview) and [MCP Servers Hosting](../Functions/Overview):
+
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port).
+
+For [Batch Jobs](../Jobs/Overview):
+
+- The entrypoint must run a function that terminates—if it runs infinitely, your job will continue until it hits the execution timeout.
+
+### Environment variables
+
+[Environment variables](Variables-and-secrets) configured in the Blaxel platform will be automatically injected into your container at runtime. You do not need to specify them in your Dockerfile.
+
+## Test locally
+
+Before deploying to Blaxel, you can test your Dockerfile locally.
+
+```bash
+# Build the Docker image
+docker build -t my-blaxel-app .
+
+# Run the container locally
+docker run -p 1338:1338 my-blaxel-app
+```
+
+## Deploy
+
+When a Dockerfile is present at the root of your project, Blaxel will use it to build a custom container image for your deployment. Deploy your application with the Blaxel CLI as usual. 
+
+```bash
+bl deploy
+```
+
+## Deploy multiple resources with shared files
+
+Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](Deploy-multiple) with shared dependencies.
+
+<Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
+Deploy multiple agents & MCP servers with shared context from a single repository.
+</Card>

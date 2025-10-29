@@ -1,0 +1,29 @@
+---
+
+title: 'Mistral AI integration'
+
+description: 'Connect your agents to LLMs from Mistral AI.'
+
+---
+
+The Mistral AI integration allows Blaxel users to **call Mistral AI models using a Blaxel endpoint** in order to unify access control, credentials and observability management. 
+
+The integration must be set up by an [admin](../Security/Workspace-access-control) in the Integrations section in the [workspace settings](../Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register a Mistral AI access token into your Blaxel workspace settings. First, generate a Mistral AI API key from [your Mistral AI La Plateforme settings](https://console.mistral.ai/api-keys/).
+
+On Blaxel, in Mistral AI integration, create a new connection and paste this token into the “API key” section.
+
+![image.png](MistralAI/image.png)
+
+## Connect to an Mistral AI model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a Mistral AI model as an [external model API](../Models/External-model-apis).
+
+When creating a model API, select Mistral AI. You can search for any model from the Mistral AI catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Mistral AI, using your Mistral AI credentials for authentication and authorization.
+
+<Info>Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Mistral AI account, as if you queried the model directly on Mistral AI.</Info>

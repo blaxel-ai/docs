@@ -1,0 +1,39 @@
+---
+
+title: 'Jobs'
+
+sidebarTitle: "Overview"
+
+description: 'Scheduled jobs of batch processing tasks for your AI workflows.'
+
+---
+
+Jobs allow you to run many AI tasks in parallel using batch processing. 
+
+![image.png](Overview/image.png)
+
+## Concepts
+
+- **Job**: A code definition that specifies a batch processing task. Jobs can run multiple times within a single execution and accept optional input parameters.
+- **Execution**: A specific instance of running a batch job at a given timestamp. Each execution consists of multiple tasks running in parallel.
+- **Task**: A single instance of a job definition running as part of an execution.
+
+![image.png](Overview/image%201.png)
+
+## Get started with Batch Jobs
+
+<Card title="Develop a job using Blaxel SDK" icon="table-list" href="/Jobs/Develop-a-job">
+Read our guide for developing batch AI jobs leveraging Blaxel developer tools.
+</Card>
+
+<CardGroup cols={2}>
+
+<Card title="Deploy a job on Blaxel" icon="rocket" href="/Jobs/Deploy-a-job">
+Learn how to deploy your batch job on Blaxel as a serverless endpoint.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="/Jobs/Variables-and-secrets-jobs">
+Learn how to manage secrets and environment variables for your batch job.
+</Card>
+
+</CardGroup>

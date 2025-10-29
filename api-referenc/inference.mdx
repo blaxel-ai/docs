@@ -1,0 +1,97 @@
+---
+
+title: 'Inference API'
+
+description: 'Run inferences on your Blaxel deployments.'
+
+---
+
+Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Agentics Network, the [infrastructure powerhouse](../Infrastructure/Global-Inference-Network) that hosts it.
+
+The inference API URL depends on the type of workload ([agent](../Agents/Overview), [model API](../Models/Overview), [MCP server](../Functions/Overview)) you are trying to request:
+
+<CodeGroup>
+
+```http Query agent
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
+
+```
+
+```http Query model API
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/models/{YOUR-MODEL}
+
+```
+
+```http Connect to an MCP server
+
+wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
+
+```
+
+```http Execute a job
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
+
+```
+
+</CodeGroup>
+
+Showing the full request, with the input payload:
+
+<CodeGroup>
+
+```http Query agent
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
+-H 'Content-Type: application/json' \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"inputs":"Hello, world!"}'
+
+```
+
+```http Query model API (example on a chat completion model)
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
+-H 'Content-Type: application/json' \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"messages":[{"role":"user","content":"Hello!"}]}'
+
+```
+
+```http Execute a job
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+'{"tasks":[{"my_arg":"my_value"}]}’
+
+```
+
+</CodeGroup>
+
+### Connect to MCP servers
+
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple capabilities for agents. These servers can be interacted with using Blaxel’s WebSocket transport implementation on the server’s global endpoint. 
+
+<Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
+Learn how to run tool calls through your MCP server. 
+</Card>
+
+### Manage sessions
+
+To simulate multi-turn conversations, you can pass on request headers. You'll need your client to generate this ID and pass it using any header which you can retrieve via the code (e.g. `Thread-Id`). Without a thread ID, the agent won't maintain nor use any conversation memory when processing the request.
+
+This is only available for agent requests.
+
+```http Query agent with thread ID
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
+-H 'Content-Type: application/json' \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Thread-Id: <THREAD_ID>" \
+-d '{"inputs":"Hello, world!"}'
+
+```
+
+<Card title="Product documentation" icon="earth-americas" href="/Agents/Query-agents" > Read our product guide on querying an agent. </Card>

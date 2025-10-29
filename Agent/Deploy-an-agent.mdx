@@ -1,0 +1,207 @@
+---
+
+title: 'Deploy agents'
+
+description: 'Host your custom AI agents on Blaxel as serverless autoscalable endpoints.'
+
+---
+
+Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework. 
+
+The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This method is detailed down below on the page. Alternatively you can [**connect a GitHub repository**](Github-integration): any push to the *main* branch will automatically update the deployment on Blaxel — or deploy from a variety of **pre-built templates** on the Blaxel Console.
+
+## Deploy an agent with Blaxel CLI
+
+This section assumes you have developed an agent locally, as presented [in this documentation](Develop-an-agent), and are ready to deploy it. 
+
+[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
+
+This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
+
+<Info>Read [this guide first](Develop-an-agent) on how to leverage the Blaxel SDK when developing a custom agent to deploy.</Info>
+
+### Serve locally
+
+You can serve the agent locally in order to make the entrypoint function (by default: `main.py` / `main.ts`) available on a local endpoint. 
+
+Run the following command to serve the agent:
+
+```bash
+bl serve
+```
+
+Calling the provided endpoint will execute the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as it would be when deployed on Blaxel. Add the flag `--hotreload`  to get live changes.
+
+```bash
+bl serve --hotreload
+```
+
+### Deploy on production
+
+You can deploy the agent in order to make the entrypoint function (by default: `main.py` / `main.ts`) **callable on a global endpoint**. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your [deployment policies](../Model-Governance/Policies).
+
+Run the following command to build and deploy a local agent on Blaxel:
+
+```bash
+bl deploy
+```
+
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
+
+Specify which sub-directory to deploy with the `--directory` (`-d`) option:
+
+```bash
+bl deploy -d myfolder/mysubfolder
+```
+
+This allows for [deploying multiple agents/servers/jobs from the same repository](Deploy-multiple) with shared dependencies.
+
+### Customize an agent deployment
+
+You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory. 
+
+For more information on agent deployment settings, refer to the reference section down at the bottom of this guide.
+
+### Deploy with a Dockerfile
+
+While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your workload using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
+
+<Card title="Deploy using Dockerfile" icon="folder-tree" href="/Agents/Deploy-dockerfile">
+Deploy resources using a custom Dockerfile.
+</Card>
+
+### Deploy from GitHub
+
+You can connect a GitHub repository to Blaxel to automatically deploy updates whenever changes are pushed to the *main* branch.
+
+<Card title="Deploy from GitHub" icon="github" href="/Agents/Github-integration">
+Learn how to synchronize your GitHub repository to automatically deploy updates.
+</Card>
+
+### Deploy multiple resources at once
+
+Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](Deploy-multiple) with shared dependencies.
+
+<Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
+Deploy multiple agents & MCP servers with shared context from a single repository.
+</Card>
+
+## Reference for deployment life-cycle
+
+### Deploying an agent
+
+Deploying an agent will create the associated agent deployment. At this time: 
+
+- it is [reachable](Query-agents) through a specific endpoint
+- it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
+- its status can be monitored either on the console or using the CLI/APIs
+
+### Choosing the infrastructure generation
+
+Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When deploying a workload, you can select between *Mk 2 infrastructure*—which provides stable, globally distributed container-based workloads—and *Mk 3* (in Alpha), which delivers ultra-fast cold starts. Choose the generation that best fits your specific requirements.
+
+### Maximum runtime
+
+- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+
+### Managing revisions
+
+As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+
+![image.png](Deploy-an-agent/image.png)
+
+Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
+
+- **rollback a deployment** to its exact state from an earlier date
+- create a revision without immediate deployment to **prepare for a future release**
+- implement progressive rollout strategies, such as **canary deployments**
+
+Important: Revisions are not the same as versions. You cannot use revisions to return to a previous configuration and branch off from it. For version control, use your preferred system (such as GitHub) alongside Blaxel.
+
+Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
+
+![image.png](Deploy-an-agent/image%201.png)
+
+<Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
+
+### Executions and inference requests
+
+**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Agentics Network, as defined by your [environment policies](../Model-Governance/Policies).
+
+Read more about [querying agents in this documentation](Query-agents).
+
+### Deactivating an agent deployment
+
+Any agent deployment can be deactivated at any time. When deactivated, it will **no longer be reachable** through the inference endpoint and will stop consuming resources. 
+
+Agents can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/agents/update-agent-by-name) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
+
+## Agent deployment reference
+
+The agent deployment can be configured via the ***blaxel.toml*** file in your agent directory. 
+
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+
+```toml
+name = "my-agent"
+workspace = "my-workspace"
+type = "agent"
+
+agents = []
+functions = ["blaxel-search"]
+models = ["gpt-4o-mini"]
+
+[env]
+DEFAULT_CITY = "San Francisco"
+
+[runtime]
+timeout = 900
+memory = 1024
+
+[[triggers]]
+  id = "trigger-async-my-agent"
+  type = "http-async"
+[triggers.configuration]
+  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE} 
+  retry = 1
+
+[[triggers]]
+  id = "trigger-my-agent"
+  type = "http"
+[triggers.configuration]
+  path = "agents/my-agent/sync"
+  retry = 1
+  authenticationType = "public"
+```
+
+- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). 
+A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+
+### Deployment manifests (advanced usage)
+
+When `bl deploy` runs, it generates a YAML configuration manifest automatically and deploys it to Blaxel's hosting infrastructure. You can also create custom manifest files in the `.blaxel` folder and deploy them using the following command:
+
+```
+bl apply -f ./my-deployment.yaml
+```
+
+Read our [reference for agent deployments](https://docs.blaxel.ai/api-reference/agents/get-agent-by-name).
+
+## Troubleshooting
+
+### Wrong port or host
+
+```
+Default STARTUP TCP probe failed 1 time consecutively for container "agent" on port 80. The instance was not started.
+Connection failed with status DEADLINE_EXCEEDED.
+```
+
+If you encounter this error when deploying your agent on Blaxel, ensure that your agent properly exposes an API server that binds to a host and port with the **required** environment variables: `BL_SERVER_HOST` & `BL_SERVER_PORT`. Blaxel automatically injects these variables during deployment.
+
+<Card title="Query agents" icon="bolt" href="/Agents/Query-agents">
+Learn how to run inference requests on your agent. 
+</Card>

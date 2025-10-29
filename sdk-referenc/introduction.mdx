@@ -1,0 +1,48 @@
+---
+
+title: 'Blaxel SDK'
+
+sidebarTitle: "Overview"
+
+description: 'Manage Blaxel resources programmatically using our SDKs.'
+
+---
+
+Blaxel features a SDK in two languages: **Python and TypeScript**. Check out down below the installation instructions, as well as documentation on **how the SDK** **authenticates** to Blaxel.
+
+## Install
+
+<CardGroup cols={2}>
+<Card title="TypeScript SDK" icon="js" href="/sdk-reference/sdk-ts">
+Install the TypeScript SDK.
+</Card>
+<Card title="Python SDK" icon="python" href="/sdk-reference/sdk-python">
+Install the Python SDK.
+</Card>
+</CardGroup>
+
+## How authentication works
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+
+## Complete SDK reference
+
+Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+
+<CardGroup cols={2}>
+<Card title="TypeScript SDK" icon="js" href="https://github.com/blaxel-ai/sdk-typescript">
+Open the GitHub repository for Blaxel SDK in TypeScript.
+</Card>
+<Card title="Python SDK" icon="python" href="https://github.com/blaxel-ai/sdk-python">
+Open the GitHub repository for Blaxel SDK in Python.
+</Card>
+</CardGroup>

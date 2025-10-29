@@ -1,0 +1,123 @@
+---
+
+title: 'Policies'
+
+description: 'Create and enforce fine-grained deployment rules.'
+
+---
+
+Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Agentics Network](../Infrastructure/Global-Inference-Network).
+
+Policies apply to the entities they are attached to: [model APIs](../Models/Overview), [functions](../Functions/Overview) and [agent](../Agents/Overview) deployments. 
+
+## Policies overview
+
+Policies essentially describe rules as to how deployments and executions are made on Blaxel. 
+
+A policy states all the **allowed options for a specific aspect** (called the *policy type)* of the deployment or execution (for example: the execution location). 
+
+Example:
+
+- Policy `Country: US` means that attached workloads will only be able to run in locations that are in the United States.
+
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
+
+### Policy types
+
+Policies have a **type**, allowing multiple policies to drive various deployment strategies without colliding. Typically, you can easily enforce a policy on the execution location and a policy on the underlying hardware at the same time.
+
+There are currently three types of policies: **location,** **flavor,** and **token usage**
+
+### Location policies
+
+Location policies give control over which clusters will execute your workloads.
+
+They come in two different formats: 
+
+- policies on **countries** allow to define all [physical locations](Policies) inside of one or several countries at once
+    - for example, execute only in the following country: *USA*
+- policies on **continents** allow to define all [physical locations](Policies) inside of one or several continents at once
+    - for example, execute only in *North America*
+
+### Flavor policies
+
+Flavor policies give control over which underlying accelerator (GPU) your workloads will be executed on. 
+
+They come in two different formats:
+
+- policies on **cpu** allow to pass a specific list of CPU types
+    - for example, execute only on x86
+- policies on **gpu** allow to pass a specific list of GPU types
+    - execute only on NVIDIA A100
+    - execute only on NVIDIA L4 or NVIDIA T4
+
+### Token usage policies
+
+Token usage policies control the maximum number of tokens your [**model APIs**](../Models/Overview) can handle within a specific time period. You can control the maximum number of input tokens, output tokens, **and/or** total tokens. When a model reaches its maximum token limit, subsequent requests are rejected with a 429 error.
+
+<Info>The policy only drops complete requests AFTER the maximum limit is reached. The first request that exceeds the threshold will still be processed. However, all subsequent requests within the enforced time period will be dropped.</Info>
+
+## Create a policy
+
+Policies can be created from the Blaxel console, or from the Blaxel APIs and CLI.
+
+Read [our complete reference on policies](https://docs.blaxel.ai/api-reference/policies/create-or-update-policy).
+
+## Attach a policy
+
+Attaching a policy to a workload enforces it on the workload.
+
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
+
+### Attaching multiple policies
+
+When attaching **multiple policies** to a resource, it's crucial to understand their combined effect. 
+
+**If you are attaching multiple policies to the same resource:**
+
+Their combined effect is the **UNION** of all of their effects for the same [type](Policies) of policy (a.k.a *OR* clause), and **INTERSECTION** across all [types](Policies) of policies (a.k.a *AND* clause).
+
+For example:
+
+- Let’s assume the following policies:
+    - Policy A: Country is: USA
+    - Policy B: Continent is: North America, or Europe
+    - Policy C: GPU is: NVIDIA T4
+- if a workload has the following combined policies:
+    - A and B: then the workload will only execute in any location in either North America (including USA) or Europe — on any kind of hardware available there.
+    - B and C: then the workload will only execute in any location in either North America or Europe, only on T4 GPUs.
+    - A and C: then the workload will only execute in any location in the USA, only on T4 GPUs.
+    - A and B and C: then the workload will only execute in any location in either North America (including USA) or Europe — only on T4 GPUs.
+
+## Policy reference
+
+Below is the list of official names to build policies.
+
+### Flavors
+
+**type**: `flavor`
+
+| **Code** | **Type** | **Flavor Name** |
+| --- | --- | --- |
+| CPU x86 | cpu | x86 |
+| t4 | gpu | NVIDIA T4 |
+
+### Locations
+
+**type**: `location`
+
+| **Code** | **Type** | **Name** |
+| --- | --- | --- |
+| eu | continent | Europe |
+| na | continent | North America |
+| us | country | United States |
+
+### Flavors
+
+**type**: `maxToken`
+
+- `granularity`: the unit period of time over which the number of tokens is evaluated. One of: `month`, `day`, `hour`, `minute`
+- `step`: the number of time period units over which the number of tokens is evaluated. It is a number greater than 1.
+- `input`: threshold for the maximum number of **input** tokens. If 0, this metric is not evaluated.
+- `output`: threshold for the maximum number of **output** tokens. If 0, this metric is not evaluated.
+- `total`: threshold for the maximum number of **input and output** tokens. If 0, this metric is not evaluated.

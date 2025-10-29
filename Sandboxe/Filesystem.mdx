@@ -1,0 +1,282 @@
+---
+
+title: 'File system'
+
+description: 'A simple file system interface for managing files in sandboxes.'
+
+---
+
+Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
+
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
+
+## Basic file system operations
+
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+
+</Accordion>
+
+### Create directory
+
+Create a new directory at a specific path in the sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.fs.mkdir("/blaxel/app/uploads");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.fs.mkdir("/blaxel/app/uploads")
+```
+
+</CodeGroup>
+
+### List files
+
+List files in a specific path:
+
+<CodeGroup>
+
+```typescript TypeScript
+const { subdirectories, files } = await sandbox.fs.ls("/blaxel/app");
+```
+
+```python Python
+result = await sandbox.fs.ls("/blaxel/app")
+directories = result.subdirectories
+files = result.files
+```
+
+</CodeGroup>
+
+### Read file
+
+Read a file from a specific filepath:
+
+<CodeGroup>
+
+```typescript TypeScript
+const content = await sandbox.fs.read("/blaxel/app/config.json");
+```
+
+```python Python
+content = await sandbox.fs.read("/blaxel/app/config.json")
+```
+
+</CodeGroup>
+
+### Write file
+
+Create a file in a specific path:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.fs.write("/blaxel/app/config.json", "{}");
+```
+
+```python Python
+await sandbox.fs.write("/blaxel/app/config.json", "{}")
+```
+
+</CodeGroup>
+
+See down below for how to upload/write a binary, or multiple files at once.
+
+### Write multiple files
+
+You can write multiple files or directories simultaneously. The second path parameter in `writeTree` specifies the base directory for writing the file tree, eliminating the need to repeat the full path for each file.
+
+<CodeGroup>
+
+```typescript TypeScript
+const files = [
+  { path: "src/app.js", content: "console.log('Hello');" },
+  { path: "src/utils.js", content: "export const helper = () => {};" },
+  { path: "package.json", content: '{"name": "my-app"}' },
+  { path: "docs/README.md", content: "# My App" }
+];
+await sandbox.fs.writeTree(files, "/blaxel/app");
+```
+
+```python Python
+files = [
+    {"path": "src/app.py", "content": "print('Hello')"},
+    {"path": "src/utils.py", "content": "def helper(): pass"},
+    {"path": "requirements.txt", "content": "flask==2.0.1"},
+    {"path": "docs/README.md", "content": "# My App"}
+]
+await sandbox.fs.write_tree(files, "/blaxel/app")
+```
+
+</CodeGroup>
+
+### Write binary
+
+Write binary content to a file in the sandbox filesystem:
+
+<CodeGroup>
+
+```typescript TypeScript
+const binaryData = fs.readFileSync("./image.png");
+await sandbox.fs.writeBinary("/blaxel/app/assets/image.png", binaryData);
+```
+
+```python Python
+with open("image.png", "rb") as f:
+    binary_data = f.read()
+    await sandbox.fs.write_binary("/blaxel/app/assets/image.png", binary_data)
+```
+
+</CodeGroup>
+
+The binary content to write can be provided as:
+
+- *Buffer*: Node.js Buffer object
+- *Blob*: Web API Blob object
+- *File*: Web API File object
+- *Uint8Array*: Typed array containing binary data
+
+### Copy file
+
+Copy a file from a path to another path:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json");
+```
+
+```python Python
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json")
+```
+
+</CodeGroup>
+
+### Delete file or directory
+
+Delete a file or directory by specifying its path:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.fs.rm(`/blaxel/app/config.json`);
+```
+
+```python Python
+await sandbox.fs.rm(f"/blaxel/app/config.json")
+```
+
+</CodeGroup>
+
+## Watch filesystem for events
+
+The `watch` function monitors all file system changes **in the specified directory.** You can also watch subdirectories by passing a `/my/directory/**` pattern.
+
+By default (when *withContent: false*), the events will only include metadata about the changes, not the actual file contents. Here's what you'll get in the callback events:
+
+1. For ALL operations (CREATE, WRITE, DELETE, etc.), you'll receive:
+    1. op: The operation type (e.g., "CREATE", "WRITE", "DELETE")
+    2. path: The directory path where the change occurred
+    3. name: The name of the file/directory that changed
+2. You will NOT receive:
+    1. The actual content of the files
+    2. File contents for CREATE or WRITE operations
+
+<CodeGroup>
+
+```typescript TypeScript
+// You can specify if you want the content of the files or not
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path, fileEvent.content)
+}, {
+  withContent: true
+});
+
+// Do file operations
+
+// At the end, close the watch handle
+handle.close();
+```
+
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path, file_event.content)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, { "with_content": True })
+
+# Do file operations
+
+# At the end, close the watch handle
+handle["close"]()
+```
+
+</CodeGroup>
+
+### Watch sub-directories
+
+Watch all sub-directories recursively with `/**`:
+
+<CodeGroup>
+
+```typescript TypeScript
+const handle = sandbox.fs.watch("/folder/**", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+});
+
+```
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/folder/**", watch_callback)
+```
+
+</CodeGroup>
+
+### Ignore files or directories
+
+You can ignore changes in certain files or directories by providing an array of filepaths to ignore:
+
+<CodeGroup>
+
+```typescript TypeScript
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+}, {
+  ignore: ["/folder", "/folder_two/test2.txt"]
+});
+```
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, {
+  "ignore": ["/folder", "/folder_two/test2.txt"]
+})
+```
+</CodeGroup>
+
+Specify `withContent: true` so the events include the actual file contents.

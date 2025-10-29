@@ -2527,6 +2527,13 @@ paths:
       - agents
     get:
       operationId: GetAgent
+      parameters:
+      - description: Show secret values (admin only)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           content:
@@ -2801,6 +2808,13 @@ paths:
       - functions
     get:
       operationId: GetFunction
+      parameters:
+      - description: Show secret values (admin only)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           content:
@@ -3116,6 +3130,13 @@ paths:
     get:
       description: Returns a job by name.
       operationId: GetJob
+      parameters:
+      - description: Show secret values (admin only)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           content:
@@ -3722,6 +3743,13 @@ paths:
     get:
       description: Returns a Sandbox by name.
       operationId: GetSandbox
+      parameters:
+      - description: Show secret values (admin only)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           content:

@@ -1,0 +1,84 @@
+---
+
+title: 'Python SDK'
+
+description: 'Manage Blaxel resources programmatically using our Python SDK.'
+
+---
+
+Blaxel features a SDK in **Python**. Check out down below the installation instructions down below.
+
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+
+</Accordion>
+
+## Install
+
+<CodeGroup>
+
+```shell Python (pip)
+
+pip install blaxel
+
+```
+
+```shell Python (uv)
+
+uv pip install blaxel
+
+```
+
+```shell Python (uv add)
+
+uv init && uv add blaxel
+
+```
+
+</CodeGroup>
+
+Guides
+
+<CardGroup>
+<Card title="Create sandboxes" icon="book" href="/Sandboxes/Overview">
+Use Blaxel SDK to create and connect to sandboxes and sandbox previews.
+</Card>
+
+<Card title="Interact with a sandbox" icon="book" href="/Sandboxes/Processes">
+Use Blaxel SDK to manage the filesystem, processes and logs of a sandbox.
+</Card>
+
+<Card title="Connect to MCP servers" icon="book" href="/Agents/Develop-an-agent-py#Connect-to-tools">
+Use Blaxel SDK to retrieve tools from a deployed MCP server.
+</Card>
+
+<Card title="Connect to model APIs" icon="book" href="/Agents/Develop-an-agent-py#Connect-to-a-model-API">
+Use Blaxel SDK to retrieve an LLM client when building agents.
+</Card>
+
+<Card title="Deploy your MCP server" icon="book" href="/Functions/Create-MCP-server">
+Use Blaxel SDK to create and host a custom MCP server.
+</Card>
+
+<Card title="Chain agents" icon="book" href="/Agents/Develop-an-agent-ts#Connect-to-another-agent-multi-agent-chaining">
+Use Blaxel SDK to chain calls to multiple agents.
+</Card>
+</CardGroup>
+
+## Complete SDK reference
+
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
+
+<Card title="Python SDK" icon="python" href="https://github.com/blaxel-ai/sdk-python">
+Open the GitHub repository for Blaxel SDK in Python.
+</Card>
