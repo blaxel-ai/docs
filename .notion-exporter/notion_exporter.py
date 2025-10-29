@@ -201,7 +201,7 @@ class NotionExporter:
                 logging.error(f"Response text: {response.text}")
                 return None
 
-    def _get_status(self, task_id: str) -> dict:
+    def _get_status(self, task_id: str, retry_count: int = 0) -> dict:
         """
         Fetches the status of an export task.
 
@@ -221,6 +221,10 @@ class NotionExporter:
         response.raise_for_status()
         result = response.json()
         if "results" in result:
+            if len(result["results"]) == 0 and retry_count < 3:
+                print(f"No results found for task {task_id}. Retrying... {retry_count + 1}/3")
+                time.sleep(1)
+                return self._get_status(task_id, retry_count + 1)
             return result["results"][0]
         else:
             raise Exception(f"Failed to get tasks: {result}")
