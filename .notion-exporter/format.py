@@ -130,11 +130,45 @@ def rewrite_title(file_path):
         f.write(new_content)
 
 def process_export_folder():
-  os.chdir(f"export/Private & Shared/Product Documentation {page}/")
+  # Navigate to export folder first
+  export_path = "export"
 
-  destination_folder = "../../.."
-  if os.getenv("DEBUG"):
-    destination_folder = "../../../debug"
+  # Find the first folder inside export
+  first_folder = None
+  for item in os.listdir(export_path):
+    item_path = os.path.join(export_path, item)
+    if os.path.isdir(item_path):
+      first_folder = item
+      break
+
+  if not first_folder:
+    raise Exception("No folders found inside export directory")
+
+  # Navigate to the first folder found inside export/[first_folder]/
+  second_level_path = os.path.join(export_path, first_folder)
+
+  # Find the first folder inside the second level (if it exists)
+  second_folder = None
+  for item in os.listdir(second_level_path):
+    item_path = os.path.join(second_level_path, item)
+    if os.path.isdir(item_path):
+      second_folder = item
+      break
+
+  # Navigate to the appropriate folder
+  if second_folder:
+    os.chdir(os.path.join(second_level_path, second_folder))
+    destination_folder = "../../.."
+    if os.getenv("DEBUG"):
+      destination_folder = "../../../debug"
+  else:
+    # If there's no second folder, just use the first folder
+    os.chdir(second_level_path)
+    destination_folder = "../.."
+    if os.getenv("DEBUG"):
+      destination_folder = "../../debug"
+
+  print(f"Processing export from: {os.getcwd()}")
   for root, _, files in os.walk("./"):
     for file in files:
       file_path = os.path.join(root, file)
