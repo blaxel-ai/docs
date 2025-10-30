@@ -18,7 +18,7 @@ def copy_file(file_path, file_name, destination_folder):
     if contain_extension:
       real_path += part_without_id + "/"
     else:
-      real_path += part_without_id[0:-1] + "/"
+      real_path += part_without_id + "/"
   real_path = real_path[0:-1]
   real_path = real_path.replace(" .md", ".md")
 
