@@ -8,11 +8,11 @@ description: 'Lightweight virtual machines where your agents can run AI code wit
 
 ---
 
-Sandboxes are fast-launching virtual machines that AI agents can operate. They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
+Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
 
-They natively serve as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for coding agents that need access to an operating system to run commands with no risk of escaping.
+They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
 
-Blaxel sandboxes start from hibernation state in **under 25 milliseconds**, and scale back down to zero **after a few seconds of inactivity**, maintaining the memory state even after scaling down. This includes all filesystem as well as running processes. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
+Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **killer feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
 
 <img
 className="block dark:hidden"
@@ -25,6 +25,15 @@ className="hidden dark:block"
 src="/img/general/sbx-lifecycle-dark.png"
 alt="Lifecycle of Blaxel Sandboxes"
 />
+
+<Accordion title="Some examples of use cases include…">
+
+- **Code review agents** that analyze repositories to detect the effects of changes. These agents run fully isolated compute environments for each tenant while keeping them snapshotted in standby between sessions, eliminating the need to clone the repo every time.
+- **Code generation agents** that iterate in their own compute environments, and instantly render live application previews as human users build, step away, and log back in.
+- **Data analyst agents** that execute adhoc data analysis workflows, generating scripts on-the-fly and running them securely against private files or data within an isolated, ZDR-compliant environment.
+- **Background agents** that operate beyond their pre-configured tools. Each agent gets its own "personal computer" where it can autonomously install packages, execute custom scripts, store files, and adapt to new requirements securely. They can parallelize dozens of those personal computers.
+
+</Accordion>
 
 ## Create a sandbox
 
@@ -298,20 +307,29 @@ tools = await bl_tools([f"sandbox/{sandbox_name}"])
 
 ## Sandbox statuses
 
-Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down top `standby` **after a few seconds of inactivity**, maintaining their previous state after scaling down.
+Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down to `standby` **after a few seconds of inactivity**, maintaining their previous state after scaling down.
 
 Here is the summary on the possible statuses for a sandbox:
 
-- **`standby`**: The sandbox is created but is hibernating. Sandboxes transition from *standby* to *active* mode in approximately 20 ms.
+- **`standby`**: The sandbox is created but is hibernating. Sandboxes transition from *standby* to *active* mode in approximately 25 ms.
     - **Cost**: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
 - **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
     - **Cost**: You are charged for CPU/memory and storage while a sandbox is in active mode.
-- **`stopped`**: The sandbox is shut down and **requires manual restart** to access its API. This is useful if you want to deactivate a sandbox’s preview URLs.
-    - **Cost**: You are not charged for CPU/memory while a sandbox is in stopped mode. However, you are charged for the storage of the snapshot and/or the volumes.
 
 The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds. 
 
 Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
+
+### Best practices
+
+Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds. As such, here are some recommended best practices:
+
+- If the end-user or agent is expected to continue a session soon, just leave the sandbox be. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
+- The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
+- Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](Volumes).
+- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~2–4 seconds) and restart processes to restore the same state.
+- For automatic cleanup, set TTLs when creating your sandbox to delete it after a set idle duration or maximum age.
+- When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
 
 <CardGroup>
 <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
