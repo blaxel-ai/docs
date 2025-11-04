@@ -192,6 +192,48 @@ components:
         name:
           type: string
           description: Country code
+    CreateJobExecutionRequest:
+      type: object
+      description: Request to create a job execution
+      properties:
+        executionId:
+          type: string
+          description: Execution ID (optional, will be generated if not provided)
+        id:
+          type: string
+          description: Unique message ID
+        jobId:
+          type: string
+          description: Job ID
+        tasks:
+          type: array
+          description: Array of task parameters for parallel execution
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Workspace ID
+    CreateJobExecutionResponse:
+      type: object
+      description: Response for creating a job execution
+      properties:
+        executionId:
+          type: string
+          description: Execution ID
+        id:
+          type: string
+          description: Unique message ID
+        jobId:
+          type: string
+          description: Job ID
+        tasks:
+          type: array
+          description: Array of task parameters for parallel execution
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Workspace ID
     CustomDomain:
       type: object
       description: |-
@@ -328,10 +370,6 @@ components:
             type: string
             description: Function description, very important for the agent function
               to work with an LLM
-          transport:
-            type: string
-            description: Transport compatibility for the MCP, can be "websocket" or
-              "http-stream"
           triggers:
             $ref: '#/components/schemas/Triggers'
     HistogramBucket:
@@ -568,6 +606,24 @@ components:
         status:
           type: string
           description: Job status
+    JobExecution:
+      type: object
+      description: Job execution
+      properties:
+        metadata:
+          $ref: '#/components/schemas/JobExecutionMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionSpec'
+        stats:
+          $ref: '#/components/schemas/JobExecutionStats'
+        status:
+          $ref: '#/components/schemas/JobExecutionStatus'
+          description: Execution status
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
     JobExecutionConfig:
       type: object
       description: Configuration for a job execution
@@ -581,6 +637,152 @@ components:
         timeout:
           type: integer
           description: The timeout for the job execution in seconds
+    JobExecutionMetadata:
+      type: object
+      description: Job execution metadata
+      properties:
+        cluster:
+          type: string
+          description: Cluster ID
+        completedAt:
+          type: string
+          description: Completion timestamp
+        createdAt:
+          type: string
+          description: Creation timestamp
+        deletedAt:
+          type: string
+          description: Deletion timestamp
+        expiredAt:
+          type: string
+          description: Expiration timestamp
+        id:
+          type: string
+          description: Execution ID
+        job:
+          type: string
+          description: Job name
+        startedAt:
+          type: string
+          description: Start timestamp
+        updatedAt:
+          type: string
+          description: Last update timestamp
+        workspace:
+          type: string
+          description: Workspace ID
+    JobExecutionSpec:
+      type: object
+      description: Job execution specification
+      properties:
+        parallelism:
+          type: integer
+          description: Number of parallel tasks
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+        timeout:
+          type: integer
+          description: Job timeout in seconds (captured at execution creation time)
+    JobExecutionStats:
+      type: object
+      description: Job execution statistics
+      properties:
+        cancelled:
+          type: integer
+          description: Number of cancelled tasks
+        failure:
+          type: integer
+          description: Number of failed tasks
+        retried:
+          type: integer
+          description: Number of retried tasks
+        running:
+          type: integer
+          description: Number of running tasks
+        success:
+          type: integer
+          description: Number of successful tasks
+        total:
+          type: integer
+          description: Total number of tasks
+    JobExecutionStatus:
+      type: string
+      description: Job execution status
+    JobExecutionTask:
+      type: object
+      description: Job execution task
+      properties:
+        conditions:
+          type: array
+          description: Task conditions
+          items:
+            $ref: '#/components/schemas/JobExecutionTaskCondition'
+        metadata:
+          $ref: '#/components/schemas/JobExecutionTaskMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionTaskSpec'
+        status:
+          $ref: '#/components/schemas/JobExecutionTaskStatus'
+    JobExecutionTaskCondition:
+      type: object
+      description: Job execution task condition
+      properties:
+        executionReason:
+          type: string
+          description: Execution reason
+        message:
+          type: string
+          description: Condition message
+        reason:
+          type: string
+          description: Condition reason
+        severity:
+          type: string
+          description: Condition severity
+        state:
+          type: string
+          description: Condition state
+        type:
+          type: string
+          description: Condition type
+    JobExecutionTaskMetadata:
+      type: object
+      description: Job execution task metadata
+      properties:
+        completedAt:
+          type: string
+          description: Completion timestamp
+        createdAt:
+          type: string
+          description: Creation timestamp
+        name:
+          type: string
+          description: Task name
+        scheduledAt:
+          type: string
+          description: Scheduled timestamp
+        startedAt:
+          type: string
+          description: Start timestamp
+        updatedAt:
+          type: string
+          description: Last update timestamp
+    JobExecutionTaskSpec:
+      type: object
+      description: Job execution task specification
+      properties:
+        maxRetries:
+          type: integer
+          description: Maximum number of retries
+        timeout:
+          type: string
+          description: Task timeout duration
+    JobExecutionTaskStatus:
+      type: string
+      description: Job execution task status
     JobMetrics:
       type: object
       description: Metrics for job
@@ -632,6 +834,9 @@ components:
       allOf:
       - $ref: '#/components/schemas/CoreSpec'
       - properties:
+          region:
+            type: string
+            description: Region where the job should be created (e.g. us-was-1, eu-lon-1)
           triggers:
             $ref: '#/components/schemas/Triggers'
     JobsChartValue:
@@ -684,9 +889,6 @@ components:
         failed:
           type: integer
           description: Failed executions
-        retried:
-          type: integer
-          description: Retried executions
         running:
           type: integer
           description: Running executions
@@ -1795,6 +1997,10 @@ components:
         timeout:
           type: integer
           description: The timeout for the deployment in seconds
+        transport:
+          type: string
+          description: 'The transport for the deployment, used by MCPs: "websocket"
+            or "http-stream"'
         ttl:
           type: string
           description: The TTL for the deployment in seconds - 30m, 24h, 7d
@@ -2277,6 +2483,9 @@ components:
       type: object
       description: Volume specification - immutable configuration
       properties:
+        infrastructureId:
+          type: string
+          description: The internal infrastructure resource identifier for this volume
         region:
           type: string
           description: Region where the volume should be created (e.g. us-pdx-1, eu-lon-1)
@@ -3177,6 +3386,157 @@ paths:
       - BearerAuth:
         - jobs:update
       summary: Create or update job
+      tags:
+      - jobs
+  /jobs/{jobId}/executions:
+    get:
+      description: Returns a list of all executions for a job by name.
+      operationId: ListJobExecutions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: Page offset
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/JobExecution'
+                type: array
+          description: successful operation
+        "400":
+          description: bad request
+        "500":
+          description: internal server error
+      security:
+      - BearerAuth:
+        - jobs:list
+      summary: List job executions
+      tags:
+      - jobs
+    post:
+      description: Creates a new execution for a job by name.
+      operationId: CreateJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobExecutionRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        "400":
+          description: bad request
+        "500":
+          description: internal server error
+      security:
+      - BearerAuth:
+        - jobs:create
+      summary: Create job execution
+      tags:
+      - jobs
+  /jobs/{jobId}/executions/{executionId}:
+    delete:
+      description: Stop an execution for a job by name.
+      operationId: DeleteJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        "400":
+          description: bad request
+        "404":
+          description: execution not found
+        "500":
+          description: internal server error
+      security:
+      - BearerAuth:
+        - jobs:delete
+      summary: Delete job execution
+      tags:
+      - jobs
+    get:
+      description: Returns an execution for a job by name.
+      operationId: GetJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        "400":
+          description: bad request
+        "404":
+          description: execution not found
+        "500":
+          description: internal server error
+      security:
+      - BearerAuth:
+        - jobs:list
+      summary: Get job execution
       tags:
       - jobs
   /jobs/{jobId}/revisions:

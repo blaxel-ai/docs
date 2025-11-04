@@ -6,6 +6,32 @@ description: 'Keep track of changes and updates on Blaxel.'
 
 ---
 
+<Update label="2025-11-03">
+
+### Storage pricing
+
+- For all customers on our Pay-as-you-go plan, we will begin charging for storage costs:
+    - starting November 7, 2025 for Sandbox Snapshots and Sandbox Volumes.
+    - starting December 1, 2025 for stored deployment Images.
+
+This is a necessary step to ensure we can continue to invest in and improve our platform while aligning our costs with customer usage. You can see the full pricing on [our public rate card](https://blaxel.ai/pricing). To see your current usage and adjust if needed, you can check the Billing Explorer in the Blaxel Console at any time.
+
+</Update>
+
+<Update label="2025-10-30">
+
+### Mk 3 is now the default generation
+
+Mk 3 is now the default infrastructure generation for all new agents and MCP servers. Here's how versioning works:
+
+- Creating a new agent or MCP server without specifying a version → defaults to Mk 3
+- Updating an existing Mk 2 agent or MCP server without specifying a version → remains on Mk 2
+- Attempting to update a Mk 2 agent or MCP server to Mk 3 → returns an error
+- Updating an existing Mk 3 agent or MCP server without specifying a version → remains on Mk 3
+- Attempting to downgrade a Mk 3 agent or MCP server to Mk 2 → returns an error
+
+</Update>
+
 <Update label="2025-10-13">
 
 ### Sandbox volume templates
