@@ -93,8 +93,8 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   region: "us-pdx-1",     // Must be the same region as the created volume
   volumes: [{
-    name: "my-volume"     // Must match the name of the created volume
-    mountPath: "/app"     // Directory inside the sandbox
+    name: "my-volume",     // Must match the name of the created volume
+    mountPath: "/app",     // Directory inside the sandbox
     readOnly: false       // Set to true to prevent writes
   }],
   // ... other sandbox properties

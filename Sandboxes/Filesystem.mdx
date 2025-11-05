@@ -130,7 +130,25 @@ await sandbox.fs.write_tree(files, "/blaxel/app")
 
 </CodeGroup>
 
-### Write binary
+### Read binary file
+
+Read a binary file from the sandbox filesystem:
+
+<CodeGroup>
+
+```typescript TypeScript
+const binaryData = await sandbox.fs.readBinary("/tmp/image.png");
+```
+
+```python Python
+binary_data = await sandbox.fs.read_binary("/tmp/image.png")
+```
+
+</CodeGroup>
+
+The binary content is returned as a Web API *Blob* object.
+
+### Write binary file
 
 Write binary content to a file in the sandbox filesystem:
 
@@ -155,6 +173,22 @@ The binary content to write can be provided as:
 - *Blob*: Web API Blob object
 - *File*: Web API File object
 - *Uint8Array*: Typed array containing binary data
+
+### Download file to host
+
+Download a file from the sandbox filesystem to the host:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.fs.download("/tmp/foo.bin", "foo2.bin");
+```
+
+```python Python
+await sandbox.fs.download("/tmp/foo.bin", "foo2.bin")
+```
+
+</CodeGroup>
 
 ### Copy file
 
