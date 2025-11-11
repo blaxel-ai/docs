@@ -6,19 +6,21 @@ description: 'Make invocation requests on your MCP servers.'
 
 ---
 
-Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature cloud deployment capabilities.
+Blaxel uses **streamable HTTP** as its MCP transport mechanism. MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally.
 
-MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
+<Warning>
+Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
+</Warning>
 
 ## MCP server endpoint
 
-When you deploy an MCP server on Blaxel, a **WebSocket endpoint** is generated on Global Agentics Network to connect to the server.
+When you deploy an MCP server on Blaxel, an **HTTP endpoint** is generated on Global Agentics Network to connect to the server.
 
 The server endpoint looks like this:
 
 ```http Connect to an MCP server
 
-wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
 
 ```
 
@@ -32,9 +34,9 @@ You can make an MCP server **public**, meaning it will bypass Blaxel authenticat
 
 <Accordion title="blaxel.toml reference">
 
-The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory. 
+The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory.
 
-This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment.
 
 ```toml
 name = "my-mcp-server"
@@ -60,7 +62,7 @@ DEFAULT_CITY = "San Francisco"
 
 ### Timeout limit
 
-MCP server runtime has a hard limit of 15 minutes. 
+MCP server runtime has a hard limit of 15 minutes.
 
 ## Call the MCP server
 
@@ -128,109 +130,55 @@ Below are snippets of code to connect to an MCP server that is deployed on Blaxe
 <CodeGroup>
 
 ```typescript In TypeScript
-
-import { Client as ModelContextProtocolClient } from "@modelcontextprotocol/sdk/client/index.js";
+import { settings } from "@blaxel/core";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import dotenv from 'dotenv';
-import { BlaxelMcpClientTransport, env } from “@blaxel/core”
 
+console.log('Connected using Streamable HTTP transport');
 // Load environment variables from .env file
 dotenv.config();
 
-async function sampleMcpBlaxel(name: string): Promise<void> {
-  const apiKey = env.BL_API_KEY;
-  const workspace = env.BL_WORKSPACE;
 
-  if (!apiKey || !workspace) {
-    throw new Error("BL_API_KEY and BL_WORKSPACE environment variables must be set");
-  }
+// Initialize client
+const client = new Client({
+  name: 'streamable-http-client',
+  version: '2.0.0'
+});
 
-  const headers = {
-    "X-Blaxel-Authorization": `Bearer ${apiKey}`
-  };
+// Initialize transport
+const baseUrl = `${settings.runUrl}/${settings.workspace}/functions/blaxel-search/mcp`
+const transport = new StreamableHTTPClientTransport(new URL(baseUrl), { requestInit: { headers: settings.headers } });
 
-  const transport = new BlaxelMcpClientTransport(
-    `
+// Connect client to transport
+await client.connect(transport);
 
-wss://run.blaxel.ai/${workspace}/functions/${name}
-
-`,
-    headers
-  );
-
-  const client = new ModelContextProtocolClient(
-    {
-      name: name,
-      version: "1.0.0",
-    },
-    {
-      capabilities: {
-        tools: {},
-      },
-    }
-  );
-  try {
-    await client.connect(transport);
-    const response = await client.listTools();
-    console.log(`Tools retrieved, number of tools: ${response.tools.length}`);
-
-    // Call the tool, specify the correct tool name and arguments
-    const result = await client.callTool({
-      name: "search_issues",
-      arguments: { query: "test" }
-    });
-    console.log(`Tool call result: ${JSON.stringify(result)}`);
-  } finally {
-    await client.close();
-    await transport.close();
-  }
-}
-
-// Example usage
-if (require.main === module) {
-  sampleMcpBlaxel("MCP_SERVER_NAME").catch(console.error);
-}
-
+// List tools
+const response = await client.listTools();
+console.log(`Tools retrieved, number of tools: ${response.tools.length}`);
 ```
 
 ```python In Python
-
 import asyncio
-import os
 
-from blaxel.core.mcp.client import websocket_client
-from dotenv import load_dotenv
-from mcp import ClientSession
+from mcp.client.session import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
 
-load_dotenv()
+from blaxel import settings
 
-BL_API_KEY = os.getenv("BL_API_KEY")
-BL_WORKSPACE = os.getenv("BL_WORKSPACE")
 
-async def list_mcp_tools(name: str):
-    headers = {
-        "X-Blaxel-Authorization": f"Bearer {BL_API_KEY}"
-    }
+async def run():
+    """Run the completion client example."""
+    url = f"{settings.run_url}/{settings.workspace}/functions/blaxel-search/mcp"
 
-    async with websocket_client(
-        f"
+    async with streamablehttp_client(url, settings.headers) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            # Initialize the connection
+            await session.initialize()
+            tools = await session.list_tools()
+            print(f"Tools retrieved, number of tools: {len(tools.tools)}")
 
-wss://run.blaxel.ai/{BL_WORKSPACE}/functions/{name}
-
-",
-        headers=headers,
-        timeout=30,
-    ) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                response = await session.list_tools()
-                print(f"Tools retrieved, number of tools: {len(response.tools)}")
-                # Call the tool, specify the correct tool name and arguments
-                result = await session.call_tool("search_issues", { "query": "test" })
-                print(f"Tool call result: {result}")
-
-if __name__ == "__main__":
-    asyncio.run(list_mcp_tools("MCP_SERVER_NAME"))
-
+asyncio.run(run())
 ```
 
 </CodeGroup>

@@ -8,27 +8,29 @@ description: 'Deploy MCP servers as serverless APIs to equip your agents with to
 
 ---
 
-MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to **equip agents with tools** to interact with the world. 
+MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to **equip agents with tools** to interact with the world.
 
 ## Essentials
 
 MCP Server Hosting is a **serverless computing service that allows you to host remote MCP servers** without having to manage infrastructure. It gives you full observability and tracing out of the box.
 
-You only provide the MCP server code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. The deployed server implements Blaxel’s customized WebSockets transport layer.
+You only provide the MCP server code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. The deployed server uses streamable HTTP as the transport layer.
 
-Blaxel SDK allows to r**etrieve the tools from an MCP server in your code**. When both an agent and MCP server run on Blaxel, the tool call in the MCP server is execute separately from the agent logic. This ensures not only optimal resource utilization, but also better design practice for your agentic system.
+Blaxel SDK allows to **retrieve the tools from an MCP server in your code**. When both an agent and MCP server run on Blaxel, the tool call in the MCP server is execute separately from the agent logic. This ensures not only optimal resource utilization, but also better design practice for your agentic system.
 
 ### Requirements & limitations
 
-- Your MCP server must implement Blaxel’s customized WebSockets transport layer.
+- Your MCP server must implement streamable HTTP as its transport layer.
 
 - Deployed MCP servers have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
 
 ## MCP hosting on Blaxel
 
-Blaxel has a **purpose-built implementation for MCP transport** **that uses WebSockets** protocol instead of Server-Sent Events (SSE) or stdio to feature cloud deployment capabilities.
+Blaxel uses **streamable HTTP** as its MCP transport mechanism. MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally.
 
-MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally. Only WebSockets protocol is supported.
+<Warning>
+Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
+</Warning>
 
 <Info>For developers interested in the technical details, our implementation is available open-source through [Blaxel's Supergateway](https://github.com/blaxel-ai/supergateway) and [Blaxel's SDK](https://github.com/blaxel-ai/toolkit/blob/main/sdk-ts/src/functions/mcp.ts).</Info>
 
@@ -46,7 +48,7 @@ Read our guide for deploying your custom MCP server to Blaxel.
 </Card>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run tool calls through your MCP server. 
+Learn how to run tool calls through your MCP server.
 </Card>
 
 ## Examples
