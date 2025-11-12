@@ -12,7 +12,7 @@ Sandboxes are instant-launching virtual machines serving as **sandboxed compute 
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
 
-Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **killer feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
+Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
 
 <img
 className="block dark:hidden"
@@ -248,11 +248,15 @@ While not a true SSH connection, this interface lets you list and manage files, 
 
 Every sandbox is also exposed via an MCP server that allows agents to **operate a sandbox using tool calls.**
 
-The MCP server operates through WebSockets at the sandbox's base URL: 
+The MCP server operates through streamable HTTP at the sandbox's base URL:
 
 ```
-wss://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
+https://<SANDBOX_BASE_URL>/mcp
 ```
+
+<Warning>
+Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
+</Warning>
 
 <Accordion title="Tools available in the MCP server…">
 
@@ -281,8 +285,6 @@ wss://run.blaxel.ai/{{WORKSPACE_ID}}/sandboxes/{{SANDBOX_ID}}
 
 </Accordion>
 
-Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) though the endpoint shown above.
-
 Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph: 
 
 <CodeGroup>
@@ -302,6 +304,65 @@ tools = await bl_tools([f"sandbox/{sandbox_name}"])
 ```
 
 </CodeGroup>
+
+Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) though the endpoint shown above. Instructions for some popular applications are provided below.
+
+<Note>
+You must provide your [Blaxel API key](../Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+
+- Required: `Authorization: Bearer <APIKEY>`
+- Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
+
+</Note>
+
+### Add to Cursor
+
+Add the server to `~/.cursor/mcp.json`:
+
+```json
+
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://<SANDBOX_BASE_URL>/mcp",
+      "headers": {
+        "Authorization": "Bearer <APIKEY>",
+        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+      }
+    }
+  }
+}
+```
+
+### Add to Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+
+claude mcp add --transport http blaxel https://<SANDBOX_BASE_URL>/mcp \\
+  --header "Authorization: Bearer <APIKEY>" \\
+  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
+```
+
+### Add to Windsurf
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://<SANDBOX_BASE_URL>/mcp",
+      "headers": {
+        "Authorization": "Bearer <APIKEY>",
+        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+      }
+    }
+  }
+}
+```
 
 [Read more documentation](../Functions/Invoke-functions) on connecting to the MCP server directly from your code.
 

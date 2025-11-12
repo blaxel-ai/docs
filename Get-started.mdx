@@ -391,13 +391,13 @@ Alternatively, **just call the** [global endpoint](Jobs/Overview).
 
 <Accordion title="MCP server: test the server" icon="screwdriver-wrench">
 
-When you deploy an MCP server on Blaxel, a **WebSocket endpoint** is generated on Global Agentics Network to connect to the server.
+When you deploy an MCP server on Blaxel, an **HTTP endpoint** is generated on Global Agentics Network to connect to the server.
 
 The server endpoint looks like this:
 
 ```http Connect to an MCP server
 
-wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
 
 ```
 
