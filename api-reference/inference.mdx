@@ -26,7 +26,7 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/models/{YOUR-MODEL}
 
 ```http Connect to an MCP server
 
-wss://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
 
 ```
 
@@ -72,7 +72,11 @@ curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/execut
 
 ### Connect to MCP servers
 
-**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple capabilities for agents. These servers can be interacted with using Blaxel’s WebSocket transport implementation on the server’s global endpoint. 
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple capabilities for agents. These servers can be interacted with using Blaxel’s WebSocket transport implementation on the server’s global endpoint. These servers can be interacted with using Blaxel's streamable HTTP transport implementation on the server’s global endpoint.
+
+<Warning>
+Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
+</Warning>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run tool calls through your MCP server. 
