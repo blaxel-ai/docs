@@ -6,7 +6,7 @@ description: 'Create your own custom MCP Servers.'
 
 ---
 
-**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using WebSocket protocol on the server’s global endpoint. 
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using HTTP on the server’s global endpoint.
 
 You can **develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript** **or Python** and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
 
@@ -45,50 +45,67 @@ The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6
 <AccordionGroup>
 <Accordion title="Develop in TypeScript" icon="js">
 
-If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
+If you open the `src/server.ts` file, you'll see the complete server implementation. It follows the MCP server standard, using streamable HTTP as the transport mechanism.
 
 The main component you'll need to modify is the tool definition:
 
-```typescript server.ts {12-25}
+```typescript server.ts {13-27}
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import "@blaxel/telemetry";
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import express from 'express';
+import { z } from 'zod';
 
-import { BlaxelMcpServerTransport } from "@blaxel/core";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-
+// Create an MCP server
 const server = new McpServer({
-  name: "mymcp",
-  version: "1.0.0",
-  description: ""
+  name: 'GreetingServer',
+  version: '1.0.0',
 });
 
-server.tool(
-  "hello_world",
-  "Say hello to a person",
+server.registerTool(
+  'greet',
   {
-    firstname: z.string()
+    description: 'Greet someone by name',
+    inputSchema: { name: z.string().optional().default('World')},
+    outputSchema: { result: z.string() }
   },
-  async ({firstname}) => {
-    console.info(`Hello world called`);
+  async ({ name }) => {
+    const output = { result: `Hello, ${name}!` };
     return {
-      content: [{ type: "text", text: `Hello ${firstname}` }]
-    }
+      content: [{ type: 'text', text: JSON.stringify(output) }],
+      structuredContent: output
+    };
   }
 );
 
-function main() {
-  let transport;
-  if (process.env.BL_SERVER_PORT) {
-    transport = new BlaxelMcpServerTransport();
-  } else {
-    transport = new StdioServerTransport();
-  }
-  server.connect(transport);
-  console.info("Server started");
-}
+// Set up Express and HTTP transport
+const app = express();
+app.use(express.json());
 
-main();
+app.post('/mcp', async (req, res) => {
+  // Create a new transport for each request to prevent request ID collisions
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true
+  });
 
+  res.on('close', () => {
+    transport.close();
+  });
+
+  await server.connect(transport);
+  await transport.handleRequest(req, res, req.body);
+});
+
+const port = parseInt(process.env.BL_SERVER_PORT || '80');
+const host = process.env.BL_SERVER_HOST || '0.0.0.0';
+
+app.listen(port, () => {
+  console.log(`MCP Server running on <http://$>{host}:${port}/mcp`);
+}).on('error', error => {
+  console.error('Server error:', error);
+  process.exit(1);
+});
 ```
 
 Remember that the `name`, `description`, and *parameters* are crucial—they help your agent understand how your tool functions.
@@ -97,33 +114,31 @@ Remember that the `name`, `description`, and *parameters* are crucial—they hel
 
 <Accordion title="Develop in Python" icon="python">
 
-If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard, with the only difference being **our use of Blaxel transport** that leverages WebSockets for efficient platform serving.
+If you open the `src/server.py` file, you'll see the complete server implementation. It follows the MCP server standard, using streamable HTTP as the transport mechanism.
 
 The main component you'll need to modify is the tool definition:
 
-```python server.py {11-19}
+```python server.py {12-16}
 
-from blaxel.core import env
-from blaxel.core.mcp.server import FastMCP
+import os
+from mcp.server.fastmcp import FastMCP
 
-from typing import Annotated
-from logging import getLogger
+mcp = FastMCP(
+    "GreetingServer",
+    stateless_http=True,
+    host=os.getenv('BL_SERVER_HOST', "0.0.0.0"),
+    port=os.getenv('BL_SERVER_PORT', "80")
+)
 
-mcp = FastMCP("mcp-helloworld-python")
-logger = getLogger(__name__)
-
+# Add a simple tool to demonstrate the server
 @mcp.tool()
-def hello_world(
-    first_name: Annotated[
-        str,
-        "First name of the user",
-    ],
-) -> str:
-    """Say hello to the user"""
-    return f"Hello {first_name}!"
+def greet(name: str = "World") -> str:
+    """Greet someone by name."""
+    return f"Hello, {name}!"
 
-if not env["BL_DEBUG"]:
-    mcp.run(transport="ws")
+# Run server with streamable_http transport
+if __name__ == "__main__":
+    mcp.run(transport="streamable-http")
 
 ```
 

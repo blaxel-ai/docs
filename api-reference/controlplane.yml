@@ -401,6 +401,66 @@ components:
         p99:
           type: number
           description: P99 request duration
+    Image:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+          description: Metadata for the image.
+        spec:
+          $ref: '#/components/schemas/ImageSpec'
+          description: Specification for the image.
+    ImageMetadata:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the image was created.
+        displayName:
+          type: string
+          description: The display name of the image (registry/workspace/repository).
+        lastDeployedAt:
+          type: string
+          description: The date and time when the image was last deployed (most recent
+            across all tags).
+        name:
+          type: string
+          description: The name of the image (repository name).
+        resourceType:
+          type: string
+          description: The resource type of the image.
+        updatedAt:
+          type: string
+          description: The date and time when the image was last updated.
+        workspace:
+          type: string
+          description: The workspace of the image.
+    ImageSpec:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: The size of the image in bytes.
+        tags:
+          type: array
+          description: List of tags available for this image.
+          items:
+            $ref: '#/components/schemas/ImageTag'
+    ImageTag:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the tag was created.
+        name:
+          type: string
+          description: The name of the tag.
+        size:
+          type: integer
+          description: The size of the image in bytes.
+        updatedAt:
+          type: string
+          description: The date and time when the tag was last updated.
     Integration:
       type: object
       description: Integration
@@ -3091,6 +3151,116 @@ paths:
       summary: List function revisions
       tags:
       - functions
+  /images:
+    get:
+      description: Returns a list of all images in the workspace grouped by repository
+        with tags.
+      operationId: ListImages
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Image'
+                type: array
+          description: successful operation
+      security:
+      - BearerAuth:
+        - images:list
+      summary: List images
+      tags:
+      - images
+  /images/{resourceType}/{imageName}:
+    delete:
+      description: Deletes an image by name.
+      operationId: DeleteImage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "400":
+          description: image used
+        "404":
+          description: image not found
+      security:
+      - BearerAuth:
+        - images:delete
+      summary: Delete image by name
+      tags:
+      - images
+    get:
+      description: Returns an image by name.
+      operationId: GetImage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - images:get
+      summary: Get image by name
+      tags:
+      - images
+    parameters:
+    - description: Resource type of the image
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the image
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+  /images/{resourceType}/{imageName}/tags/{tagName}:
+    delete:
+      description: Deletes a specific tag from an image.
+      operationId: DeleteImageTag
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "400":
+          description: tag is in use
+        "404":
+          description: image or tag not found
+      security:
+      - BearerAuth:
+        - images:delete
+      summary: Delete image tag
+      tags:
+      - images
+    parameters:
+    - description: Resource type of the image
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the image
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    - description: Name of the tag to delete
+      in: path
+      name: tagName
+      required: true
+      schema:
+        type: string
   /integrations/{integrationName}:
     get:
       description: Returns integration information by name.
