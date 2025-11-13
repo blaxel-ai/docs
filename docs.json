@@ -131,6 +131,7 @@
             "pages": [
               "Functions/Overview",
               "Functions/Create-MCP-server",
+              "Functions/Adapt-Existing-MCP-server",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
               {

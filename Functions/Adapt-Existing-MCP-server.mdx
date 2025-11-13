@@ -1,0 +1,303 @@
+---
+title: 'Quickstart: Adapt an existing MCP server for Blaxel'
+description: 'Modify and deploy your existing stdio MCP server.'
+---
+
+MCP ([Model Context Protocol](https://github.com/modelcontextprotocol)) servers provide tools (individual capabilities for accessing specific APIs or databases) that can be used by AI agents. These servers can be hosted on Blaxel's computing platform and used by AI agents via each server's global endpoint.
+
+This quickstart walks you through the process of adapting an existing stdio-based MCP server for deployment on Blaxel using the streamable HTTP transport.
+
+## Install the Blaxel CLI
+
+Follow the steps below for your platform.
+
+<AccordionGroup>
+<Accordion title="Install on Mac" icon="apple">
+
+<Warning>To install Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.</Warning>
+
+Install Blaxel CLI by running the two following commands successively in a terminal:
+
+```shell
+brew tap blaxel-ai/blaxel
+```
+
+```shell
+brew install blaxel
+```
+
+</Accordion>
+<Accordion title="Install on Linux" icon="linux">
+
+Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| BINDIR=/usr/local/bin sudo -E sh
+```
+
+If you need a non-sudo alternative (**it will ask you questions to configure**):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+```
+
+If you need to install a specific version (e.g. v0.1.21):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| VERSION=v0.1.21 sh
+```
+
+</Accordion>
+<Accordion title="Install with cURL" icon="code">
+
+Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| BINDIR=/usr/local/bin sudo -E sh
+```
+
+If you need a non-sudo alternative (**it will ask you questions to configure**):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+```
+
+If you need to install a specific version (e.g. v0.1.21):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| VERSION=v0.1.21 sh
+```
+
+</Accordion>
+<Accordion title="Install on Windows" icon="windows">
+
+For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
+
+First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
+
+- Opening PowerShell as Administrator
+- Running: `wsl --install -d Ubuntu-20.04`
+- Restarting the computer
+- From the Microsoft Store, install the Ubuntu app
+- Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
+
+</Accordion>
+</AccordionGroup>
+
+Once installed, open a terminal and log in to the Blaxel Console using this command:
+
+```shell
+bl login
+```
+
+## Get the example project
+
+This quickstart adapts the simple stdio-based MCP weather server from the [official Model Context Protocol GitHub repository](https://github.com/modelcontextprotocol/).
+
+<Tabs>
+<Tab title="TypeScript">
+Clone the repository and change to the project working directory:
+
+```shell
+git clone https://github.com/modelcontextprotocol/quickstart-resources.git
+cd quickstart-resources/weather-server-typescript
+```
+
+</Tab>
+<Tab title="Python">
+Clone the repository and change to the project working directory:
+
+```shell
+git clone https://github.com/modelcontextprotocol/quickstart-resources.git
+cd quickstart-resources/weather-server-python
+```
+
+</Tab>
+</Tabs>
+
+## Adapt the server
+
+<Note>
+If your MCP server is already configured to use streamable HTTP, you may skip this step.
+</Note>
+
+Blaxel uses streamable HTTP as the transport layer for MCP servers deployed on its infrastructure. If your MCP server uses stdio (as in this example), you must adapt it to use streamable HTTP instead. The host name and port for the server to bind to are automatically injected by Blaxel during deployment, as `BL_SERVER_HOST` and `BL_SERVER_PORT` environment variables.
+
+<Tabs>
+<Tab title="TypeScript">
+
+<Note>
+The changes shown below are illustrative only and based on the [Blaxel MCP server template for TypeScript](https://github.com/blaxel-templates/template-mcp-ts).
+</Note>
+
+Add Express to handle HTTP requests and responses:
+
+```shell
+npm install express
+npm install --save-dev @types/express
+```
+
+Here is an example of how you could adapt the existing `src/server.ts` file for a streamable HTTP server.
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { z } from "zod";
+import express from 'express';
+
+// ... code ...
+
+const app = express();
+app.use(express.json());
+
+app.post('/mcp', async (req, res) => {
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+
+  res.on('close', () => {
+    transport.close();
+  });
+
+  await server.connect(transport);
+  await transport.handleRequest(req, res, req.body);
+});
+
+const port = parseInt(process.env.BL_SERVER_PORT || '8000');
+const host = process.env.BL_SERVER_HOST || '0.0.0.0';
+
+app.listen(port, () => {
+  console.log(`MCP Server running on http://${host}:${port}/mcp`);
+}).on('error', error => {
+  console.error('Server error:', error);
+  process.exit(1);
+});
+
+```
+</Tab>
+<Tab title="Python">
+
+<Note>
+The changes shown below are illustrative only and based on the [Blaxel MCP server template for Python](https://github.com/blaxel-templates/template-mcp-py).
+</Note>
+
+Here is an example of how you could adapt the existing `weather.py` file for a streamable HTTP server.
+
+```python
+from typing import Any
+import httpx, os
+from mcp.server.fastmcp import FastMCP
+
+# Initialize FastMCP server
+mcp = FastMCP(
+    "weather",
+    stateless_http=True,
+    host=os.getenv('BL_SERVER_HOST', "0.0.0.0"),
+    port=os.getenv('BL_SERVER_PORT', "8000")
+)
+
+
+# ... code ...
+
+def main():
+    # Initialize and run the server
+    mcp.run(transport='streamable-http')
+
+if __name__ == "__main__":
+    main()
+```
+</Tab>
+</Tabs>
+
+## Create the deployment configuration
+
+Blaxel looks for a `blaxel.toml` file to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type`; other parameters are not mandatory but allow you to customize the deployment.
+
+Create a new `blaxel.toml` file with the following content:
+
+```toml
+type = "function"
+
+[runtime]
+transport = "http-stream"
+```
+
+Blaxel also automatically detects a Dockerfile at the root of the project and uses it to create and deploy a container image of your MCP server. This is a very useful feature that allows you to completely customize the deployment environment for your MCP server, including installing additional system dependencies and using specific versions of libraries or tools.
+
+Create a new `Dockerfile` with the following content:
+
+<Tabs>
+<Tab title="TypeScript">
+
+```Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk update \
+    && apk add build-base curl ca-certificates
+
+COPY . .
+
+RUN npm install
+
+RUN npm run build
+
+EXPOSE 8000
+
+CMD [ "node", "build/index.js" ]
+```
+</Tab>
+<Tab title="Python">
+```Dockerfile
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+  && mv /root/.local/bin/uv /usr/local/bin/uv
+
+WORKDIR /app
+
+COPY . .
+
+RUN uv sync --frozen --no-dev
+
+EXPOSE 8000
+
+CMD ["uv", "run", "weather.py"]
+```
+
+</Tab>
+</Tabs>
+
+## Deploy the MCP server on Blaxel
+
+Deploy the server on Blaxel by running the following command:
+
+```shell
+bl deploy
+```
+
+Blaxel will handle the build and deployment, producing an HTTPS endpoint on Global Agentics Network. The server endpoint looks like this:
+
+```
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
+```
+
+You can now [connect to this endpoint from any MCP-aware client](./Invoke-functions#integrate-with-ai-tools).
