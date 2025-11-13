@@ -12,7 +12,7 @@ Sandboxes are instant-launching virtual machines serving as **sandboxed compute 
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
 
-Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
+Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 <img
 className="block dark:hidden"
@@ -37,14 +37,14 @@ alt="Lifecycle of Blaxel Sandboxes"
 
 ## Create a sandbox
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel. 
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -88,7 +88,7 @@ sandbox = await SandboxInstance.create({
 
 <Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/{NAME}:latest` (e.g. *blaxel/nextjs:latest*).</Info>
 
-[Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts. 
+[Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
 
 ### Ports
 
@@ -274,7 +274,7 @@ Blaxel has replaced its WebSockets implementation for MCP transport with streama
     4. `fsReadFile` - Read contents of a file.
     5. `fsWriteFile` - Create or update a file.
 3. Tools specialized for code generation AI:
-    1. `codegenEditFile` - Propose and apply a targeted edit to a specified file, with instructions and partial contents. This tool uses [MorphLLM](https://morphllm.com/) for fast edits, and requires a Morph API key set as an environment variable when creating the sandbox.
+    1. `codegenEditFile` - Propose and apply a targeted edit to a specified file, with instructions and partial contents. This tool uses [Morph](https://morphllm.com/) or [Relace](https://relace.ai) for fast edits, and requires the corresponding API key set as an environment variable when creating the sandbox.
     2. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
     3. `codegenFileSearch` - Fast fuzzy filename search in the project.
     4. `codegenGrepSearch` - Run fast, exact regex/text searches on files for locating patterns or strings.
@@ -282,10 +282,11 @@ Blaxel has replaced its WebSockets implementation for MCP transport with streama
     6. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
     7. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
     8. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
+    9. `codegenRerank` - Performs semantic search/reranking on code files in a directory.
 
 </Accordion>
 
-Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph: 
+Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph:
 
 <CodeGroup>
 
@@ -377,7 +378,7 @@ Here is the summary on the possible statuses for a sandbox:
 - **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
     - **Cost**: You are charged for CPU/memory and storage while a sandbox is in active mode.
 
-The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds. 
+The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds.
 
 Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
 
