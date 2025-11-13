@@ -18,85 +18,91 @@ Traditional code generation requires generating the entire files every time, whi
 
 Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account.
 
-- If using Morph, pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
+<Tabs>
+<Tab title="Morph">
+Pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
 
-    <CodeGroup>
+<CodeGroup>
 
-    ```typescript TypeScript
-    import { SandboxInstance } from "@blaxel/core";
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-    // Create sandbox with Morph API key for fast code edits
-    const sandbox = await SandboxInstance.createIfNotExists({
-      name: "codegen-sandbox",
-      image: "blaxel/nextjs:latest",
-      memory: 4096,
-      ports: [
-        { name: "preview", target: 3000 }
-      ],
-      envs: [
-        { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
-        { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
-      ]
-    });
-    ```
-    ```python Python
-    import os
-    from blaxel.core import SandboxInstance
+// Create sandbox with Morph API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
+    { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
+  ]
+});
+```
+```python Python
+import os
+from blaxel.core import SandboxInstance
 
-    # Create sandbox with Morph/Relace API key for fast code edits
-    sandbox = await SandboxInstance.create_if_not_exists({
-      "name": "codegen-sandbox",
-      "image": "blaxel/nextjs:latest",
-      "memory": 4096,
-      "ports": [
-        { "name": "preview", "target": 3000 }
-      ],
-      "envs": [
-        { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
-        { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
-      ]
-    })
-    ```
-    </CodeGroup>
+# Create sandbox with Morph/Relace API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
+    { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
+  ]
+})
+```
+</CodeGroup>
+</Tab>
+<Tab title="Relace">
 
-- If using Relace, pass your [Relace API key](https://docs.relace.ai/api-reference/introduction#authentication) as an environment variable when creating the sandbox.
+Pass your [Relace API key](https://docs.relace.ai/api-reference/introduction#authentication) as an environment variable when creating the sandbox.
 
-    <CodeGroup>
+<CodeGroup>
 
-    ```typescript TypeScript
-    import { SandboxInstance } from "@blaxel/core";
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-    // Create sandbox with Relace API key for fast code edits
-    const sandbox = await SandboxInstance.createIfNotExists({
-      name: "codegen-sandbox",
-      image: "blaxel/nextjs:latest",
-      memory: 4096,
-      ports: [
-        { name: "preview", target: 3000 }
-      ],
-      envs: [
-        { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY || "" }
-      ]
-    });
-    ```
-    ```python Python
-    import os
-    from blaxel.core import SandboxInstance
+// Create sandbox with Relace API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY || "" }
+  ]
+});
+```
+```python Python
+import os
+from blaxel.core import SandboxInstance
 
-    # Create sandbox with Relace API key for fast code edits
-    sandbox = await SandboxInstance.create_if_not_exists({
-      "name": "codegen-sandbox",
-      "image": "blaxel/nextjs:latest",
-      "memory": 4096,
-      "ports": [
-        { "name": "preview", "target": 3000 }
-      ],
-      "envs": [
-        { "name": "RELACE_API_KEY", "value": os.getenv("RELACE_API_KEY") },
-      ]
-    })
-    ```
-    </CodeGroup>
+# Create sandbox with Relace API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "RELACE_API_KEY", "value": os.getenv("RELACE_API_KEY") },
+  ]
+})
+```
+</CodeGroup>
+</Tab>
+</Tabs>
 
 <Note>If you do not pass the `MORPH_API_KEY` or `RELACE_API_KEY`, the corresponding tool will not be available.</Note>
 
