@@ -36,13 +36,8 @@
             "pages": [
               "Sandboxes/Overview",
               "Sandboxes/Processes",
-              {
-                "group": "File system",
-                "pages": [
-                  "Sandboxes/Filesystem",
-                  "Sandboxes/Codegen-tools"
-                ]
-              },
+              "Sandboxes/Filesystem",
+              "Sandboxes/Codegen-tools"
               "Sandboxes/Log-streaming",
               {
                 "group": "Ports, previews & sessions",
