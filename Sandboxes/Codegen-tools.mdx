@@ -1,6 +1,6 @@
 ---
 
-title: 'File management for codegen'
+title: 'Code generation tools'
 
 description: 'Tools and functions that are optimized for AI codegen use cases.'
 
@@ -16,13 +16,15 @@ Traditional code generation requires generating the entire files every time, whi
 
 ### Get started
 
-Fast apply of file edits is powered by [MorphLLM](https://morphllm.com/), and requires you to bring your own Morph account. 
+Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account. 
 
-Make sure to pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
+<Tabs>
+<Tab title="Morph">
+Pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
 
 <CodeGroup>
 
-```typescript TypeScript
+```tsx
 import { SandboxInstance } from "@blaxel/core";
 
 // Create sandbox with Morph API key for fast code edits
@@ -39,11 +41,12 @@ const sandbox = await SandboxInstance.createIfNotExists({
   ]
 });
 ```
-```python Python
+
+```python
 import os
 from blaxel.core import SandboxInstance
 
-# Create sandbox with Morph API key for fast code edits
+# Create sandbox with Morph/Relace API key for fast code edits
 sandbox = await SandboxInstance.create_if_not_exists({
   "name": "codegen-sandbox",
   "image": "blaxel/nextjs:latest",
@@ -57,9 +60,54 @@ sandbox = await SandboxInstance.create_if_not_exists({
   ]
 })
 ```
-</CodeGroup>
 
-<Note>If you do not pass the MORPH_API_KEY, this specific tool will not be available.</Note>
+</CodeGroup>
+</Tab>
+<Tab title="Relace">
+
+Pass your [Relace API key](https://docs.relace.ai/api-reference/introduction#authentication) as an environment variable when creating the sandbox.
+
+<CodeGroup>
+
+```tsx
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox with Relace API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY || "" }
+  ]
+});
+
+```
+
+```python
+import os
+from blaxel.core import SandboxInstance
+
+# Create sandbox with Relace API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "RELACE_API_KEY", "value": os.getenv("RELACE_API_KEY") },
+  ]
+})
+```
+
+</CodeGroup>
+</Tab>
+</Tabs>
 
 ### Use the tool
 
@@ -103,3 +151,4 @@ Use the following codegen-optimized functions by making tool calls through the M
 5. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
 6. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
 7. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
+8. `codegenRerank` - Performs semantic search/reranking on code files in a directory.

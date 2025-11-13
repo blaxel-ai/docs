@@ -36,13 +36,8 @@
             "pages": [
               "Sandboxes/Overview",
               "Sandboxes/Processes",
-              {
-                "group": "File system",
-                "pages": [
-                  "Sandboxes/Filesystem",
-                  "Sandboxes/Codegen-tools"
-                ]
-              },
+              "Sandboxes/Filesystem",
+              "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
               {
                 "group": "Ports, previews & sessions",
@@ -130,6 +125,7 @@
             "group": "MCP Servers Hosting",
             "pages": [
               "Functions/Overview",
+              "Functions/Adapt-Existing-MCP-server",
               "Functions/Create-MCP-server",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
