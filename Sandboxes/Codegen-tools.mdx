@@ -113,9 +113,6 @@ sandbox = await SandboxInstance.create_if_not_exists({
 
 Call the `fastapply` endpoint of the [Sandbox API](https://docs.blaxel.ai/api-reference/fastapply/apply-code-edit) via the Blaxel SDK to fast-apply a targeted edit to a specified file with Morph or Relace, with instructions and partial contents.
 
-<Tabs>
-<Tab title="Morph">
-
 <CodeGroup>
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
@@ -147,42 +144,6 @@ content = await sandbox.fs.read("/tmp/test.ts")
 logger.info(content)
 ```
 </CodeGroup>
-</Tab>
-<Tab title="Relace">
-
-<CodeGroup>
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Apply code changes
-await sandbox.codegen.fastapply(
-  "/tmp/test.ts",
-  "// keep existing code // add a typescript function to calculate the area of a circle"
-);
-
-// Read file with changes
-let content = await sandbox.fs.read("/tmp/test.ts");
-console.log(content)
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-logger = logging.getLogger(__name__)
-
-# Apply code changes
-await sandbox.codegen.fastapply(
-    "/tmp/test.ts",
-    "// keep existing code // add a typescript function to calculate the area of a circle;"
-)
-
-# Read file with changes
-content = await sandbox.fs.read("/tmp/test.ts")
-logger.info(content)
-```
-</CodeGroup>
-</Tab>
-</Tabs>
 
 ### Use the tool via MCP
 
