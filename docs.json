@@ -183,6 +183,12 @@
                 "pages": [
                   "Integrations/Pactory"
                 ]
+              },
+              {
+                "group": "Partner integrations",
+                "pages": [
+                  "Integrations/AgentMail"
+                ]
               }
             ]
           },
