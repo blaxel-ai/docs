@@ -120,86 +120,31 @@ Call the `fastapply` endpoint of the [Sandbox API](https://docs.blaxel.ai/api-re
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-async function main() {
-  try {
-    // Create sandbox with env
-    const sandbox = await SandboxInstance.createIfNotExists({
-      name: "codegen-sandbox",
-      image: "blaxel/base-image:latest",
-      memory: 4096,
-      ports: [{ target: 3000, protocol: "HTTP" }],
-      region: "us-pdx-1",
-      envs: [
-        { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
-        { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
-      ]
-    });
+// Apply code changes
+await sandbox.codegen.fastapply(
+  "/tmp/test.ts",
+  "// keep existing code // add a typescript function to calculate the area of a circle"
+);
 
-    // Apply code changes
-    await sandbox.codegen.fastapply(
-      "/tmp/test.ts",
-      "// keep existing code // add a typescript function to calculate the area of a circle"
-    )
-
-    // Read file with changes
-    let content = await sandbox.fs.read("/tmp/test.ts");
-    console.log(content)
-
-  } catch (e) {
-    console.error("There was an error => ", e);
-  }
-}
-
-main()
-  .catch((err) => {
-    console.error("There was an error => ", err);
-    process.exit(1);
-  })
-  .then(() => {
-    process.exit(0);
-  })
+// Read file with changes
+let content = await sandbox.fs.read("/tmp/test.ts");
+console.log(content)
 ```
 
 ```python Python
-import asyncio
-import logging
-import os
-import sys
-
 from blaxel.core import SandboxInstance
 
 logger = logging.getLogger(__name__)
 
-async def main():
-    try:
-        # Create sandbox with env
-        sandbox = await SandboxInstance.create_if_not_exists({
-            "name": "codegen-sandbox",
-            "image": "blaxel/base-image:latest",
-            "memory": 4096,
-            "ports": [{ "target": 3000, "protocol": "HTTP" }],
-            "region": "us-pdx-1",
-            "envs": [
-                { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
-                { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
-            ],
-        })
+# Apply code changes
+await sandbox.codegen.fastapply(
+    "/tmp/test.ts",
+    "// keep existing code // add a typescript function to calculate the area of a circle;"
+)
 
-        # Apply code changes
-        await sandbox.codegen.fastapply(
-            "/tmp/test.ts",
-            "// keep existing code // add a typescript function to calculate the area of a circle;"
-        )
-
-        # Read file with changes
-        content = await sandbox.fs.read("/tmp/test.ts")
-        logger.info(content)
-
-    except Exception as e:
-        logger.error(f"Error => {e}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# Read file with changes
+content = await sandbox.fs.read("/tmp/test.ts")
+logger.info(content)
 ```
 </CodeGroup>
 </Tab>
@@ -209,85 +154,31 @@ if __name__ == "__main__":
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-async function main() {
-  try {
-    // Create sandbox with env
-    const sandbox = await SandboxInstance.createIfNotExists({
-      name: "codegen-sandbox",
-      image: "blaxel/base-image:latest",
-      memory: 4096,
-      ports: [{ target: 3000, protocol: "HTTP" }],
-      region: "us-pdx-1",
-      envs: [
-        { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY! },
-      ]
+// Apply code changes
+await sandbox.codegen.fastapply(
+  "/tmp/test.ts",
+  "// keep existing code // add a typescript function to calculate the area of a circle"
+);
 
-    });
-
-    // Apply code changes
-    await sandbox.codegen.fastapply(
-      "/tmp/test.ts",
-      "// keep existing code // add a typescript function to calculate the area of a circle"
-    )
-
-    // Read file with changes
-    let content = await sandbox.fs.read("/tmp/test.ts");
-    console.log(content)
-
-  } catch (e) {
-    console.error("There was an error => ", e);
-  }
-}
-
-main()
-  .catch((err) => {
-    console.error("There was an error => ", err);
-    process.exit(1);
-  })
-  .then(() => {
-    process.exit(0);
-  })
+// Read file with changes
+let content = await sandbox.fs.read("/tmp/test.ts");
+console.log(content)
 ```
 
 ```python Python
-import asyncio
-import logging
-import os
-import sys
-
 from blaxel.core import SandboxInstance
 
 logger = logging.getLogger(__name__)
 
-async def main():
-    try:
-        # Create sandbox with env
-        sandbox = await SandboxInstance.create_if_not_exists({
-            "name": "codegen-sandbox",
-            "image": "blaxel/base-image:latest",
-            "memory": 4096,
-            "ports": [{ "target": 3000, "protocol": "HTTP" }],
-            "region": "us-pdx-1",
-            "envs": [
-                {"name": "RELACE_API_KEY", "value": os.environ.get("RELACE_API_KEY", "")},
-            ],
-        })
+# Apply code changes
+await sandbox.codegen.fastapply(
+    "/tmp/test.ts",
+    "// keep existing code // add a typescript function to calculate the area of a circle;"
+)
 
-        # Apply code changes
-        await sandbox.codegen.fastapply(
-            "/tmp/test.ts",
-            "// keep existing code // add a typescript function to calculate the area of a circle;"
-        )
-
-        # Read file with changes
-        content = await sandbox.fs.read("/tmp/test.ts")
-        logger.info(content)
-
-    except Exception as e:
-        logger.error(f"Error => {e}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# Read file with changes
+content = await sandbox.fs.read("/tmp/test.ts")
+logger.info(content)
 ```
 </CodeGroup>
 </Tab>
