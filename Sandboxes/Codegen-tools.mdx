@@ -6,7 +6,7 @@ description: 'Tools and functions that are optimized for AI codegen use cases.'
 
 ---
 
-Blaxel Sandboxes provide tools for managing files and their contents, specialized for code generation ("*codegen*") use cases. These tools are accessible exclusively through the [sandboxes' MCP server](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox).
+Blaxel Sandboxes provide tools for managing files and their contents, specialized for code generation ("*codegen*") use cases. These tools are accessible through the sandboxes' [MCP server](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox) and [REST API](https://docs.blaxel.ai/api-reference/root/welcome-message).
 
 ## Fast apply of file edits
 
@@ -14,7 +14,7 @@ With this tool, you can **apply code changes** suggested by an LLM to your exist
 
 Traditional code generation requires generating the entire files every time, which can be slower for large files. With this approach your LLM only generates the specific changes needed, and this tool applies them to the original file.
 
-### Get started
+### Configure environment variables
 
 Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account. 
 
@@ -109,7 +109,46 @@ sandbox = await SandboxInstance.create_if_not_exists({
 </Tab>
 </Tabs>
 
-### Use the tool
+### Use the tool via Blaxel SDK
+
+Call the `fastapply` endpoint of the [Sandbox API](https://docs.blaxel.ai/api-reference/fastapply/apply-code-edit) via the Blaxel SDK to fast-apply a targeted edit to a specified file with Morph or Relace, with instructions and partial contents.
+
+<CodeGroup>
+
+```tsx
+import { SandboxInstance } from "@blaxel/core";
+
+// Apply code changes
+await sandbox.codegen.fastapply(
+  "/tmp/test.ts",
+  "// keep existing code // add a typescript function to calculate the area of a circle"
+);
+
+// Read file with changes
+let content = await sandbox.fs.read("/tmp/test.ts");
+console.log(content)
+
+```
+
+```python
+from blaxel.core import SandboxInstance
+
+logger = logging.getLogger(__name__)
+
+# Apply code changes
+await sandbox.codegen.fastapply(
+    "/tmp/test.ts",
+    "// keep existing code // add a typescript function to calculate the area of a circle;"
+)
+
+# Read file with changes
+content = await sandbox.fs.read("/tmp/test.ts")
+logger.info(content)
+```
+
+</CodeGroup>
+
+### Use the tool via MCP
 
 Call the `codegenEditFile` tool on the **[MCP server of a sandbox](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox)** to fast-apply a targeted edit to a specified file, with instructions and partial contents.
 
@@ -142,7 +181,7 @@ codegen_tools = [tool for tool in all_tools if tool.name.startswith("codegen")]
 
 ## Other tools built for codegen
 
-Use the following codegen-optimized functions by making tool calls through the MCP server of a sandbox. See example above on how to retrieve and execute the tools.
+Use the following codegen-optimized functions by making tool calls through the MCP server or REST API of a sandbox. See example above on how to retrieve and execute the tools.
 
 1. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
 2. `codegenFileSearch` - Fast fuzzy filename search in the project.
