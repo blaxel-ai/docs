@@ -24,7 +24,8 @@ Pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#a
 
 <CodeGroup>
 
-```tsx
+```tsx TypeScript
+
 import { SandboxInstance } from "@blaxel/core";
 
 // Create sandbox with Morph API key for fast code edits
@@ -40,9 +41,10 @@ const sandbox = await SandboxInstance.createIfNotExists({
     { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
   ]
 });
-```
 
-```python
+```
+```python Python
+
 import os
 from blaxel.core import SandboxInstance
 
@@ -59,6 +61,7 @@ sandbox = await SandboxInstance.create_if_not_exists({
     { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
   ]
 })
+
 ```
 
 </CodeGroup>
@@ -69,7 +72,8 @@ Pass your [Relace API key](https://docs.relace.ai/api-reference/introduction#aut
 
 <CodeGroup>
 
-```tsx
+```tsx TypeScript
+
 import { SandboxInstance } from "@blaxel/core";
 
 // Create sandbox with Relace API key for fast code edits
@@ -84,10 +88,9 @@ const sandbox = await SandboxInstance.createIfNotExists({
     { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY || "" }
   ]
 });
-
 ```
+```python Python
 
-```python
 import os
 from blaxel.core import SandboxInstance
 
@@ -114,8 +117,8 @@ sandbox = await SandboxInstance.create_if_not_exists({
 Call the `fastapply` endpoint of the [Sandbox API](https://docs.blaxel.ai/api-reference/fastapply/apply-code-edit) via the Blaxel SDK to fast-apply a targeted edit to a specified file with Morph or Relace, with instructions and partial contents.
 
 <CodeGroup>
+```typescript TypeScript
 
-```tsx
 import { SandboxInstance } from "@blaxel/core";
 
 // Apply code changes
@@ -127,10 +130,9 @@ await sandbox.codegen.fastapply(
 // Read file with changes
 let content = await sandbox.fs.read("/tmp/test.ts");
 console.log(content)
-
 ```
+```python Python
 
-```python
 from blaxel.core import SandboxInstance
 
 logger = logging.getLogger(__name__)

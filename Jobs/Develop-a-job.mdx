@@ -12,41 +12,15 @@ Jobs allow you to run many AI tasks in parallel using batch processing. Read the
 
 <Warning>It is required to have *npm* (TypeScript) *or uv* (Python) installed to use the following command.</Warning>
 
-You can quickly **initialize a new job from scratch** by using CLI command `bl new`. 
+You can quickly **initialize a new job from scratch** by using the CLI command `bl new job`.
 
 ```bash
 bl new job
 ```
 
-This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `index.ts`. 
+This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `src/index.ts` / `src/main.py`. 
 
-<CodeGroup>
-```typescript index.ts
-import { blStartJob, withSpan } from '@blaxel/core'; // You can load any Blaxel SDK function
-import '@blaxel/telemetry'; // This import is required to connect all the metrics and tracing with blaxel platform
-import step1 from './steps/step1';
-import step2 from './steps/step2';
-import step3 from './steps/step3';
-
-type JobArguments = {
-  name: string;
-}
-
-async function myJob({name}: JobArguments) {
-  console.log(`Hello, world ${name}!`);
-
-  // You can call standard Javascript functions
-  await step1();
-  await step2();
-  ...
-}
-
-// You need to use a Blaxel SDK function to wrap your job, this is the only requirement to make it work with Blaxel 
-blStartJob(myJob);
-
-```
-
-</CodeGroup>
+The template used to generate the boilerplate job is available in Blaxel's public GitHub repository ([TypeScript](https://github.com/blaxel-templates/template-jobs-ts) / [Python](https://github.com/blaxel-templates/template-jobs-py)).
 
 Start the job locally:
 
