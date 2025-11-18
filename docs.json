@@ -305,13 +305,10 @@
             "group": "Management API",
             "pages": [
               "cli-reference/bl_apply",
-              "cli-reference/bl_metrics",
               "cli-reference/bl_get",
               "cli-reference/bl_get_agents",
-              "cli-reference/bl_get_environments",
               "cli-reference/bl_get_functions",
               "cli-reference/bl_get_integrationconnections",
-              "cli-reference/bl_get_locations",
               "cli-reference/bl_get_jobs",
               "cli-reference/bl_get_models",
               "cli-reference/bl_get_policies",
