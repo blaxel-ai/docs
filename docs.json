@@ -325,7 +325,7 @@
               "cli-reference/bl_delete_policy",
               "cli-reference/bl_delete_sandbox",
               "cli-reference/bl_delete_volume",
-              "cli-reference/bl_delete_volumetemplate",
+              "cli-reference/bl_delete_volumetemplate"
 
             ]
           },
