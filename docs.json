@@ -172,20 +172,14 @@
                 ]
               },
               {
-                "group": "Tool servers integrations",
+                "group": "MCP server integrations",
                 "pages": [
                   "Integrations/Google-Maps",
                   "Integrations/Gmail"
                 ]
               },
               {
-                "group": "Monetization integrations",
-                "pages": [
-                  "Integrations/Pactory"
-                ]
-              },
-              {
-                "group": "Partner integrations",
+                "group": "Agent frameworks and tools",
                 "pages": [
                   "Integrations/AgentMail"
                 ]
