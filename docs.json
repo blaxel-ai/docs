@@ -187,7 +187,8 @@
               {
                 "group": "Partner integrations",
                 "pages": [
-                  "Integrations/AgentMail"
+                  "Integrations/AgentMail",
+                  "Integrations/Rippletide"
                 ]
               }
             ]
