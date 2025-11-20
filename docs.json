@@ -172,22 +172,17 @@
                 ]
               },
               {
-                "group": "Tool servers integrations",
+                "group": "MCP server integrations",
                 "pages": [
                   "Integrations/Google-Maps",
                   "Integrations/Gmail"
                 ]
               },
               {
-                "group": "Monetization integrations",
+                "group": "Agent frameworks and tools",
                 "pages": [
-                  "Integrations/Pactory"
-                ]
-              },
-              {
-                "group": "Partner integrations",
-                "pages": [
-                  "Integrations/AgentMail"
+                  "Integrations/AgentMail",
+                  "Integrations/Rippletide"
                 ]
               }
             ]
@@ -291,6 +286,7 @@
               "cli-reference/bl_create-job",
               "cli-reference/bl_create-mcp-server",
               "cli-reference/bl_create-sandbox",
+              "cli-reference/bl_create-volume-template",
               "cli-reference/bl_connect_sandbox"
             ]
           },
@@ -305,17 +301,16 @@
             "group": "Management API",
             "pages": [
               "cli-reference/bl_apply",
-              "cli-reference/bl_metrics",
               "cli-reference/bl_get",
               "cli-reference/bl_get_agents",
-              "cli-reference/bl_get_environments",
               "cli-reference/bl_get_functions",
               "cli-reference/bl_get_integrationconnections",
-              "cli-reference/bl_get_locations",
               "cli-reference/bl_get_jobs",
               "cli-reference/bl_get_models",
               "cli-reference/bl_get_policies",
               "cli-reference/bl_get_sandboxes",
+              "cli-reference/bl_get_volumes",
+              "cli-reference/bl_get_volumetemplates",
               "cli-reference/bl_delete",
               "cli-reference/bl_delete_agent",
               "cli-reference/bl_delete_function",
@@ -323,7 +318,9 @@
               "cli-reference/bl_delete_job",
               "cli-reference/bl_delete_model",
               "cli-reference/bl_delete_policy",
-              "cli-reference/bl_delete_sandbox"
+              "cli-reference/bl_delete_sandbox",
+              "cli-reference/bl_delete_volume",
+              "cli-reference/bl_delete_volumetemplate"
             ]
           },
           {

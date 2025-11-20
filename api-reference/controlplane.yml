@@ -172,9 +172,6 @@ components:
           $ref: '#/components/schemas/IntegrationConnectionsList'
         policies:
           $ref: '#/components/schemas/PoliciesList'
-        privateClusters:
-          $ref: '#/components/schemas/ModelPrivateCluster'
-          description: The private clusters where the model deployment is deployed
         revision:
           $ref: '#/components/schemas/RevisionConfiguration'
         runtime:
@@ -1171,6 +1168,9 @@ components:
           description: Metrics for agents
         functions:
           description: Metrics for functions
+        inferenceErrorGlobal:
+          $ref: '#/components/schemas/ArrayMetric'
+          description: Historical error requests for all resources globally
         inferenceGlobal:
           type: array
           description: Historical requests for all resources globally
@@ -1180,6 +1180,8 @@ components:
           description: Historical requests for all resources globally
           items:
             $ref: '#/components/schemas/RequestTotalResponseData'
+        jobs:
+          description: Metrics for jobs
         lastNRequests:
           type: array
           description: Metric value
@@ -1216,19 +1218,6 @@ components:
         status:
           type: string
           description: Model status
-    ModelPrivateCluster:
-      type: object
-      description: Private cluster where the model deployment is deployed
-      properties:
-        baseUrl:
-          type: string
-          description: The base url of the model in the private cluster
-        enabled:
-          type: boolean
-          description: If true, the private cluster is available
-        name:
-          type: string
-          description: The name of the private cluster
     ModelSpec:
       type: object
       description: Model specification
@@ -1562,49 +1551,6 @@ components:
         token:
           type: string
           description: Token
-    PrivateCluster:
-      type: object
-      description: A private cluster where models can be located on.
-      allOf:
-      - $ref: '#/components/schemas/TimeFields'
-      - $ref: '#/components/schemas/OwnerFields'
-      - properties:
-          continent:
-            type: string
-            description: The private cluster's continent, used to determine the closest
-              private cluster to serve inference requests based on the user's location
-          country:
-            type: string
-            description: The country where the private cluster is located, used to
-              determine the closest private cluster to serve inference requests based
-              on the user's location
-          displayName:
-            type: string
-            description: The private cluster's display Name
-          healthy:
-            type: boolean
-            description: Whether the private cluster is healthy or not, used to determine
-              if the private cluster is ready to run inference
-          lastHealthCheckTime:
-            type: string
-            description: The private cluster's unique name
-          latitude:
-            type: string
-            description: The private cluster's latitude, used to determine the closest
-              private cluster to serve inference requests based on the user's location
-          longitude:
-            type: string
-            description: The private cluster's longitude, used to determine the closest
-              private cluster to serve inference requests based on the user's location
-          name:
-            type: string
-            description: The name of the private cluster, it must be unique
-          ownedBy:
-            type: string
-            description: The service account (operator) that owns the cluster
-          workspace:
-            type: string
-            description: The workspace the private cluster belongs to
     PrivateLocation:
       type: object
       description: Private location available for policies
@@ -2466,6 +2412,9 @@ components:
         configuration:
           $ref: '#/components/schemas/TriggerConfiguration'
           description: The configuration of the trigger
+        enabled:
+          type: boolean
+          description: 'Enable or disable the trigger (default: true)'
         id:
           type: string
           description: The id of the trigger
@@ -4001,162 +3950,6 @@ paths:
       summary: Update policy
       tags:
       - policies
-  /privateclusters:
-    get:
-      operationId: ListPrivateClusters
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/PrivateCluster'
-                type: array
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: workspace not found
-      security:
-      - BearerAuth:
-        - privateclusters:list
-      summary: List all private clusters
-      tags:
-      - privateclusters
-    post:
-      operationId: CreatePrivateCluster
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateCluster'
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-      security:
-      - BearerAuth:
-        - privateclusters:create
-      summary: Create private cluster
-      tags:
-      - privateclusters
-  /privateclusters/{privateClusterName}:
-    delete:
-      operationId: DeletePrivateCluster
-      parameters:
-      - description: Name of the private cluster
-        in: path
-        name: privateClusterName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateCluster'
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-      security:
-      - BearerAuth:
-        - privateclusters:delete
-      summary: Delete private cluster
-      tags:
-      - privateclusters
-    get:
-      operationId: GetPrivateCluster
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateCluster'
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: private cluster not found
-      security:
-      - BearerAuth:
-        - privateclusters:get
-      summary: Get private cluster by name
-      tags:
-      - privateclusters
-    parameters:
-    - description: Name of the private cluster
-      in: path
-      name: privateClusterName
-      required: true
-      schema:
-        type: string
-    put:
-      operationId: UpdatePrivateCluster
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateCluster'
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-      security:
-      - BearerAuth:
-        - privateclusters:update
-      summary: Update private cluster
-      tags:
-      - privateclusters
-  /privateclusters/{privateClusterName}/health:
-    get:
-      operationId: GetPrivateClusterHealth
-      responses:
-        "200":
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-      summary: Get private cluster health
-      tags:
-      - privateclusters
-    parameters:
-    - description: Name of the private cluster
-      in: path
-      name: privateClusterName
-      required: true
-      schema:
-        type: string
-    post:
-      operationId: UpdatePrivateClusterHealth
-      parameters:
-      - description: Name of the private cluster
-        in: path
-        name: privateClusterName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: successful operation
-        "401":
-          description: unauthorized
-        "403":
-          description: Forbidden
-      summary: Update private cluster health
-      tags:
-      - privateclusters
   /profile/invitations:
     get:
       description: Returns a list of all pending invitations in the workspace.
