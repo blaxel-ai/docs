@@ -1,0 +1,54 @@
+---
+
+title: 'Rippletide'
+description: 'Build a customer support agent'
+---
+
+This example shows how to integrate hypergraph provider [Rippletide](https://agentmail.to/) with Blaxel to create a customer support agent that provides instant, accurate responses to customer inquiries across multiple communication channels.
+
+## Requirements
+
+To use this example, you'll need a Rippletide API key. Contact [patrick@rippletide.com](mailto:patrick@rippletide.com) or [yann@rippletide.com](mailto:yann@rippletide.com) to get an API key.
+
+## Clone the example repository
+
+Clone the [example repository](https://github.com/blaxel-templates/template-rippletide-customer-support) and follow the instructions provided to install dependencies.
+
+## Customize the knowledge base
+
+Update the files in the `knowledge-base` directory with business- or scenario-specific information and workflows. The agent will use this information to respond to customer enquiries and to transition between workflow states.
+
+## Create an agent
+
+Configure the following environment variable in order to obtain an agent ID:
+
+```
+RIPPLETIDE_API_KEY=   # your Rippletide API key
+```
+
+Create an agent:
+
+```shell
+uv run src/setup.py
+```
+
+Once your agent is created, the setup process will return an agent ID.
+
+Create a `.env` file in the project root with both variables, or set them in your deployment environment.
+
+```
+RIPPLETIDE_API_KEY=   # your Rippletide API key
+RIPPLETIDE_AGENT_ID=  # your Rippletide agent ID
+```
+
+## Deploy the agent
+
+[Deploy the agent](../Agents/Deploy-an-agent) on Blaxel. Once the agent is deployed, retrieve its [inference endpoint](../Agents/Query-agents).
+
+![deployment.png](AgentMail/deployment.png)
+
+You will need an API key to query the agent externally. Follow [this guide to create a service account in your workspace and generate an API key](../Security/Service-accounts).
+
+<Card title="Rippletide Documentation" icon="book" href="[https://sdk.rippletide.com/documentation/welcome/]https://sdk.rippletide.com/documentation/welcome/)">
+Complete documentation for using AgentMail.
+</Card>
