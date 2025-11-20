@@ -266,70 +266,57 @@
           {
             "group": "Overview",
             "pages": [
-              "cli-reference/introduction"
-            ]
-          },
-          {
-            "group": "Authentication API",
-            "pages": [
-              "cli-reference/bl_login",
-              "cli-reference/bl_workspaces",
-              "cli-reference/bl_logout"
-            ]
-          },
-          {
-            "group": "Developer API",
-            "pages": [
-              "cli-reference/bl_deploy",
-              "cli-reference/bl_serve",
-              "cli-reference/bl_create-agent-app",
-              "cli-reference/bl_create-job",
-              "cli-reference/bl_create-mcp-server",
-              "cli-reference/bl_create-sandbox",
-              "cli-reference/bl_create-volume-template",
-              "cli-reference/bl_connect_sandbox"
-            ]
-          },
-          {
-            "group": "Inference API",
-            "pages": [
-              "cli-reference/bl_run",
-              "cli-reference/bl_chat"
-            ]
-          },
-          {
-            "group": "Management API",
-            "pages": [
-              "cli-reference/bl_apply",
-              "cli-reference/bl_get",
-              "cli-reference/bl_get_agents",
-              "cli-reference/bl_get_functions",
-              "cli-reference/bl_get_integrationconnections",
-              "cli-reference/bl_get_jobs",
-              "cli-reference/bl_get_models",
-              "cli-reference/bl_get_policies",
-              "cli-reference/bl_get_sandboxes",
-              "cli-reference/bl_get_volumes",
-              "cli-reference/bl_get_volumetemplates",
-              "cli-reference/bl_delete",
-              "cli-reference/bl_delete_agent",
-              "cli-reference/bl_delete_function",
-              "cli-reference/bl_delete_integrationconnection",
-              "cli-reference/bl_delete_job",
-              "cli-reference/bl_delete_model",
-              "cli-reference/bl_delete_policy",
-              "cli-reference/bl_delete_sandbox",
-              "cli-reference/bl_delete_volume",
-              "cli-reference/bl_delete_volumetemplate"
-            ]
-          },
-          {
-            "group": "Tools",
-            "pages": [
-              "cli-reference/bl_completion",
-              "cli-reference/bl_completion_fish",
-              "cli-reference/bl_completion_powershell",
-              "cli-reference/bl_version"
+              "cli-reference/introduction",
+              {
+                "group": "Commands",
+                "pages": [
+                  "cli-reference/commands/bl_apply",
+                  "cli-reference/commands/bl_chat",
+                  "cli-reference/commands/bl_completion",
+                  "cli-reference/commands/bl_completion_fish",
+                  "cli-reference/commands/bl_completion_powershell",
+                  "cli-reference/commands/bl_connect",
+                  "cli-reference/commands/bl_connect_sandbox",
+                  "cli-reference/commands/bl_create-agent-app",
+                  "cli-reference/commands/bl_create-job",
+                  "cli-reference/commands/bl_create-mcp-server",
+                  "cli-reference/commands/bl_create-sandbox",
+                  "cli-reference/commands/bl_create-volume-template",
+                  "cli-reference/commands/bl_delete",
+                  "cli-reference/commands/bl_delete_agent",
+                  "cli-reference/commands/bl_delete_function",
+                  "cli-reference/commands/bl_delete_image",
+                  "cli-reference/commands/bl_delete_integrationconnection",
+                  "cli-reference/commands/bl_delete_job",
+                  "cli-reference/commands/bl_delete_model",
+                  "cli-reference/commands/bl_delete_policy",
+                  "cli-reference/commands/bl_delete_sandbox",
+                  "cli-reference/commands/bl_delete_volume",
+                  "cli-reference/commands/bl_delete_volumetemplate",
+                  "cli-reference/commands/bl_deploy",
+                  "cli-reference/commands/bl_get",
+                  "cli-reference/commands/bl_get_agents",
+                  "cli-reference/commands/bl_get_functions",
+                  "cli-reference/commands/bl_get_image",
+                  "cli-reference/commands/bl_get_integrationconnections",
+                  "cli-reference/commands/bl_get_jobs",
+                  "cli-reference/commands/bl_get_models",
+                  "cli-reference/commands/bl_get_policies",
+                  "cli-reference/commands/bl_get_sandboxes",
+                  "cli-reference/commands/bl_get_volumes",
+                  "cli-reference/commands/bl_get_volumetemplates",
+                  "cli-reference/commands/bl_login",
+                  "cli-reference/commands/bl_logout",
+                  "cli-reference/commands/bl_logs",
+                  "cli-reference/commands/bl_new",
+                  "cli-reference/commands/bl_run",
+                  "cli-reference/commands/bl_serve",
+                  "cli-reference/commands/bl_token",
+                  "cli-reference/commands/bl_upgrade",
+                  "cli-reference/commands/bl_version",
+                  "cli-reference/commands/bl_workspaces"
+                ]
+              }
             ]
           }
         ]
