@@ -6,7 +6,7 @@ description: 'Deploy your batch jobs on Blaxel as serverless autoscalable endpoi
 
 ---
 
-This guide assumes you have developed a job locally. 
+This guide assumes you have developed a job locally.
 
 The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when jobs are deployed.
 
@@ -15,7 +15,7 @@ The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orc
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -24,22 +24,6 @@ When developing locally, the recommended method is to just **log in to your work
 When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
 
 </Accordion>
-
-### Serve locally
-
-You can serve the job locally in order to make the entrypoint function (by default: `index.py` / `index.ts`) available on a local endpoint. 
-
-Run the following command to serve the job:
-
-```bash
-bl serve
-```
-
-Calling the provided endpoint will execute the job locally. Add the flag `--hotreload`  to get live changes.
-
-```bash
-bl serve --hotreload
-```
 
 ### Deploy on production
 
@@ -247,5 +231,5 @@ tasks = [
     - `type = "http"` lets you create an HTTP endpoint to execute the job
     - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
-    
+
     A private HTTP endpoint is always created by default, even if you don’t define any trigger here.
