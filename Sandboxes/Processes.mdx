@@ -17,7 +17,7 @@ Execute and manage processes in your sandboxes with Blaxel SDK. Run shell comman
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -57,7 +57,7 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter. 
+Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
 
 ### Use process names
 
@@ -101,6 +101,8 @@ if completed_process.status == "completed":
 ```
 
 </CodeGroup>
+
+The exit code of the process is available in the `exitCode` parameter of the process execution object returned by the `process.exec` and `process.get` methods.
 
 You can also use the process ID or name to [retrieve logs of your processes](Log-streaming).
 
