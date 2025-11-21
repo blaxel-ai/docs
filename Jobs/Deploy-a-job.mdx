@@ -25,22 +25,6 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 </Accordion>
 
-### Serve locally
-
-You can serve the job locally in order to make the entrypoint function (by default: `index.py` / `index.ts`) available on a local endpoint.
-
-Run the following command to serve the job:
-
-```bash
-bl serve
-```
-
-Calling the provided endpoint will execute the job locally. Add the flag `--hotreload`  to get live changes.
-
-```bash
-bl serve --hotreload
-```
-
 ### Deploy on production
 
 You can deploy the job in order to make the entrypoint function (by default: `index.ts` / `server.py`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
