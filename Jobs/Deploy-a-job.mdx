@@ -6,7 +6,7 @@ description: 'Deploy your batch jobs on Blaxel as serverless autoscalable endpoi
 
 ---
 
-This guide assumes you have developed a job locally. 
+This guide assumes you have developed a job locally.
 
 The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when jobs are deployed.
 
@@ -15,7 +15,7 @@ The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orc
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -27,7 +27,7 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 ### Serve locally
 
-You can serve the job locally in order to make the entrypoint function (by default: `index.py` / `index.ts`) available on a local endpoint. 
+You can serve the job locally in order to make the entrypoint function (by default: `index.py` / `index.ts`) available on a local endpoint.
 
 Run the following command to serve the job:
 
@@ -53,11 +53,13 @@ bl deploy
 
 ### Run a job
 
-You can run a job via API or using Blaxel CLI, or schedule it to run periodically via a cron.
+You can run a job via the Blaxel API or CLI, or schedule it to run periodically via a cron.
 
 **API**
 
-Start a batch job execution by [calling the inference API for your batch job](../api-reference/inference).
+Start batch job execution by [calling the inference API for your batch job](../api-reference/inference).
+
+Here is an example using `curl`:
 
 ```http Execute a job
 
@@ -67,9 +69,11 @@ curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/execut
 
 ```
 
-<Accordion title="Example of using this API in TypeScript">
+Here is an example using a language-native HTTP client:
 
-```tsx
+<CodeGroup>
+
+```tsx TypeScript
 async function execJob() {
   console.log("Executing job");
   const WORKSPACE = "YOUR_WORKSPACE_NAME"; // ex : my-workspace (not the display name)
@@ -78,7 +82,7 @@ async function execJob() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Blaxel-Authorization': `Bearer ${process.env.BL_API_KEY}`, // You can go to ApiKey from UI to generate one
+      'X-Blaxel-Authorization': `Bearer ${process.env.BL_API_KEY}`,
       'X-Blaxel-Workspace': WORKSPACE
     },
     body: JSON.stringify({
@@ -99,7 +103,41 @@ async function execJob() {
 execJob().catch(console.error);
 ```
 
-</Accordion>
+```python Python
+import os
+import aiohttp
+import asyncio
+
+async def exec_job():
+    workspace = "YOUR_WORKSPACE_NAME" # ex : my-workspace (not the display name)
+    job_name = "YOUR_JOB_NAME" #  ex : my-job (not the display name)
+    api_key = os.environ.get("BL_API_KEY")
+    try:
+        async with aiohttp.ClientSession() as session:
+            print("Executing job")
+            resp = await session.post(
+                f"https://run.blaxel.ai/{workspace}/jobs/{job_name}/executions",
+                json={
+                    "tasks": [
+                        { "name": "John" },
+                        { "name": "Jane" }
+                    ]
+                },
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Blaxel-Authorization": f"Bearer {api_key}",
+                    "X-Blaxel-Workspace": workspace
+                }
+            )
+            data = await resp.text()
+            print(data)
+    except Exception as e:
+        print(f"Failed to execute job: {e}")
+
+asyncio.run(exec_job())
+```
+
+</CodeGroup>
 
 **CLI**
 
@@ -247,5 +285,5 @@ tasks = [
     - `type = "http"` lets you create an HTTP endpoint to execute the job
     - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
-    
+
     A private HTTP endpoint is always created by default, even if you don’t define any trigger here.
