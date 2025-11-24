@@ -37,11 +37,21 @@ bl deploy
 
 ### Run a job
 
-You can run a job via the Blaxel API or CLI, or schedule it to run periodically via a cron.
+Each deployed job has an HTTP endpoint to trigger a batch execution. You can find this endpoint in the Blaxel console, on the detail page for your deployed job.
+
+<Note>
+HTTP endpoints are only available for deployed jobs.
+</Note>
+
+You can invoke a job in multiple ways:
+
+- using the Blaxel API or a language-native HTTP client (only for deployed jobs);
+- using the Blaxel CLI;
+- scheduling it to run periodically via a cron.
 
 **API**
 
-Start batch job execution by [calling the inference API for your batch job](../api-reference/inference).
+Start batch job execution by [calling the inference API for your deployed batch job](../api-reference/inference).
 
 Here is an example using `curl`:
 
@@ -125,11 +135,21 @@ asyncio.run(exec_job())
 
 **CLI**
 
-Start a batch job execution by running:
+For deployed jobs, you can start a batch job execution by running:
 
 ```bash
-# Run a job using Blaxel CLI with --data argument
+# Run a deployed job using Blaxel CLI with --data argument
 bl run job <<JOB-NAME>> --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
+
+# Run a deployed job using Blaxel CLI with --file argument
+bl run job <<JOB-NAME>> --file batches/sample-batch.json
+```
+
+When running a job locally, only JSON file input is currently supported, and you must include the `--local` argument:
+
+```bash
+# Run a job locally using Blaxel CLI with --local and --file argument
+bl run job <<JOB-NAME>> --local --file batches/sample-batch.json
 ```
 
 You can cancel a job execution from the Blaxel Console or via API.
