@@ -9,9 +9,6 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 jobs:
   poll-upstream-docs-cli:
     runs-on: ubuntu-latest
@@ -29,20 +26,21 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
       - name: Update API docs from upstream remote
+        env:
+          UPSTREAM_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           tmpdir="$(mktemp -d)"
-          git clone https://.:${GITHUB_TOKEN}@github.com/blaxel-ai/controlplane.git "$tmpdir"
+          git clone https://.:${UPSTREAM_TOKEN}@github.com/blaxel-ai/controlplane.git "$tmpdir"
           cp "$tmpdir"/api/api/definitions/controlplane.yml ./api-reference/controlplane.yml
           rm -rf "$tmpdir"
           git status --short
       - name: Create pull request for API docs update
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GH_PAT }}
           branch: auto-update-docs-api
           base: main
           commit-message: "chore: auto-update api docs from upstream"
           title: "chore: auto-update api docs from upstream"
           body: "Automated update of api docs"
           delete-branch: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
