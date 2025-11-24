@@ -58,16 +58,18 @@ bl deploy
 
 ### Option B: No `Dockerfile`
 
-If you don’t want to create one, add the following scripts to your `package.json`.
+Blaxel will detect or read configuration to define an entrypoint when building the agent.
 
-Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+<Tabs>
+<Tab title="TypeScript">
+In TypeScript, entrypoints are managed in the `scripts` in the `package.json` file at the root of the directory.
 
-- `start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
+- `start` : start the agent locally through the TypeScript command, to avoid having to build the project when developing.
 - `build` : build the project. It is done automatically when deploying.
-- `prod` : start the server remotely from the dist folder, the project needs to be have been built before.
+- `prod` : start the agent remotely from the dist folder, the project needs to be have been built before.
 - `dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
 
-The remaining fields in package.json follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
+The remaining fields in `package.json` follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that `devDependencies` are only used during the build process and are removed afterwards.
 
 ```json
 {
@@ -98,6 +100,19 @@ The remaining fields in package.json follow standard JavaScript/TypeScript proje
   }
 }
 ```
+</Tab>
+<Tab title="Python">
+You can define an optional `[entrypoint]` section to specify how Blaxel will start your agent.
+
+```
+[entrypoint]
+prod = ".venv/bin/python3 src/agent.py"
+dev = "npx nodemon --exec uv run python src/agent.py"
+```
+
+If not specified, Blaxel will auto-detect settings and configure your agent.
+</Tab>
+</Tabs>
 
 Then run:
 
