@@ -94,8 +94,6 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
 
-
-
 First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
 
 - Opening PowerShell as Administrator
@@ -116,9 +114,7 @@ First install WSL (Windows Subsystem for Linux) if not already installed. This c
 <Warning>To update Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.</Warning>
 
 ```shell
-
 brew upgrade blaxel
-
 ```
 
 </Accordion>
@@ -128,26 +124,16 @@ brew upgrade blaxel
 Update Blaxel CLI by running the following command in a terminal (alternatives below):
 
 ```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| BINDIR=/usr/local/bin sudo -E sh
-```
-
-If you need a non-sudo alternative:
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| sh
+bl upgrade
 ```
 
 If you need to update to a specific version (e.g. v0.1.21):
 
 ```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 sh
+bl upgrade --version 0.1.21
 ```
+
+If you need a non-sudo alternative, refer to the `Update with cURL` section.
 
 </Accordion>
 
@@ -182,8 +168,6 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 <Accordion title="Update on Windows" icon="windows">
 
 For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
-
-
 
 First make sure WSL (Windows Subsystem for Linux) is installed if not already. This can be done by:
 
