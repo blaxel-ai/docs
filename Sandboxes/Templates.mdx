@@ -28,6 +28,10 @@ When you create a sandbox from a template, Blaxel provisions a new instance with
 3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
 4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
 
+<Note>
+You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom template images for your sandboxes using Dockerfiles and ensure that each template image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
+</Note>
+
 ## Create a sandbox template
 
 ### 1. Initialize a template
@@ -106,6 +110,10 @@ protocol = "tcp"
 NODE_ENV = "development"
 PYTHON_ENV = "development"
 ```
+
+<Note>
+Currently, it is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs.
+</Note>
 
 ### 4. Define initialization
 
