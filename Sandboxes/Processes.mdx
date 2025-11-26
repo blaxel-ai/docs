@@ -200,8 +200,7 @@ You can restart a process if it fails, up to a maximum number of restart attempt
 ```typescript TypeScript
 const process = await sandbox.process.exec({
   name: "start-server",
-  command: "node server.js",
-  waitForCompletion: true,
+  command: "npm run dev",
   restartOnFailure: true,
   maxRestarts: 5
 });
@@ -210,8 +209,7 @@ const process = await sandbox.process.exec({
 ```python Python
 process = await sandbox.process.exec({
   "name": "start-server",
-  "command": "uvicorn main:app --host 0.0.0.0 --port 8000",
-  "wait_for_completion": True,
+  "command": "uvicorn main:app --reload",
   "restart_on_failure": True,
   "max_restarts": 5
 })
