@@ -2591,6 +2591,9 @@ components:
           connection_id:
             type: string
             description: Unique connection ID
+          sourceRegion:
+            type: string
+            description: Source region the connection belongs to
           workspace:
             type: string
             description: Workspace the connection belongs to
