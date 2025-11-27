@@ -45,9 +45,44 @@ HTTP endpoints are only available for deployed jobs.
 
 You can invoke a job in multiple ways:
 
-- using the Blaxel API or a language-native HTTP client (only for deployed jobs);
+- using the Blaxel SDK, API, or language-native HTTP client (only for deployed jobs);
 - using the Blaxel CLI;
 - scheduling it to run periodically via a cron.
+
+**SDK**
+
+Start batch job execution using the SDK:
+
+<CodeGroup>
+```tsx TypeScript
+import { blJob } from "@blaxel/core";
+
+const JOB_NAME = "YOUR_JOB_NAME"; // ex : my-job (not the display name)
+
+async function execJob() {
+  const job = blJob(JOB_NAME);
+  let result = await job.run([{"name": "John"}, {"name": "Jane"}])
+  console.log(result);
+}
+
+execJob().catch(console.error);
+```
+
+```python Python
+from blaxel.core.jobs import bl_job
+import asyncio
+
+async def exec_job():
+    try:
+      job = bl_job("YOUR_JOB_NAME");
+      result = await job.arun([{"name": "John"}, {"name": "Jane"}])
+      print(result)
+    except Exception as e:
+        print(f"Failed to execute job: {e}")
+
+asyncio.run(exec_job())
+```
+</CodeGroup>
 
 **API**
 
@@ -56,11 +91,11 @@ Start batch job execution by [calling the inference API for your deployed batch 
 Here is an example using `curl`:
 
 ```http Execute a job
-
 curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
--H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
-'{"tasks":[{"my_arg":"my_value"}]}’
-
+  -H "Content-Type: application/json" \
+  -H "X-Blaxel-Workspace: <YOUR_WORKSPACE_NAME>" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -d '{"tasks":[{"name":"John"},{"name":"Jane"}]}'
 ```
 
 Here is an example using a language-native HTTP client:
@@ -81,8 +116,8 @@ async function execJob() {
     },
     body: JSON.stringify({
       tasks: [
-        { name: "John" },
-        { name: "Jane" }
+        { "name": "John" },
+        { "name": "Jane" }
       ]
     })
   });
@@ -130,7 +165,6 @@ async def exec_job():
 
 asyncio.run(exec_job())
 ```
-
 </CodeGroup>
 
 **CLI**
