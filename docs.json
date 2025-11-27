@@ -208,6 +208,12 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting"
+            ]
           }
         ]
       },
