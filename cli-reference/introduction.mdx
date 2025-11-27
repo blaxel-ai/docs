@@ -87,6 +87,7 @@ curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | VERSION=v0.1.21 sh
 ```
+
 </Accordion>
 
 <Accordion title="Install on Windows" icon="windows">
@@ -108,9 +109,19 @@ First install WSL (Windows Subsystem for Linux) if not already installed. This c
 ## Update
 
 <AccordionGroup>
-<Accordion title="Update on Mac/Linux" icon="apple">
+<Accordion title="Update on Mac" icon="apple">
 
-Update Blaxel CLI by running the following command in a terminal:
+<Warning>To update Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.</Warning>
+
+```shell
+brew upgrade blaxel
+```
+
+</Accordion>
+
+<Accordion title="Update on Linux" icon="linux">
+
+Update Blaxel CLI by running the following command in a terminal (alternatives below):
 
 ```shell
 bl upgrade
@@ -120,6 +131,36 @@ If you need to update to a specific version (e.g. v0.1.21):
 
 ```shell
 bl upgrade --version 0.1.21
+```
+
+If you need a non-sudo alternative, refer to the `Update with cURL` section.
+
+</Accordion>
+
+<Accordion title="Update with cURL" icon="code">
+
+Update Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| BINDIR=/usr/local/bin sudo -E sh
+```
+
+If you need a non-sudo alternative:
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| sh
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
+
+```shell
+curl -fsSL \
+https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+| VERSION=v0.1.21 sh
 ```
 
 </Accordion>
@@ -134,7 +175,7 @@ First make sure WSL (Windows Subsystem for Linux) is installed if not already. T
 - Running: `wsl --install -d Ubuntu-20.04`
 - Restarting the computer
 - From the Microsoft Store, install the Ubuntu app
-- Run the command line using the aforementioned Linux installation process.
+- Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
 
 </Accordion>
 
