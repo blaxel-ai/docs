@@ -8,11 +8,13 @@ description: 'Expose Blaxel resources using your own custom domains.'
 
 Blaxel allows you to connect your own domain names to your Blaxel workspace to use when exposing resources. This feature is currently only available in our **Custom plan**.
 
-When you register a domain, you enable the use of wildcard subdomains. For example:
+When you register a domain, you also enable the use of wildcard subdomains for that domain. For example:
 
-- If you register `mycompany.com`, Blaxel can use any `*.mycompany.com` subdomain to create custom URLs.
-- If you register `preview.mycompany.com`, Blaxel can use any `*.preview.mycompany.com` subdomain to create custom URLs.
+- If you register `mycompany.com`, you can use any `*.mycompany.com` subdomain to create custom URLs.
+- If you register `preview.mycompany.com`, you can use any `*.preview.mycompany.com` subdomain to create custom URLs.
 - And so on.
+
+Each domain is uniquely assigned to a region. For example, if `preview.mycompany.com` is registered in region `us-pdx-1`, it is not possible to use it in region `eu-lon-1` (for example) or any other region.
 
 In your workspace settings, add a new custom domain. Then, you'll need to configure DNS records with your domain provider. Finally, verify from within Blaxel: after DNS propagation completes, your custom domain will become fully usable.
 
