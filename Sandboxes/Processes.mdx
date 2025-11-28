@@ -191,6 +191,30 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
+### Restart process on failure
+
+You can restart a process if it fails, up to a maximum number of restart attempts:
+
+<CodeGroup>
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "start-server",
+  command: "npm run dev -- --host 0.0.0.0 --port 8000",
+  restartOnFailure: true,
+  maxRestarts: 5
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "start-server",
+  "command": "uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+  "restart_on_failure": True,
+  "max_restarts": 5
+})
+```
+
 ### Kill process
 
 Kill a process immediately by running:
