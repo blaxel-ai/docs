@@ -133,6 +133,9 @@ components:
       type: object
       description: Core event
       properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
         message:
           type: string
           description: Event message
