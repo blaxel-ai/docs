@@ -93,8 +93,8 @@ Here is an example using `curl`:
 ```http Execute a job
 curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
   -H "Content-Type: application/json" \
-  -H "X-Blaxel-Workspace: <YOUR_WORKSPACE_NAME>" \
-  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -H "X-Blaxel-Workspace: $(bl workspace --current)" \
+  -H "X-Blaxel-Authorization: Bearer $(bl token)" \
   -d '{"tasks":[{"name":"John"},{"name":"Jane"}]}'
 ```
 
