@@ -84,7 +84,7 @@ curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/models/{your-model
 ```http
 curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
--d '{"tasks":[{"my_arg":"my_value"}]}’
+-d '{"tasks":[{"my_arg":"my_value"}]}'
 ```
 
 If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
@@ -92,7 +92,7 @@ If you have the Blaxel CLI `bl` installed, you can use it to directly interpolat
 ```http
 curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
 -H "X-Blaxel-Authorization: Bearer $(bl token)" \
--d '{"tasks":[{"my_arg":"my_value"}]}’
+-d '{"tasks":[{"my_arg":"my_value"}]}'
 ```
 </Tab>
 </Tabs>
