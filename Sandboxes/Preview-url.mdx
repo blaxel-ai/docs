@@ -201,11 +201,13 @@ preview = await sandbox.previews.create({
     "spec": {
         "port": 3000,
         "public": True,
-        "prefix_url": "my-prefix"
+        "prefixUrl": "my-prefix"
     }
 })
 ```
 </CodeGroup>
+
+When using a prefix URL, the workspace name is automatically added to the prefix and included in the final structure for the preview URL - for example, `https://myprefix-workspace-xxx.preview.bl.run`.
 
 ### Create if not exists
 
