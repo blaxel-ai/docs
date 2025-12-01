@@ -91,7 +91,7 @@ Start batch job execution by [calling the inference API for your deployed batch 
 Here is an example using `curl`:
 
 ```http Execute a job
-curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
   -H "Content-Type: application/json" \
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \
