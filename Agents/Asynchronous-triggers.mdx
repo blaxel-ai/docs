@@ -1,0 +1,160 @@
+---
+title: 'Asynchronous triggers'
+description: 'Use asynchronous triggers for long-running agent tasks'
+---
+
+Asynchronous triggers let your agent perform requests asynchronously and, optionally, notify you when complete via callbacks. With this approach, the agent returns immediately while the task continues running in the background. This is useful for long-running operations, workflows, or when your endpoint must respond quickly.
+
+## Create an asynchronous request
+
+To create an asynchronous request, call your agent URL and append `?async=true` to the query string:
+
+```
+POST https://run.blaxel.ai/{your-workspace}/agents/{your-agent}?async=true
+```
+
+Your agent should immediately return:
+
+```json
+{ "success": true }
+```
+
+Meanwhile, the full request is processed asynchronously in the background.
+
+## Set a callback URL
+
+You can provide a callback URL to receive the result when the background job completes. The callback URL must be specified when the agent is deployed, either via the [Blaxel Console](#blaxel-console) or the [`blaxel.toml` configuration file](#blaxel-configuration-file).
+
+When a callback URL is set, a POST request is automatically sent to that URL when the background job completes. The POST request contains a JSON payload with the agent response. Here is an example:
+
+```json
+{
+  "status_code": 200,
+  "response_body": "{\"result\":\"ok\"}",
+  "response_length": 123,
+  "timestamp": 1735891200
+}
+```
+
+<Tip>
+You can inspect and verify callbacks by using [https://webhook.site](https://webhook.site).
+</Tip>
+
+## Verify a callback using its signature
+
+If you set a callback URL, Blaxel automatically generates a callback secret and uses it to sign the request. This is included in the response payload headers:
+
+```
+X-Blaxel-Signature: sha256=<hex>
+X-Blaxel-Timestamp: <unix timestamp>
+```
+
+The signature can be verified using the Blaxel SDK.
+
+<Note>
+If no callback URL is set, no secret is generated.
+</Note>
+
+Here is an example of a webhook running at the `/callback` URL endpoint to validate and process signed responses from an agent running an asynchronous request:
+
+<CodeGroup>
+
+```ts TypeScript
+import express from "express";
+import { verifyWebhookFromRequest } from "@blaxel/core";
+
+const app = express();
+const CALLBACK_SECRET = process.env.CALLBACK_SECRET!;
+
+app.use(express.text({ type: "application/json" }));
+
+app.post("/callback", (req, res) => {
+  if (!verifyWebhookFromRequest(req, CALLBACK_SECRET)) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  const data = JSON.parse(req.body);
+  console.log("Job completed:", data);
+
+  res.json({ received: true });
+});
+```
+
+```python Python
+from flask import Flask, request, jsonify
+from blaxel.core import verify_webhook_from_request
+import os, json
+
+app = Flask(__name__)
+CALLBACK_SECRET = os.environ["CALLBACK_SECRET"]
+
+class ReqWrapper:
+    def __init__(self, req):
+        self.body = req.get_data()
+        self.headers = {k.lower(): v for k, v in req.headers.items()}
+
+@app.post("/callback")
+def callback():
+    if not verify_webhook_from_request(ReqWrapper(request), CALLBACK_SECRET):
+        return jsonify({"error": "Invalid signature"}), 401
+
+    data = request.json
+    print("Job completed:", data)
+    return jsonify({"received": True})
+```
+</CodeGroup>
+
+To create the asynchronous request, use the following example command:
+
+```shell
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/agents/{your-agent}?async=true" \
+  -H "Content-Type: application/json" \
+  -d '{"input": "Hello"}'
+```
+
+## Configure asynchronous triggers
+
+Asynchronous triggers are configured in two ways: via the Blaxel Console or in the `blaxel.toml` configuration file.
+
+### Blaxel Console
+
+In the Blaxel Console, you can configure asynchronous triggers by clicking the **Triggers** tab on the agent detail page. This page lets you list, add, edit, or delete triggers for your agent.
+
+![Triggers List](/images/agents/triggers.png)
+
+To add a new asynchronous trigger, click **Add Trigger**. You can also optionally configure a callback URL for the trigger.
+
+![Trigger Configuration](/images/agents/configuration.png)
+
+<Note>
+If no callback URL is set, the request will still be processed asynchronously but the callback URL will not be triggered.
+</Note>
+
+When you create a trigger with a callback URL, Blaxel automatically generates a callback secret. You can use this secret to verify incoming requests to the callback URL using the Blaxel SDK.
+
+![Callback Secret](/images/agents/secret.png)
+
+<Warning>
+The callback secret is only shown once, so you should save it securely.
+</Warning>
+
+### Blaxel configuration file
+
+You can configure asynchronous triggers directly in your `blaxel.toml` file, as in the example below:
+
+```toml
+type = "agent"
+name = "async-agent"
+
+[[triggers]]
+  # unique trigger ID
+  id = "async"
+  # marks trigger as asynchronous
+  type = "http-async"
+
+[triggers.configuration]
+  # callback URL - optional
+  callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
+```
+
+This approach allows you to version-control triggers and manage them alongside your agent code.
