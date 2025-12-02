@@ -23,7 +23,7 @@ Meanwhile, the full request is processed asynchronously in the background.
 
 ## Set a callback URL
 
-You can provide a callback URL to receive the result when the background job completes. The callback URL must be specified when the agent is deployed, either via the [Blaxel Console](#blaxel-console) or the [`blaxel.toml` configuration file](#blaxel-configuration-file).
+You can provide a callback URL to receive the result when the background job completes. The callback URL must be specified when the agent is deployed, either via the [Blaxel dashboard](#blaxel-dashboard) or the [`blaxel.toml` configuration file](#blaxel-configuration-file).
 
 When a callback URL is set, a POST request is automatically sent to that URL when the background job completes. The POST request contains a JSON payload with the agent response. Here is an example:
 
@@ -114,11 +114,11 @@ curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/agents/{your-agent
 
 ## Configure asynchronous triggers
 
-Asynchronous triggers are configured in two ways: via the Blaxel Console or in the `blaxel.toml` configuration file.
+Asynchronous triggers are configured in two ways: via the Blaxel dashboard or in the `blaxel.toml` configuration file.
 
-### Blaxel Console
+### Blaxel dashboard
 
-In the Blaxel Console, you can configure asynchronous triggers by clicking the **Triggers** tab on the agent detail page. This page lets you list, add, edit, or delete triggers for your agent.
+In the Blaxel dashboard, you can configure asynchronous triggers by clicking the **Triggers** tab on the agent detail page. This page lets you list, add, edit, or delete triggers for your agent.
 
 ![Triggers List](/images/agents/triggers.png)
 
