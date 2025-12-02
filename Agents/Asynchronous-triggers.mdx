@@ -3,7 +3,7 @@ title: 'Asynchronous triggers'
 description: 'Use asynchronous triggers for long-running agent tasks'
 ---
 
-Asynchronous triggers let your agent perform requests asynchronously and, optionally, notify you when complete via callbacks. With this approach, the agent returns immediately while the task continues running in the background. This is useful for long-running operations, workflows, or when your endpoint must respond quickly.
+Asynchronous triggers allow you to run an agent request asynchronously. The agent responds immediately while it continues processing the task in the background. You can optionally receive the result through a callback. This lets tasks run for up to 15 minutes without keeping an HTTP connection open.
 
 ## Create an asynchronous request
 
