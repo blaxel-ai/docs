@@ -40,35 +40,62 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
 
 Showing the full request, with the input payload:
 
-<CodeGroup>
+<Tabs>
+<Tab title="Query agent">
 
-```http Query agent
-
+```http
 curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
--H 'Content-Type: application/json' \
+-H "Content-Type: application/json" \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d '{"inputs":"Hello, world!"}'
-
 ```
 
-```http Query model API (example on a chat completion model)
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
 
+```http
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/agents/{your-agent}" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"inputs":"Hello, world!"}'
+```
+
+</Tab>
+<Tab title="Query model API (example on a chat completion model)">
+
+```http
 curl -X POST "https://run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
--H 'Content-Type: application/json' \
+-H "Content-Type: application/json" \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
 -d '{"messages":[{"role":"user","content":"Hello!"}]}'
-
 ```
 
-```http Execute a job
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
 
+```http
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/models/{your-model}/chat/completions" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+</Tab>
+<Tab title="Execute a job">
+
+```http
 curl -X POST "https://run.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
-'{"tasks":[{"my_arg":"my_value"}]}’
-
+-d '{"tasks":[{"my_arg":"my_value"}]}'
 ```
 
-</CodeGroup>
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"tasks":[{"my_arg":"my_value"}]}'
+```
+</Tab>
+</Tabs>
 
 ### Connect to MCP servers
 
@@ -79,7 +106,7 @@ Blaxel has replaced its WebSockets implementation for MCP transport with streama
 </Warning>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run tool calls through your MCP server. 
+Learn how to run tool calls through your MCP server.
 </Card>
 
 ### Manage sessions
