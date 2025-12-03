@@ -78,7 +78,7 @@ ENTRYPOINT ["npx", "pnpm", "start"]
 
 For [Agents Hosting](Overview) and [MCP Servers Hosting](../Functions/Overview):
 
-- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `BL_SERVER_HOST` (for the host) and `BL_SERVER_PORT` (for the port).
+- The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `HOST` (for the host) and `PORT` (for the port).
 
 For [Batch Jobs](../Jobs/Overview):
 
@@ -102,7 +102,7 @@ docker run -p 1338:1338 my-blaxel-app
 
 ## Deploy
 
-When a Dockerfile is present at the root of your project, Blaxel will use it to build a custom container image for your deployment. Deploy your application with the Blaxel CLI as usual. 
+When a Dockerfile is present at the root of your project, Blaxel will use it to build a custom container image for your deployment. Deploy your application with the Blaxel CLI as usual.
 
 ```bash
 bl deploy
