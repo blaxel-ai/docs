@@ -2434,6 +2434,12 @@ components:
         authenticationType:
           type: string
           description: The authentication type of the trigger
+        callbackSecret:
+          type: string
+          description: The callback secret for async triggers (auto-generated, encrypted)
+        callbackUrl:
+          type: string
+          description: The callback URL for async triggers (optional)
         path:
           type: string
           description: The path of the trigger
@@ -2448,6 +2454,9 @@ components:
           description: The tasks configuration of the cronjob
           items:
             $ref: '#/components/schemas/TriggerConfigurationTask'
+        timeout:
+          type: integer
+          description: The timeout in seconds for async triggers (max 900s, MK3 only)
     TriggerConfigurationTask:
       type: object
       description: The tasks configuration of the cronjob
