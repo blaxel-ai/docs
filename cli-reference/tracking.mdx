@@ -1,0 +1,111 @@
+---
+title: 'CLI Tracking'
+sidebarTitle: "Tracking"
+description: 'Managing error tracking in Blaxel CLI'
+---
+
+## Overview
+
+Blaxel CLI includes error tracking to help improve the CLI's reliability and user experience. This tracking collects minimal, non-identifiable error information when the CLI encounters issues, helping the Blaxel team identify and fix problems quickly.
+
+## What is Tracked
+
+When the CLI encounters an error or crash, the following information may be collected:
+
+- **Error details**: Stack traces, error messages, and error codes
+- **CLI version**: The version of Blaxel CLI being used
+- **Operating system**: Basic OS information (e.g., Linux, macOS, Windows)
+- **Command context**: The command that was running when the error occurred (without arguments or parameters)
+
+### What is NOT Tracked
+
+The following information is **never** collected:
+
+- Command arguments or parameters
+- File contents or workspace data
+- Environment variables
+- API keys, tokens, or credentials
+- Network locations or IP addresses
+- Custom configuration values
+
+## Managing Tracking
+
+Tracking is enabled by default to help improve the CLI experience for all users. You can control tracking behavior through multiple methods, listed here in order of precedence.
+
+### Method 1: Environment Variable (Highest Priority)
+
+The `BL_TRACKING` environment variable takes precedence over all other settings:
+
+<CodeGroup>
+
+```bash Disable tracking for a single command
+BL_TRACKING=false bl deploy
+```
+
+```bash Disable tracking for the current session
+export BL_TRACKING=false
+```
+
+```bash Enable tracking explicitly
+export BL_TRACKING=true
+```
+
+</CodeGroup>
+
+<Note>
+When running CLI commands, the `BL_TRACKING` environment variable provides a quick way to control tracking without modifying configuration files.
+</Note>
+
+### Method 2: Configuration File
+
+You can permanently configure tracking preferences in your Blaxel configuration file at `~/.blaxel/config.yaml`:
+
+```yaml
+tracking: false  # Disable tracking
+# or
+tracking: true   # Enable tracking
+```
+
+To edit your configuration:
+
+```bash
+# Create config file if it doesn't exist
+mkdir -p ~/.blaxel
+touch ~/.blaxel/config.yaml
+
+# Edit the file with your preferred editor
+nano ~/.blaxel/config.yaml
+```
+
+### Priority Order
+
+Settings are evaluated in the following order:
+
+1. **`BL_TRACKING` environment variable** (highest priority)
+2. **`tracking` field in `~/.blaxel/config.yaml`**
+3. **Default setting: `true`** (enabled)
+
+<Warning>
+If you set `BL_TRACKING=true` in your environment but have `tracking: false` in your config file, tracking will be **enabled** because the environment variable takes precedence.
+</Warning>
+
+## SDK Applications
+
+If you're using Blaxel SDK directly in TypeScript or Python applications (without the CLI), the same `BL_TRACKING` environment variable controls SDK tracking. For detailed information about SDK tracking configuration, see the [SDK Tracking Documentation](/sdk-reference/tracking).
+
+## Privacy Commitment
+
+- **Minimal**: Only error-related technical information is tracked
+- **Secure**: All data transmission uses encrypted channels
+- **Transparent**: This documentation describes everything that is collected
+- **Respectful**: Your opt-out choice is always honored
+
+## Related Documentation
+
+- [SDK Tracking](/sdk-reference/tracking) - For TypeScript and Python SDK tracking configuration
+- [CLI Reference](/cli-reference/introduction) - Complete CLI documentation
+
+## Questions or Concerns
+
+If you have questions about tracking or privacy, please contact the Blaxel team:
+- Email: privacy@blaxel.ai

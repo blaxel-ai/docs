@@ -261,7 +261,8 @@
             "pages": [
               "sdk-reference/introduction",
               "sdk-reference/sdk-ts",
-              "sdk-reference/sdk-python"
+              "sdk-reference/sdk-python",
+              "sdk-reference/tracking"
             ]
           }
         ]
@@ -273,6 +274,7 @@
             "group": "Overview",
             "pages": [
               "cli-reference/introduction",
+              "cli-reference/tracking",
               {
                 "group": "Commands",
                 "pages": [
