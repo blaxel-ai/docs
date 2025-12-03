@@ -44,7 +44,15 @@ port = int(os.getenv("BL_SERVER_PORT", "80"))
 ```
 </CodeGroup>
 
-## 3. Deploy your agent
+## 3. Authenticate via the CLI
+
+[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
+
+```bash
+bl login
+```
+
+## 4. Deploy your agent
 
 When deploying, there are two possible scenarios:
 
@@ -120,7 +128,7 @@ Then run:
 bl deploy
 ```
 
-## 4. (Optional) Enable telemetry
+## 5. (Optional) Enable telemetry
 
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply import the SDK in your project's entry point.
 
@@ -134,7 +142,7 @@ import blaxel.core
 ```
 </CodeGroup>
 
-## 5. (Optional) Run locally with Blaxel CLI
+## 6. (Optional) Run locally with Blaxel CLI
 
 If you want to run your agent locally and start using the SDK, make sure the `start` and `dev` scripts are defined, then run:
 
@@ -144,7 +152,7 @@ bl serve
 bl serve --hotreload
 ```
 
-# 6. Test your agent
+## 7. Test your agent
 
 By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens). Requests are made to the agent's [inference endpoint](./Query-agents) via the Blaxel API or Blaxel CLI.
 
