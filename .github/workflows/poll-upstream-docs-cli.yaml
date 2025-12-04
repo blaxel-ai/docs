@@ -9,9 +9,6 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 jobs:
   poll-upstream-docs-cli:
     runs-on: ubuntu-latest
@@ -40,7 +37,7 @@ jobs:
       - name: Create pull request for CLI docs update
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
           branch: auto-update-docs-cli
           base: main
           commit-message: "chore: auto-update cli docs from upstream"
