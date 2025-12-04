@@ -10,7 +10,7 @@ Blaxel provides a serverless infrastructure to instantly deploy MCP servers. You
 
 ## Deploy an MCP server with Blaxel CLI
 
-This section assumes you have developed the MCP server locally, as explained [in this documentation](Create-MCP-server), and are ready to deploy it. 
+This section assumes you have developed the MCP server locally, as explained [in this documentation](Create-MCP-server), and are ready to deploy it.
 
 ### Serve locally
 
@@ -44,7 +44,7 @@ The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6
 
 <Accordion title="Just the server" icon="server">
 
-You can serve the MCP server locally in order to make the entrypoint function (by default: `server.ts` / `server.py`) available on a local endpoint. 
+You can serve the MCP server locally in order to make the entrypoint function (by default: `server.ts` / `server.py`) available on a local endpoint.
 
 Run the following command to serve the MCP server:
 
@@ -78,7 +78,7 @@ Run the following command to build and deploy the MCP server on Blaxel:
 bl deploy
 ```
 
-You can now [connect to the MCP server](Invoke-functions) either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports HTTP. 
+You can now [connect to the MCP server](Invoke-functions) either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports HTTP.
 
 <Accordion title="Example of tool calling via Blaxel SDK" icon="bolt">
 
@@ -128,7 +128,7 @@ tools = await bl_tools(['blaxel-search'])
 </Accordion>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run tool calls through your MCP server. 
+Learn how to run tool calls through your MCP server.
 </Card>
 
 ### Customize an MCP server deployment
@@ -165,7 +165,7 @@ Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When dep
 
 ### Manage revisions
 
-As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the 10 latest revisions for each object. 
+As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the last 5 revisions for each object.
 
 ![image.png](Deploy-a-function/image.png)
 
@@ -185,9 +185,9 @@ Deployment revisions are updated following a **blue-green** paradigm. The Global
 
 ## Deployment reference
 
-The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory. 
+The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory.
 
-This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+This file is used to configure the deployment of the MCP server on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment.
 
 ```toml
 name = "my-mcp-server"
@@ -212,7 +212,7 @@ DEFAULT_CITY = "San Francisco"
 <AccordionGroup>
 <Accordion title="Define entrypoints in Python" icon="python">
 
-Additionally, when developing in Python, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server. 
+Additionally, when developing in Python, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server.
 
 ```toml
 ...
@@ -264,5 +264,5 @@ bl apply -f ./my-deployment.yaml
 Read our [reference for MCP server deployments](https://docs.blaxel.ai/api-reference/functions/get-function-by-name).
 
 <Card title="Query MCP servers" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run tool calls on your MCP server. 
+Learn how to run tool calls on your MCP server.
 </Card>
