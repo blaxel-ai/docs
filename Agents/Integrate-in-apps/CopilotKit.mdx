@@ -17,7 +17,7 @@ This tutorial will walk you through how to use [CopilotKit](https://www.copilotk
 
 ## Step 1: Create a LangGraph agent
 
-You can quickly **initialize a new project from scratch** by using CLI command `bl new`. 
+You can quickly **initialize a new project from scratch** by using CLI command `bl new`.
 
 ```bash
 bl new agent
@@ -104,7 +104,7 @@ logger = getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info(f"Server running on port {os.getenv('BL_SERVER_PORT', 80)}")
+    logger.info(f"Server running on port {os.getenv('PORT', 80)}")
     try:
         # Initialize the graph
         graph = await langgraph_agent()
@@ -242,23 +242,23 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";;
 import { NextRequest } from "next/server";
- 
+
 // You can use any service adapter here for multi-agent support.
 const serviceAdapter = new ExperimentalEmptyAdapter();
- 
+
 const runtime = new CopilotRuntime({
   remoteEndpoints: [
     { url: "http://localhost:1338/copilotkit" },
   ],
 });
- 
+
 export const POST = async (req: NextRequest) => {
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
     serviceAdapter,
     endpoint: "/api/copilotkit",
   });
- 
+
   return handleRequest(req);
 };
 
@@ -303,10 +303,10 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";;
 import { NextRequest } from "next/server";
- 
+
 // You can use any service adapter here for multi-agent support.
 const serviceAdapter = new ExperimentalEmptyAdapter();
- 
+
 const runtime = new CopilotRuntime({
   remoteEndpoints: [
     {
@@ -322,14 +322,14 @@ const runtime = new CopilotRuntime({
     },
   ],
 });
- 
+
 export const POST = async (req: NextRequest) => {
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
     serviceAdapter,
     endpoint: "/api/copilotkit",
   });
- 
+
   return handleRequest(req);
 };
 
