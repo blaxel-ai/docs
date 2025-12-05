@@ -1,0 +1,140 @@
+---
+
+title: 'Develop batch jobs in TypeScript'
+
+description: 'Use the Blaxel SDK to develop a batch job in TypeScript.'
+
+---
+
+You can programmatically create batch jobs using the Blaxel API and TypeScript SDK.
+
+
+## Quickstart
+
+<Warning>It is required to have `npm` installed to use the following command.</Warning>
+
+You can quickly initialize a new job from scratch by using the CLI command `bl new job`.
+
+```bash
+bl new job
+```
+
+This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `src/index.ts`. You can update this boilerplate job to your specific requirements, and manage or control the job using the Blaxel TypeScript SDK.
+
+## Using the SDK
+
+### Create a job
+
+Create a job and wait for execution to start:
+
+```typescript
+import { blJob } from "@blaxel/core";
+
+const job = blJob("my-job");
+const executionId = await job.createExecution({
+  tasks: [{ duration: 60 }]
+});
+const result = await job.waitForExecution(executionId);
+```
+
+<Note>
+Time units in the TypeScript SDK are specified in milliseconds.
+</Note>
+
+### Create execution
+
+Start a new execution with tasks:
+
+```typescript
+const executionId = await job.createExecution({
+  tasks: [
+    { duration: 30 },
+    { duration: 60 },
+  ]
+});
+```
+
+### Get execution details
+
+Get full execution details:
+
+```typescript
+const execution = await job.getExecution(executionId);
+console.log(execution.status, execution.metadata);
+```
+
+### Get status
+
+The possible job states are:
+
+```
+pending → running → completed
+                 ↘ failed
+```
+
+Get only the job status (faster than retrieving full execution details):
+
+```typescript
+const status = await job.getExecutionStatus(executionId);
+// Returns: "pending" | "running" | "completed" | "failed"
+```
+
+### List executions
+
+List all executions for a job:
+
+```typescript
+const executions = await job.listExecutions();
+console.log(`Found ${executions.length} executions`);
+```
+
+### Wait for completion
+
+Poll until execution completes:
+
+```typescript
+const result = await job.waitForExecution(executionId, {
+  maxWait: 300000,  // 5 minutes (milliseconds)
+  interval: 2000,   // Poll every 2 seconds (milliseconds)
+});
+```
+
+<Tip>
+When polling:
+- adjust the `interval` based on the expected task duration
+- set the `maxWait` timeout longer than the expected total task duration
+</Tip>
+
+### Complete example
+
+Here is a complete example:
+
+```typescript
+import { blJob } from "@blaxel/core";
+
+const job = blJob("data-processing");
+
+// Create execution
+const executionId = await job.createExecution({
+  tasks: [{ duration: 60 }, { duration: 60 }]
+});
+
+// Monitor
+let status = await job.getExecutionStatus(executionId);
+console.log(`Status: ${status}`);
+
+// Wait
+try {
+  const result = await job.waitForExecution(executionId, {
+    maxWait: 180000,
+    interval: 5000,
+  });
+  console.log(`Completed: ${result.status}`);
+} catch (error) {
+  console.log(`Timeout: ${error.message}`);
+}
+```
+
+<Card title="Deploy a job" icon="server" href="/Jobs/Deploy-a-job">
+Learn how to deploy your AI batch jobs on Blaxel as a serverless auto-scalable endpoint.
+</Card>

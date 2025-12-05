@@ -61,7 +61,14 @@
             "group": "Batch Jobs",
             "pages": [
               "Jobs/Overview",
-              "Jobs/Develop-a-job",
+              {
+                "group": "Development guide",
+                "pages": [
+                  "Jobs/Develop-a-job",
+                  "Jobs/Develop-a-job-ts",
+                  "Jobs/Develop-a-job-py"
+                ]
+              },
               {
                 "group": "Deploy a job",
                 "pages": [

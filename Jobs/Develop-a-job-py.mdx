@@ -1,0 +1,173 @@
+---
+
+title: 'Develop batch jobs in Python'
+
+description: 'Use the Blaxel SDK to develop a batch job in Python.'
+
+---
+
+You can programmatically create batch jobs using the Blaxel API and Python SDK.
+
+Both synchronous and asynchronous usage is supported: use `method_name` for synchronous operations and `amethod_name()` for asynchronous operations.
+
+## Quickstart
+
+<Warning>It is required to have `uv` installed to use the following command.</Warning>
+
+You can quickly initialize a new job from scratch by using the CLI command `bl new job`.
+
+```bash
+bl new job
+```
+
+This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file src/main.py`. You can update this boilerplate job to your specific requirements, and manage or control the job using the Blaxel Python SDK.
+
+## Using the SDK
+
+### Create a job
+
+Create a job and wait for execution to start:
+
+```python
+from blaxel.core.jobs import bl_job
+from blaxel.core.client.models.create_job_execution_request import CreateJobExecutionRequest
+
+job = bl_job("my-job")
+request = CreateJobExecutionRequest(tasks=[{"duration": 60}])
+execution_id = job.create_execution(request)
+result = job.wait_for_execution(execution_id, max_wait=180)
+```
+
+<Note>
+Time units in the Python SDK are specified in seconds.
+</Note>
+
+### Create execution
+
+Start a new execution with tasks:
+
+```python
+# synchronous
+request = CreateJobExecutionRequest(tasks=[{"duration": 30}, {"duration": 60}])
+execution_id = job.create_execution(request)
+
+# asynchronous
+execution_id = await job.acreate_execution(request)
+```
+
+### Get execution details
+
+Get full execution details:
+
+```python
+# synchronous
+execution = job.get_execution(execution_id)
+
+# asynchronous
+execution = await job.aget_execution(execution_id)
+```
+
+### Get status
+
+The possible job states are:
+
+```
+pending → running → completed
+                 ↘ failed
+```
+
+Get only the job status (faster than retrieving full execution details):
+
+```python
+# synchronous
+status = job.get_execution_status(execution_id)
+
+# asynchronous
+status = await job.aget_execution_status(execution_id)
+```
+
+### List executions
+
+List all executions for a job:
+
+```python
+# synchronous
+executions = job.list_executions(limit=50)
+
+# asynchronous
+executions = await job.alist_executions(limit=50)
+```
+
+### Wait for completion
+
+Poll until execution completes:
+
+```python
+# synchronous
+result = job.wait_for_execution(
+    execution_id,
+    max_wait=300,  # 5 minutes (seconds)
+    interval=2     # Poll every 2 seconds (seconds)
+)
+
+# asynchronous
+result = await job.await_for_execution(execution_id, max_wait=300, interval=2)
+```
+
+<Tip>
+When polling:
+- adjust the `interval` based on the expected task duration
+- set the `max_wait` timeout longer than the expected total task duration
+</Tip>
+
+### Complete example
+
+Here is a complete example using synchronous operations:
+
+```python
+from blaxel.core.jobs import bl_job
+from blaxel.core.client.models.create_job_execution_request import CreateJobExecutionRequest
+
+job = bl_job("data-processing")
+
+# create execution
+request = CreateJobExecutionRequest(tasks=[{"duration": 60}, {"duration": 60}])
+execution_id = job.create_execution(request)
+
+# monitor
+status = job.get_execution_status(execution_id)
+print(f"Status: {status}")
+
+# wait
+try:
+    result = job.wait_for_execution(execution_id, max_wait=180, interval=5)
+    print(f"Completed: {result.status}")
+except Exception as error:
+    print(f"Timeout: {error}")
+```
+
+Here is a complete example using asynchronous operations:
+
+```python
+import asyncio
+from blaxel.core.jobs import bl_job
+from blaxel.core.client.models.create_job_execution_request import CreateJobExecutionRequest
+
+async def main():
+    job = bl_job("data-processing")
+
+    request = CreateJobExecutionRequest(tasks=[{"duration": 60}, {"duration": 60}])
+    execution_id = await job.acreate_execution(request)
+
+    status = await job.aget_execution_status(execution_id)
+    print(f"Status: {status}")
+
+    result = await job.await_for_execution(execution_id, max_wait=180, interval=5)
+    print(f"Completed: {result.status}")
+
+asyncio.run(main())
+```
+
+<Card title="Deploy a job" icon="server" href="/Jobs/Deploy-a-job">
+Learn how to deploy your AI batch jobs on Blaxel as a serverless auto-scalable endpoint.
+</Card>
