@@ -5,12 +5,19 @@ title: 'Changelog'
 description: 'Keep track of changes and updates on Blaxel.'
 
 ---
+<Update label="2025-12-05">
+
+### New Jobs API endpoints and SDK methods
+
+Added new Jobs API endpoints and corresponding [TypeScript](/Jobs/Develop-a-job-ts) and [Python](/Jobs/Develop-a-job-py) SDK support to programmatically manage long-running job executions with multiple tasks.
+
+</Update>
 
 <Update label="2025-12-03">
 
 ### Deprecation of `BL_SERVER_HOST` and `BL_SERVER_PORT` variables
 
-- Transitioned to conventional `HOST` and `PORT` environment variables to specify the IP address/hostname and port on which agents or MCP servers should listen when deploying on Blaxel. The previous `BL_SERVER_HOST` and `BL_SERVER_PORT` variables will continue to be supported for compatibility.
+Transitioned to conventional `HOST` and `PORT` environment variables to specify the IP address/hostname and port on which agents or MCP servers should listen when deploying on Blaxel. The previous `BL_SERVER_HOST` and `BL_SERVER_PORT` variables will continue to be supported for compatibility.
 
 </Update>
 
@@ -23,7 +30,7 @@ description: 'Keep track of changes and updates on Blaxel.'
 <img src="/img/2025/cli-login.png" />
 </Frame>
 
-- `bl login` now enforces a manual authorization step in the console. Note: This works on all versions, but we recommend upgrading to the latest (0.1.61) where the timeout window has been extended from 9s to 60s for a smoother experience.
+`bl login` now enforces a manual authorization step in the console. Note: This works on all versions, but we recommend upgrading to the latest (0.1.61) where the timeout window has been extended from 9s to 60s for a smoother experience.
 
 </Update>
 
@@ -36,7 +43,7 @@ description: 'Keep track of changes and updates on Blaxel.'
 <img src="/img/2025/new-sidebar.png" />
 </Frame>
 
-- Reworked sidebar in the Blaxel Console for a better navigation experience.
+Reworked sidebar in the Blaxel Console for a better navigation experience.
 
 </Update>
 
@@ -53,7 +60,7 @@ description: 'Keep track of changes and updates on Blaxel.'
 
 ### Relace support
 
-- Added [Relace](https://www.relace.ai/) support for fast apply in the codegen tools of a sandbox MCP
+Added [Relace](https://www.relace.ai/) support for fast apply in the codegen tools of a sandbox MCP
 
 </Update>
 
@@ -93,9 +100,9 @@ Mk 3 is now the default infrastructure generation for all new agents and MCP ser
 
 ### Storage pricing
 
-- For all customers on our Pay-as-you-go plan, we will begin charging for storage costs:
-    - starting November 7, 2025 for Sandbox Snapshots and Sandbox Volumes.
-    - starting December 1, 2025 for stored deployment Images.
+For all customers on our Pay-as-you-go plan, we will begin charging for storage costs:
+  - starting November 7, 2025 for Sandbox Snapshots and Sandbox Volumes.
+  - starting December 1, 2025 for stored deployment Images.
 
 This is a necessary step to ensure we can continue to invest in and improve our platform while aligning our costs with customer usage. You can see the full pricing on [our public rate card](https://blaxel.ai/pricing). To see your current usage and adjust if needed, you can check the Billing Explorer in the Blaxel Console at any time.
 
@@ -105,7 +112,7 @@ This is a necessary step to ensure we can continue to invest in and improve our 
 
 ### Sandbox volume templates
 
-- Sandbox volume templates are available in private preview. Pre-populate sandbox volumes with files for faster environment setup.
+Sandbox volume templates are available in private preview. Pre-populate sandbox volumes with files for faster environment setup.
 
 </Update>
 
@@ -117,7 +124,7 @@ This is a necessary step to ensure we can continue to invest in and improve our 
 <img src="/img/2025/blaxel-blog.png" />
 </Frame>
 
-- Rolled out new version of [Blaxel Blog](https://blaxel.ai/blog): a technical blog to share engineering deep-dives, Blaxel updates, and general guides on agentics.
+Rolled out new version of [Blaxel Blog](https://blaxel.ai/blog): a technical blog to share engineering deep-dives, Blaxel updates, and general guides on agentics.
 
 </Update>
 
@@ -125,7 +132,7 @@ This is a necessary step to ensure we can continue to invest in and improve our 
 
 ### Sandbox network v2
 
-- Released v2 of the sandbox networking layer, which decreases latency by up to 90%
+Released v2 of the sandbox networking layer, which decreases latency by up to 90%
 
 </Update>
 
@@ -146,11 +153,11 @@ This is a necessary step to ensure we can continue to invest in and improve our 
 
 ### New init command
 
-- Added `bl new` command to quickly initialize a new or existing project on Blaxel. You can also use any of the sub commands:
-    - `bl new agent`
-    - `bl new mcp`
-    - `bl new job`
-    - `bl new sandbox`
+Added `bl new` command to quickly initialize a new or existing project on Blaxel. You can also use any of the sub commands:
+  - `bl new agent`
+  - `bl new mcp`
+  - `bl new job`
+  - `bl new sandbox`
 
 </Update>
 
@@ -174,7 +181,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/billing-explorer-chart.png" />
 </Frame>
 
-- Added new Billing Explorer: monitor your consumption of Blaxel services in real-time.
+Added new Billing Explorer: monitor your consumption of Blaxel services in real-time.
 
 </Update>
 
@@ -182,7 +189,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### New MCP server: Linkup
 
-- Added new MCP server: [Linkup](https://www.linkup.so/)
+Added new MCP server: [Linkup](https://www.linkup.so/)
 
 </Update>
 
@@ -203,7 +210,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### New MCP server: Nia
 
-- Added new MCP server: [Nia](https://app.trynia.ai/sign-in?redirect_url=https://app.trynia.ai/)
+Added new MCP server: [Nia](https://app.trynia.ai/sign-in?redirect_url=https://app.trynia.ai/)
 
 </Update>
 
@@ -211,7 +218,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### TTLs on sandboxes
 
-- Added option to set a TTL (time-to-live) on sandboxes to automatically delete them after a specific period
+Added option to set a TTL (time-to-live) on sandboxes to automatically delete them after a specific period
 
 </Update>
 
@@ -219,7 +226,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### Improved sandbox creation time
 
-- Optimized creation flow of new sandboxes to bring it down to 2-3 seconds (+ network latency).
+Optimized creation flow of new sandboxes to bring it down to 2-3 seconds (+ network latency).
 
 </Update>
 
@@ -231,7 +238,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/usage-based-pricing.png" />
 </Frame>
 
-- Launched our new [usage-based pricing model](https://blaxel.ai/pricing)
+Launched our new [usage-based pricing model](https://blaxel.ai/pricing)
 
 </Update>
 
@@ -257,7 +264,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/cron.png" />
 </Frame>
 
-- Added support for cron-based triggers for Batch Jobs.
+Added support for cron-based triggers for Batch Jobs.
 
 </Update>
 
@@ -274,7 +281,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### Deploy from Dockerfile
 
-- Added possibility to deploy agent, MCP server and job from a Dockerfile
+Added possibility to deploy agent, MCP server and job from a Dockerfile
 
 </Update>
 
@@ -286,7 +293,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/airweave.png" />
 </Frame>
 
-- Added new MCP server: Airweave
+Added new MCP server: Airweave
 
 </Update>
 
@@ -307,7 +314,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/supabase.png" />
 </Frame>
 
-- Added new MCP server: Supabase
+Added new MCP server: Supabase
 
 </Update>
 
@@ -344,7 +351,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 <img src="/img/2025/onegrep.png" />
 </Frame>
 
-- Added an agent template that uses [OneGrep](https://www.onegrep.dev/) for semantic tool searching and selection
+Added an agent template that uses [OneGrep](https://www.onegrep.dev/) for semantic tool searching and selection
 
 </Update>
 
@@ -352,7 +359,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### Sessions for sandboxes
 
-- Added ability to create sessions to operate sandboxes from a frontend client
+Added ability to create sessions to operate sandboxes from a frontend client
 
 </Update>
 
@@ -369,7 +376,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### Preview URLs for sandboxes
 
-- Added support for public preview URLs for sandboxes
+Added support for public preview URLs for sandboxes
 
 </Update>
 
@@ -377,7 +384,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 
 ### Async endpoint for agents
 
-- Added endpoint to send asynchronous requests to an agent
+Added endpoint to send asynchronous requests to an agent
 
 </Update>
 
@@ -413,7 +420,7 @@ Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Conta
 <img src="/img/2025/tavily.png" />
 </Frame>
 
-- Added new MCP server: Tavily. Enable your agents to search the web with Tavily’s API.
+Added new MCP server: Tavily. Enable your agents to search the web with Tavily’s API.
 
 </Update>
 
@@ -425,7 +432,7 @@ Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Conta
 <img src="/img/2025/newui.png" />
 </Frame>
 
-- We reworked the UI of Blaxel Console! Now more geeky with loads of new metrics and visibility on your infrastructure — and an integrated changelog.
+We reworked the UI of Blaxel Console! Now more geeky with loads of new metrics and visibility on your infrastructure — and an integrated changelog.
 
 </Update>
 
@@ -437,7 +444,7 @@ Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Conta
 <img src="/img/2025/adk.png" />
 </Frame>
 
-- Added support for Google ADK (Agent Development Kit) framework
+Added support for Google ADK (Agent Development Kit) framework
 
 </Update>
 
@@ -445,7 +452,7 @@ Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Conta
 
 ### New framework supported: PydanticAI
 
-- Added support for PydanticAI framework
+Added support for PydanticAI framework
 
 </Update>
 
@@ -568,7 +575,7 @@ Beamlit officially launched new pricing plans. Learn more about the pricing plan
 <img src="/img/2025/deepseek-integration.png" />
 </Frame>
 
-- Connect to DeepSeek models from Beamlit
+Connect to DeepSeek models from Beamlit
 
 </Update>
 
@@ -628,7 +635,7 @@ Added 9 new prebuilt templates of [functions](Functions/Overview):
 <img src="/img/2025/chart-token.png" />
 </Frame>
 
-- New [policy](Model-Governance/Policies) type: maximum token usage
+New [policy](Model-Governance/Policies) type: maximum token usage
 
 </Update>
 
@@ -671,7 +678,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 <img src="/img/2025/chart-latencies.png" />
 </Frame>
 
-- Added a new set of metrics is available for your agents, functions and models: **end-to-end latencies (average, p50, p90, p99)**.
+Added a new set of metrics is available for your agents, functions and models: **end-to-end latencies (average, p50, p90, p99)**.
 
 Beamlit is currently in private alpha. Join our [waitlist for access today](https://beamlit.com/beta-signup).
 
@@ -687,7 +694,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 
 [Click here to download](https://marketplace.visualstudio.com/items?itemName=Beamlit.vscode-beamlit-tools) the Beamlit extension for Visual Studio Code.
 
-- View and retrieve your workspace’s resources directly from the VSCode IDE
+View and retrieve your workspace’s resources directly from the VSCode IDE
 
 Beamlit is currently in private alpha. Join our [waitlist for access today](https://beamlit.com/beta-signup).
 
@@ -729,7 +736,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 
 ### CLI support for running agents and functions
 
-- You can now use the Beamlit CLI to run requests on agents (`bl run agent`) and functions (`bl run function`)
+You can now use the Beamlit CLI to run requests on agents (`bl run agent`) and functions (`bl run function`)
 
 Beamlit is currently in private alpha. Join our [waitlist for access today](https://beamlit.com/beta-signup).
 
@@ -737,7 +744,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 
 <Update label="2024-12-16" description="Total requests metric">
 
-- Added new metric: total number of requests
+Added new metric: total number of requests
 
 Beamlit is currently in private alpha. Join our [waitlist for access today](https://beamlit.com/beta-signup).
 
