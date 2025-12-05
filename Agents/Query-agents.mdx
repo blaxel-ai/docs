@@ -8,7 +8,7 @@ description: 'Make inference requests on your agents.'
 
 Agent [deployments](Overview) on Blaxel have a default **inference endpoint** which can be used by external consumers to request an inference execution. This inference endpoint is synchronous so the connection remains open until the end of your request is entirely processed by the agent. You can also query an asynchronous endpoint for agents, allowing to send requests that last for longer times without keeping connections open.
 
-All inference requests are routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment. 
+All inference requests are routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment.
 
 ## Inference endpoints
 
@@ -29,29 +29,36 @@ Timeout limit:
 - The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
 - If your request processing is expected to take longer than 100 second without streaming data, you should use the asynchronous endpoint or [batch jobs](../Jobs/Overview) instead.
 
-### Async endpoint
+### Asynchronous endpoint
 
-In addition to the default synchronous endpoint, Blaxel provides the ability to create **asynchronous endpoints** for handling longer-running agent requests. 
+In addition to the default synchronous endpoint, Blaxel provides the ability to create **asynchronous endpoints** for handling longer-running agent requests.
 
 ![Screenshot 2025-05-18 at 8.53.14 PM.png](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.png)
 
-This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene. **You are responsible for implementing your own method for retrieving the agent's results in your code**. You can send results to a webhook, a database, an S3 bucket, etc.
+This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene.
 
-The timeout duration for this endpoint is **10 minutes**. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+<Note>
+You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. On Mark 3 infrastructure, you can specify an optional callback URL to receive the result when the background job completes.
+</Note>
 
-The async endpoint looks like this:
+The timeout duration for this endpoint is 10 minutes on Mark 2 infrastructure, and 15 minutes on Mark 3 infrastructure. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+
+The asynchronous endpoint looks like this:
 
 ```http Query agent (async)
 
+# on Mark 2 infrastructure
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/async
 
+# on Mark 3 infrastructure
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}?async=true
 ```
 
-You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file.
+You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file. For more information, read the [documentation on asynchronous triggers](./Asynchronous-triggers).
 
 <Accordion title="blaxel.toml reference">
 
-This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment. 
+This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment.
 
 ```toml
 name = "my-agent"
@@ -73,7 +80,7 @@ memory = 1024
   id = "trigger-async-my-agent"
   type = "http-async"
 [triggers.configuration]
-  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE} 
+  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}
   retry = 1
 
 [[triggers]]
@@ -89,7 +96,7 @@ memory = 1024
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). 
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 </Accordion>
