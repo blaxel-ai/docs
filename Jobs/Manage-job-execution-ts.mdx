@@ -1,31 +1,20 @@
 ---
 
-title: 'Develop batch jobs in TypeScript'
+title: 'Manage job execution in TypeScript'
 
-description: 'Use the Blaxel SDK to develop a batch job in TypeScript.'
+description: 'Use the Blaxel SDK to manage batch job execution in TypeScript.'
 
 ---
 
-You can programmatically create batch jobs using the Blaxel API and TypeScript SDK.
+You can programmatically execute and manage batch jobs using the Blaxel API and TypeScript SDK.
 
+<Note>
+The code examples in this section assume that your batch job has already been successfully deployed on Blaxel.
+</Note>
 
-## Quickstart
+### Dispatch job execution
 
-<Warning>It is required to have `npm` installed to use the following command.</Warning>
-
-You can quickly initialize a new job from scratch by using the CLI command `bl new job`.
-
-```bash
-bl new job
-```
-
-This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `src/index.ts`. You can update this boilerplate job to your specific requirements, and manage or control the job using the Blaxel TypeScript SDK.
-
-## Using the SDK
-
-### Create a job
-
-Create a job and wait for execution to start:
+Dispatch a job and wait for execution to start:
 
 ```typescript
 import { blJob } from "@blaxel/core";
@@ -41,9 +30,9 @@ const result = await job.waitForExecution(executionId);
 Time units in the TypeScript SDK are specified in milliseconds.
 </Note>
 
-### Create execution
+### Dispatch job execution with tasks
 
-Start a new execution with tasks:
+Dispatch a new job with tasks:
 
 ```typescript
 const executionId = await job.createExecution({
@@ -114,16 +103,16 @@ import { blJob } from "@blaxel/core";
 
 const job = blJob("data-processing");
 
-// Create execution
+// create execution
 const executionId = await job.createExecution({
-  tasks: [{ duration: 60 }, { duration: 60 }]
+  tasks: [{"name": "John"}, {"name": "Jane"}]
 });
 
-// Monitor
+// monitor
 let status = await job.getExecutionStatus(executionId);
 console.log(`Status: ${status}`);
 
-// Wait
+// wait
 try {
   const result = await job.waitForExecution(executionId, {
     maxWait: 180000,

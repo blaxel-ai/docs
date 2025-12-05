@@ -1,32 +1,22 @@
 ---
 
-title: 'Develop batch jobs in Python'
+title: 'Manage job execution in Python'
 
-description: 'Use the Blaxel SDK to develop a batch job in Python.'
+description: 'Use the Blaxel SDK to manage batch job execution in Python.'
 
 ---
 
-You can programmatically create batch jobs using the Blaxel API and Python SDK.
+You can programmatically execute and manage batch jobs using the Blaxel API and Python SDK.
 
 Both synchronous and asynchronous usage is supported: use `method_name` for synchronous operations and `amethod_name()` for asynchronous operations.
 
-## Quickstart
+<Note>
+The code examples in this section assume that your batch job has already been successfully deployed on Blaxel.
+</Note>
 
-<Warning>It is required to have `uv` installed to use the following command.</Warning>
+### Dispatch job execution
 
-You can quickly initialize a new job from scratch by using the CLI command `bl new job`.
-
-```bash
-bl new job
-```
-
-This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file src/main.py`. You can update this boilerplate job to your specific requirements, and manage or control the job using the Blaxel Python SDK.
-
-## Using the SDK
-
-### Create a job
-
-Create a job and wait for execution to start:
+Dispatch a job and wait for execution to start:
 
 ```python
 from blaxel.core.jobs import bl_job
@@ -42,9 +32,9 @@ result = job.wait_for_execution(execution_id, max_wait=180)
 Time units in the Python SDK are specified in seconds.
 </Note>
 
-### Create execution
+### Dispatch job execution with tasks
 
-Start a new execution with tasks:
+Dispatch a new job with tasks:
 
 ```python
 # synchronous
@@ -128,10 +118,10 @@ Here is a complete example using synchronous operations:
 from blaxel.core.jobs import bl_job
 from blaxel.core.client.models.create_job_execution_request import CreateJobExecutionRequest
 
-job = bl_job("data-processing")
+job = bl_job("my-job")
 
 # create execution
-request = CreateJobExecutionRequest(tasks=[{"duration": 60}, {"duration": 60}])
+request = CreateJobExecutionRequest(tasks=[{"name": "John"}, {"name": "Jane"}])
 execution_id = job.create_execution(request)
 
 # monitor
@@ -154,9 +144,9 @@ from blaxel.core.jobs import bl_job
 from blaxel.core.client.models.create_job_execution_request import CreateJobExecutionRequest
 
 async def main():
-    job = bl_job("data-processing")
+    job = bl_job("my-job")
 
-    request = CreateJobExecutionRequest(tasks=[{"duration": 60}, {"duration": 60}])
+    request = CreateJobExecutionRequest(tasks=[{"name": "John"}, {"name": "Jane"}])
     execution_id = await job.acreate_execution(request)
 
     status = await job.aget_execution_status(execution_id)

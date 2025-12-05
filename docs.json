@@ -61,20 +61,20 @@
             "group": "Batch Jobs",
             "pages": [
               "Jobs/Overview",
-              {
-                "group": "Development guide",
-                "pages": [
-                  "Jobs/Develop-a-job",
-                  "Jobs/Develop-a-job-ts",
-                  "Jobs/Develop-a-job-py"
-                ]
-              },
+              "Jobs/Develop-a-job",
               {
                 "group": "Deploy a job",
                 "pages": [
                   "Jobs/Deploy-a-job",
                   "Jobs/Deploy-dockerfile-jobs",
                   "Jobs/Deploy-multiple-jobs"
+                ]
+              },
+              {
+                "group": "Manage job execution",
+                "pages": [
+                  "Jobs/Manage-job-execution-ts",
+                  "Jobs/Manage-job-execution-py"
                 ]
               },
               "Jobs/Variables-and-secrets-jobs"

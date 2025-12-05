@@ -1,6 +1,6 @@
 ---
 
-title: 'Overview'
+title: 'Develop a job'
 
 description: 'Develop and run custom AI batch jobs on Blaxel.'
 
@@ -18,7 +18,7 @@ You can quickly **initialize a new job from scratch** by using the CLI command `
 bl new job
 ```
 
-This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `src/index.ts` / `src/main.py`. You can update this boilerplate job to your specific requirements, and manage or control the job using the Blaxel [TypeScript](Develop-a-job-ts) or [Python](Develop-a-job-py) SDKs.
+This will create a pre-scaffolded local directory where your entire code can be added. In the generated folder, you'll find a boilerplate job with multiple steps in the entrypoint file `src/index.ts` / `src/main.py`. You can update this boilerplate job to your specific requirements, and manage and control job execution using the Blaxel [TypeScript](Manage-job-execution-ts) or [Python](Manage-job-execution-py) SDKs.
 
 The template used to generate the boilerplate job is available in Blaxel's public GitHub repository ([TypeScript](https://github.com/blaxel-templates/template-jobs-ts) / [Python](https://github.com/blaxel-templates/template-jobs-py)).
 
@@ -38,11 +38,11 @@ pnpm start --name John
 <CardGroup cols={2}>
 
 <Card title="TypeScript" icon="js" href="/Jobs/Develop-a-job-ts">
-Develop your batch jobs in TypeScript using the Blaxel SDK.
+Manage batch job execution using the Blaxel TypeScript SDK.
 </Card>
 
 <Card title="Python" icon="python" href="/Jobs/Develop-a-job-py">
-Develop your batch jobs in Python using the Blaxel SDK.
+Manage batch job execution using the Blaxel Python SDK.
 </Card>
 
 </CardGroup>
