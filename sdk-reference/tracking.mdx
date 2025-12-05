@@ -1,0 +1,215 @@
+---
+title: 'SDK Tracking'
+sidebarTitle: "Tracking"
+description: 'Managing error tracking in Blaxel SDKs'
+---
+
+## Overview
+
+Blaxel SDKs (TypeScript and Python) include error tracking to help improve SDK reliability and performance. This tracking collects minimal information when your application encounters issues, helping the Blaxel team identify and fix problems in the SDK.
+
+## What is Tracked
+
+When using Blaxel SDK and an error occurs, the following information may be collected:
+
+- **SDK errors**: Stack traces from SDK-related errors
+- **SDK version**: The version of Blaxel SDK being used
+- **Workspace**: The workspace being used
+- **Runtime environment**: Basic runtime info (Node.js/Python version)
+- **SDK method calls**: Which SDK methods encountered errors (without parameters)
+
+### What is NOT Tracked
+
+The following information is **never** collected:
+
+- API keys, tokens, or credentials
+- Method parameters or arguments
+- Your application's business logic or data
+- Environment variables
+- Network locations or IP addresses
+- Custom configuration values
+- Workspace contents or file data
+
+## Controlling Tracking in Your Application
+
+You can control SDK tracking through either environment variables or the Blaxel configuration file.
+
+### Configuration File Method
+
+Edit your configuration file at `~/.blaxel/config.yaml`:
+
+```yaml
+tracking: false  # Disable tracking
+# or
+tracking: true   # Enable tracking
+```
+
+This setting will be used by all Blaxel SDKs when the `BL_TRACKING` environment variable is not set.
+
+### TypeScript SDK
+
+<CodeGroup>
+
+```typescript Disable for entire application
+// Set before importing Blaxel SDK
+process.env.BL_TRACKING = 'false';
+
+import { SandboxInstance } from '@blaxel/core';
+
+const sandboxes = await SandboxInstance.list();
+console.log(sandboxes);
+```
+
+```typescript Environment-based control
+// .env file
+BL_TRACKING=false
+
+// Your application
+import 'dotenv/config';
+import { BlaxelClient } from '@blaxel/core';
+```
+
+</CodeGroup>
+
+### Python SDK
+
+<CodeGroup>
+
+```python Disable for entire application
+# Set before importing Blaxel SDK
+import os
+os.environ['BL_TRACKING'] = 'false'
+
+from blaxel.core import SandboxInstance
+
+sandboxes = await SandboxInstance.list();
+print(sandboxes);
+```
+
+```python Using python-dotenv
+# .env file
+BL_TRACKING=false
+
+# Your application
+from dotenv import load_dotenv
+load_dotenv()
+
+from blaxel import BlaxelClient
+```
+
+</CodeGroup>
+
+## Configuration Priority
+
+SDK tracking settings are evaluated in the following order:
+
+1. **`BL_TRACKING` environment variable** (highest priority)
+   - `false` or `0`: Disables tracking
+   - `true` or `1`: Enables tracking
+2. **`tracking` field in `~/.blaxel/config.yaml`** (if env var not set)
+   - `tracking: false`: Disables tracking
+   - `tracking: true`: Enables tracking
+3. **Default: `true`** (enabled)
+
+<Note>
+The environment variable takes precedence over the config file. If `BL_TRACKING` is set, the config file setting will be ignored.
+</Note>
+
+## Best Practices
+
+### Development vs Production
+
+```typescript
+// Recommended: Different settings per environment
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+if (isDevelopment) {
+  process.env.BL_TRACKING = 'false'; // Disable in development
+}
+
+import { BlaxelClient } from '@blaxel/core';
+```
+
+<Info>
+If you want consistent tracking settings across all your Blaxel tools (CLI and SDKs), configure it once in `~/.blaxel/config.yaml` rather than setting environment variables in each application.
+</Info>
+
+### Docker Containers
+
+```dockerfile
+# In your Dockerfile
+ENV BL_TRACKING=true
+
+# Or disable tracking
+# ENV BL_TRACKING=false
+```
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    environment:
+      - BL_TRACKING=false
+```
+
+### CI/CD Environments
+
+```yaml
+# GitHub Actions
+env:
+  BL_TRACKING: false
+
+# GitLab CI
+variables:
+  BL_TRACKING: "false"
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        env:
+        - name: BL_TRACKING
+          value: "false"
+```
+
+## Using @blaxel/telemetry Package
+
+The `@blaxel/telemetry` package provides automatic instrumentation for your Blaxel SDK applications:
+
+```typescript
+// Import at application entry point
+import '@blaxel/telemetry';
+import { BlaxelClient } from '@blaxel/core';
+
+// Telemetry automatically respects BL_TRACKING
+// and provides observability for your SDK usage
+```
+
+<Info>
+The `@blaxel/telemetry` package is optional but recommended for production applications. It provides valuable insights while respecting your privacy settings through `BL_TRACKING`.
+</Info>
+
+## Privacy Commitment
+
+- **Minimal**: Only SDK error-related technical information is tracked
+- **Secure**: All data transmission uses encrypted channels
+- **Open**: This documentation describes everything that is collected
+- **Respectful**: Your opt-out choice is always honored
+
+## Related Documentation
+
+- [TypeScript SDK Reference](/sdk-reference/sdk-ts)
+- [Python SDK Reference](/sdk-reference/sdk-python)
+- [CLI Tracking](/cli-reference/tracking) - For CLI-specific tracking configuration
+
+## Questions
+
+If you have questions about SDK tracking or privacy:
+- Email: privacy@blaxel.ai
