@@ -1,0 +1,92 @@
+---
+title: 'Deployment File Reference'
+description: 'Understand the blaxel.toml file'
+---
+
+You can customize your Blaxel deployment with Blaxel's configuration file `blaxel.toml`.
+
+The format of Blaxel's configuration file is described below.
+
+<Note>
+The only mandatory parameter is the `type` so Blaxel knows which kind of resource to deploy.
+</Note>
+
+```toml
+# resource type (required)
+# possible values: [agent, function, job, sandbox, volume-template]
+type = "agent"
+
+# resource name (optional)
+# defaults to the directory name
+name = "my-resource"
+
+# entrypoint configuration (optional)
+[entrypoint]
+# entrypoint command for production environment
+prod = "python main.py"
+
+# entrypoint command for development environment
+dev = "python main.py --dev"
+
+# environment variables (optional)
+[env]
+# key-value paris
+MY_VAR = "my-value"
+
+# runtime configuration (optional)
+[runtime]
+# memory (MB)
+memory = 4096
+
+# job configuration
+maxConcurrentTasks = 10
+
+# task timeout (seconds)
+timeout = 900
+
+# maximum number of retries
+maxRetries=0
+
+# volumes for sandboxes (optional)
+[[volumes]]
+# volume name
+name = "my-volume"
+
+# volume mount path
+mountPath = "/data"
+
+# volume templates directory
+directory = "."
+
+# volume default size (MB)
+defaultSize = 1024
+
+# job trigger (optional)
+[[triggers]]
+# trigger identifier
+id = "my-job-trigger"
+
+# trigger type
+# scheduled trigger, only valid for resource type "job"
+type = "schedule"
+
+# cron expression (only for type="schedule")
+schedule = "0 * * * *"
+
+# agent and function triggers (optional)
+[[triggers]]
+# trigger identifier
+id = "my-agent-trigger"
+
+# trigger type
+# HTTP trigger, only valid for resource type "agent" and "function"
+type = "http"
+
+[[triggers.configuration]]
+# endpoint URL (only for type="http")
+path = "/webhook"
+
+# endpoint authentication (only for type="http")
+# possible values: [public, private]
+authenticationType = "public"
+```
