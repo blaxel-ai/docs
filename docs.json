@@ -70,6 +70,13 @@
                   "Jobs/Deploy-multiple-jobs"
                 ]
               },
+              {
+                "group": "Manage job execution",
+                "pages": [
+                  "Jobs/Manage-job-execution-ts",
+                  "Jobs/Manage-job-execution-py"
+                ]
+              },
               "Jobs/Variables-and-secrets-jobs"
             ]
           },
