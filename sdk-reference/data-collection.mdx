@@ -1,0 +1,181 @@
+---
+title: 'Data collection'
+description: 'Learn about data collection in Blaxel SDKs.'
+---
+
+Blaxel SDKs (TypeScript and Python) collect and send error information to Blaxel to help improve SDK reliability and user experience.
+
+## Data collection
+
+When using Blaxel SDK and an error occurs, the following information may be collected:
+
+- **SDK errors**: Stack traces from SDK-related errors
+- **SDK version**: The version of Blaxel SDK being used
+- **Workspace**: The workspace being used
+- **Runtime environment**: Basic runtime info (Node.js/Python version)
+- **SDK method calls**: Which SDK methods encountered errors (without parameters)
+
+The following information is **never** collected:
+
+- API keys, tokens, or credentials
+- Method parameters or arguments
+- Your application's business logic or data
+- Environment variables
+- Network locations or IP addresses
+- Custom configuration values
+- Workspace contents or file data
+
+## Managing data collection
+
+Error tracking and transmission is enabled by default. You can control this behavior through multiple methods, listed here in order of precedence.
+
+### DO_NOT_TRACK environment variable
+
+The `DO_NOT_TRACK` environment variable provides a quick way to control tracking without modifying configuration files. This environment variable takes precedence over all other settings.
+
+<CodeGroup>
+
+```typescript TypeScript - Application-level control
+// set before importing Blaxel SDK
+process.env.DO_NOT_TRACK = 'false';
+
+import { SandboxInstance } from '@blaxel/core';
+
+const sandboxes = await SandboxInstance.list();
+console.log(sandboxes);
+```
+
+```typescript TypeScript - Environment-level control
+// .env file
+DO_NOT_TRACK=false
+
+// Your application
+import 'dotenv/config';
+import { BlaxelClient } from '@blaxel/core';
+import { SandboxInstance } from '@blaxel/core';
+
+const sandboxes = await SandboxInstance.list();
+console.log(sandboxes);
+```
+
+```python Python - Application-level control
+# set before importing Blaxel SDK
+import os
+os.environ['DO_NOT_TRACK'] = 'false'
+
+from blaxel.core import SandboxInstance
+
+sandboxes = await SandboxInstance.list();
+print(sandboxes);
+```
+
+```python Python - Environment-level control using python-dotenv
+# .env file
+DO_NOT_TRACK=false
+
+# Your application
+from dotenv import load_dotenv
+load_dotenv()
+
+from blaxel import BlaxelClient
+from blaxel.core import SandboxInstance
+
+sandboxes = await SandboxInstance.list();
+print(sandboxes);
+```
+</CodeGroup>
+
+### Configuration file
+
+You can permanently configure preferences in your Blaxel configuration file at `~/.blaxel/config.yaml` (you can create this file if it doesn't already exist):
+
+```yaml
+tracking: false  # Disable tracking
+# or
+tracking: true   # Enable tracking
+```
+
+<Note>
+The environment variable takes precedence over the config file. If `DO_NOT_TRACK` is set, the configuration file setting will be ignored.
+</Note>
+
+## Best practices
+
+### Development vs production
+
+```typescript
+// Recommended: Different settings per environment
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+if (isDevelopment) {
+  process.env.DO_NOT_TRACK = 'false'; // Disable in development
+}
+
+import { BlaxelClient } from '@blaxel/core';
+```
+
+<Info>
+If you want consistent tracking settings across all your Blaxel tools (CLI and SDKs), configure it once in `~/.blaxel/config.yaml` rather than setting environment variables in each application.
+</Info>
+
+### Docker containers
+
+```dockerfile
+# In your Dockerfile
+ENV DO_NOT_TRACK=true
+
+# Or disable tracking
+# ENV DO_NOT_TRACK=false
+```
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    environment:
+      - DO_NOT_TRACK=false
+```
+
+### CI/CD environments
+
+```yaml
+# GitHub Actions
+env:
+  DO_NOT_TRACK: false
+
+# GitLab CI
+variables:
+  DO_NOT_TRACK: "false"
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        env:
+        - name: DO_NOT_TRACK
+          value: "false"
+```
+
+## Using the @blaxel/telemetry Package
+
+The `@blaxel/telemetry` package provides automatic instrumentation for your Blaxel SDK applications:
+
+```typescript
+// Import at application entry point
+import '@blaxel/telemetry';
+import { BlaxelClient } from '@blaxel/core';
+
+// Telemetry automatically respects DO_NOT_TRACK
+// and provides observability for your SDK usage
+```
+
+<Info>
+The `@blaxel/telemetry` package is optional but recommended for production applications. It provides valuable insights while respecting your privacy settings through `DO_NOT_TRACK`.
+</Info>

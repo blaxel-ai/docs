@@ -260,9 +260,9 @@
             "group": "Get started",
             "pages": [
               "sdk-reference/introduction",
+              "sdk-reference/data-collection",
               "sdk-reference/sdk-ts",
-              "sdk-reference/sdk-python",
-              "sdk-reference/tracking"
+              "sdk-reference/sdk-python"
             ]
           }
         ]
@@ -274,7 +274,6 @@
             "group": "Overview",
             "pages": [
               "cli-reference/introduction",
-              "cli-reference/tracking",
               {
                 "group": "Commands",
                 "pages": [
