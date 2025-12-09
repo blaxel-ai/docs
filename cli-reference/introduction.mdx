@@ -245,7 +245,7 @@ tracking: true   # Enable tracking
 ```
 
 <Warning>
-If you set `DO_NOT_TRACK=true` in your environment but have `tracking: false` in your config file, tracking will be disabled because the environment variable takes precedence.
+If you set `DO_NOT_TRACK=true` in your environment but have `tracking: true` in your config file, tracking will be disabled because the environment variable takes precedence.
 </Warning>
 
 If you're using the Blaxel SDK directly in TypeScript or Python applications (without the CLI), the same `DO_NOT_TRACK` environment variable controls SDK tracking. For detailed information, see the [SDK documentation](/sdk-reference/data-collection).
