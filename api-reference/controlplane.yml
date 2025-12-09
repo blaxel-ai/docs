@@ -4381,58 +4381,6 @@ paths:
       summary: Delete token for Sandbox Preview
       tags:
       - compute
-  /sandboxes/{sandboxName}/start:
-    put:
-      description: Starts a Sandbox by name.
-      operationId: StartSandbox
-      parameters:
-      - description: Name of the Sandbox
-        in: path
-        name: sandboxName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartSandbox'
-          description: successful operation
-        "409":
-          description: Sandbox is already running
-      security:
-      - BearerAuth:
-        - sandboxes:control
-      summary: Start Sandbox
-      tags:
-      - compute
-  /sandboxes/{sandboxName}/stop:
-    put:
-      description: Stops a Sandbox by name.
-      operationId: StopSandbox
-      parameters:
-      - description: Name of the Sandbox
-        in: path
-        name: sandboxName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StopSandbox'
-          description: successful operation
-        "409":
-          description: Sandbox is not running
-      security:
-      - BearerAuth:
-        - sandboxes:control
-      summary: Stop Sandbox
-      tags:
-      - compute
   /service_accounts:
     get:
       description: Returns a list of all service accounts in the workspace.
