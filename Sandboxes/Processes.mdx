@@ -84,7 +84,7 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 # Execute command
 process = await sandbox.process.exec({
-  "working_dir": "/app",
+  "workingDir": "/app",
   "command": "ls -al"
 })
 ```
