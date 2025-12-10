@@ -29,7 +29,7 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 ### Execute command
 
-Execute shell commands using the TypeScript SDK:
+Execute shell commands:
 
 <CodeGroup>
 
@@ -58,6 +58,38 @@ process = await sandbox.process.exec({
 </CodeGroup>
 
 Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
+
+### Set the working directory
+
+Set the working directory for subsequent commands:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Execute command
+const process = await sandbox.process.exec({
+  workingDir: "/app",
+  command: "ls -al"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Execute command
+process = await sandbox.process.exec({
+  "working_dir": "/app",
+  "command": "ls -al"
+})
+```
+
+</CodeGroup>
 
 ### Use process names
 
@@ -134,7 +166,7 @@ process = await sandbox.process.exec({
 
 When waiting for completion, the process execution object will contain a `.logs` object which [surfaces both *stdout* and *stderr*](Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
 
-<Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 100 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
+<Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
 
 You can also wait for a process after it has started:
 
