@@ -13,34 +13,7 @@ To use this example, you'll need a Rippletide API key, which you can obtain at [
 
 ## Clone the example repository
 
-Clone the [example repository](https://github.com/blaxel-templates/template-rippletide-customer-support) and follow the instructions provided to install dependencies.
-
-## Customize the knowledge base
-
-Update the files in the `knowledge-base` directory with business- or scenario-specific information and workflows. The agent will use this information to respond to customer enquiries and to transition between workflow states.
-
-## Create an agent
-
-Configure the following environment variable in order to obtain an agent ID:
-
-```
-RIPPLETIDE_API_KEY=   # your Rippletide API key
-```
-
-Create an agent:
-
-```bash
-uv run src/setup.py
-```
-
-Once your agent is created, the setup process will return an agent ID.
-
-Create a `.env` file in the project root with both variables, or set them in your deployment environment.
-
-```
-RIPPLETIDE_API_KEY=   # your Rippletide API key
-RIPPLETIDE_AGENT_ID=  # your Rippletide agent ID
-```
+Clone the [example repository](FIXME) and follow the instructions provided to install dependencies and configure the agent. You must also create a knowledge base of business- or scenario-specific information and workflows, which the agent will use to respond to customer enquiries and to transition between workflow states.
 
 ## Deploy the agent
 
