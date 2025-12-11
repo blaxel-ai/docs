@@ -14,14 +14,14 @@ The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orc
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
-1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+1. when a workload runs on Blaxel and tries to access another Blaxel resource, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options like client credentials).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
-When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI** (option 4 above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
-When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in option 2 above.
 
 </Accordion>
 
