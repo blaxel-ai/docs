@@ -51,7 +51,6 @@ DO_NOT_TRACK=false
 
 // Your application
 import 'dotenv/config';
-import { BlaxelClient } from '@blaxel/core';
 import { SandboxInstance } from '@blaxel/core';
 
 const sandboxes = await SandboxInstance.list();
@@ -77,7 +76,6 @@ DO_NOT_TRACK=false
 from dotenv import load_dotenv
 load_dotenv()
 
-from blaxel import BlaxelClient
 from blaxel.core import SandboxInstance
 
 sandboxes = await SandboxInstance.list();
@@ -111,7 +109,6 @@ if (isDevelopment) {
   process.env.DO_NOT_TRACK = 'false'; // Disable in development
 }
 
-import { BlaxelClient } from '@blaxel/core';
 ```
 
 <Info>
@@ -162,20 +159,3 @@ spec:
         - name: DO_NOT_TRACK
           value: "false"
 ```
-
-## Using the @blaxel/telemetry Package
-
-The `@blaxel/telemetry` package provides automatic instrumentation for your Blaxel SDK applications:
-
-```typescript
-// Import at application entry point
-import '@blaxel/telemetry';
-import { BlaxelClient } from '@blaxel/core';
-
-// Telemetry automatically respects DO_NOT_TRACK
-// and provides observability for your SDK usage
-```
-
-<Info>
-The `@blaxel/telemetry` package is optional but recommended for production applications. It provides valuable insights while respecting your privacy settings through `DO_NOT_TRACK`.
-</Info>
