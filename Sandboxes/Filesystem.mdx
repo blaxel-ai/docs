@@ -17,7 +17,7 @@ Manage files and directories within sandboxes through the `fs` module of Blaxel 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -66,6 +66,103 @@ directories = result.subdirectories
 files = result.files
 ```
 
+</CodeGroup>
+
+### Find files and directories
+
+<Note>
+Blaxel's Sandbox API uses an optimized `find()` method, which is faster than using the native `find` tool.
+</Note>
+
+Find files and directories matching specified patterns:
+
+<CodeGroup>
+
+```typescript TypeScript
+let result = await sandbox.fs.find(
+  "/app",
+  {
+    type: "file",
+    patterns: ["*.md", "*.html"],
+    maxResults: 1000,
+  }
+);
+
+if (result.matches && result.matches.length > 0) {
+  for (const file of result.matches) {
+    console.log(`Found file: ${file.path}`);
+  }
+} else {
+  console.log("No files found.");
+}
+```
+
+```python Python
+result = await sandbox.fs.find(
+    path="/app",
+    type="file",
+    patterns=["*.md", "*.html"],
+    max_results=1000,
+)
+if result.matches:
+    for file in result.matches:
+        logger.info(f"Found file: {file.path}")
+else:
+    logger.info("No files found.")
+```
+
+</CodeGroup>
+
+### Search for text content within files
+
+<Note>
+Blaxel's Sandbox API uses an optimized `grep()` method, which is faster than using the native `grep` tool.
+</Note>
+
+Find files containing specified text content:
+
+<CodeGroup>
+
+```typescript TypeScript
+let result = await sandbox.fs.grep(
+  "agentic",
+  "/app",
+  {
+    caseSensitive: true,
+    contextLines: 2,
+    maxResults: 5,
+    filePattern: "*.mdx",
+    excludeDirs: ["images", "node_modules"],
+  }
+);
+
+if (result.matches && result.matches.length > 0) {
+  for (const match of result.matches) {
+    console.log(`${match.path}:${match.line} -> ${match.text}`);
+  }
+} else {
+  console.log("No matches found.");
+}
+```
+
+```python Python
+result = await sandbox.fs.grep(
+    query="agentic",
+    path="/app",
+    case_sensitive=True,
+    context_lines=2,
+    max_results=5,
+    file_pattern="*.mdx",
+    exclude_dirs=["images", "node_modules"],
+)
+if result.matches:
+    for match in result.matches:
+        logger.info(
+            f"{match.path}:{match.line} -> {match.text}"
+        )
+else:
+    logger.info("No matches found.")
+```
 </CodeGroup>
 
 ### Read file
