@@ -13,80 +13,77 @@ The only mandatory parameter is the `type` so Blaxel knows which kind of resourc
 
 ```toml
 # resource type (required)
-# possible values: [agent, function, job, sandbox, volume-template]
+# possible values: ["agent", "function", "job", "sandbox", "volume-template"]
 type = "agent"
 
 # resource name (optional)
 # defaults to the directory name
-name = "my-resource"
+# name = "my-resource"
 
 # entrypoint configuration (optional)
-[entrypoint]
+# [entrypoint]
 # entrypoint command for production environment
-prod = "python main.py"
+# prod = "python main.py"
 
 # entrypoint command for development environment
-dev = "python main.py --dev"
+# dev = "python main.py --dev"
 
 # environment variables (optional)
-[env]
+# [env]
 # key-value paris
-MY_VAR = "my-value"
+# MY_VAR = "my-value"
 
 # runtime configuration (optional)
-[runtime]
+# [runtime]
 # memory (MB)
-memory = 4096
+# memory = 4096
 
 # job configuration
-maxConcurrentTasks = 10
+# maxConcurrentTasks = 10
 
 # task timeout (seconds)
-timeout = 900
+# timeout = 900
 
 # maximum number of retries
-maxRetries=0
+# maxRetries=0
 
 # volumes for sandboxes (optional)
-[[volumes]]
+# [[volumes]]
 # volume name
-name = "my-volume"
+# name = "my-volume"
 
 # volume mount path
-mountPath = "/data"
+# mountPath = "/data"
 
 # volume templates directory
-directory = "."
+# directory = "."
 
 # volume default size (MB)
-defaultSize = 1024
+# defaultSize = 1024
 
 # job trigger (optional)
-[[triggers]]
+# [[triggers]]
 # trigger identifier
-id = "my-job-trigger"
+# id = "my-trigger"
 
 # trigger type
-# scheduled trigger, only valid for resource type "job"
-type = "schedule"
+# possible values: ["schedule", "http", "http-async"]
+# "schedule" trigger (only valid for resource type="job")
+# type = "schedule"
+# "http" trigger (only valid for resource type="agent" and resource type="function")
+# type = "http"
 
-# cron expression (only for type="schedule")
-schedule = "0 * * * *"
+# [[triggers.configuration]]
+# cron expression (only for trigger type="schedule")
+# schedule = "0 * * * *"
 
-# agent and function triggers (optional)
-[[triggers]]
-# trigger identifier
-id = "my-agent-trigger"
+# endpoint URL (only for trigger type="http")
+# path = "/webhook"
 
-# trigger type
-# HTTP trigger, only valid for resource type "agent" and "function"
-type = "http"
+# endpoint authentication (only for trigger type="http")
+# possible values: ["public", "private"]
+# authenticationType = "public"
 
-[[triggers.configuration]]
-# endpoint URL (only for type="http")
-path = "/webhook"
-
-# endpoint authentication (only for type="http")
-# possible values: [public, private]
-authenticationType = "public"
+# callback URL (only for trigger type="http-async")
+# callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
 ```
