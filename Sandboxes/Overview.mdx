@@ -12,7 +12,7 @@ Sandboxes are instant-launching virtual machines serving as **sandboxed compute 
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](../Functions/Overview) that makes these capabilities available as tool calls.
 
-Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. 
+Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 <img
 className="block dark:hidden"
@@ -37,14 +37,14 @@ alt="Lifecycle of Blaxel Sandboxes"
 
 ## Create a sandbox
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel. 
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -88,7 +88,7 @@ sandbox = await SandboxInstance.create({
 
 <Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/{NAME}:latest` (e.g. *blaxel/nextjs:latest*).</Info>
 
-[Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts. 
+[Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
 
 ### Ports
 
@@ -232,15 +232,21 @@ sandbox = await SandboxInstance.create_if_not_exists({
 
 </CodeGroup>
 
-## Connect to a sandbox with a terminal
+## Connect to a sandbox with an interactive terminal
 
-You can explore the contents of a sandbox with a terminal-like interface by running:
+You can explore the contents of a sandbox with an interactive terminal-like interface. You can access this terminal in two ways:
 
-```bash
-bl connect sandbox your-sandbox-name
-```
+- From the Blaxel Console, by visiting the detail page for your sandbox in your web browser and selecting the **Terminal** tab:
 
-![image.png](Overview/image.png)
+    ![image.png](Overview/web-terminal.png)
+
+- From your local host, by running:
+
+    ```bash
+    bl connect sandbox your-sandbox-name
+    ```
+
+    ![image.png](Overview/image.png)
 
 While not a true SSH connection, this interface lets you list and manage files, and execute commands as you would in a traditional terminal.
 
@@ -285,7 +291,7 @@ Blaxel has replaced its WebSockets implementation for MCP transport with streama
 
 </Accordion>
 
-Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph: 
+Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph:
 
 <CodeGroup>
 
@@ -377,7 +383,7 @@ Here is the summary on the possible statuses for a sandbox:
 - **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
     - **Cost**: You are charged for CPU/memory and storage while a sandbox is in active mode.
 
-The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds. 
+The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds.
 
 Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
 
