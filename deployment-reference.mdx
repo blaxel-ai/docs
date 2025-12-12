@@ -72,15 +72,17 @@ type = "agent"
 # type = "schedule"
 # "http" trigger (only valid for resource type="agent" and resource type="function")
 # type = "http"
+# "http-async" trigger (only valid for resource type="agent")
+# type = "http-async"
 
 # [[triggers.configuration]]
 # cron expression (only for trigger type="schedule")
 # schedule = "0 * * * *"
 
-# endpoint URL (only for trigger type="http")
+# endpoint URL (only for trigger type="http" and trigger type="http-async")
 # path = "/webhook"
 
-# endpoint authentication (only for trigger type="http")
+# endpoint authentication (only for trigger type="http" and trigger type="http-async")
 # possible values: ["public", "private"]
 # authenticationType = "public"
 
