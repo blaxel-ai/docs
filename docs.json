@@ -331,6 +331,17 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Deployment Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "deployment-reference"
+            ]
+          }
+        ]
       }
     ]
   },
