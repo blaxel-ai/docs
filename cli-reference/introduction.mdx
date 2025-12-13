@@ -194,6 +194,62 @@ Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | I
 
 </CodeGroup>
 
+## Data collection
+
+Blaxel CLI collects and sends error information to Blaxel to help improve the CLI's reliability and user experience.
+
+When the CLI encounters an error or crash, the following information may be collected:
+
+- **Error details**: Stack traces, error messages, and error codes
+- **CLI version**: The version of Blaxel CLI being used
+- **Operating system**: Basic OS information (e.g., Linux, macOS, Windows)
+- **Command context**: The command that was running when the error occurred (without arguments or parameters)
+
+The following information is **never** collected:
+
+- Command arguments or parameters
+- File contents or workspace data
+- Environment variables
+- API keys, tokens, or credentials
+- Network locations or IP addresses
+- Custom configuration values
+
+Error tracking and transmission is enabled by default. You can control this behavior through multiple methods, listed here in order of precedence.
+
+### DO_NOT_TRACK environment variable
+
+When running CLI commands, the `DO_NOT_TRACK` environment variable provides a quick way to control tracking without modifying configuration files. This environment variable takes precedence over all other settings:
+
+<CodeGroup>
+```bash Disable tracking for a single command
+DO_NOT_TRACK=false bl deploy
+```
+
+```bash Disable tracking for the current session
+export DO_NOT_TRACK=false
+```
+
+```bash Enable tracking explicitly
+export DO_NOT_TRACK=true
+```
+</CodeGroup>
+
+### Configuration file
+
+You can permanently configure preferences in your Blaxel configuration file at `~/.blaxel/config.yaml` (you can create this file if it doesn't already exist):
+
+```yaml
+tracking: false  # Disable tracking
+# or
+tracking: true   # Enable tracking
+```
+
+<Warning>
+If you set `DO_NOT_TRACK=true` in your environment but have `tracking: true` in your config file, tracking will be disabled because the environment variable takes precedence.
+</Warning>
+
+If you're using the Blaxel SDK directly in TypeScript or Python applications (without the CLI), the same `DO_NOT_TRACK` environment variable controls SDK tracking. For detailed information, see the [SDK documentation](/sdk-reference/data-collection).
+
 ## Get started
 
 To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using this command:
