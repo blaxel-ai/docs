@@ -4018,6 +4018,13 @@ paths:
     get:
       description: Returns a list of all public ips used in Blaxel..
       operationId: ListPublicIps
+      parameters:
+      - description: Filter by region name (only returns mk3 region data)
+        in: query
+        name: region
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
