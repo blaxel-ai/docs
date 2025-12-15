@@ -207,6 +207,7 @@
                 ]
               },
               "Security/Access-tokens",
+              "Security/Quotas",
               "Model-Governance/Policies",
               {
                 "group": "Infrastructure",

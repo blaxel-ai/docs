@@ -232,15 +232,21 @@ sandbox = await SandboxInstance.create_if_not_exists({
 
 </CodeGroup>
 
-## Connect to a sandbox with a terminal
+## Connect to a sandbox with an interactive terminal
 
-You can explore the contents of a sandbox with a terminal-like interface by running:
+You can explore the contents of a sandbox with an interactive terminal-like interface. You can access this terminal in two ways:
 
-```bash
-bl connect sandbox your-sandbox-name
-```
+- From the Blaxel Console, by visiting the detail page for your sandbox in your web browser and selecting the **Terminal** tab:
 
-![image.png](Overview/image.png)
+    ![image.png](Overview/web-terminal.png)
+
+- From your local host, by running:
+
+    ```bash
+    bl connect sandbox your-sandbox-name
+    ```
+
+    ![image.png](Overview/image.png)
 
 While not a true SSH connection, this interface lets you list and manage files, and execute commands as you would in a traditional terminal.
 
