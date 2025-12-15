@@ -62,3 +62,41 @@ host = os.environ.get("HOST", "0.0.0.0")
 app.run(host=host, port=port)
 ```
 </CodeGroup>
+
+## Models return a 429 error
+
+This error occurs when a model reaches its maximum token limit.
+
+To resolve this error, adjust the model's token usage policy. Token usage policies control the maximum number of tokens your model APIs can handle within a specific time period. You can configure the maximum number of input tokens, output tokens and/or total tokens using these policies.
+
+## Volume creation fails with an error
+
+This error occurs when a volume is smaller than the template data.
+
+To resolve this error, always provision extra space for your volume beyond the template content size. We recommend provisioning at least 20-30% extra space.
+
+## Hot reloads fail on Webpack previews
+
+This error occurs when a Webpack server is configured to use the same port as local development, but the sandbox preview URL is mapped to a different port. As a result, when hot reloading previews, your client is trying to connect to the local development port instead of the sandbox's preview URL port.
+
+To resolve this error, add a conditional in the `webSocketURL` of your `webpack/config.dev.js` to handle the different ports:
+
+```javascript highlight={9-13}
+///... rest of webpack/config.dev.js
+
+module.exports = {
+  devServer: {
+    host: "::",
+    port: 3000,
+    allowedHosts: [".bl.run", ".beamlit.net", "localhost", "127.0.0.1"],
+    client: {
+      webSocketURL: {
+        port: process.env.BL_CLOUD === "true" ? 443 : 3000,
+      },
+    },
+    headers: {
+      ...
+    },
+  },
+  /// ... est of webpack/config.dev.js
+```
