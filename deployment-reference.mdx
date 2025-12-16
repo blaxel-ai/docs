@@ -7,14 +7,10 @@ You can customize your Blaxel deployment with Blaxel's configuration file `blaxe
 
 The format of Blaxel's configuration file is described below.
 
-<Note>
-The only mandatory parameter is the `type` so Blaxel knows which kind of resource to deploy.
-</Note>
-
 ```toml
-# resource type (required)
+# resource type (optional)
 # possible values: ["agent", "function", "job", "sandbox", "volume-template"]
-type = "agent"
+# type = "agent"
 
 # resource name (optional)
 # defaults to the directory name
