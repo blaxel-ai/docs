@@ -6,7 +6,7 @@ description: 'Expose specific ports on your sandbox and connect to them.'
 
 ---
 
-Your sandbox, just like any virtual machine, can **expose ports**. These ports let you connect to a process or app running in the sandbox. 
+Your sandbox, just like any virtual machine, can **expose ports**. These ports let you connect to a process or app running in the sandbox.
 
 ## Reserved ports
 
@@ -19,6 +19,10 @@ The following ports are reserved by Blaxel's system:
 You can expose and use any other port on your sandbox.
 
 ## Expose a port
+
+<Note>
+To whitelist sandbox traffic in your network, you can [retrieve the public IP addresses](/Infrastructure/Regions#public-ip-addresses) used by Blaxel.
+</Note>
 
 You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox, typically to create a [preview URL](Preview-url) on them.
 
