@@ -208,7 +208,7 @@ In some cases, you may want to wait for a port to be opened while running — fo
 ```typescript TypeScript
 const process = await sandbox.process.exec({
   name: "dev-server",
-  command: "npm run dev",
+  command: "npm run dev -- --port 3000 &",
   waitForPorts: [3000]
 });
 ```
@@ -216,7 +216,7 @@ const process = await sandbox.process.exec({
 ```python Python
 process = await sandbox.process.exec({
   "name": "dev-server",
-  "command": "npm run dev",
+  "command": "npm run dev -- --port 3000 &",
   "wait_for_ports": [3000]
 })
 ```
