@@ -8,7 +8,7 @@ description: 'Choose in which region to run your workloads.'
 
 Blaxel is available in many regions across the globe. Some types of resources can be deployed ‘globally’ over multiple regions (for example: [agents](../Agents/Overview)), while some other types are deployed only in one specific region (for example: [sandboxes](../Sandboxes/Overview)).
 
-This guide details the available regions for [Mark 3 infrastructure generation](Gens). 
+This guide details the available regions for [Mark 3 infrastructure generation](Gens).
 
 <Info>Mark 2 infrastructure is globally distributed over 15 regions — it does not feature the ability to specify a single deployment region (except though [deployment policies](../Model-Governance/Policies)).</Info>
 
@@ -40,11 +40,11 @@ This is the case of:
 
 **When deploying**
 
-For these types of resources, you don't specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies). 
+For these types of resources, you don't specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
 
 **When requesting**
 
-For these types of resources, you receive a global query endpoint that automatically routes to the optimal region as determined by Blaxel's Global Agentics Network. 
+For these types of resources, you receive a global query endpoint that automatically routes to the optimal region as determined by Blaxel's Global Agentics Network.
 
 ### Resources which are deployed in one specific region
 
@@ -57,3 +57,15 @@ For these types of resources, you can **optionally specify** a region during dep
 **When requesting**
 
 For these types of resources, you receive a regional query endpoint (which contains the name of the region in the domain).
+
+## Public IP addresses
+
+You can retrieve the current [list of public IP addresses](/api-reference/publicips:list/list-public-ips#list-public-ips) used by Blaxel through the Blaxel API. IP addresses are returned per region, and the results list can also be filteered by adding a `region` parameter to the API query (only for [Mark 3 infrastructure](/Infrastructure/Gens#mark-3-infrastructure)).
+
+Here is an example API request:
+
+```shell
+curl --request GET \
+  --url https://api.blaxel.ai/v0/publicIps?region=us-was-1 \
+  --header 'Authorization: Bearer <token>'
+```
