@@ -334,7 +334,7 @@ second_agent_response = await bl_agent("second_agent").run(first_agent_response)
 
 ## Customize the agent deployment
 
-You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the `blaxel.toml` file at the root of your directory.
+You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the [`blaxel.toml` file](/deployment-reference) at the root of your directory.
 
 Read the file structure section down below for more details.
 
@@ -373,7 +373,7 @@ src/
 
 ### blaxel.toml
 
-This file is used to configure the deployment of the agent on Blaxel. The only mandatory parameter is the `type` so Blaxel knows which kind of entity to deploy. Others are not mandatory but allow you to customize the deployment.
+The agent deployment can be configured via the `blaxel.toml` file in your agent directory. This file is not mandatory; if the file is not found or a required option is not set, you will be prompted for the information during deployment.
 
 ```toml
 name = "my-agent"

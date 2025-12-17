@@ -1,0 +1,87 @@
+---
+title: 'Deployment File Reference'
+description: 'Understand the blaxel.toml file'
+---
+
+You can customize your Blaxel deployment with Blaxel's configuration file `blaxel.toml`.
+
+The format of Blaxel's configuration file is described below.
+
+```toml
+# resource type (optional)
+# possible values: ["agent", "function", "job", "sandbox", "volume-template"]
+# type = "agent"
+
+# resource name (optional)
+# defaults to the directory name
+# name = "my-resource"
+
+# entrypoint configuration (optional)
+# [entrypoint]
+# entrypoint command for production environment
+# prod = "python main.py"
+
+# entrypoint command for development environment
+# dev = "python main.py --dev"
+
+# environment variables (optional)
+# [env]
+# key-value paris
+# MY_VAR = "my-value"
+
+# runtime configuration (optional)
+# [runtime]
+# memory (MB)
+# memory = 4096
+
+# job configuration
+# maxConcurrentTasks = 10
+
+# task timeout (seconds)
+# timeout = 900
+
+# maximum number of retries
+# maxRetries=0
+
+# volumes for sandboxes (optional)
+# [[volumes]]
+# volume name
+# name = "my-volume"
+
+# volume mount path
+# mountPath = "/data"
+
+# volume templates directory
+# directory = "."
+
+# volume default size (MB)
+# defaultSize = 1024
+
+# job trigger (optional)
+# [[triggers]]
+# trigger identifier
+# id = "my-trigger"
+
+# trigger type
+# possible values: ["schedule", "http", "http-async"]
+# "schedule" trigger (only valid for resource type="job")
+# type = "schedule"
+# "http" trigger (only valid for resource type="agent" and resource type="function")
+# type = "http"
+# "http-async" trigger (only valid for resource type="agent")
+# type = "http-async"
+
+# [[triggers.configuration]]
+# cron expression (only for trigger type="schedule")
+# schedule = "0 * * * *"
+
+# endpoint URL (only for trigger type="http" and trigger type="http-async")
+# path = "/webhook"
+
+# endpoint authentication (only for trigger type="http" and trigger type="http-async")
+# possible values: ["public", "private"]
+# authenticationType = "public"
+
+# callback URL (only for trigger type="http-async")
+# callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
+```
