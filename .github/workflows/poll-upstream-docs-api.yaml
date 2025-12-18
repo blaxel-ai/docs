@@ -30,8 +30,16 @@ jobs:
         env:
           UPSTREAM_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          # Create a credential helper script
+          cat > /tmp/git-askpass.sh << 'EOF'
+          #!/bin/sh
+          echo "$UPSTREAM_TOKEN"
+          EOF
+          chmod +x /tmp/git-askpass.sh
+          
+          # Use GIT_ASKPASS to provide credentials securely
           tmpdir="$(mktemp -d)"
-          git clone https://.:${UPSTREAM_TOKEN}@github.com/blaxel-ai/controlplane.git "$tmpdir"
+          GIT_ASKPASS=/tmp/git-askpass.sh git clone https://github.com/blaxel-ai/controlplane.git "$tmpdir"
           cp "$tmpdir"/api/api/definitions/controlplane.yml ./api-reference/controlplane.yml
           rm -rf "$tmpdir"
           git status --short
