@@ -252,18 +252,28 @@ While not a true SSH connection, this interface lets you list and manage files, 
 
 ## Sandbox statuses
 
-Blaxel sandboxes start from `standby` to `active` in **under 25 milliseconds**, and scale back down to `standby` **after a few seconds of inactivity**, maintaining their previous state after scaling down.
+Blaxel sandboxes go from standby to active in **under 25 milliseconds**, and scale back down to standby **after a few seconds of inactivity**, maintaining their previous state after scaling down.
 
-Here is the summary on the possible statuses for a sandbox:
-
-- **`standby`**: The sandbox is created but is hibernating. Sandboxes transition from *standby* to *active* mode in approximately 25 ms.
-    - **Cost**: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
-- **`active`**: The sandbox is running and processing tasks. You **are** charged for active runtime. Sandboxes automatically return to standby mode after 1 second of inactivity.
-    - **Cost**: You are charged for CPU/memory and storage while a sandbox is in active mode.
+- In standby mode: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
+- In active mode: You are charged for CPU/memory and storage while a sandbox is in active mode. Sandboxes automatically return to standby mode after 1 second of inactivity.
 
 The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds.
 
 Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
+
+The possible sandbox statuses are:
+
+- `UPLOADING`: A new sandbox version has just been uploaded; the build has not started yet.
+- `BUILDING`: A new sandbox version has been uploaded and the build is in progress.
+- `DEPLOYING`: The sandbox deployment is in progress.
+- `DEPLOYED`: The sandbox is ready to use.
+- `FAILED`: An error occurred during the build or deployment of the sandbox.
+- `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
+- `DELETING`: A deletion request has been triggered and the deletion is in progress.
+
+<Note>
+`UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
+</Note>
 
 ### Best practices
 
