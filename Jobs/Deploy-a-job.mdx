@@ -68,7 +68,7 @@ async function execJob() {
 execJob().catch(console.error);
 ```
 
-```python Python
+```python Python (asynchronous)
 from blaxel.core.jobs import bl_job
 import asyncio
 
@@ -81,6 +81,20 @@ async def exec_job():
         print(f"Failed to execute job: {e}")
 
 asyncio.run(exec_job())
+```
+
+```python Python (synchronous)
+from blaxel.core.jobs import bl_job
+
+def exec_job():
+    try:
+      job = bl_job("YOUR-JOB-NAME");
+      result = job.run([{"name": "John"}, {"name": "Jane"}])
+      print(result)
+    except Exception as e:
+        print(f"Failed to execute job: {e}")
+
+exec_job()
 ```
 </CodeGroup>
 
