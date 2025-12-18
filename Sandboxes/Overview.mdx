@@ -37,7 +37,7 @@ alt="Lifecycle of Blaxel Sandboxes"
 
 ## Create a sandbox
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
 
@@ -65,6 +65,7 @@ const sandbox = await SandboxInstance.create({
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
   ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
+  labels: { env: "test", project: "12345" }, // labels
   region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
 });
 ```
@@ -78,6 +79,7 @@ sandbox = await SandboxInstance.create({
   "image": "blaxel/base-image:latest",   # public or custom image
   "memory": 4096,   # in MB
   "ports": [{ "target": 3000 }],   # ports to expose
+  "labels": {"env": "test", "project": "12345"},  # labels
   "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
 })
 ```
