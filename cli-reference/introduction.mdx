@@ -111,7 +111,19 @@ First install WSL (Windows Subsystem for Linux) if not already installed. This c
 <AccordionGroup>
 <Accordion title="Update on Mac" icon="apple">
 
-<Warning>To update Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.</Warning>
+Update Blaxel CLI by running the following command in a terminal:
+
+```shell
+bl upgrade
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
+
+```shell
+bl upgrade --version 0.1.21
+```
+
+You can also upgrade using Homebrew:
 
 ```shell
 brew upgrade blaxel
@@ -131,22 +143,6 @@ If you need to update to a specific version (e.g. v0.1.21):
 
 ```shell
 bl upgrade --version 0.1.21
-```
-
-If you need a non-sudo alternative:
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| sh
-```
-
-If you need to update to a specific version (e.g. v0.1.21):
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 sh
 ```
 
 </Accordion>
