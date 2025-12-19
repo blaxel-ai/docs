@@ -176,31 +176,7 @@ sandbox = await SandboxInstance.create({
 
 The TTL-type parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
 
-## Retrieve an existing sandbox
-
-To reconnect to an existing sandbox, simply provide its name:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Connect to existing sandbox
-const sandbox = await SandboxInstance.get("my-sandbox");
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Connect to existing sandbox
-sandbox = await SandboxInstance.get("my-sandbox")
-```
-
-</CodeGroup>
-
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
-
-### Create if not exists
+## Create a sandbox if none exists
 
 This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
 
@@ -233,6 +209,76 @@ sandbox = await SandboxInstance.create_if_not_exists({
 ```
 
 </CodeGroup>
+
+## Retrieve an existing sandbox
+
+To reconnect to an existing sandbox, simply provide its name:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+```
+
+</CodeGroup>
+
+<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
+
+## Delete a sandbox
+
+Delete a sandbox by calling:
+
+- the class-level `delete()` method with the sandbox `name` as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { SandboxInstance } from "@blaxel/core";
+
+    // Delete sandbox using class-level method
+    await SandboxInstance.delete("my-sandbox");
+    ```
+
+    ```python Python
+    from blaxel.core import SandboxInstance
+
+    # Delete sandbox using class-level method
+    await SandboxInstance.delete("my-sandbox")
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `delete()` method:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { SandboxInstance } from "@blaxel/core";
+
+    // Get existing sandbox
+    const sandbox = await SandboxInstance.get("my-sandbox");
+
+    // Delete sandbox using instance-level method
+    await sandbox.delete()
+    ```
+
+    ```python Python
+    from blaxel.core import SandboxInstance
+
+    # Get existing sandbox
+    sandbox = await SandboxInstance.get("my-sandbox")
+
+    # Delete sandbox using instance-level method
+    await sandbox.delete()
+    ```
+    </CodeGroup>
 
 ## Connect to a sandbox with an interactive terminal
 

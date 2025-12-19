@@ -14,9 +14,7 @@ Blaxel Volumes provide **persistent storage that survives sandbox destruction an
 
 While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in a warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](Volumes-templates) to start from a pre-populated filesystem.
 
-## Create & delete a volume
-
-### Create
+## Create a volume
 
 To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any sandbox.
 
@@ -59,13 +57,53 @@ const volume = await VolumeInstance.createIfNotExists({
 Create volumes containing the same set of files every time.
 </Card>
 
-### Manage volumes
+## Delete a volume
 
-To delete a volume:
+Delete a volume by calling:
 
-```tsx
-await VolumeInstance.delete("my-volume");
-```
+- the class-level `delete()` method with the volume `name` as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Delete volume using class-level method
+    await VolumeInstance.delete("my-volume");
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Delete volume using class-level method
+    await VolumeInstance.delete("my-volume")
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `delete()` method:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Get existing volume
+    const volume = await VolumeInstance.get("my-volume");
+
+    // Delete volume using instance-level method
+    await volume.delete()
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Get existing volume
+    volume = await VolumeInstance.get("my-volume")
+
+    # Delete volume using instance-level method
+    await volume.delete()
+    ```
+    </CodeGroup>
+
+## List volumes
 
 To list existing volumes:
 
@@ -79,7 +117,7 @@ bl get volumes
 ```
 </CodeGroup>
 
-## Attach volume to a sandbox
+## Attach a volume to a sandbox
 
 <Warning>At this time, you can only attach one volume to a sandbox. A volume can also only be attached to one sandbox at a time.</Warning>
 
