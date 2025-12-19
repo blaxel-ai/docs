@@ -234,7 +234,7 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## Delete a sandbox
 
-Delete a sandbox by calling
+Delete a sandbox by calling:
 
 - the class-level `delete()` method with the sandbox `name` as argument, or
 
@@ -260,7 +260,7 @@ Delete a sandbox by calling
     ```typescript TypeScript
     import { SandboxInstance } from "@blaxel/core";
 
-    // Connect to existing sandbox
+    // Get existing sandbox
     const sandbox = await SandboxInstance.get("my-sandbox");
 
     // Delete sandbox using instance-level method
@@ -270,7 +270,7 @@ Delete a sandbox by calling
     ```python Python
     from blaxel.core import SandboxInstance
 
-    # Connect to existing sandbox
+    # Get existing sandbox
     sandbox = await SandboxInstance.get("my-sandbox")
 
     # Delete sandbox using instance-level method

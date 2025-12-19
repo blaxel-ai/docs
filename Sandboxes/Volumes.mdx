@@ -10,13 +10,11 @@ description: 'Persist files long-term by attaching and using volumes.'
 
 <Warning>Blaxel Volumes are currently in private preview. Please [contact us](https://blaxel.ai/contact?message=I+would+like+to+get+access+to+volumes+because+&purpose=volumes&origin=docs) if you would like to get access before the public release date.</Warning>
 
-Blaxel Volumes provide **persistent storage that survives sandbox destruction and recreation**, enabling stateful development environments and data retention across VM lifecycle events. 
+Blaxel Volumes provide **persistent storage that survives sandbox destruction and recreation**, enabling stateful development environments and data retention across VM lifecycle events.
 
 While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in a warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](Volumes-templates) to start from a pre-populated filesystem.
 
-## Create & delete a volume
-
-### Create
+## Create a volume
 
 To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). This volume exists independently of any sandbox.
 
@@ -25,7 +23,7 @@ To create a standalone volume, you must provide a unique `name` and specify its 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -45,7 +43,7 @@ const volume = await VolumeInstance.create({
 });
 ```
 
-You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files. 
+You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files.
 
 ```tsx
 const volume = await VolumeInstance.createIfNotExists({
@@ -58,13 +56,59 @@ const volume = await VolumeInstance.createIfNotExists({
 Create volumes containing the same set of files every time.
 </Card>
 
-### Manage volumes
+## Delete a volume
+
+Delete a sandbox by calling:
+
+- the class-level `delete()` method with the volume `name` as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Delete volume using class-level method
+    await VolumeInstance.delete("my-volume");
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Delete volume using class-level method
+    await VolumeInstance.delete("my-volume")
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `delete()` method:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Get existing volume
+    const volume = await VolumeInstance.get("my-volume");
+
+    // Delete volume using instance-level method
+    await volume.delete()
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Get existing volume
+    volume = await VolumeInstance.get("my-volume")
+
+    # Delete volume using instance-level method
+    await volume.delete()
+    ```
+    </CodeGroup>
 
 To delete a volume:
 
 ```tsx
 await VolumeInstance.delete("my-volume");
 ```
+
+## List volumes
 
 To list existing volumes:
 
@@ -78,7 +122,7 @@ bl get volumes
 ```
 </CodeGroup>
 
-## Attach volume to a sandbox
+## Attach a volume to a sandbox
 
 <Warning>At this time, you can only attach one volume to a sandbox. A volume can also only be attached to one sandbox at a time.</Warning>
 
