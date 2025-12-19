@@ -96,7 +96,7 @@ For maximum performance, Blaxel sandboxes store part of their filesystem in memo
 
 Due to this, Blaxel sandboxes reserve approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
-To avoid out-of-memory errors or if additional storage is required, it is always possible to add storage using volumes, although these are not as fast as the native in-memory filesystem.
+To avoid out-of-memory errors or if additional storage is required, it is always possible to add storage using [volumes](/Sandboxes/Volumes), although these are not as fast as the native in-memory filesystem.
 
 ### Ports
 
