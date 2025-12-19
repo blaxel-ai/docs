@@ -10,7 +10,7 @@ description: 'Persist files long-term by attaching and using volumes.'
 
 <Warning>Blaxel Volumes are currently in private preview. Please [contact us](https://blaxel.ai/contact?message=I+would+like+to+get+access+to+volumes+because+&purpose=volumes&origin=docs) if you would like to get access before the public release date.</Warning>
 
-Blaxel Volumes provide **persistent storage that survives sandbox destruction and recreation**, enabling stateful development environments and data retention across VM lifecycle events. 
+Blaxel Volumes provide **persistent storage that survives sandbox destruction and recreation**, enabling stateful development environments and data retention across VM lifecycle events.
 
 While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in a warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](Volumes-templates) to start from a pre-populated filesystem.
 
@@ -18,14 +18,14 @@ While Blaxel automatically snapshots the full state of a sandbox at scale down a
 
 ### Create
 
-To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). This volume exists independently of any sandbox.
+To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any sandbox.
 
 <Accordion title="Set up authentication to Blaxel">
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
@@ -41,11 +41,12 @@ import { SandboxInstance, VolumeInstance } from "@blaxel/core";
 const volume = await VolumeInstance.create({
   name: "my-volume",
   size: 2048,          // in MB
-  region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
+  region: "us-pdx-1",   // if not specified, Blaxel will choose a default region
+  labels: { env: "test", project: "12345" }, // labels
 });
 ```
 
-You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files. 
+You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files.
 
 ```tsx
 const volume = await VolumeInstance.createIfNotExists({
