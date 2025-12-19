@@ -90,6 +90,14 @@ sandbox = await SandboxInstance.create({
 
 [Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
 
+### Memory and filesystem
+
+For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly-efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
+
+Due to this, Blaxel sandboxes reserve approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
+
+To avoid out-of-memory errors or if additional storage is required, it is always possible to add storage using volumes, although these are not as fast as the native in-memory filesystem.
+
 ### Ports
 
 The following ports are reserved by Blaxel's system:
