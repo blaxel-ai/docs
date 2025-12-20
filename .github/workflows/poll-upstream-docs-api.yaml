@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  poll-upstream-docs-cli:
+  poll-upstream-docs-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
