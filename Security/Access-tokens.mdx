@@ -12,7 +12,7 @@ User access tokens can be used in order to authenticate to Blaxel by API or CLI.
 
 Blaxel employs two main authentication paradigms: **short-lived tokens** (OAuth) and **long-lived tokens** (API keys).
 
-Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console. 
+Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console.
 
 **OAuth tokens** are recommended for security reasons, as their duration is only of 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
 
@@ -20,7 +20,7 @@ Long-lived tokens are easier to use but are less secure as their validity can go
 
 Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration can be infinite.
 
-### Using API keys
+### Use API keys
 
 API keys can be used in the Blaxel APIs, CLI and SDK.
 
@@ -45,6 +45,70 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'Authorization: Bearer YOUR-API-KEY'
 ```
 
+#### Use API keys via proxy
+
+If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
+
+The solution is to add a proxy between your client application and the Blaxel API. The proxy serves as a secure intermediary layer, which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
+
+This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that serves as a proxy, forwarding all SDK requests to Blaxel's API. The route reads the Blaxel API key securely from a host environment variable (e.g. `BL_API_KEY`) and injects it into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
+
+Here is an example of this catch-all route implemented in Next.js:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+
+async function handleRequest(request: NextRequest, { params }: { params: { slug: string[] } }) {
+  params = await params;
+  const api = params.slug[0];
+  const path = params.slug.slice(1).join('/');
+
+  const workspace = 'YOUR_WORKSPACE';
+  const apiKey = process.env.BL_API_KEY; // Securely stored in environment variables
+
+  const headers = new Headers(request.headers);
+  headers.set('Authorization', `Bearer ${apiKey}`);
+  headers.set('X-Blaxel-Workspace', workspace);
+
+  const fetchOptions: RequestInit = {
+    method: request.method,
+    headers,
+    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
+  };
+
+  const response = await fetch(`https://run.blaxel.ai/${path}`, fetchOptions);
+
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.delete('content-encoding');
+  responseHeaders.delete('content-length');
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    headers: responseHeaders,
+  });
+}
+
+export { handleRequest as DELETE, handleRequest as GET, handleRequest as PATCH, handleRequest as POST, handleRequest as PUT };
+```
+
+Now, within the application, the Blaxel SDK should be configured at init-time to use the proxy route, as shown below. With this change, SDK requests are routed via the named proxy rather than directly transmitted to the Blaxel API.
+
+```typescript
+import blaxel from "@blaxel/core";
+
+blaxel.initialize({
+  proxy: 'http://localhost:3000/api/blaxel',  // Your proxy endpoint
+  workspace: 'YOUR_WORKSPACE',
+});
+
+// Now use the SDK as normal
+const sandbox = await blaxel.SandboxInstance.create({
+  // ...
+});
+```
+
+Under this approach, your Blaxel API key is never exposed to the calling client, ensuring security. SDK requests continue to work as before, except that now they are automatically routed via the proxy rather than directly to the Blaxel API.
+
 ### Manage API keys
 
 You can create private API keys for your Blaxel account to authenticate directly when using the Blaxel APIs or CLI. Your [permissions in each workspace](Workspace-access-control) will be the ones given to your account in each of them.
@@ -63,9 +127,9 @@ These short-lived tokens are based on the [OAuth 2.0](https://oauth.net/2/) auth
 
 Use `bl login`  command.
 
-You will then be redirected to the Blaxel console to finish logging in. Sign in using your Blaxel account if you aren’t already. 
+You will then be redirected to the Blaxel console to finish logging in. Sign in using your Blaxel account if you aren’t already.
 
-Once this is done, return to your terminal: the login will be finalized and you will then be able to run CLI commands. 
+Once this is done, return to your terminal: the login will be finalized and you will then be able to run CLI commands.
 
 <Tip>Your [permissions in each workspace](Workspace-access-control) will be the ones given to your account in each of them.</Tip>
 
