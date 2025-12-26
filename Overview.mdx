@@ -58,15 +58,19 @@ Agents will transform how we work in the coming years. Traditional cloud provide
 Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through [MCP servers](MCP-server), allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
 
 <Accordion title="The Blaxel method">
+Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds. As such, here are some recommended best practices:
 
-As the ultimate AI builder's toolkit, Blaxel doesn’t require you to learn and adopt a framework or architecture. However, we do recommend best-practices from our experience working with top AI teams and aim to provide guardrails and framing when you build your agents.
+- If the end-user or agent is expected to continue a session soon, just leave the sandbox be. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
+- The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
+- Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](Volumes).
+- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~2–4 seconds) and restart processes to restore the same state.
+- For automatic cleanup, set TTLs when creating your sandbox to delete it after a set idle duration or maximum age.
+- When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
 
-- Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel—but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDK allows builders to split services and connect them from your code.
-- You can call LLM providers directly from your code, but we recommend you go through Blaxel’s Model Gateway for telemetry.
+We also recommend more general best-practices aiming to provide guardrails and framing when you build your agents - from our experience working with top AI teams.
+
+- Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel Agents Hosting - but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDK allows builders to split services and connect them from your code.
 - Similarly, while direct tool calls are possible, deploying separate MCP servers improves reusability, optimizes resources, and simplifies monitoring. Blaxel also optimizes placement globally when your serverless tool server needs to make multiple backend calls.
-- Break large agents into smaller, specialized sub-agents when possible—they're easier to debug and observe.
-- Agentic systems naturally connect with many services both inside and outside your network, mixing North-South and East-West traffic in cloud terms. Strong observability is essential for reliability.
-- Reliability is the biggest challenge in agentic AI. Focus on fine-tuning your prompts, tool calls, data access, and orchestration logic—Blaxel will handle the execution.
 
 </Accordion>
 
@@ -82,10 +86,10 @@ When building your agentic system, you'll need to make architecture design choic
 | **Product** | **Typical use** | **Typical workload duration** | **Boot time** | **Input type** |
 | --- | --- | --- | --- | --- |
 | Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms (from standby) | Fully custom |
-| Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~2-4s | Custom API endpoints |
-| Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~5s | Custom API endpoints |
+| Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~25ms | Custom API endpoints |
+| Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~25ms | Custom API endpoints |
 | Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific input parameters |
-| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 10 mins**) | ~2-4s | API following MCP  |
+| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 10 mins**) | ~25ms | API following MCP  |
 
 ## The Blaxel powerhouse
 
