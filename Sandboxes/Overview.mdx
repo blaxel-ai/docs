@@ -136,15 +136,15 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }],
   region: "us-pdx-1",
-  ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
+  ttl: "24h", // Total duration before auto-deletion. Supported units: h, d, w
   // OR
-  // expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  // expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
   // OR / AND
   lifecycle: {
     expirationPolicies: [
       {
         type: "ttl-idle",
-        value: "30m",  // Delete after 30 minutes of inactivity. Supported units: s, m, h, d, w
+        value: "24h",  // Delete after 24 hours of inactivity. Supported units: h, d, w
         action: "delete"
       }
     ]
@@ -162,15 +162,15 @@ sandbox = await SandboxInstance.create({
   "memory": 4096,
   "ports": [{ "target": 3000 }],
   "region": "us-pdx-1",
-  "ttl": "24h", ## Total duration before auto-deletion. Supported units: s, m, h, d, w
+  "ttl": "24h", ## Total duration before auto-deletion. Supported units: h, d, w
   ## OR
-  ## expires: new Date(Date.now() + 60000) // Alternative: set a date at which it will be deleted
+  ## expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
   ## OR / AND
   "lifecycle": SandboxLifecycle(
     expiration_policies=[
       ExpirationPolicy(
         type_="ttl-idle",
-        value="30m",  # Delete after 30 minutes of inactivity. Supported units: s, m, h, d, w
+        value="24h",  # Delete after 24 hours of inactivity. Supported units: h, d, w
         action="delete"
       )
     ]
