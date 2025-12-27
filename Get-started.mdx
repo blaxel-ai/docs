@@ -197,7 +197,7 @@ import { SandboxInstance } from "@blaxel/core";
 
 async function main() {
   // Create a new sandbox
-  const sandbox = await SandboxInstance.create({
+  const sandbox = await SandboxInstance.createIfNotExists({
     name: "my-sandbox",
     image: "blaxel/base-image:latest",   // public or custom image
     memory: 4096,   // in MB
@@ -217,7 +217,7 @@ from blaxel.core import SandboxInstance
 
 async def main():
     # Create a new sandbox
-    sandbox = await SandboxInstance.create({
+    sandbox = await SandboxInstance.create_if_not_exists({
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
