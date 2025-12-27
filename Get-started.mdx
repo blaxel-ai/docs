@@ -24,13 +24,13 @@ Welcome there! 👋 Make sure you have created an account on Blaxel (here → [h
 
 Install Blaxel CLI by running the two following commands successively in a terminal:
 
-```shell 
+```shell
 
 brew tap blaxel-ai/blaxel
 
 ```
 
-```shell 
+```shell
 
 brew install blaxel
 
@@ -42,7 +42,7 @@ brew install blaxel
 
 Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
@@ -50,7 +50,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 If you need a non-sudo alternative (**it will ask you questions to configure**):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | sh
@@ -58,7 +58,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 If you need to install a specific version (e.g. v0.1.21):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | VERSION=v0.1.21 sh
@@ -70,7 +70,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | BINDIR=/usr/local/bin sudo -E sh
@@ -78,7 +78,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 If you need a non-sudo alternative (**it will ask you questions to configure**):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | sh
@@ -86,7 +86,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 If you need to install a specific version (e.g. v0.1.21):
 
-```shell 
+```shell
 curl -fsSL \
 https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 | VERSION=v0.1.21 sh
@@ -98,7 +98,7 @@ https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
 
 For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
 
- 
+
 
 First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
 
@@ -128,7 +128,7 @@ bl login
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](Agents/Variables-and-secrets) for other authentication options). 
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](Agents/Variables-and-secrets) for other authentication options).
 3. environment variables from your machine
 4. configuration file created locally when you log in through [Blaxel CLI](cli-reference/introduction) (or deploy on Blaxel)
 
@@ -197,14 +197,15 @@ import { SandboxInstance } from "@blaxel/core";
 
 async function main() {
   // Create a new sandbox
-  const sandbox = await SandboxInstance.createIfNotExists({
+  const sandbox = await SandboxInstance.create({
     name: "my-sandbox",
     image: "blaxel/base-image:latest",   // public or custom image
     memory: 4096,   // in MB
     ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
+    labels: { env: "dev", project: "my-project" }, // labels
     region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
   });
-  console.log("Sandbox created:", {sandbox});
+  console.log("Sandbox created: ", {sandbox});
 }
 
 main().catch(console.error);
@@ -216,11 +217,12 @@ from blaxel.core import SandboxInstance
 
 async def main():
     # Create a new sandbox
-    sandbox = await SandboxInstance.create_if_not_exists({
+    sandbox = await SandboxInstance.create({
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
       "ports": [{ "target": 3000 }],   # ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # labels
       "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
     })
     print(f"Sandbox created: {sandbox}")
@@ -257,7 +259,7 @@ Let’s initialize a first app. The following command initializes a new **pre-sc
 bl new agent
 ```
 
-You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`. 
+You can now develop your agent application using any framework you want (or none), and use the [Blaxel](sdk-reference/introduction) [SDK](sdk-reference) to [leverage other Blaxel deployments](Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`.
 
 </Accordion>
 
@@ -419,7 +421,7 @@ Read more about [how to connect to the server here](Functions/Invoke-functions).
 
 ## Next steps
 
-You are ready to run AI with Blaxel! Here’s a curated list of guides which may be helpful for you to make the most of Blaxel, but feel free to explore the product on your own! 
+You are ready to run AI with Blaxel! Here’s a curated list of guides which may be helpful for you to make the most of Blaxel, but feel free to explore the product on your own!
 
 <Card title="Create agentic code sandboxes" icon="box" href="/Sandboxes/Overview">
 Complete guide for spawning sandboxed VMs for your agents to access.
