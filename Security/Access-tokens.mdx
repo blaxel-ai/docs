@@ -55,6 +55,10 @@ This solution requires a catch-all route in the client application (e.g. `/api/b
 
 Here is a sample implementation of this catch-all route implemented in Next.js:
 
+<Warning>
+The above code is illustrative and not intended for production use. It has no authentication, allowing access to anyone who knows the endpoint URL. You must add authentication (session validation, API keys, rate limiting) before deploying in production.
+</Warning>
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -89,10 +93,6 @@ async function handleRequest(request: NextRequest, { params }: { params: { slug:
 
 export { handleRequest as DELETE, handleRequest as GET, handleRequest as PATCH, handleRequest as POST, handleRequest as PUT };
 ```
-
-<Note>
-The above code is illustrative and not intended for production use. It has no authentication, allowing access to anyone who knows the endpoint URL. In production, additional authentication should always be added to the route to prevent unauthorized access.
-</Note>
 
 Now, within the application, the Blaxel SDK should be configured at init-time to use the proxy route, as shown below. With this change, SDK requests are routed via the named proxy rather than directly transmitted to the Blaxel API.
 
