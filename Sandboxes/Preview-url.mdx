@@ -22,11 +22,10 @@ You can set a **custom domain** on a preview URL (see down below).
 
 JavaScript module bundlers handle real-time previewing. Here are the key compatibility requirements and limitations:
 
-- Module bundler **must implement** [ping-pong](https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2)
-- [Webpack](https://webpack.js.org/) has been tested and works
-- [Turbopack](https://nextjs.org/docs/app/api-reference/turbopack) currently doesn't work as it doesn't support ping-pong (see [issue raised to Vercel](https://github.com/vercel/next.js/discussions/78947))
-- Blaxel has a **15-minute connection timeout**. To maintain previews beyond this limit, ensure your bundler implements automatic reconnection
-- You cannot create a preview on **port 80** which is reserved for system
+- Module bundler **must implement** [ping-pong](https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2).
+- Both [Webpack](https://webpack.js.org/) and [Turbopack](https://nextjs.org/docs/app/api-reference/turbopack) (v16.1.1) have been tested and confirmed to work.
+- Blaxel has a **15-minute connection timeout**. To maintain previews beyond this limit, ensure your bundler implements automatic reconnection.
+- You cannot create a preview on **port 80** which is reserved for system.
 
 ## Private preview URLs
 
