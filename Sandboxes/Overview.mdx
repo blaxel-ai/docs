@@ -64,24 +64,70 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
-  ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
-  labels: { env: "test", project: "12345" }, // labels
-  region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
+  ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"   // optional; if not specified, Blaxel will choose a default region
 });
 ```
 
 ```python Python
+import asyncio
 from blaxel.core import SandboxInstance
 
-# Create a new sandbox
-sandbox = await SandboxInstance.create({
-  "name": "my-sandbox",
-  "image": "blaxel/base-image:latest",   # public or custom image
-  "memory": 4096,   # in MB
-  "ports": [{ "target": 3000 }],   # ports to expose
-  "labels": {"env": "test", "project": "12345"},  # labels
-  "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
-})
+async def main():
+
+    # Create a new sandbox
+    sandbox = await SandboxInstance.create({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # optional; ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+      "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+    })
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+</CodeGroup>
+
+An alternative is to use the helper function `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python). This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox if it doesn't exist
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",  // public or custom image
+  memory: 4096,    // in MB
+  ports: [{ target: 3000, protocol: "HTTP" }],  // optional; ports to expose
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"    // optional; if not specified, Blaxel will choose a default region
+});
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+
+    # Create sandbox if it doesn't exist
+    sandbox = await SandboxInstance.create_if_not_exists({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # optional; ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+      "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+    })
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -183,40 +229,6 @@ sandbox = await SandboxInstance.create({
 <Tip>Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the API reference for a full documentation. You can combine multiple expiration policies: whichever condition is met first will trigger the action.</Tip>
 
 The TTL-type parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
-
-## Create a sandbox if none exists
-
-This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Create sandbox if it doesn't exist
-const sandbox = await SandboxInstance.createIfNotExists({
-  name: "my-sandbox",
-  image: "blaxel/base-image:latest",
-  memory: 4096,
-  ports: [{ target: 3000, protocol: "HTTP" }],
-  region: "us-pdx-1"
-});
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Create sandbox if it doesn't exist
-sandbox = await SandboxInstance.create_if_not_exists({
-  "name": "my-sandbox",
-  "image": "blaxel/base-image:latest",
-  "memory": 4096,
-  "ports": [{ "target": 3000, "protocol": "HTTP" }],
-  "region": "us-pdx-1"
-})
-```
-
-</CodeGroup>
 
 ## Retrieve an existing sandbox
 
