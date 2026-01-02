@@ -148,7 +148,11 @@ bl deploy
 
 This command initializes a new sandbox project and configuration file in the named directory `my-sandbox` and then deploys the sandbox on Blaxel.
 
-The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements. [Learn more about the `blaxel.toml` file](/deployment-reference).
+The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [Learn more about the `blaxel.toml` file](/deployment-reference).
+
+<Tip>
+Running `bl deploy` here also saves the image to be reused later as a template.
+</Tip>
 
 </Tab>
 <Tab title="Console">
