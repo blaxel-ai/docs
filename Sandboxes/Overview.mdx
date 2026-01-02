@@ -37,6 +37,8 @@ alt="Lifecycle of Blaxel Sandboxes"
 
 ## Create a sandbox
 
+### Using the SDKs
+
 Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
@@ -131,6 +133,46 @@ if __name__ == "__main__":
 ```
 
 </CodeGroup>
+
+### Using the CLI and Console
+
+Although less common, it is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console.
+
+<Tabs>
+<Tab title="CLI">
+```shell
+cat <<'EOF' | bl apply -f -
+apiVersion: blaxel.ai/v1alpha1
+kind: Sandbox
+metadata:
+  name: my-sandbox
+  labels:
+    env: dev
+    project: my-project
+spec:
+  region: us-pdx-1
+  runtime:
+    image: blaxel/base-image:latest
+    memory: 4096
+    ports:
+      - target: 3000
+EOF
+```
+</Tab>
+<Tab title="Console">
+
+- Log in to the [Blaxel Console](https://app.blaxel.ai/).
+- Click **Sandboxes** in the left navigation menu.
+- Click **+Create sandbox** -> **Deploy from console**.
+- Select an image template.
+- On the next page, configure the sandbox resources, including memory, time-to-live and region.
+- Click **Next** to proceed.
+- On the next page, reconfirm the sandbox parameters. Click **Create** to create the sandbox.
+
+</Tab>
+</Tabs>
+
+## Understand sandbox configuration
 
 ### Images
 
