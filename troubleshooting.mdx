@@ -132,7 +132,7 @@ An alternative approach is to use process supervision ([Supervisor](https://supe
 
 This approach ensures the sandbox API automatically restarts if it runs out of memory or crashes unexpectedly.
 
-## Sandbox commands return a `ENOSPC: no space left on device` error
+## Sandbox commands return an `ENOSPC: no space left on device` error
 
 This error occurs when your sandbox runs out of storage space. This usually happens when your file storage requirements exceed the available memory since, for performance reasons, Blaxel sandboxes reserve, when possible, [approximately 50% of their available memory](/Sandboxes/Overview#memory-and-filesystem) for the filesystem.
 
