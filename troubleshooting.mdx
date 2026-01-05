@@ -5,7 +5,7 @@ description: "Troubleshoot common problems with Blaxel deployments"
 
 This page describes common issues and how to troubleshoot them.
 
-## Preview URLs return a 502 server error
+## Preview URLs return a `502 Bad Gateway` server error
 
 This error occurs when the server running inside the sandbox is binding to `localhost`. As a result, it is only reachable inside the sandbox; the external preview URL will not be able to access it.
 
@@ -70,6 +70,73 @@ app.run(host=host, port=port)
 This error occurs when a model reaches its maximum token limit.
 
 To resolve this error, adjust the model's token usage policy. Token usage policies control the maximum number of tokens your model APIs can handle within a specific time period. You can configure the maximum number of input tokens, output tokens and/or total tokens using these policies.
+
+## Sandbox commands return a `502 Bad Gateway` error
+
+This error occurs when the sandbox API is unexpectedly terminated - for example, if the sandbox runs out of memory.
+
+To resolve this error, restart the sandbox, which also restarts the sandbox API.
+
+<Note>
+Restarting will cause the current state of the sandbox to be lost.
+</Note>
+
+An alternative approach is to use process supervision ([Supervisor](https://supervisord.org)) inside the sandbox to enable auto-restarts of the sandbox API. To do this, follow the steps below:
+
+1. Add `supervisor` to your Dockerfile's `apt-get install`:
+
+    ```
+    RUN apt-get update && apt-get install -y \
+        ... \
+        supervisor \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ```
+
+1. Create a config file named `supervisord.conf`:
+
+    ```
+    [supervisord]
+    nodaemon=true
+    logfile=/var/log/supervisord.log
+    pidfile=/var/run/supervisord.pid
+    loglevel=info
+
+    [program:sandbox-api]
+    command=/usr/local/bin/sandbox-api
+    directory=/home/user
+    autostart=true
+    autorestart=true
+    startsecs=2
+    startretries=9999
+    ; Restart aggressively on any exit (including OOM kill)
+    exitcodes=0
+    ; Priority ensures sandbox-api starts first
+    priority=100
+    stdout_logfile=/var/log/sandbox-api.log
+    stderr_logfile=/var/log/sandbox-api-error.log
+    stdout_logfile_maxbytes=10MB
+    stderr_logfile_maxbytes=10MB
+    ```
+
+1. Copy the configuration file to your container image:
+
+    ```
+    COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+    ```
+
+1. Update your entrypoint script to use `supervisord`, which will start and monitor the sandbox API:
+
+    ```shell
+    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    ```
+
+This approach ensures the sandbox API automatically restarts if it runs out of memory or crashes unexpectedly.
+
+## Sandbox commands return a `ENOSPC: no space left on device` error
+
+This error occurs when your sandbox runs out of storage space. This usually happens when your file storage requirements exceed the available memory since, for performance reasons, Blaxel sandboxes reserve, when possible, [approximately 50% of their available memory](/Sandboxes/Overview#memory-and-filesystem) for the filesystem.
+
+To resolve this error, increase the available memory allocation for the sandbox, or add storage using [volumes](/Sandboxes/Volumes). Adding storage requires deleting and recreating the sandbox first.
 
 ## Volume creation fails with an error
 
