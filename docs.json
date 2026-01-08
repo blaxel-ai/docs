@@ -240,6 +240,10 @@
       },
       {
         "tab": "API Reference",
+        "openapi": {
+          "source": "/api-reference/controlplane.yml",
+          "directory": "api-reference"
+        },
         "groups": [
           {
             "group": "Overview",
@@ -252,10 +256,6 @@
             "pages": [
               "api-reference/inference"
             ]
-          },
-          {
-            "group": "Management API",
-            "openapi": "https://api.blaxel.ai/v0/openapi/controlplane.yml"
           }
         ]
       },
