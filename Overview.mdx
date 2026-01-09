@@ -8,7 +8,7 @@ sidebarTitle: "Overview"
 
 ---
 
-Blaxel is a **cloud computing infrastructure built for AI agents**. Our computing platform provides compute runtimes and hosting services that AI can use — from sandboxes to background task infrastructure.
+Blaxel is a **perpetual sandbox platform built for AI agents**. Our platform lets you keep infinite, secure sandboxes on automatic standby while co-hosting your agents for near instant latency.
 
 <Frame>
 <img src="/img/general/overview-2025-05.png" />
@@ -16,7 +16,7 @@ Blaxel is a **cloud computing infrastructure built for AI agents**. Our computin
 
 An *AI agent* is any application that leverages generative AI models to take autonomous actions in the real world. These agents often require computing power to execute their interactions.
 
-<Accordion title="Some examples of agents include…">
+Some examples of agents include:
 
 - **Conversational agents** that are able to take action in the world while keeping a human in the loop for activation or validation: for example code generation agents with real-time previews.
 - **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured video files and uses an AI model to extract structured data then act on it.
@@ -25,35 +25,35 @@ An *AI agent* is any application that leverages generative AI models to take aut
 
 Blaxel’s infrastructure platform gives production-grade agents their own computing environments including code sandboxes, tool servers, and LLMs. It offers infrastructure to run these agents on a global network that makes them run fast and reliably.
 
-</Accordion>
-
-This portal provides comprehensive documentation and API, SDK and CLI reference to help you operate Blaxel Platform.
+This website provides comprehensive documentation and API, SDK and CLI references to help you work with Blaxel.
 
 ## Essential concepts
 
-Blaxel is a cloud designed for agentic AI. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build reliable agentic systems exactly the way you want.
+Blaxel is a perpetual sandbox platform designed for agentic AI. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build reliable agentic systems exactly the way you want.
 
 Blaxel consists of modular services that are engineered to work seamlessly together, but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power agents.
 
 ### The building blocks
 
-At the heart of Blaxel is our flagship **Sandbox** service. They are secure instant-launching compute environments that you can use for running AI code.
+At the heart of Blaxel is our flagship **perpetual sandbox** service. Sandboxes are secure, instant-launching compute environments that you can use for running AI code. Blaxel lets you keeps sandboxes on automatic standby with optimized agent hosting for near instant latency.
+
+With Blaxel sandboxes, you get:
 
 - Automatic scale-to-zero after 5s inactivity, resume from standby under 25ms even after weeks.
 - Micro-VMs with full access to file system, processes and logs — and native support for Zero Data Retention (ZDR).
 - Preview URLs with your own custom domain.
 
-The rest of Blaxel’s cloud services include:
+You can co-locate agent APIs, MCP servers, and batch tasks directly alongside your sandboxes to eliminate network hops and ensure the lowest possible end-to-end latency. For this, Blaxel also offers:
 
 - **Agents Hosting** - Deploy your AI agents as serverless auto scalable endpoints. Completely framework agnostic: just bring your code, Blaxel builds it and runs it for you.
 - **Batch Jobs** - Scalable compute engine designed for agents to schedule and execute many AI processing tasks in parallel in the background
 - **MCP Servers Hosting** - Deploy custom tool servers on a fast-starting infrastructure to extend your agents' capabilities.
 - **Model Gateway** - Intelligent routing layer to LLM providers with built-in telemetry, token cost control, and fallbacks capabilities
-- **Full observability** — out-of-the-box
+- **Full observability** - out-of-the-box
 
 ### A cloud built for agents
 
-Agents will transform how we work in the coming years. Traditional cloud providers weren't designed to handle them and their one-size-fits-all architecture holds them back. We built Blaxel to fix that. 
+Agents will transform how we work in the coming years. Traditional cloud providers weren't designed to handle them and their one-size-fits-all architecture holds them back. We built Blaxel to fix that.
 
 Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through [MCP servers](MCP-server), allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
 
@@ -93,7 +93,7 @@ When building your agentic system, you'll need to make architecture design choic
 
 ## The Blaxel powerhouse
 
-When you deploy workloads to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part. 
+When you deploy workloads to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part.
 
 Global Agentics Network serves as the powerhouse for the entire Blaxel platform, from Agents Hosting to Sandboxes. It is natively **distributed** in order to optimize for low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
 
