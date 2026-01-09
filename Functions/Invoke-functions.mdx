@@ -130,53 +130,73 @@ You must provide your [Blaxel API key](../Security) in the `Authorization` heade
 
 </Note>
 
-**Cursor**
+<Tabs>
+  <Tab title="Cursor">
+  Add the server to `~/.cursor/mcp.json`:
 
-Add the server to `~/.cursor/mcp.json`:
-
-```json
-
-{
-  "mcpServers": {
-    "blaxel": {
-      "url": "https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp",
-      "headers": {
-        "Authorization": "Bearer <APIKEY>",
-        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+  ```json
+  {
+    "mcpServers": {
+      "blaxel": {
+        "url": "https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp",
+        "headers": {
+          "Authorization": "Bearer <APIKEY>",
+          "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+        }
       }
     }
   }
-}
-```
+  ```
+  </Tab>
+  <Tab title="Claude Code">
+  [Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
 
-**Claude Code**
+  ```bash
 
-[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+  claude mcp add --transport http blaxel https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp \\
+    --header "Authorization: Bearer <APIKEY>" \\
+    --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
+  ```
+  </Tab>
+  <Tab title="Windsurf">
+  Add to `~/.codeium/windsurf/mcp_config.json`:
+  ```json
 
-```bash
-
-claude mcp add --transport http blaxel https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp \\
-  --header "Authorization: Bearer <APIKEY>" \\
-  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
-```
-
-**Windsurf**
-
-Add to `~/.codeium/windsurf/mcp_config.json`:
-```json
-
-{
-  "mcpServers": {
-    "blaxel": {
-      "url": "https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp",
-      "headers": {
-        "Authorization": "Bearer <APIKEY>",
-        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+  {
+    "mcpServers": {
+      "blaxel": {
+        "url": "https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp",
+        "headers": {
+          "Authorization": "Bearer <APIKEY>",
+          "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+        }
       }
     }
   }
-}
-```
+  ```
+  </Tab>
+  <Tab title="Goose">
+  Add to `~/.config/goose/config.yaml`:
+
+  ```yaml
+  extensions:
+    blaxel:
+      enabled: true
+      type: streamable_http
+      name: blaxel
+      description: Blaxel MCP
+      uri: https://run.blaxel.ai/<WORKSPACE_NAME_OR_ID>/functions/blaxel-search/mcp
+      envs: {}
+      env_keys: []
+      headers:
+        Authorization: Bearer <APIKEY>
+        X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>
+      timeout: 300
+      bundled: null
+      available_tools: []
+  ```
+  </Tab>
+</Tabs>
 
 ### Directly connect from your code
 

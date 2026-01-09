@@ -81,6 +81,28 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 }
 ```
 
+### Goose
+
+Add to `~/.config/goose/config.yaml`:
+
+```yaml
+extensions:
+  blaxel-api:
+    enabled: true
+    type: streamable_http
+    name: blaxel-api
+    description: Blaxel API MCP Server
+    uri: https://api.blaxel.ai/v0/mcp
+    envs: {}
+    env_keys: []
+    headers:
+      Authorization: Bearer <APIKEY>
+      X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>
+    timeout: 300
+    bundled: null
+    available_tools: []
+```
+
 ## Using the MCP server
 
 ### Selecting a workspace
