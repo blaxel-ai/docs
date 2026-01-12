@@ -317,13 +317,6 @@ timeout = 900
 maxRetries=0
 
 [[triggers]]
-  id = "trigger-my-job"
-  type = "http"
-[triggers.configuration]
-  path = "jobs/my-job/execute"
-  retry = 1
-
-[[triggers]]
 id = "cron-trigger"
 type = "cron"
 
