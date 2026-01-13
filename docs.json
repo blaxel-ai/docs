@@ -239,7 +239,7 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Management API",
         "openapi": {
           "source": "/api-reference/controlplane.yml",
           "directory": "api-reference"

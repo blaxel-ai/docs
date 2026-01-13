@@ -1,0 +1,6171 @@
+components:
+  schemas:
+    Agent:
+      type: object
+      description: Serverless AI agent deployment that runs your custom agent code
+        as an auto-scaling API endpoint. Agents are deployed from your code repository
+        and expose a global inference URL for querying.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    AgentRuntime:
+      type: object
+      description: Runtime configuration defining how the AI agent is deployed and
+        scaled globally
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into the agent. Supports Kubernetes
+            EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        generation:
+          type: string
+          description: 'Infrastructure generation: mk2 (containers, 2-10s cold starts,
+            15+ global regions) or mk3 (microVMs, sub-25ms cold starts)'
+          enum:
+          - mk2
+          - mk3
+          example: mk3
+        image:
+          type: string
+          description: Container image built by Blaxel when deploying with 'bl deploy'.
+            This field is auto-populated during deployment.
+        maxScale:
+          type: integer
+          description: Maximum number of concurrent agent instances for auto-scaling
+            under load
+          example: 10
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation
+            (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 2048
+        minScale:
+          type: integer
+          description: Minimum instances to keep warm. Set to 1+ to eliminate cold
+            starts, 0 for scale-to-zero.
+          example: 0
+    AgentSpec:
+      type: object
+      description: Configuration for an AI agent including runtime settings, repository
+        source, and deployment triggers
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the agent is disabled and will not serve inference
+            requests
+          example: true
+          default: true
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        repository:
+          $ref: '#/components/schemas/Repository'
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
+        runtime:
+          $ref: '#/components/schemas/AgentRuntime'
+        triggers:
+          $ref: '#/components/schemas/Triggers'
+    ApiKey:
+      type: object
+      description: Long-lived API key for accessing Blaxel
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          apiKey:
+            type: string
+            description: Api key
+            readOnly: true
+          expires_in:
+            type: string
+            description: Duration until expiration. Supports formats like '30d' (30
+              days), '24h' (24 hours), '1w' (1 week). If not set, the API key never
+              expires.
+            example: 30d
+          id:
+            type: string
+            description: Api key id, to retrieve it from the API
+            readOnly: true
+            example: ak_abc123def456
+          name:
+            type: string
+            description: Name for the API key
+            example: CI/CD Pipeline Key
+          sub:
+            type: string
+            description: User subject identifier
+            readOnly: true
+          sub_type:
+            type: string
+            description: Subject type (user or service_account)
+            example: user
+    Configuration:
+      type: object
+      description: Configuration
+      properties:
+        continents:
+          type: array
+          description: Continents
+          items:
+            $ref: '#/components/schemas/Continent'
+        countries:
+          type: array
+          description: Countries
+          items:
+            $ref: '#/components/schemas/Country'
+        privateLocations:
+          type: array
+          description: Private locations managed with blaxel operator
+          items:
+            $ref: '#/components/schemas/PrivateLocation'
+        regions:
+          type: array
+          description: Regions
+          items:
+            $ref: '#/components/schemas/Region'
+    Continent:
+      type: object
+      description: Continent
+      properties:
+        displayName:
+          type: string
+          description: Continent display name
+        name:
+          type: string
+          description: Continent code
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: "2025-01-15T10:30:00Z"
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    Country:
+      type: object
+      description: Configuration
+      properties:
+        displayName:
+          type: string
+          description: Country display name
+        name:
+          type: string
+          description: Country code
+    CreateJobExecutionRequest:
+      type: object
+      description: Request to create a job execution
+      properties:
+        executionId:
+          type: string
+          description: Execution ID (optional, will be generated if not provided)
+        id:
+          type: string
+          description: Unique message ID
+        jobId:
+          type: string
+          description: Job ID
+          example: data-processing-job
+        tasks:
+          type: array
+          description: Array of task parameters for parallel execution
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Workspace ID
+    CreateJobExecutionResponse:
+      type: object
+      description: Response returned when a job execution is successfully created.
+        Contains identifiers and the tasks that will be executed.
+      properties:
+        executionId:
+          type: string
+          description: Unique identifier for the created execution. Use this ID to
+            track execution status, retrieve logs, or cancel the execution.
+          example: exec-abc123
+        id:
+          type: string
+          description: Unique identifier for this request, used for idempotency and
+            tracking. Auto-generated if not provided in the request.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        jobId:
+          type: string
+          description: Name of the job that this execution belongs to
+          example: data-processing-job
+        tasks:
+          type: array
+          description: Array of task configurations that will be executed in parallel
+            according to the job's concurrency settings. Each task can have custom
+            parameters.
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Name of the workspace where the job execution was created
+          example: my-workspace
+    CustomDomain:
+      type: object
+      description: |-
+        Custom domain for preview deployments
+        The custom domain represents a base domain (e.g., example.com) that will be used
+        to serve preview deployments. Each preview will be accessible at a subdomain:
+        <preview-id>.preview.<base-domain> (e.g., abc123.preview.example.com)
+      properties:
+        metadata:
+          $ref: '#/components/schemas/CustomDomainMetadata'
+        spec:
+          $ref: '#/components/schemas/CustomDomainSpec'
+      required:
+      - metadata
+      - spec
+    CustomDomainMetadata:
+      type: object
+      description: Custom domain metadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Display name for the custom domain
+            example: Preview Domain
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Domain name (e.g., "example.com")
+            example: preview.example.com
+          workspace:
+            type: string
+            description: Workspace name
+    CustomDomainSpec:
+      type: object
+      description: Custom domain specification
+      properties:
+        cnameRecords:
+          type: string
+          description: CNAME target for the domain
+        lastVerifiedAt:
+          type: string
+          description: Last verification attempt timestamp
+          readOnly: true
+        region:
+          type: string
+          description: Region that the custom domain is associated with
+          example: us-pdx-1
+        status:
+          type: string
+          description: Current status of the domain (pending, verified, failed)
+          enum:
+          - pending
+          - verified
+          - failed
+          readOnly: true
+          example: verified
+        txtRecords:
+          type: object
+          description: Map of TXT record names to values for domain verification
+          additionalProperties:
+            type: string
+        verificationError:
+          type: string
+          description: Error message if verification failed
+          readOnly: true
+    Entrypoint:
+      type: object
+      description: Entrypoint of the artifact
+      properties:
+        args:
+          type: array
+          description: Args of the entrypoint
+          items:
+            type: object
+            additionalProperties: true
+        command:
+          type: string
+          description: Command of the entrypoint
+        env:
+          type: object
+          description: Env of the entrypoint
+          additionalProperties:
+            type: string
+        superGatewayArgs:
+          type: array
+          description: Super Gateway args of the entrypoint
+          items:
+            type: object
+            additionalProperties: true
+    Env:
+      type: object
+      description: Environment variable with name and value
+      properties:
+        name:
+          type: string
+          description: Name of the environment variable
+          example: MY_ENV_VAR
+        secret:
+          type: boolean
+          description: Whether the value is a secret
+          example: true
+        value:
+          type: string
+          description: Value of the environment variable
+          example: my-value
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
+    ExpirationPolicy:
+      type: object
+      description: Expiration policy for automatic sandbox cleanup based on time conditions
+      properties:
+        action:
+          type: string
+          description: Action to take when the expiration condition is met
+          enum:
+          - delete
+          example: delete
+        type:
+          type: string
+          description: 'Type of expiration policy: ttl-idle (delete after inactivity),
+            ttl-max-age (delete after total lifetime), or date (delete at specific
+            time)'
+          enum:
+          - ttl-idle
+          - ttl-max-age
+          - date
+          example: ttl-idle
+        value:
+          type: string
+          description: Duration value for TTL policies (e.g., '30m', '24h', '7d')
+            or ISO 8601 date for date policies
+          example: 24h
+    Flavor:
+      type: object
+      description: A type of hardware available for deployments
+      properties:
+        name:
+          type: string
+          description: Flavor name (e.g. t4)
+          example: t4
+        type:
+          type: string
+          description: Flavor type (e.g. cpu, gpu)
+          enum:
+          - cpu
+          - gpu
+          example: cpu
+    Flavors:
+      type: array
+      description: Types of hardware available for deployments
+      items:
+        $ref: '#/components/schemas/Flavor'
+    Form:
+      type: object
+      description: Form of the artifact
+      properties:
+        config:
+          type: object
+          description: Config of the artifact
+          additionalProperties: true
+        oauth:
+          $ref: '#/components/schemas/OAuth'
+        secrets:
+          type: object
+          description: Secrets of the artifact
+          additionalProperties: true
+    Function:
+      type: object
+      description: MCP server deployment that exposes tools for AI agents via the
+        Model Context Protocol (MCP). Deployed as a serverless auto-scaling endpoint
+        using streamable HTTP transport.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/FunctionSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    FunctionRuntime:
+      type: object
+      description: Runtime configuration defining how the MCP server function is deployed
+        and scaled
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into the function. Supports
+            Kubernetes EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        generation:
+          type: string
+          description: 'Infrastructure generation: mk2 (containers, 2-10s cold starts,
+            15+ global regions) or mk3 (microVMs, sub-25ms cold starts)'
+          enum:
+          - mk2
+          - mk3
+          example: mk3
+        image:
+          type: string
+          description: Container image built by Blaxel when deploying with 'bl deploy'.
+            This field is auto-populated during deployment.
+        maxScale:
+          type: integer
+          description: Maximum number of concurrent function instances for auto-scaling
+          example: 10
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation
+            (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 2048
+        minScale:
+          type: integer
+          description: Minimum instances to keep warm. Set to 1+ to eliminate cold
+            starts, 0 for scale-to-zero.
+          example: 0
+    FunctionSpec:
+      type: object
+      description: Configuration for an MCP server function including runtime settings,
+        transport protocol, and connected integrations
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the function is disabled and will not serve requests
+          example: true
+          default: true
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
+        runtime:
+          $ref: '#/components/schemas/FunctionRuntime'
+        transport:
+          type: string
+          description: Transport compatibility for the MCP, can be "websocket" or
+            "http-stream"
+          enum:
+          - websocket
+          - http-stream
+          example: http-stream
+        triggers:
+          $ref: '#/components/schemas/Triggers'
+    Image:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+        spec:
+          $ref: '#/components/schemas/ImageSpec'
+      required:
+      - metadata
+      - spec
+    ImageMetadata:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the image was created.
+          readOnly: true
+        displayName:
+          type: string
+          description: The display name of the image (registry/workspace/repository).
+        lastDeployedAt:
+          type: string
+          description: The date and time when the image was last deployed (most recent
+            across all tags).
+          readOnly: true
+        name:
+          type: string
+          description: The name of the image (repository name).
+        resourceType:
+          type: string
+          description: The resource type of the image.
+        updatedAt:
+          type: string
+          description: The date and time when the image was last updated.
+          readOnly: true
+        workspace:
+          type: string
+          description: The workspace of the image.
+          readOnly: true
+    ImageSpec:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: The size of the image in bytes.
+          readOnly: true
+        tags:
+          type: array
+          description: List of tags available for this image.
+          items:
+            $ref: '#/components/schemas/ImageTag'
+    ImageTag:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the tag was created.
+          readOnly: true
+        name:
+          type: string
+          description: The name of the tag.
+        size:
+          type: integer
+          description: The size of the image in bytes.
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the tag was last updated.
+          readOnly: true
+    Integration:
+      type: object
+      description: Integration
+      properties:
+        additionalInfos:
+          type: object
+          description: Integration additional infos
+          additionalProperties:
+            type: string
+        endpoints:
+          $ref: '#/components/schemas/IntegrationEndpoints'
+        headers:
+          $ref: '#/components/schemas/IntegrationHeaders'
+        name:
+          type: string
+          description: Integration name
+        organizations:
+          type: array
+          description: Integration organizations
+          items:
+            $ref: '#/components/schemas/IntegrationOrganization'
+        params:
+          $ref: '#/components/schemas/IntegrationQueryParams'
+        repositories:
+          type: array
+          description: Integration repositories
+          items:
+            $ref: '#/components/schemas/IntegrationRepository'
+    IntegrationConnection:
+      type: object
+      description: Configured connection to an external service (LLM provider, API,
+        SaaS, database) storing credentials and settings for use by workspace resources.
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/IntegrationConnectionSpec'
+      required:
+      - metadata
+      - spec
+    IntegrationConnectionSpec:
+      type: object
+      description: Specification defining the integration type, configuration parameters,
+        and encrypted credentials
+      properties:
+        config:
+          type: object
+          description: Non-sensitive configuration parameters for the integration
+            (e.g., organization ID, region)
+          additionalProperties:
+            type: string
+        integration:
+          type: string
+          description: Integration provider type (e.g., openai, anthropic, github,
+            slack)
+          example: openai
+        sandbox:
+          type: boolean
+          description: Whether this connection uses sandbox/test credentials instead
+            of production
+          example: false
+        secret:
+          type: object
+          description: Encrypted credentials and API keys for authenticating with
+            the external service
+          additionalProperties:
+            type: string
+    IntegrationConnectionsList:
+      type: array
+      items:
+        type: string
+        description: Deployment integration connection name
+    IntegrationEndpoint:
+      type: object
+      description: Integration endpoint
+      properties:
+        body:
+          type: string
+          description: Integration endpoint body
+        ignoreModels:
+          type: array
+          description: Integration endpoint ignore models
+          items:
+            type: object
+            additionalProperties: true
+        method:
+          type: string
+          description: Integration endpoint method
+        models:
+          type: array
+          description: Integration endpoint models
+          items:
+            type: object
+            additionalProperties: true
+        streamKey:
+          type: string
+          description: Integration endpoint stream key
+        streamToken:
+          $ref: '#/components/schemas/IntegrationEndpointToken'
+        token:
+          $ref: '#/components/schemas/IntegrationEndpointToken'
+    IntegrationEndpointToken:
+      type: object
+      description: Integration endpoint token
+      properties:
+        received:
+          type: string
+          description: Integration endpoint token received
+        sent:
+          type: string
+          description: Integration endpoint token sent
+        total:
+          type: string
+          description: Integration endpoint token total
+    IntegrationEndpoints:
+      type: object
+      description: Integration endpoints
+      additionalProperties:
+        $ref: '#/components/schemas/IntegrationEndpoint'
+    IntegrationHeaders:
+      type: object
+      description: Integration headers
+      additionalProperties:
+        type: string
+    IntegrationOrganization:
+      type: object
+      description: Integration organization
+      properties:
+        avatar_url:
+          type: string
+          description: Provider organization avatar URL
+        displayName:
+          type: string
+          description: Provider organization display name
+        id:
+          type: string
+          description: Provider organization ID
+        name:
+          type: string
+          description: Provider organization name
+    IntegrationQueryParams:
+      type: object
+      description: Integration query params
+      additionalProperties:
+        type: string
+    IntegrationRepository:
+      type: object
+      description: Integration repository
+      properties:
+        id:
+          type: string
+          description: Repository ID
+        isBl:
+          type: boolean
+          description: Whether the repository has Blaxel imports
+        name:
+          type: string
+          description: Repository name
+        organization:
+          type: string
+          description: Repository owner
+        url:
+          type: string
+          description: Repository URL
+    Job:
+      type: object
+      description: Batch processing job definition for running parallel AI tasks.
+        Jobs can execute multiple tasks concurrently with configurable parallelism,
+        retries, and timeouts.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/JobSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    JobExecution:
+      type: object
+      description: Job execution
+      properties:
+        metadata:
+          $ref: '#/components/schemas/JobExecutionMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionSpec'
+        stats:
+          $ref: '#/components/schemas/JobExecutionStats'
+        status:
+          $ref: '#/components/schemas/JobExecutionStatus'
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+      required:
+      - metadata
+      - spec
+    JobExecutionMetadata:
+      type: object
+      description: Job execution metadata
+      properties:
+        cluster:
+          type: string
+          description: Cluster ID
+        completedAt:
+          type: string
+          description: Completion timestamp
+        createdAt:
+          type: string
+          description: Creation timestamp
+        deletedAt:
+          type: string
+          description: Deletion timestamp
+        expiredAt:
+          type: string
+          description: Expiration timestamp
+        id:
+          type: string
+          description: Execution ID
+          example: exec-abc123
+        job:
+          type: string
+          description: Job name
+          example: data-processing-job
+        startedAt:
+          type: string
+          description: Start timestamp
+        updatedAt:
+          type: string
+          description: Last update timestamp
+        workspace:
+          type: string
+          description: Workspace ID
+          example: my-workspace
+      readOnly: true
+    JobExecutionSpec:
+      type: object
+      description: Job execution specification
+      properties:
+        parallelism:
+          type: integer
+          description: Number of parallel tasks
+          example: 5
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+        timeout:
+          type: integer
+          description: Job timeout in seconds (captured at execution creation time)
+          example: 3600
+    JobExecutionStats:
+      type: object
+      description: Job execution statistics
+      properties:
+        cancelled:
+          type: integer
+          description: Number of cancelled tasks
+          example: 0
+        failure:
+          type: integer
+          description: Number of failed tasks
+          example: 1
+        retried:
+          type: integer
+          description: Number of retried tasks
+          example: 2
+        running:
+          type: integer
+          description: Number of running tasks
+          example: 1
+        success:
+          type: integer
+          description: Number of successful tasks
+          example: 8
+        total:
+          type: integer
+          description: Total number of tasks
+          example: 10
+      readOnly: true
+    JobExecutionStatus:
+      type: string
+      description: Job execution status
+      enum:
+      - queued
+      - pending
+      - running
+      - cancelling
+      - cancelled
+      - failed
+      - succeeded
+      - timeout
+    JobExecutionTask:
+      type: object
+      description: Job execution task
+      properties:
+        conditions:
+          type: array
+          description: Task conditions
+          items:
+            $ref: '#/components/schemas/JobExecutionTaskCondition'
+        metadata:
+          $ref: '#/components/schemas/JobExecutionTaskMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionTaskSpec'
+        status:
+          $ref: '#/components/schemas/JobExecutionTaskStatus'
+    JobExecutionTaskCondition:
+      type: object
+      description: Job execution task condition
+      properties:
+        executionReason:
+          type: string
+          description: Execution reason
+        message:
+          type: string
+          description: Condition message
+        reason:
+          type: string
+          description: Condition reason
+        severity:
+          type: string
+          description: Condition severity
+        state:
+          type: string
+          description: Condition state
+        type:
+          type: string
+          description: Condition type
+    JobExecutionTaskMetadata:
+      type: object
+      description: Job execution task metadata
+      properties:
+        completedAt:
+          type: string
+          description: Completion timestamp
+          readOnly: true
+        createdAt:
+          type: string
+          description: Creation timestamp
+          readOnly: true
+        name:
+          type: string
+          description: Task name
+          example: task-0
+        scheduledAt:
+          type: string
+          description: Scheduled timestamp
+          readOnly: true
+        startedAt:
+          type: string
+          description: Start timestamp
+          readOnly: true
+        updatedAt:
+          type: string
+          description: Last update timestamp
+          readOnly: true
+    JobExecutionTaskSpec:
+      type: object
+      description: Job execution task specification
+      properties:
+        maxRetries:
+          type: integer
+          description: Maximum number of retries
+          example: 3
+        timeout:
+          type: string
+          description: Task timeout duration
+          example: 30m
+    JobExecutionTaskStatus:
+      type: string
+      description: Job execution task status
+      enum:
+      - unspecified
+      - pending
+      - reconciling
+      - failed
+      - succeeded
+      - running
+      - cancelled
+    JobRuntime:
+      type: object
+      description: Runtime configuration defining how batch job tasks are executed
+        with parallelism and retry settings
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into job tasks. Supports Kubernetes
+            EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        generation:
+          type: string
+          description: 'Infrastructure generation: mk2 (containers, 2-10s cold starts)
+            or mk3 (microVMs, sub-25ms cold starts)'
+          enum:
+          - mk2
+          - mk3
+          example: mk3
+        image:
+          type: string
+          description: Container image built by Blaxel when deploying with 'bl deploy'.
+            This field is auto-populated during deployment.
+        maxConcurrentTasks:
+          type: integer
+          description: Maximum number of tasks that can run simultaneously within
+            a single execution
+          example: 10
+        maxRetries:
+          type: integer
+          description: Number of automatic retry attempts for failed tasks before
+            marking as failed
+          example: 3
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation
+            (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 2048
+        ports:
+          $ref: '#/components/schemas/Ports'
+        timeout:
+          type: integer
+          description: Maximum execution time in seconds before a task is terminated
+          example: 3600
+    JobSpec:
+      type: object
+      description: Configuration for a batch job including execution parameters, parallelism
+        settings, and deployment region
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the job is disabled and new executions cannot be
+            triggered
+          example: true
+          default: true
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        region:
+          type: string
+          description: Region where the job should be created (e.g. us-was-1, eu-lon-1)
+          example: us-was-1
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
+        runtime:
+          $ref: '#/components/schemas/JobRuntime'
+        triggers:
+          $ref: '#/components/schemas/Triggers'
+    LocationResponse:
+      type: object
+      description: Location availability for policies
+      properties:
+        continent:
+          type: string
+          description: Continent of the location
+          example: NA
+        country:
+          type: string
+          description: Country of the location
+          example: US
+        flavors:
+          type: array
+          description: Hardware flavors available in the location
+          items:
+            $ref: '#/components/schemas/Flavor'
+        location:
+          type: string
+          description: Name of the location
+          example: Portland
+        region:
+          type: string
+          description: Region of the location
+          example: us-pdx-1
+        status:
+          type: string
+          description: Status of the location
+          example: healthy
+    MCPDefinition:
+      type: object
+      description: Definition of an MCP from the MCP Hub
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - properties:
+          categories:
+            type: array
+            description: Categories of the artifact
+            items:
+              type: object
+              additionalProperties: true
+          coming_soon:
+            type: boolean
+            description: If the artifact is coming soon
+          description:
+            type: string
+            description: Description of the artifact
+          displayName:
+            type: string
+            description: Display name of the artifact
+          enterprise:
+            type: boolean
+            description: If the artifact is enterprise
+          entrypoint:
+            $ref: '#/components/schemas/Entrypoint'
+          form:
+            $ref: '#/components/schemas/Form'
+          hidden:
+            type: boolean
+            description: If the artifact is hidden
+          hiddenSecrets:
+            type: array
+            description: Hidden secrets of the artifact
+            items:
+              type: string
+          icon:
+            type: string
+            description: Icon of the artifact
+          image:
+            type: string
+            description: Image of the artifact
+          integration:
+            type: string
+            description: Integration of the artifact
+          longDescription:
+            type: string
+            description: Long description of the artifact
+          name:
+            type: string
+            description: Name of the artifact
+          transport:
+            type: string
+            description: Transport compatibility for the MCP, can be "websocket" or
+              "http-stream"
+          url:
+            type: string
+            description: URL of the artifact
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including
+        name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces
+              and special characters, max 63 characters.
+            example: My Resource
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace.
+              Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable
+              after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from
+              workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for
+              agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only,
+              set automatically)
+            readOnly: true
+        required:
+        - name
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels
+        can be used to categorize resources by environment, project, team, or any
+        custom taxonomy.
+      additionalProperties:
+        type: string
+    Model:
+      type: object
+      description: Gateway endpoint to external LLM provider APIs (OpenAI, Anthropic,
+        etc.) with unified access control, credentials management, and usage tracking.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/ModelSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    ModelRuntime:
+      type: object
+      description: Configuration identifying which external LLM provider and model
+        this gateway endpoint proxies to
+      properties:
+        endpointName:
+          type: string
+          description: Provider-specific endpoint name (e.g., HuggingFace Inference
+            Endpoints name)
+        model:
+          type: string
+          description: Model identifier at the provider (e.g., gpt-4.1, claude-sonnet-4-20250514,
+            mistral-large-latest)
+          example: gpt-4.1
+        organization:
+          type: string
+          description: Organization or account identifier at the provider (required
+            for some providers like OpenAI)
+          example: org-abc123
+        type:
+          type: string
+          description: LLM provider type determining the API protocol and authentication
+            method
+          enum:
+          - hf_private_endpoint
+          - hf_public_endpoint
+          - huggingface
+          - public_model
+          - mcp
+          - openai
+          - anthropic
+          - gemini
+          - mistral
+          - deepseek
+          - cohere
+          - cerebras
+          - xai
+          - vertexai
+          - azure-openai-service
+          - azure-ai-inference
+          - azure-marketplace
+          - groq
+          example: openai
+    ModelSpec:
+      type: object
+      description: Configuration for a model gateway endpoint including provider type,
+        credentials, and access policies
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the model endpoint is disabled and will not accept
+            inference requests
+          example: true
+          default: true
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        runtime:
+          $ref: '#/components/schemas/ModelRuntime'
+        sandbox:
+          type: boolean
+          description: When true, uses sandbox/test credentials from the integration
+            connection
+          example: false
+    OAuth:
+      type: object
+      description: OAuth of the artifact
+      properties:
+        scope:
+          type: array
+          description: Scope of the OAuth
+          items:
+            type: object
+            additionalProperties: true
+        type:
+          type: string
+          description: Type of the OAuth
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistance
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    PendingInvitation:
+      type: object
+      description: Pending invitation in workspace
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          email:
+            type: string
+            description: User email
+          invitedBy:
+            type: string
+            description: User sub
+          role:
+            type: string
+            description: ACL role
+          workspace:
+            type: string
+            description: Workspace name
+    PendingInvitationAccept:
+      type: object
+      description: Pending invitation accept
+      properties:
+        email:
+          type: string
+          description: User email
+        workspace:
+          $ref: '#/components/schemas/Workspace'
+    PendingInvitationRender:
+      type: object
+      description: Pending invitation in workspace
+      properties:
+        email:
+          type: string
+          description: User email
+        invitedAt:
+          type: string
+          description: Invitation date
+        invitedBy:
+          $ref: '#/components/schemas/PendingInvitationRenderInvitedBy'
+        role:
+          type: string
+          description: ACL role
+        workspace:
+          $ref: '#/components/schemas/PendingInvitationRenderWorkspace'
+        workspaceDetails:
+          $ref: '#/components/schemas/PendingInvitationWorkspaceDetails'
+    PendingInvitationRenderInvitedBy:
+      type: object
+      description: Invited by
+      properties:
+        email:
+          type: string
+          description: User email
+        family_name:
+          type: string
+          description: User family name
+        given_name:
+          type: string
+          description: User given name
+        sub:
+          type: string
+          description: User sub
+    PendingInvitationRenderWorkspace:
+      type: object
+      description: Workspace
+      properties:
+        displayName:
+          type: string
+          description: Workspace display name
+        name:
+          type: string
+          description: Workspace name
+    PendingInvitationWorkspaceDetails:
+      type: object
+      description: Workspace details
+      properties:
+        emails:
+          type: array
+          description: List of user emails in the workspace
+          items:
+            type: object
+            additionalProperties: true
+        user_number:
+          type: number
+          description: Number of users in the workspace
+    PoliciesList:
+      type: array
+      items:
+        type: string
+        description: Policy name
+    Policy:
+      type: object
+      description: Rule that controls how a deployment is made and served (e.g. location
+        restrictions)
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/PolicySpec'
+      required:
+      - metadata
+      - spec
+    PolicyLocation:
+      type: object
+      description: Policy location
+      properties:
+        name:
+          type: string
+          description: Policy location name
+          example: EU
+        type:
+          type: string
+          description: Policy location type
+          enum:
+          - location
+          - country
+          - continent
+          example: continent
+    PolicyLocations:
+      type: array
+      description: PolicyLocations is a local type that wraps a slice of Location
+      items:
+        $ref: '#/components/schemas/PolicyLocation'
+    PolicyMaxTokens:
+      type: object
+      description: PolicyMaxTokens is a local type that wraps a slice of PolicyMaxTokens
+      properties:
+        granularity:
+          type: string
+          description: Granularity
+          example: minute
+        input:
+          type: integer
+          description: Input
+          example: 10000
+        output:
+          type: integer
+          description: Output
+          example: 5000
+        ratioInputOverOutput:
+          type: integer
+          description: RatioInputOverOutput
+          example: 2
+        step:
+          type: integer
+          description: Step
+          example: 1
+        total:
+          type: integer
+          description: Total
+          example: 15000
+    PolicyResourceType:
+      type: string
+      description: PolicyResourceType is a type of resource, e.g. model, function,
+        etc.
+      enum:
+      - model
+      - function
+      - agent
+      - sandbox
+    PolicyResourceTypes:
+      type: array
+      description: PolicyResourceTypes is a local type that wraps a slice of PolicyResourceType
+      items:
+        $ref: '#/components/schemas/PolicyResourceType'
+    PolicySpec:
+      type: object
+      description: Policy specification
+      properties:
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+        locations:
+          $ref: '#/components/schemas/PolicyLocations'
+        maxTokens:
+          $ref: '#/components/schemas/PolicyMaxTokens'
+        resourceTypes:
+          $ref: '#/components/schemas/PolicyResourceTypes'
+        sandbox:
+          type: boolean
+          description: Sandbox mode
+          example: false
+        type:
+          type: string
+          description: Policy type, can be location or flavor
+          enum:
+          - location
+          - flavor
+          - maxToken
+          example: location
+    Port:
+      type: object
+      description: A port for a resource
+      properties:
+        name:
+          type: string
+          description: The name of the port
+          example: http
+        protocol:
+          type: string
+          description: The protocol of the port
+          enum:
+          - HTTP
+          - TCP
+          - UDP
+          example: HTTP
+        target:
+          type: integer
+          description: The target port of the port
+          example: 8080
+      required:
+      - target
+    Ports:
+      type: array
+      description: Set of ports for a resource
+      items:
+        $ref: '#/components/schemas/Port'
+    Preview:
+      type: object
+      description: Preview of a Resource
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PreviewMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewSpec'
+      required:
+      - metadata
+      - spec
+    PreviewMetadata:
+      type: object
+      description: PreviewMetadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Model display name
+          name:
+            type: string
+            description: Preview name
+          resourceName:
+            type: string
+            description: Resource name
+          resourceType:
+            type: string
+            description: Resource type
+          workspace:
+            type: string
+            description: Workspace name
+        required:
+        - name
+    PreviewSpec:
+      type: object
+      description: Preview of a Resource
+      properties:
+        customDomain:
+          type: string
+          description: Custom domain bound to this preview
+        expires:
+          type: string
+          description: The expiration date for the preview in ISO 8601 format - 2024-12-31T23:59:59Z
+        port:
+          type: integer
+          description: Port of the preview
+        prefixUrl:
+          type: string
+          description: Prefix URL
+        public:
+          type: boolean
+          description: Whether the preview is public
+        region:
+          type: string
+          description: Region where the preview is deployed, this is readonly
+          readOnly: true
+        requestHeaders:
+          type: object
+          description: Those headers will be set in all requests to your preview.
+            This is especially useful to set the Authorization header.
+          additionalProperties:
+            type: string
+        responseHeaders:
+          type: object
+          description: Those headers will be set in all responses of your preview.
+            This is especially useful to set the CORS headers.
+          additionalProperties:
+            type: string
+        ttl:
+          type: string
+          description: Time to live for the preview (e.g., "1h", "24h", "7d"). After
+            this duration, the preview will be automatically deleted.
+        url:
+          type: string
+          description: URL of the preview
+          readOnly: true
+    PreviewToken:
+      type: object
+      description: Token for a Preview
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PreviewTokenMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewTokenSpec'
+      required:
+      - metadata
+      - spec
+    PreviewTokenMetadata:
+      type: object
+      description: PreviewTokenMetadata
+      properties:
+        name:
+          type: string
+          description: Token name
+        previewName:
+          type: string
+          description: Preview name
+        resourceName:
+          type: string
+          description: Resource name
+        resourceType:
+          type: string
+          description: Resource type
+        workspace:
+          type: string
+          description: Workspace name
+      required:
+      - name
+    PreviewTokenSpec:
+      type: object
+      description: Spec for a Preview Token
+      properties:
+        expired:
+          type: boolean
+          description: Whether the token is expired
+          readOnly: true
+        expiresAt:
+          type: string
+          description: Expiration time of the token
+        token:
+          type: string
+          description: Token
+          readOnly: true
+    PrivateLocation:
+      type: object
+      description: Private location available for policies
+      properties:
+        name:
+          type: string
+          description: Location name
+    PublicIp:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Description of the region/location
+        ipv4Cidrs:
+          type: array
+          description: List of public ipv4 addresses
+          items:
+            type: string
+        ipv6Cidrs:
+          type: array
+          description: List of public ipv6 addresses
+          items:
+            type: string
+    PublicIps:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/PublicIp'
+    Region:
+      type: object
+      description: Region
+      properties:
+        allowed:
+          type: string
+          description: Region display name
+        continent:
+          type: string
+          description: Region display name
+        country:
+          type: string
+          description: Region display name
+        infoGeneration:
+          type: string
+          description: Region display name
+        location:
+          type: string
+          description: Region display name
+        name:
+          type: string
+          description: Region name
+    Repository:
+      type: object
+      description: Repository
+      properties:
+        type:
+          type: string
+          description: Repository type
+          example: github
+        url:
+          type: string
+          description: Repository URL
+          example: https://github.com/my-org/my-agent
+    RevisionConfiguration:
+      type: object
+      description: Revision configuration
+      properties:
+        active:
+          type: string
+          description: Active revision id
+          example: rev-abc123
+        canary:
+          type: string
+          description: Canary revision id
+        canaryPercent:
+          type: integer
+          description: Canary revision percent
+          example: 10
+        stickySessionTtl:
+          type: integer
+          description: Sticky session TTL in seconds (0 = disabled)
+          example: 0
+        traffic:
+          type: integer
+          description: Traffic percentage
+          example: 100
+    RevisionMetadata:
+      type: object
+      description: Revision metadata
+      properties:
+        active:
+          type: boolean
+          description: Is the revision active
+        canary:
+          type: boolean
+          description: Is the revision canary
+        createdAt:
+          type: string
+          description: Revision created at
+          readOnly: true
+        createdBy:
+          type: string
+          description: Revision created by
+          readOnly: true
+        id:
+          type: string
+          description: Revision ID
+          readOnly: true
+        previousActive:
+          type: boolean
+          description: Is the revision previous active
+        status:
+          type: string
+          description: Status of the revision
+          readOnly: true
+        trafficPercent:
+          type: integer
+          description: Percent of traffic to the revision
+    Sandbox:
+      type: object
+      description: Lightweight virtual machine for secure AI code execution. Sandboxes
+        resume from standby in under 25ms and automatically scale to zero after inactivity,
+        preserving memory state including running processes and filesystem.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        lastUsedAt:
+          type: string
+          description: Last time the sandbox was used (read-only, managed by the system)
+          readOnly: true
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/SandboxSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    SandboxDefinition:
+      type: object
+      description: Pre-configured sandbox template available in the Sandbox Hub for
+        quick deployment with predefined tools and configurations
+      properties:
+        categories:
+          type: array
+          description: Categories of the defintion
+          items:
+            type: object
+            additionalProperties: true
+        coming_soon:
+          type: boolean
+          description: If the definition is coming soon
+          example: false
+        description:
+          type: string
+          description: Description of the defintion
+          example: Python environment with data science libraries pre-installed
+        displayName:
+          type: string
+          description: Display name of the definition
+          example: Python Data Science
+        enterprise:
+          type: boolean
+          description: If the definition is enterprise
+          example: false
+        hidden:
+          type: boolean
+          description: If the definition is hidden
+          example: false
+        icon:
+          type: string
+          description: Icon of the definition
+        image:
+          type: string
+          description: Image of the Sandbox definition
+          example: blaxel/python-data-science:latest
+        longDescription:
+          type: string
+          description: Long description of the defintion
+        memory:
+          type: integer
+          description: Memory of the Sandbox definition in MB
+          example: 2048
+        name:
+          type: string
+          description: Name of the artifact
+          example: python-data-science
+        ports:
+          $ref: '#/components/schemas/Ports'
+        tags:
+          type: string
+          description: Tags of the definition
+        url:
+          type: string
+          description: URL of the definition
+    SandboxError:
+      type: object
+      description: Error response returned by the CreateSandbox endpoint with extended
+        details about the failure
+      properties:
+        code:
+          type: string
+          description: Error code identifying the kind of error (e.g., INVALID_IMAGE,
+            QUOTA_EXCEEDED)
+          example: INVALID_IMAGE
+        details:
+          type: object
+          description: Additional error details. For INVALID_IMAGE errors, includes
+            requested_image and supported_images array.
+          additionalProperties: true
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Sandbox image blaxel/dev-ts-app:latest is not supported
+        sandbox_name:
+          type: string
+          description: Name of the sandbox that failed to create
+          example: mysandbox
+        status_code:
+          type: integer
+          description: HTTP status code
+          example: 400
+        step:
+          type: string
+          description: Processing step where the error occurred
+          example: validate_and_prepare
+        timestamp:
+          type: string
+          description: ISO 8601 timestamp of when the error occurred
+          example: "2025-12-19T22:36:29.336304095Z"
+        workspace:
+          type: string
+          description: Workspace name where the sandbox creation was attempted
+          example: main
+      required:
+      - code
+      - message
+    SandboxLifecycle:
+      type: object
+      description: Lifecycle configuration controlling automatic sandbox deletion
+        based on idle time, max age, or specific dates
+      properties:
+        expirationPolicies:
+          type: array
+          description: List of expiration policies. Multiple policies can be combined;
+            whichever condition is met first triggers the action.
+          items:
+            $ref: '#/components/schemas/ExpirationPolicy'
+    SandboxRuntime:
+      type: object
+      description: Runtime configuration defining how the sandbox VM is provisioned
+        and its resource limits
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into the sandbox. Supports Kubernetes
+            EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        expires:
+          type: string
+          description: Absolute expiration timestamp in ISO 8601 format when the sandbox
+            will be deleted
+          example: "2025-12-31T23:59:59Z"
+        image:
+          type: string
+          description: Sandbox image to use. Can be a public Blaxel image (e.g., blaxel/base-image:latest)
+            or a custom template image built with 'bl deploy'.
+          example: blaxel/base-image:latest
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation
+            (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 4096
+        ports:
+          $ref: '#/components/schemas/Ports'
+        ttl:
+          type: string
+          description: Time-to-live duration after which the sandbox is automatically
+            deleted (e.g., '30m', '24h', '7d')
+          example: 24h
+    SandboxSpec:
+      type: object
+      description: Configuration for a sandbox including its image, memory, ports,
+        region, and lifecycle policies
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the sandbox is disabled and will not accept connections
+          example: true
+          default: true
+        lifecycle:
+          $ref: '#/components/schemas/SandboxLifecycle'
+        region:
+          type: string
+          description: Region where the sandbox should be created (e.g. us-pdx-1,
+            eu-lon-1). If not specified, defaults to the region closest to the user.
+          example: us-pdx-1
+        runtime:
+          $ref: '#/components/schemas/SandboxRuntime'
+        volumes:
+          $ref: '#/components/schemas/VolumeAttachments'
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      readOnly: true
+    Template:
+      type: object
+      description: Blaxel template
+      properties:
+        defaultBranch:
+          type: string
+          description: Default branch of the template
+          example: main
+        description:
+          type: string
+          description: Description of the template
+          example: A starter template for building LangChain agents
+        downloadCount:
+          type: integer
+          description: Number of downloads/clones of the repository
+          example: 1200
+        forksCount:
+          type: integer
+          description: Number of forks the repository has
+          example: 45
+        icon:
+          type: string
+          description: URL to the template's icon
+        iconDark:
+          type: string
+          description: URL to the template's icon in dark mode
+        name:
+          type: string
+          description: Name of the template
+          example: langchain-agent
+        sha:
+          type: string
+          description: SHA of the variable
+        starCount:
+          type: integer
+          description: Number of stars the repository has
+          example: 150
+        topics:
+          type: array
+          description: Topic of the template
+          items:
+            type: string
+        url:
+          type: string
+          description: URL of the template
+          example: https://github.com/blaxel-ai/template-langchain-agent
+        variables:
+          type: array
+          description: Variables of the template
+          items:
+            $ref: '#/components/schemas/TemplateVariable'
+    TemplateVariable:
+      type: object
+      description: Blaxel template variable
+      properties:
+        description:
+          type: string
+          description: Description of the variable
+          example: OpenAI API key for the agent
+        integration:
+          type: string
+          description: Integration of the variable
+          example: openai
+        name:
+          type: string
+          description: Name of the variable
+          example: OPENAI_API_KEY
+        path:
+          type: string
+          description: Path of the variable
+          example: .env
+        secret:
+          type: boolean
+          description: Whether the variable is secret
+          example: true
+    TimeFields:
+      type: object
+      description: Time fields for Persistance
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    Trigger:
+      type: object
+      description: Trigger configuration
+      properties:
+        configuration:
+          $ref: '#/components/schemas/TriggerConfiguration'
+        enabled:
+          type: boolean
+          description: 'Enable or disable the trigger (default: true)'
+          example: true
+        id:
+          type: string
+          description: The id of the trigger
+          example: trigger-1
+        type:
+          type: string
+          description: The type of trigger, can be http or http-async
+          enum:
+          - http
+          - http-async
+          - cron
+          example: http
+    TriggerConfiguration:
+      type: object
+      description: Trigger configuration
+      properties:
+        authenticationType:
+          type: string
+          description: The authentication type of the trigger
+          example: blaxel
+        callbackSecret:
+          type: string
+          description: The callback secret for async triggers (auto-generated, encrypted)
+          readOnly: true
+        callbackUrl:
+          type: string
+          description: The callback URL for async triggers (optional)
+          example: https://myapp.com/webhook
+        path:
+          type: string
+          description: The path of the trigger
+          example: /invoke
+        retry:
+          type: integer
+          description: The retry of the trigger
+          example: 3
+        schedule:
+          type: string
+          description: The schedule of the trigger, cron expression * * * * *
+          example: 0 * * * *
+        tasks:
+          type: array
+          description: The tasks configuration of the cronjob
+          items:
+            $ref: '#/components/schemas/TriggerConfigurationTask'
+        timeout:
+          type: integer
+          description: The timeout in seconds for async triggers (max 900s, MK3 only)
+          example: 300
+    TriggerConfigurationTask:
+      type: object
+      description: The tasks configuration of the cronjob
+    Triggers:
+      type: array
+      description: Triggers to use your agent
+      items:
+        $ref: '#/components/schemas/Trigger'
+    Volume:
+      type: object
+      description: Persistent storage volume that can be attached to sandboxes for
+        durable file storage across sessions. Volumes survive sandbox deletion and
+        can be reattached to new sandboxes.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeSpec'
+        state:
+          $ref: '#/components/schemas/VolumeState'
+        status:
+          type: string
+          description: Volume status computed from events
+        terminatedAt:
+          type: string
+          description: Timestamp when the volume was marked for termination
+      required:
+      - metadata
+      - spec
+    VolumeAttachment:
+      type: object
+      description: Configuration for attaching a volume to a sandbox at a specific
+        filesystem path
+      properties:
+        mountPath:
+          type: string
+          description: Absolute filesystem path where the volume will be mounted inside
+            the sandbox
+          example: /mnt/data
+        name:
+          type: string
+          description: Name of the volume resource to attach (must exist in the same
+            workspace and region)
+          example: my-volume
+        readOnly:
+          type: boolean
+          description: If true, the volume is mounted read-only and cannot be modified
+            by the sandbox
+          example: false
+    VolumeAttachments:
+      type: array
+      items:
+        $ref: '#/components/schemas/VolumeAttachment'
+    VolumeSpec:
+      type: object
+      description: Immutable volume configuration set at creation time (size and region
+        cannot be changed after creation)
+      properties:
+        infrastructureId:
+          type: string
+          description: The internal infrastructure resource identifier for this volume
+          readOnly: true
+        region:
+          type: string
+          description: Deployment region for the volume (e.g., us-pdx-1, eu-lon-1).
+            Must match the region of sandboxes it attaches to.
+          example: us-pdx-1
+        size:
+          type: integer
+          description: Storage capacity in megabytes. Can be increased after creation
+            but not decreased.
+          example: 1024
+        template:
+          type: string
+          description: Volume template to initialize from, with optional revision
+            (e.g., "mytemplate:1" or "mytemplate:latest")
+          example: mytemplate:latest
+    VolumeState:
+      type: object
+      description: Current runtime state of the volume including attachment status
+      properties:
+        attachedTo:
+          type: string
+          description: Resource currently using this volume in format "type:name"
+            (e.g., "sandbox:my-sandbox"). Empty if not attached.
+          example: sandbox:my-sandbox
+      readOnly: true
+    VolumeTemplate:
+      type: object
+      description: Volume template for creating pre-configured volumes
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeTemplateSpec'
+        state:
+          $ref: '#/components/schemas/VolumeTemplateState'
+        versions:
+          type: array
+          description: List of versions for this template
+          items:
+            $ref: '#/components/schemas/VolumeTemplateVersion'
+      required:
+      - metadata
+      - spec
+    VolumeTemplateSpec:
+      type: object
+      description: Volume template specification
+      properties:
+        defaultSize:
+          type: integer
+          description: Default size of the volume in MB
+        description:
+          type: string
+          description: Description of the volume template
+    VolumeTemplateState:
+      type: object
+      description: Volume template state
+      properties:
+        lastVersionUploadedAt:
+          type: string
+          description: Timestamp of last version upload
+          readOnly: true
+        latestVersion:
+          type: string
+          description: Current/latest S3 version ID
+          readOnly: true
+        status:
+          type: string
+          description: Status of the volume template (created, ready, error)
+          enum:
+          - created
+          - ready
+          - error
+          readOnly: true
+        versionCount:
+          type: integer
+          description: Total number of versions for this template
+          readOnly: true
+    VolumeTemplateVersion:
+      type: object
+      description: Volume template version tracking individual versions of template
+        content
+      properties:
+        bucket:
+          type: string
+          description: S3 bucket name where this version is stored
+          readOnly: true
+        contentSize:
+          type: integer
+          description: Size of the template content in bytes
+          readOnly: true
+        name:
+          type: string
+          description: Name of the template version
+        region:
+          type: string
+          description: AWS region where this version is stored
+          readOnly: true
+        status:
+          type: string
+          description: Status of the version (CREATED, READY, FAILED)
+          enum:
+          - CREATED
+          - READY
+          - FAILED
+          readOnly: true
+        templateName:
+          type: string
+          description: Template name this version belongs to
+        versionId:
+          type: string
+          description: S3 version ID for this template version
+          readOnly: true
+        workspace:
+          type: string
+          description: Workspace name
+          readOnly: true
+    Workspace:
+      type: object
+      description: Tenant container that groups all Blaxel resources (agents, functions,
+        models, etc.) with shared team access control and billing.
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          accountId:
+            type: string
+            description: Workspace account id
+          displayName:
+            type: string
+            description: Workspace display name
+            example: My Workspace
+          id:
+            type: string
+            description: Autogenerated unique workspace id
+            readOnly: true
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Workspace name
+            example: my-workspace
+          region:
+            type: string
+            description: Workspace write region
+            example: us-west-2
+          runtime:
+            $ref: '#/components/schemas/WorkspaceRuntime'
+          status:
+            type: string
+            description: Workspace status (created, account_binded, account_configured,
+              workspace_configured, ready, error)
+            enum:
+            - created
+            - account_binded
+            - account_configured
+            - workspace_configured
+            - ready
+            - error
+            readOnly: true
+            example: ready
+          statusReason:
+            type: string
+            description: Reason for current status (only set for error status)
+            readOnly: true
+    WorkspaceRuntime:
+      type: object
+      description: Runtime configuration for the workspace infrastructure
+      properties:
+        generation:
+          type: string
+          description: Infrastructure generation version for the workspace (affects
+            available features and deployment behavior)
+          example: mk3
+    WorkspaceUser:
+      type: object
+      description: Workspace user
+      properties:
+        accepted:
+          type: boolean
+          description: Whether the user has accepted the workspace invitation
+        email:
+          type: string
+          description: Workspace user email
+        email_verified:
+          type: boolean
+          description: Whether the user's email has been verified
+        family_name:
+          type: string
+          description: Workspace user family name
+        given_name:
+          type: string
+          description: Workspace user given name
+        role:
+          type: string
+          description: Workspace user role
+        sub:
+          type: string
+          description: Workspace user identifier
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2
+info:
+  title: Blaxel Control Plane
+  version: 0.0.1
+openapi: 3.0.3
+paths:
+  /agents:
+    get:
+      description: Returns all AI agents deployed in the workspace. Each agent includes
+        its deployment status, runtime configuration, and global inference endpoint
+        URL.
+      operationId: ListAgents
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Agent'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list agents
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - agents:list
+      - ApiKeyAuth: []
+      summary: List all agents
+      tags:
+      - agents
+    post:
+      description: Creates a new AI agent deployment from your code. The agent will
+        be built and deployed as a serverless auto-scaling endpoint. Use the Blaxel
+        CLI 'bl deploy' for a simpler deployment experience.
+      operationId: CreateAgent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid agent configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create agents
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Agent with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - agents:create
+      - ApiKeyAuth: []
+      summary: Create agent
+      tags:
+      - agents
+  /agents/{agentName}:
+    delete:
+      description: Permanently deletes an agent and all its deployment history. The
+        agent's inference endpoint will immediately stop responding. This action cannot
+        be undone.
+      operationId: DeleteAgent
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this agent
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Agent does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - agents:delete
+      - ApiKeyAuth: []
+      summary: Delete agent
+      tags:
+      - agents
+    get:
+      description: Returns detailed information about an agent including its current
+        deployment status, configuration, events history, and inference endpoint URL.
+      operationId: GetAgent
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this agent
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Agent does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - agents:get
+      - ApiKeyAuth: []
+      summary: Get agent
+      tags:
+      - agents
+    parameters:
+    - description: Unique name identifier of the agent
+      in: path
+      name: agentName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates an agent's configuration and triggers a new deployment.
+        Changes to runtime settings, environment variables, or scaling parameters
+        will be applied on the next deployment.
+      operationId: UpdateAgent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid agent configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this agent
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Agent does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - agents:update
+      - ApiKeyAuth: []
+      summary: Update agent
+      tags:
+      - agents
+  /agents/{agentName}/revisions:
+    get:
+      operationId: ListAgentRevisions
+      parameters:
+      - description: Name of the agent
+        in: path
+        name: agentName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - agents:list
+      - ApiKeyAuth: []
+      summary: List all agent revisions
+      tags:
+      - agents
+  /configuration:
+    get:
+      description: Returns global platform configuration including available regions,
+        countries, continents, and private locations for deployment policies.
+      operationId: GetConfiguration
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+          description: Configuration of the control plane
+      security:
+      - OAuth2:
+        - configurations:list
+      - ApiKeyAuth: []
+      summary: Get platform configuration
+      tags:
+      - configurations
+  /customdomains:
+    get:
+      description: Returns all custom domains configured in the workspace. Custom
+        domains allow serving preview deployments under your own domain (e.g., preview.yourdomain.com).
+      operationId: ListCustomDomains
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CustomDomain'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:list
+      - ApiKeyAuth: []
+      summary: List custom domains
+      tags:
+      - customdomains
+    post:
+      description: Creates a new custom domain for preview deployments. After creation,
+        you must configure DNS records and verify domain ownership before it becomes
+        active.
+      operationId: CreateCustomDomain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:create
+      - ApiKeyAuth: []
+      summary: Create custom domain
+      tags:
+      - customdomains
+  /customdomains/{domainName}:
+    delete:
+      operationId: DeleteCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:delete
+      - ApiKeyAuth: []
+      summary: Delete custom domain
+      tags:
+      - customdomains
+    get:
+      operationId: GetCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:get
+      - ApiKeyAuth: []
+      summary: Get custom domain
+      tags:
+      - customdomains
+    put:
+      operationId: UpdateCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Update custom domain
+      tags:
+      - customdomains
+  /customdomains/{domainName}/verify:
+    post:
+      operationId: VerifyCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Verify custom domain
+      tags:
+      - customdomains
+  /functions:
+    get:
+      description: Returns all MCP server functions deployed in the workspace. Each
+        function includes its deployment status, transport protocol (websocket or
+        http-stream), and endpoint URL.
+      operationId: ListFunctions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Function'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list functions
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:list
+      - ApiKeyAuth: []
+      summary: List all MCP servers
+      tags:
+      - functions
+    post:
+      description: Creates a new MCP server function deployment. The function will
+        expose tools via the Model Context Protocol that can be used by AI agents.
+        Supports streamable HTTP transport.
+      operationId: CreateFunction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid function configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create functions
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Function with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:create
+      - ApiKeyAuth: []
+      summary: Create MCP server
+      tags:
+      - functions
+  /functions/{functionName}:
+    delete:
+      description: Permanently deletes an MCP server function and all its deployment
+        history. Any agents using this function's tools will no longer be able to
+        invoke them.
+      operationId: DeleteFunction
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this function
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:delete
+      - ApiKeyAuth: []
+      summary: Delete MCP server
+      tags:
+      - functions
+    get:
+      description: Returns detailed information about an MCP server function including
+        its deployment status, available tools, transport configuration, and endpoint
+        URL.
+      operationId: GetFunction
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this function
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:get
+      - ApiKeyAuth: []
+      summary: Get MCP server
+      tags:
+      - functions
+    parameters:
+    - description: Unique name identifier of the MCP server function
+      in: path
+      name: functionName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates an MCP server function's configuration and triggers a new
+        deployment. Changes to runtime settings, integrations, or transport protocol
+        will be applied on the next deployment.
+      operationId: UpdateFunction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid function configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this function
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:update
+      - ApiKeyAuth: []
+      summary: Update MCP server
+      tags:
+      - functions
+  /functions/{functionName}/revisions:
+    get:
+      description: Returns revisions for a function by name.
+      operationId: ListFunctionRevisions
+      parameters:
+      - description: Name of the function
+        in: path
+        name: functionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - functions:get
+      - ApiKeyAuth: []
+      summary: List function revisions
+      tags:
+      - functions
+  /images:
+    delete:
+      description: Cleans up unused container images in the workspace registry. Only
+        removes images that are not currently referenced by any active agent, function,
+        sandbox, or job deployment.
+      operationId: CleanupImages
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  deleted:
+                    description: Number of images deleted
+                    type: integer
+                  message:
+                    description: Result message
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Cleanup unused container images
+      tags:
+      - images
+    get:
+      description: Returns all container images stored in the workspace registry,
+        grouped by repository with their available tags. Images are created during
+        deployments of agents, functions, sandboxes, and jobs.
+      operationId: ListImages
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Image'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:list
+      - ApiKeyAuth: []
+      summary: List container images
+      tags:
+      - images
+  /images/{resourceType}/{imageName}:
+    delete:
+      description: Deletes a container image and all its tags from the workspace registry.
+        Will fail if the image is currently in use by an active deployment.
+      operationId: DeleteImage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "400":
+          description: image used
+        "404":
+          description: image not found
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Delete container image
+      tags:
+      - images
+    get:
+      description: Returns detailed information about a container image including
+        all available tags, creation dates, and size information.
+      operationId: GetImage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: Get container image
+      tags:
+      - images
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+  /images/{resourceType}/{imageName}/tags/{tagName}:
+    delete:
+      description: Deletes a specific tag from a container image. The underlying image
+        layers are kept if other tags reference them. Will fail if the tag is currently
+        in use.
+      operationId: DeleteImageTag
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "400":
+          description: tag is in use
+        "404":
+          description: image or tag not found
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Delete container image tag
+      tags:
+      - images
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    - description: Tag name to delete (e.g., latest, v1.0.0)
+      in: path
+      name: tagName
+      required: true
+      schema:
+        type: string
+  /integrations/{integrationName}:
+    get:
+      description: Returns metadata about an integration provider including available
+        endpoints, authentication methods, and supported models or features.
+      operationId: GetIntegration
+      parameters:
+      - description: Name of the integration
+        in: path
+        name: integrationName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+          description: successful operation
+      security:
+      - OAuth2:
+        - integrations:list
+      - ApiKeyAuth: []
+      summary: Get integration provider info
+      tags:
+      - integrations
+  /integrations/connections:
+    get:
+      description: Returns all configured integration connections in the workspace.
+        Each connection stores credentials and settings for an external service (LLM
+        provider, API, database).
+      operationId: ListIntegrationConnections
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/IntegrationConnection'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list integration connections
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - integrations:list
+      - ApiKeyAuth: []
+      summary: List integration connections
+      tags:
+      - integrations
+    post:
+      description: Creates a new integration connection with credentials for an external
+        service. The connection can then be used by models, functions, and other resources
+        to authenticate with the service.
+      operationId: CreateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid integration configuration or unsupported
+            integration type
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create integration
+            connections
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Integration connection with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - integrations:create
+      - ApiKeyAuth: []
+      summary: Create integration connection
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}:
+    delete:
+      description: Permanently deletes an integration connection. Any resources using
+        this connection will lose access to the external service.
+      operationId: DeleteIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this connection
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Integration connection does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Integration connection is in use by models or functions
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - integrations:delete
+      - ApiKeyAuth: []
+      summary: Delete integration connection
+      tags:
+      - integrations
+    get:
+      description: Returns detailed information about an integration connection including
+        its provider type, configuration (secrets are masked), and usage status.
+      operationId: GetIntegrationConnection
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this connection
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Integration connection does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - integrations:get
+      - ApiKeyAuth: []
+      summary: Get integration connection
+      tags:
+      - integrations
+    parameters:
+    - description: Unique name identifier of the integration connection
+      in: path
+      name: connectionName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates an integration connection's configuration or credentials.
+        Changes take effect immediately for all resources using this connection.
+      operationId: UpdateIntegrationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationConnection'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid integration configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this connection
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Integration connection does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - integrations:update
+      - ApiKeyAuth: []
+      summary: Update integration connection
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/endpointConfigurations:
+    get:
+      description: Returns a list of all endpoint configurations for a model.
+      operationId: GetIntegrationConnectionModelEndpointConfigurations
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - OAuth2:
+        - integrations:list
+      - ApiKeyAuth: []
+      summary: Get integration connection model endpoint configurations
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/models:
+    get:
+      description: Returns a list of all models for an integration connection.
+      operationId: ListIntegrationConnectionModels
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - OAuth2:
+        - integrations:list
+      - ApiKeyAuth: []
+      summary: List integration connection models
+      tags:
+      - integrations
+  /integrations/connections/{connectionName}/models/{modelId}:
+    get:
+      description: Returns a model for an integration connection by ID.
+      operationId: GetIntegrationConnectionModel
+      parameters:
+      - description: Name of the connection
+        in: path
+        name: connectionName
+        required: true
+        schema:
+          type: string
+      - description: Model ID
+        in: path
+        name: modelId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - OAuth2:
+        - integrations:get
+      - ApiKeyAuth: []
+      summary: Get integration connection model
+      tags:
+      - integrations
+  /jobs:
+    get:
+      description: Returns all batch job definitions in the workspace. Each job can
+        be triggered to run multiple parallel tasks with configurable concurrency
+        and retry settings.
+      operationId: ListJobs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Job'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List batch jobs
+      tags:
+      - jobs
+    post:
+      description: Creates a new batch job definition for parallel AI task processing.
+        Jobs can be triggered via API or scheduled, and support configurable parallelism,
+        timeouts, and retry logic.
+      operationId: CreateJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:create
+      - ApiKeyAuth: []
+      summary: Create batch job
+      tags:
+      - jobs
+  /jobs/{jobId}:
+    delete:
+      description: Permanently deletes a batch job definition and cancels any running
+        executions. Historical execution data will be retained for a limited time.
+      operationId: DeleteJob
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:delete
+      - ApiKeyAuth: []
+      summary: Delete batch job
+      tags:
+      - jobs
+    get:
+      description: Returns detailed information about a batch job including its runtime
+        configuration, execution history, and deployment status.
+      operationId: GetJob
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: Get batch job
+      tags:
+      - jobs
+    parameters:
+    - description: Unique name identifier of the batch job
+      in: path
+      name: jobId
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a batch job's configuration. Changes affect new executions;
+        running executions continue with their original configuration.
+      operationId: UpdateJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:update
+      - ApiKeyAuth: []
+      summary: Update batch job
+      tags:
+      - jobs
+  /jobs/{jobId}/executions:
+    get:
+      description: Returns paginated list of executions for a batch job, sorted by
+        creation time. Each execution contains status, task counts, and timing information.
+      operationId: ListJobExecutions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: Page offset
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/JobExecution'
+                type: array
+          description: successful operation
+        "400":
+          description: bad request
+        "500":
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List job executions
+      tags:
+      - jobs
+    post:
+      description: Triggers a new execution of the batch job. Each execution runs
+        multiple tasks in parallel according to the job's configured concurrency.
+        Tasks can be parameterized via the request body.
+      operationId: CreateJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobExecutionRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateJobExecutionResponse'
+          description: successful operation
+        "400":
+          description: bad request
+        "500":
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:create
+      - ApiKeyAuth: []
+      summary: Create job execution
+      tags:
+      - jobs
+  /jobs/{jobId}/executions/{executionId}:
+    delete:
+      description: Cancels a running job execution. Tasks already in progress will
+        complete, but no new tasks will be started. The execution status changes to
+        'cancelling' then 'cancelled'.
+      operationId: DeleteJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        "400":
+          description: bad request
+        "404":
+          description: execution not found
+        "500":
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:delete
+      - ApiKeyAuth: []
+      summary: Cancel job execution
+      tags:
+      - jobs
+    get:
+      description: Returns detailed information about a specific job execution including
+        status, task statistics (success/failure/running counts), and timing information.
+      operationId: GetJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        "400":
+          description: bad request
+        "404":
+          description: execution not found
+        "500":
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: Get job execution
+      tags:
+      - jobs
+  /jobs/{jobId}/revisions:
+    get:
+      description: Returns revisions for a job by name.
+      operationId: ListJobRevisions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List job revisions
+      tags:
+      - jobs
+  /locations:
+    get:
+      description: Returns all deployment regions with their current availability
+        status and supported hardware flavors. Use this to discover where resources
+        can be deployed.
+      operationId: ListLocations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/LocationResponse'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - locations:list
+      - ApiKeyAuth: []
+      summary: List deployment regions
+      tags:
+      - locations
+  /mcp/hub:
+    get:
+      description: Returns all pre-built MCP server definitions available in the Blaxel
+        Hub. These can be deployed directly to your workspace with pre-configured
+        tools and integrations.
+      operationId: ListMCPHubDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/MCPDefinition'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - mcphub:list
+      - ApiKeyAuth: []
+      summary: List MCP Hub servers
+      tags:
+      - mcphub
+  /models:
+    get:
+      description: Returns all model gateway endpoints configured in the workspace.
+        Each model represents a proxy to an external LLM provider (OpenAI, Anthropic,
+        etc.) with unified access control.
+      operationId: ListModels
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Model'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list models
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:list
+      - ApiKeyAuth: []
+      summary: List model endpoints
+      tags:
+      - models
+    post:
+      description: Creates a new model gateway endpoint that proxies requests to an
+        external LLM provider. Requires an integration connection with valid API credentials
+        for the target provider.
+      operationId: CreateModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid model configuration or integration connection
+            not found
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create models
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Model with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:create
+      - ApiKeyAuth: []
+      summary: Create model endpoint
+      tags:
+      - models
+  /models/{modelName}:
+    delete:
+      description: Permanently deletes a model gateway endpoint. Any agents or applications
+        using this endpoint will need to be updated to use a different model.
+      operationId: DeleteModel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this model
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:delete
+      - ApiKeyAuth: []
+      summary: Delete model endpoint
+      tags:
+      - models
+    get:
+      description: Returns detailed information about a model gateway endpoint including
+        its provider configuration, integration connection, and usage status.
+      operationId: GetModel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this model
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:get
+      - ApiKeyAuth: []
+      summary: Get model endpoint
+      tags:
+      - models
+    parameters:
+    - description: Unique name identifier of the model endpoint
+      in: path
+      name: modelName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a model gateway endpoint's configuration. Changes to provider
+        settings or integration connection take effect immediately.
+      operationId: UpdateModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid model configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this model
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:update
+      - ApiKeyAuth: []
+      summary: Update model endpoint
+      tags:
+      - models
+  /models/{modelName}/revisions:
+    get:
+      description: Returns revisions for a model by name.
+      operationId: ListModelRevisions
+      parameters:
+      - description: Name of the model
+        in: path
+        name: modelName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - models:list
+      - ApiKeyAuth: []
+      summary: List model revisions
+      tags:
+      - models
+  /policies:
+    get:
+      description: Returns all governance policies in the workspace. Policies control
+        deployment locations, hardware flavors, and token limits for agents, functions,
+        and models.
+      operationId: ListPolicies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Policy'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:list
+      - ApiKeyAuth: []
+      summary: List governance policies
+      tags:
+      - policies
+    post:
+      description: Creates a new governance policy to control where and how resources
+        are deployed. Policies can restrict deployment to specific regions, countries,
+        or continents for compliance.
+      operationId: CreatePolicy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:create
+      - ApiKeyAuth: []
+      summary: Create governance policy
+      tags:
+      - policies
+  /policies/{policyName}:
+    delete:
+      description: Permanently deletes a governance policy. Resources using this policy
+        will need to be updated to use a different policy.
+      operationId: DeletePolicy
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:delete
+      - ApiKeyAuth: []
+      summary: Delete governance policy
+      tags:
+      - policies
+    get:
+      description: Returns detailed information about a governance policy including
+        its type (location, flavor, or maxToken), restrictions, and which resource
+        types it applies to.
+      operationId: GetPolicy
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:get
+      - ApiKeyAuth: []
+      summary: Get governance policy
+      tags:
+      - policies
+    parameters:
+    - description: Unique name identifier of the policy
+      in: path
+      name: policyName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a governance policy's restrictions. Changes take effect
+        on the next deployment of resources using this policy.
+      operationId: UpdatePolicy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:update
+      - ApiKeyAuth: []
+      summary: Update governance policy
+      tags:
+      - policies
+  /profile/invitations:
+    get:
+      description: Returns a list of all pending invitations in the workspace.
+      operationId: ListAllPendingInvitations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PendingInvitationRender'
+                type: array
+          description: successful operation
+        "404":
+          description: no pending invitations
+      security:
+      - OAuth2:
+        - invitations:list
+      - ApiKeyAuth: []
+      summary: List pending invitations
+      tags:
+      - invitations
+  /publicIps:
+    get:
+      description: Returns a list of all public ips used in Blaxel..
+      operationId: ListPublicIps
+      parameters:
+      - description: Filter by region name (only returns mk3 region data)
+        in: query
+        name: region
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicIps'
+          description: successful operation
+      security:
+      - OAuth2:
+        - admin
+      - ApiKeyAuth: []
+      summary: List public ips
+      tags:
+      - publicIps:list
+  /sandbox/hub:
+    get:
+      description: Returns all pre-built sandbox templates available in the Blaxel
+        Hub. These include popular development environments with pre-installed tools
+        and frameworks.
+      operationId: ListSandboxHubDefinitions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SandboxDefinition'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxhub:list
+      - ApiKeyAuth: []
+      summary: List Sandbox Hub templates
+      tags:
+      - sandboxhub
+  /sandboxes:
+    get:
+      description: Returns all sandboxes in the workspace. Each sandbox includes its
+        configuration, status, and endpoint URL.
+      operationId: ListSandboxes
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Sandbox'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list sandboxes
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List sandboxes
+      tags:
+      - compute
+    post:
+      description: Creates a new sandbox VM for secure AI code execution. Sandboxes
+        automatically scale to zero when idle and resume instantly, preserving memory
+        state including running processes and filesystem.
+      operationId: CreateSandbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Bad request - Invalid sandbox configuration (e.g., invalid
+            region, image not found)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Forbidden - Insufficient permissions to create sandboxes
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Conflict - Sandbox with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create sandbox
+      tags:
+      - compute
+      x-amazon-apigateway-integration:
+        ref: '#/components/x-amazon-apigateway-integrations/sandboxcreation'
+  /sandboxes/{sandboxName}:
+    delete:
+      description: Permanently deletes a sandbox and all its data. If no volumes are
+        attached, this guarantees zero data retention (ZDR). This action cannot be
+        undone.
+      operationId: DeleteSandbox
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this sandbox
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete sandbox
+      tags:
+      - compute
+    get:
+      description: Returns detailed information about a sandbox including its configuration,
+        attached volumes, lifecycle policies, and API endpoint URL.
+      operationId: GetSandbox
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this sandbox
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get sandbox
+      tags:
+      - compute
+    parameters:
+    - description: Unique name identifier of the sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a sandbox's configuration. Note that certain changes (like
+        image or memory) may reset the sandbox state. Use lifecycle policies to control
+        automatic cleanup.
+      operationId: UpdateSandbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid sandbox configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this sandbox
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update sandbox
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews:
+    get:
+      description: Returns a list of Sandbox Previews in the workspace.
+      operationId: ListSandboxPreviews
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Preview'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandboxes
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Create a preview
+      operationId: CreateSandboxPreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}:
+    delete:
+      description: Deletes a Sandbox Preview by name.
+      operationId: DeleteSandboxPreview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete Sandbox Preview
+      tags:
+      - compute
+    get:
+      description: Returns a Sandbox Preview by name.
+      operationId: GetSandboxPreview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Preview
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Name of the Preview
+      in: path
+      name: previewName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a Sandbox Preview by name.
+      operationId: UpdateSandboxPreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens:
+    get:
+      description: Gets tokens for a Sandbox Preview.
+      operationId: ListSandboxPreviewTokens
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PreviewToken'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get tokens for Sandbox Preview
+      tags:
+      - compute
+    post:
+      description: Creates a token for a Sandbox Preview.
+      operationId: CreateSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewToken'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewToken'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create token for Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens/{tokenName}:
+    delete:
+      description: Deletes a token for a Sandbox Preview by name.
+      operationId: DeleteSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Token
+        in: path
+        name: tokenName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    description: Success message
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete token for Sandbox Preview
+      tags:
+      - compute
+  /service_accounts:
+    get:
+      description: Returns all service accounts in the workspace. Service accounts
+        are machine identities for external systems to authenticate with Blaxel via
+        OAuth or API keys.
+      operationId: GetWorkspaceServiceAccounts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    client_id:
+                      description: Service account client ID
+                      type: string
+                    created_at:
+                      description: Creation timestamp
+                      type: string
+                    description:
+                      description: Service account description
+                      type: string
+                    name:
+                      description: Service account name
+                      type: string
+                    updated_at:
+                      description: Last update timestamp
+                      type: string
+                  type: object
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:get
+      - ApiKeyAuth: []
+      summary: List service accounts
+      tags:
+      - service_accounts
+    post:
+      description: Creates a new service account for machine-to-machine authentication.
+        Returns client ID and secret (secret is only shown once at creation). Use
+        these credentials for OAuth client_credentials flow.
+      operationId: CreateWorkspaceServiceAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                description:
+                  description: Service account description
+                  type: string
+                name:
+                  description: Service account name
+                  type: string
+              required:
+              - name
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  client_id:
+                    description: Service account client ID
+                    type: string
+                  client_secret:
+                    description: Service account client secret (only returned on creation)
+                    type: string
+                  created_at:
+                    description: Creation timestamp
+                    type: string
+                  description:
+                    description: Service account description
+                    type: string
+                  name:
+                    description: Service account name
+                    type: string
+                  updated_at:
+                    description: Last update timestamp
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Create service account
+      tags:
+      - service_accounts
+  /service_accounts/{clientId}:
+    delete:
+      description: Permanently deletes a service account and invalidates all its credentials.
+        Any systems using this service account will lose access immediately.
+      operationId: DeleteWorkspaceServiceAccount
+      parameters:
+      - description: Client ID
+        in: path
+        name: clientId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  client_id:
+                    description: Service account client ID
+                    type: string
+                  created_at:
+                    description: Creation timestamp
+                    type: string
+                  description:
+                    description: Service account description
+                    type: string
+                  name:
+                    description: Service account name
+                    type: string
+                  updated_at:
+                    description: Last update timestamp
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Delete service account
+      tags:
+      - service_accounts
+    put:
+      description: Updates a service account's name or description. Credentials (client
+        ID/secret) cannot be changed.
+      operationId: UpdateWorkspaceServiceAccount
+      parameters:
+      - description: Client ID
+        in: path
+        name: clientId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                description:
+                  description: Service account description
+                  type: string
+                name:
+                  description: Service account name
+                  type: string
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  client_id:
+                    description: Service account client ID
+                    type: string
+                  created_at:
+                    description: Creation timestamp
+                    type: string
+                  description:
+                    description: Service account description
+                    type: string
+                  name:
+                    description: Service account name
+                    type: string
+                  updated_at:
+                    description: Last update timestamp
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Update service account
+      tags:
+      - service_accounts
+  /service_accounts/{clientId}/api_keys:
+    get:
+      description: Returns all long-lived API keys created for a service account.
+        API keys provide an alternative to OAuth for simpler authentication scenarios.
+      operationId: ListApiKeysForServiceAccount
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ApiKey'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - apiKey:list
+      - ApiKeyAuth: []
+      summary: List service account API keys
+      tags:
+      - service_accounts
+    parameters:
+    - description: Service account client ID
+      in: path
+      name: clientId
+      required: true
+      schema:
+        type: string
+    post:
+      description: Creates a new long-lived API key for a service account. The full
+        key value is only returned once at creation. API keys can have optional expiration
+        dates.
+      operationId: CreateApiKeyForServiceAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                expires_in:
+                  description: Expiration period for the API key. Supports formats
+                    like '30d' (30 days), '24h' (24 hours), '1w' (1 week). If not
+                    set, the API key never expires.
+                  type: string
+                name:
+                  description: Name for the API key
+                  type: string
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+          description: successful operation
+      security:
+      - OAuth2:
+        - apiKey:write
+      - ApiKeyAuth: []
+      summary: Create service account API key
+      tags:
+      - service_accounts
+  /service_accounts/{clientId}/api_keys/{apiKeyId}:
+    delete:
+      description: Revokes an API key for a service account. The key becomes invalid
+        immediately and any requests using it will fail authentication.
+      operationId: DeleteApiKeyForServiceAccount
+      responses:
+        "200":
+          description: successful operation
+      security:
+      - OAuth2:
+        - apiKey:write
+      - ApiKeyAuth: []
+      summary: Revoke service account API key
+      tags:
+      - service_accounts
+    parameters:
+    - description: Service account client ID
+      in: path
+      name: clientId
+      required: true
+      schema:
+        type: string
+    - description: API key identifier to revoke
+      in: path
+      name: apiKeyId
+      required: true
+      schema:
+        type: string
+  /templates:
+    get:
+      description: Returns all deployment templates available for creating agents,
+        functions, and other resources with pre-configured settings and code.
+      operationId: ListTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Template'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - templates:list
+      - ApiKeyAuth: []
+      summary: List deployment templates
+      tags:
+      - templates
+  /templates/{templateName}:
+    get:
+      description: Returns detailed information about a deployment template including
+        its configuration, source code reference, and available parameters.
+      operationId: GetTemplate
+      parameters:
+      - description: Name of the template
+        in: path
+        name: templateName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: successful operation
+      security:
+      - OAuth2:
+        - templates:get
+      - ApiKeyAuth: []
+      summary: Get template
+  /users:
+    get:
+      description: Returns all team members in the workspace including their roles
+        (admin or member) and invitation status.
+      operationId: ListWorkspaceUsers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WorkspaceUser'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:list
+      - ApiKeyAuth: []
+      summary: List workspace team members
+      tags:
+      - workspaces
+    post:
+      description: Invites a new team member to the workspace by email. The invitee
+        will receive an email to accept the invitation before gaining access to workspace
+        resources.
+      operationId: InviteWorkspaceUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  format: email
+                  type: string
+              type: object
+        description: Email of the user to invite
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingInvitation'
+          description: successful operation
+        "400":
+          description: invalid email format
+        "404":
+          description: workspace not found
+      security:
+      - OAuth2:
+        - workspaces:invite
+      - ApiKeyAuth: []
+      summary: Invite user to workspace
+      tags:
+      - workspaces
+  /users/{subOrEmail}:
+    delete:
+      description: Removes a user from the workspace (or revokes an invitation if
+        the user has not accepted the invitation yet).
+      operationId: RemoveWorkspaceUser
+      parameters:
+      - description: Sub or email of the user
+        in: path
+        name: subOrEmail
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User successfully removed or invitation revoked
+        "404":
+          description: Workspace or user not found
+      security:
+      - OAuth2:
+        - workspaces:remove
+      - ApiKeyAuth: []
+      summary: Remove user from workspace or revoke invitation
+      tags:
+      - workspaces
+    put:
+      description: Updates the role of a user in the workspace.
+      operationId: UpdateWorkspaceUserRole
+      parameters:
+      - description: Sub or email of the user
+        in: path
+        name: subOrEmail
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                role:
+                  description: The new role to assign to the user
+                  type: string
+              required:
+              - role
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceUser'
+          description: User role updated successfully
+        "400":
+          description: Invalid role provided
+        "404":
+          description: Workspace or user not found
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Update user role in workspace
+      tags:
+      - workspaces
+  /volume_templates:
+    get:
+      description: Returns all volume templates in the workspace. Volume templates
+        contain pre-configured filesystem snapshots that can be used to initialize
+        new volumes.
+      operationId: ListVolumeTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VolumeTemplate'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:list
+      - ApiKeyAuth: []
+      summary: List volume templates
+      tags:
+      - volumeTemplates
+    post:
+      description: Creates a new volume template for initializing volumes with pre-configured
+        filesystem contents. Optionally returns a presigned URL for uploading the
+        template archive.
+      operationId: CreateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (if upload=true)
+              schema:
+                type: string
+      security:
+      - OAuth2:
+        - volumeTemplates:create
+      - ApiKeyAuth: []
+      summary: Create volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}:
+    delete:
+      description: Deletes a volume template by name.
+      operationId: DeleteVolumeTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:delete
+      - ApiKeyAuth: []
+      summary: Delete volume template
+      tags:
+      - volumeTemplates
+    get:
+      description: Returns a volume template by name.
+      operationId: GetVolumeTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:get
+      - ApiKeyAuth: []
+      summary: Get volume template
+      tags:
+      - volumeTemplates
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Creates or updates a volume template.
+      operationId: UpdateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (only when
+                upload=true)
+              schema:
+                type: string
+      security:
+      - OAuth2:
+        - volumeTemplates:upsert
+      - ApiKeyAuth: []
+      summary: Create or update volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}/versions/{versionName}:
+    delete:
+      description: Deletes a specific version of a volume template.
+      operationId: DeleteVolumeTemplateVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  template:
+                    $ref: '#/components/schemas/VolumeTemplate'
+                type: object
+          description: Version deleted successfully
+        "400":
+          description: Cannot delete the only version
+        "404":
+          description: Version not found
+      security:
+      - OAuth2:
+        - volumeTemplates:delete
+      - ApiKeyAuth: []
+      summary: Delete volume template version
+      tags:
+      - volumeTemplates
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    - description: Name of the version to delete
+      in: path
+      name: versionName
+      required: true
+      schema:
+        type: string
+  /volumes:
+    get:
+      description: Returns all persistent storage volumes in the workspace. Volumes
+        can be attached to sandboxes for durable file storage that persists across
+        sessions and sandbox deletions.
+      operationId: ListVolumes
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Volume'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list volumes
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:list
+      - ApiKeyAuth: []
+      summary: List persistent volumes
+      tags:
+      - volumes
+    post:
+      description: Creates a new persistent storage volume that can be attached to
+        sandboxes. Volumes must be created in a specific region and can only attach
+        to sandboxes in the same region.
+      operationId: CreateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid volume configuration (e.g., invalid region)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create volumes
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Volume with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:create
+      - ApiKeyAuth: []
+      summary: Create persistent volume
+      tags:
+      - volumes
+  /volumes/{volumeName}:
+    delete:
+      description: Permanently deletes a volume and all its data. The volume must
+        not be attached to any sandbox. This action cannot be undone.
+      operationId: DeleteVolume
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this volume
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Volume does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Volume is currently attached to a sandbox
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:delete
+      - ApiKeyAuth: []
+      summary: Delete persistent volume
+      tags:
+      - volumes
+    get:
+      description: Returns detailed information about a volume including its size,
+        region, attachment status, and any events history.
+      operationId: GetVolume
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this volume
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Volume does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:get
+      - ApiKeyAuth: []
+      summary: Get persistent volume
+      tags:
+      - volumes
+    parameters:
+    - description: Name of the volume
+      in: path
+      name: volumeName
+      required: true
+      schema:
+        type: string
+  /workspaces:
+    get:
+      description: Returns all workspaces the authenticated user has access to. Each
+        workspace is a separate tenant with its own resources, team members, and billing.
+      operationId: ListWorkspaces
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Workspace'
+                type: array
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:list
+      - ApiKeyAuth: []
+      summary: List accessible workspaces
+      tags:
+      - workspaces
+    post:
+      description: Creates a new workspace tenant. The authenticated user becomes
+        the workspace admin. Requires a linked billing account.
+      operationId: CreateWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid workspace configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions or no billing account
+            linked
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Workspace with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:create
+      - ApiKeyAuth: []
+      summary: Create workspace tenant
+      tags:
+      - workspaces
+  /workspaces/{workspaceName}:
+    delete:
+      description: Permanently deletes a workspace and ALL its resources (agents,
+        functions, sandboxes, volumes, etc.). This action cannot be undone. Only workspace
+        admins can delete a workspace.
+      operationId: DeleteWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Only workspace admins can delete workspaces
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:delete
+      - ApiKeyAuth: []
+      summary: Delete workspace tenant
+      tags:
+      - workspaces
+    get:
+      description: Returns detailed information about a workspace including its display
+        name, account ID, status, and runtime configuration.
+      operationId: GetWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have access to this workspace
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:get
+      - ApiKeyAuth: []
+      summary: Get workspace details
+      tags:
+      - workspaces
+    put:
+      description: Updates a workspace's settings such as display name and labels.
+        The workspace name cannot be changed after creation.
+      operationId: UpdateWorkspace
+      parameters:
+      - description: name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid workspace configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this workspace
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Update workspace
+      tags:
+      - workspaces
+  /workspaces/{workspaceName}/decline:
+    post:
+      description: Declines an invitation to a workspace.
+      operationId: DeclineWorkspaceInvitation
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingInvitation'
+          description: Invitation successfully declined
+      security:
+      - OAuth2:
+        - workspaces:decline
+      - ApiKeyAuth: []
+      summary: Decline invitation to workspace
+      tags:
+      - workspaces
+  /workspaces/{workspaceName}/join:
+    post:
+      description: Accepts an invitation to a workspace.
+      operationId: AcceptWorkspaceInvitation
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingInvitationAccept'
+          description: Invitation successfully accepted
+        "404":
+          description: Workspace or invitation not found
+      security:
+      - OAuth2:
+        - workspaces:accept
+      - ApiKeyAuth: []
+      summary: Accept invitation to workspace
+      tags:
+      - workspaces
+  /workspaces/{workspaceName}/leave:
+    delete:
+      description: Leaves a workspace.
+      operationId: LeaveWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: Workspace successfully left
+        "404":
+          description: Workspace not found
+      security:
+      - OAuth2:
+        - workspaces:leave
+      - ApiKeyAuth: []
+      summary: Leave workspace
+      tags:
+      - workspaces
+  /workspaces/availability:
+    post:
+      description: Check if a workspace is available.
+      operationId: CheckWorkspaceAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+              required:
+              - name
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: boolean
+          description: successful operation
+      summary: Check workspace availability
+      tags:
+      - workspaces
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
