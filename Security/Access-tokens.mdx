@@ -47,7 +47,7 @@ curl 'https://api.blaxel.ai/v0/models' \
 
 #### Use API keys via proxy
 
-If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
+If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
 
 The solution is to add a proxy between your client application and the Blaxel API. The proxy serves as a secure intermediary layer, which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
 
@@ -79,7 +79,7 @@ async function handleRequest(request: NextRequest, { params }: { params: { slug:
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
   };
 
-  const response = await fetch(`https://${host}.${region}.bl.run/${path}`, fetchOptions);
+  const response = await fetch(`https://api.blaxel.ai/v0/${path}`, fetchOptions);
 
   const responseHeaders = new Headers(response.headers);
   responseHeaders.delete('content-encoding');
