@@ -220,9 +220,10 @@
             ]
           },
           {
-            "group": "Troubleshooting",
+            "group": "Technical support",
             "pages": [
-              "troubleshooting"
+              "troubleshooting",
+              "support"
             ]
           }
         ]
