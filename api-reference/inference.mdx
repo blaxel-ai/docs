@@ -8,9 +8,21 @@ description: 'Run inferences on your Blaxel deployments.'
 
 Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Agentics Network, the [infrastructure powerhouse](../Infrastructure/Global-Inference-Network) that hosts it.
 
-The inference API URL depends on the type of workload ([agent](../Agents/Overview), [model API](../Models/Overview), [MCP server](../Functions/Overview)) you are trying to request:
+The inference API URL depends on the type of workload ([sandbox](../Sandboxes/Overview), [agent](../Agents/Overview), [model API](../Models/Overview), [MCP server](../Functions/Overview)) you are interacting with:
 
 <CodeGroup>
+
+```http Connect to a sandbox's MCP server
+
+https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/mcp
+
+```
+
+```http Connect to a sandbox's REST API base URL
+
+https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/
+
+```
 
 ```http Query agent
 
@@ -41,6 +53,23 @@ POST https://api.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
 Showing the full request, with the input payload:
 
 <Tabs>
+<Tab title="Query sandbox">
+
+```http
+curl -X GET "https://sbx-{your-sandbox}-{your-workspace}.{region}.bl.run/filesystem/tree/etc" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>"
+```
+
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X GET "https://sbx-{your-sandbox}-$(bl workspace --current).{region}.bl.run/filesystem/tree/etc" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)"
+```
+
+</Tab>
 <Tab title="Query agent">
 
 ```http
