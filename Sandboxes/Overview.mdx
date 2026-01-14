@@ -12,7 +12,7 @@ Sandboxes are instant-launching virtual machines serving as **sandboxed compute 
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](./MCP) that makes these capabilities available as tool calls.
 
-Blaxel sandboxes have two states: `ACTIVE` (processing requests) and `STANDBY` (idle). Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity —** such that you can leave sandboxes idle without paying for compute. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
+Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity**. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 <img
 className="block dark:hidden"
