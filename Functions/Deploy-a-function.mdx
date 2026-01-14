@@ -54,10 +54,6 @@ bl serve
 
 You can then create an MCP Client to communicate with your server. When testing locally, communication happens over stdio, but when deployed on Blaxel, your server will use streamable HTTP instead.
 
-<Warning>
-Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
-</Warning>
-
 Add the flag `--hotreload`  to get live changes.
 
 ```bash
