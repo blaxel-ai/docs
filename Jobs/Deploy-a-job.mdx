@@ -105,7 +105,7 @@ Start batch job execution by [calling the inference API for your deployed batch 
 Here is an example using `curl`:
 
 ```http Execute a job
-curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
+curl -X POST "https://api.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
   -H "Content-Type: application/json" \
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \
@@ -121,7 +121,7 @@ async function execJob() {
   console.log("Executing job");
   const WORKSPACE = "YOUR_WORKSPACE_NAME"; // ex : my-workspace (not the display name)
   const JOB_NAME = "YOUR_JOB_NAME"; // ex : my-job (not the display name)
-  const response = await fetch(`https://run.blaxel.ai/${WORKSPACE}/jobs/${JOB_NAME}/executions`, {
+  const response = await fetch(`https://api.blaxel.ai/${WORKSPACE}/jobs/${JOB_NAME}/executions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ async def exec_job():
         async with aiohttp.ClientSession() as session:
             print("Executing job")
             resp = await session.post(
-                f"https://run.blaxel.ai/{workspace}/jobs/{job_name}/executions",
+                f"https://api.blaxel.ai/{workspace}/jobs/{job_name}/executions",
                 json={
                     "tasks": [
                         { "name": "John" },
