@@ -28,10 +28,6 @@ Blaxel SDK allows to **retrieve the tools from an MCP server in your code**. Whe
 
 Blaxel uses **streamable HTTP** as its MCP transport mechanism. MCP servers deployed on Blaxel are only hosted server-side and cannot be installed locally.
 
-<Warning>
-Blaxel has replaced its WebSockets implementation for MCP transport with streamable HTTP (as of November 2025). Blaxel will continue to temporarily support WebSockets for a transition period, but users should update their deployments to the streamable HTTP transport as soon as possible to avoid errors.
-</Warning>
-
 <Info>For developers interested in the technical details, our implementation is available open-source through [Blaxel's Supergateway](https://github.com/blaxel-ai/supergateway) and [Blaxel's SDK](https://github.com/blaxel-ai/toolkit/blob/main/sdk-ts/src/functions/mcp.ts).</Info>
 
 There are two routes you can take when hosting MCPs on Blaxel:
