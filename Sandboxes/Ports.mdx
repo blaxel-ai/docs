@@ -61,10 +61,10 @@ sandbox = await SandboxInstance.create({
 This option requires your request to be [authenticated](../Security/Access-tokens). You can access your sandbox on a specific port through the sandbox API using the following URL format:
 
 ```
-https://run.blaxel.ai/{workspace_id}/sandboxes/{sandbox_id}/port/{port_number}
+https://sbx-{resource_name}-{workspace_id}.{region_id}.bl.run/port/{port_number}
 ```
 
-For example to connect to port 3000 on my-sandbox: `https://run.blaxel.ai/my-workspace/sandboxes/my-sandbox/port/3000`
+For example to connect to port 3000 on `my-sandbox` in workspace `abc123`: `https://sbx-my-sandbox-abc123.us-pdx-1.bl.run/port/3000`
 
 ### Via a preview URL
 
