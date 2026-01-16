@@ -479,6 +479,14 @@ components:
           description: Minimum instances to keep warm. Set to 1+ to eliminate cold
             starts, 0 for scale-to-zero.
           example: 0
+        transport:
+          type: string
+          description: Transport compatibility for the MCP, can be "websocket" or
+            "http-stream"
+          enum:
+          - websocket
+          - http-stream
+          example: http-stream
     FunctionSpec:
       type: object
       description: Configuration for an MCP server function including runtime settings,
@@ -497,14 +505,6 @@ components:
           $ref: '#/components/schemas/RevisionConfiguration'
         runtime:
           $ref: '#/components/schemas/FunctionRuntime'
-        transport:
-          type: string
-          description: Transport compatibility for the MCP, can be "websocket" or
-            "http-stream"
-          enum:
-          - websocket
-          - http-stream
-          example: http-stream
         triggers:
           $ref: '#/components/schemas/Triggers'
     Image:
@@ -4436,28 +4436,6 @@ paths:
       summary: Update governance policy
       tags:
       - policies
-  /profile/invitations:
-    get:
-      description: Returns a list of all pending invitations in the workspace.
-      operationId: ListAllPendingInvitations
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/PendingInvitationRender'
-                type: array
-          description: successful operation
-        "404":
-          description: no pending invitations
-      security:
-      - OAuth2:
-        - invitations:list
-      - ApiKeyAuth: []
-      summary: List pending invitations
-      tags:
-      - invitations
   /publicIps:
     get:
       description: Returns a list of all public ips used in Blaxel..
@@ -4549,6 +4527,15 @@ paths:
         automatically scale to zero when idle and resume instantly, preserving memory
         state including running processes and filesystem.
       operationId: CreateSandbox
+      parameters:
+      - description: If true, return existing sandbox instead of 409 error when sandbox
+          exists and is not in FAILED/TERMINATED/TERMINATING state
+        in: query
+        name: createIfNotExist
+        required: false
+        schema:
+          default: false
+          type: boolean
       requestBody:
         content:
           application/json:
@@ -4601,7 +4588,7 @@ paths:
       tags:
       - compute
       x-amazon-apigateway-integration:
-        ref: '#/components/x-amazon-apigateway-integrations/sandboxcreation'
+        ref: '#/components/x-amazon-apigateway-integrations/albapi'
   /sandboxes/{sandboxName}:
     delete:
       description: Permanently deletes a sandbox and all its data. If no volumes are
@@ -5807,6 +5794,28 @@ paths:
       required: true
       schema:
         type: string
+    put:
+      description: Updates a volume.
+      operationId: UpdateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+      security:
+      - BearerAuth:
+        - volumes:update
+      summary: Update volume
+      tags:
+      - volumes
   /workspaces:
     get:
       description: Returns all workspaces the authenticated user has access to. Each
