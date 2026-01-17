@@ -2096,9 +2096,11 @@ components:
         status:
           type: string
           description: Volume status computed from events
+          readOnly: true
         terminatedAt:
           type: string
           description: Timestamp when the volume was marked for termination
+          readOnly: true
       required:
       - metadata
       - spec
@@ -5811,8 +5813,9 @@ paths:
                 $ref: '#/components/schemas/Volume'
           description: successful operation
       security:
-      - BearerAuth:
+      - OAuth2:
         - volumes:update
+      - ApiKeyAuth: []
       summary: Update volume
       tags:
       - volumes
