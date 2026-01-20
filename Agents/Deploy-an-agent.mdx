@@ -96,13 +96,9 @@ Deploying an agent will create the associated agent deployment. At this time:
 - it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
 - its status can be monitored either on the console or using the CLI/APIs
 
-### Choosing the infrastructure generation
-
-Blaxel offers two [infrastructure generations](../Infrastructure/Gens). When deploying a workload, you can select between *Mk 2 infrastructure*—which provides stable, globally distributed container-based workloads—and *Mk 3*, which delivers ultra-fast cold starts. Choose the generation that best fits your specific requirements.
-
 ### Maximum runtime
 
-- Deployed agents have a runtime limit after which executions time out. This timeout duration is determined by your chosen [infrastructure generation](../Infrastructure/Gens). For Mk 2 generation, the **maximum timeout is 10 minutes**.
+- Deployed agents have a runtime limit after which executions time out. The maximum timeout is 15 minutes.
 
 ### Managing revisions
 

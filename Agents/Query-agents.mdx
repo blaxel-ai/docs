@@ -41,16 +41,11 @@ This endpoint allows you to initiate requests without maintaining an open connec
 You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. On Mark 3 infrastructure, you can specify an optional callback URL to receive the result when the background job completes.
 </Note>
 
-The timeout duration for this endpoint is 10 minutes on Mark 2 infrastructure, and 15 minutes on Mark 3 infrastructure. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+The timeout duration for this endpoint is 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
 
 The asynchronous endpoint looks like this:
 
 ```http Query agent (async)
-
-# on Mark 2 infrastructure
-POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}/async
-
-# on Mark 3 infrastructure
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}?async=true
 ```
 
