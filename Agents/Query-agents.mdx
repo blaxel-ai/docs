@@ -38,7 +38,7 @@ In addition to the default synchronous endpoint, Blaxel provides the ability to 
 This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene.
 
 <Note>
-You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. On Mark 3 infrastructure, you can specify an optional callback URL to receive the result when the background job completes.
+You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
 </Note>
 
 The timeout duration for this endpoint is 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
