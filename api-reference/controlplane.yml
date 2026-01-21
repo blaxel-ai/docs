@@ -192,6 +192,11 @@ components:
       type: object
       description: Request to create a job execution
       properties:
+        env:
+          type: object
+          description: Environment variable overrides (optional, will merge with job's
+            environment variables)
+          example: '{"MY_VAR": "custom_value", "BATCH_SIZE": "100"}'
         executionId:
           type: string
           description: Execution ID (optional, will be generated if not provided)
@@ -202,6 +207,11 @@ components:
           type: string
           description: Job ID
           example: data-processing-job
+        memory:
+          type: integer
+          description: Memory override in megabytes (optional, must be lower than
+            or equal to job's configured memory)
+          example: 2048
         tasks:
           type: array
           description: Array of task parameters for parallel execution
@@ -1473,6 +1483,7 @@ components:
           - HTTP
           - TCP
           - UDP
+          - TLS
           example: HTTP
         target:
           type: integer
