@@ -135,8 +135,12 @@ request = CreateJobExecutionRequest(
     env=env,
 )
 
-execution_id = await job.acreate_execution(request)
+# synchronous
+execution_id = job.create_execution(request)
+execution = job.get_execution(execution_id)
 
+# asynchronous
+execution_id = await job.acreate_execution(request)
 execution = await job.aget_execution(execution_id)
 
 print(execution.status)
