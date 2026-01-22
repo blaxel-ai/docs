@@ -360,21 +360,21 @@ Sandboxes stay active as long as there's an active connection to them, typically
 
 Here are several approaches you can implement to better control when sandboxes remain active:
 
-### 1. Hide iframe when tab is inactive
+#### 1. Hide iframe when tab is inactive
 
 Use JavaScript events to detect when a user is not active on the tab:
 - Listen for tab visibility events that indicate when the user switches away from your tab
 - When the user becomes inactive, hide the iframe containing the sandbox preview
 - Show the iframe again when the user returns to the tab
 
-### 2. Implement auto-disconnect on tab switch
+#### 2. Implement auto-disconnect on tab switch
 
 Some browsers (like Chrome) may keep WebSockets alive even when tabs are inactive to improve performance. You can implement an auto-disconnect feature that:
 - Detects when users switch tabs
 - Automatically disconnects the WebSocket connection
 - Reconnects when the user returns
 
-### 3. Use activity-based timeouts
+#### 3. Use activity-based timeouts
 
 Set up a timer system in your interface that:
 
