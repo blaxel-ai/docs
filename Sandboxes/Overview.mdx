@@ -350,7 +350,7 @@ You can update a sandbox's time-to-live (TTL) configuration after it has been cr
 import { SandboxInstance } from "@blaxel/core";
 
 // Update sandbox TTL
-await SandboxInstance.updateTTL("my-sandbox", "30m")
+await SandboxInstance.updateTTL("my-sandbox", "30m");
 ```
 
 ```python Python
@@ -374,7 +374,7 @@ await SandboxInstance.updateLifecycle("my-sandbox", {
   expirationPolicies: [
     { type: "ttl-max-age", value: "30m", action: "delete" }
   ]
-})
+});
 ```
 
 ```python Python
