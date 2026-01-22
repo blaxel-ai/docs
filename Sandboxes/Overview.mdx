@@ -356,86 +356,39 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
 
 ## Manage sandbox hibernation
 
-Managing sandbox hibernation and cost optimization
-
 Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
-
-Optimizing sandbox usage to reduce costs
 
 Here are several approaches you can implement to better control when sandboxes remain active:
 
-1. Hide iframe when tab is inactive
+### 1. Hide iframe when tab is inactive
 
 Use JavaScript events to detect when a user is not active on the tab:
+- Listen for tab visibility events that indicate when the user switches away from your tab
+- When the user becomes inactive, hide the iframe containing the sandbox preview
+- Show the iframe again when the user returns to the tab
 
-
-
-
-
-Listen for tab visibility events that indicate when the user switches away from your tab
-
-
-
-When the user becomes inactive, hide the iframe containing the sandbox preview
-
-
-
-Show the iframe again when the user returns to the tab
-
-2. Implement auto-disconnect on tab switch
+### 2. Implement auto-disconnect on tab switch
 
 Some browsers (like Chrome) may keep WebSockets alive even when tabs are inactive to improve performance. You can implement an auto-disconnect feature that:
+- Detects when users switch tabs
+- Automatically disconnects the WebSocket connection
+- Reconnects when the user returns
 
-
-
-
-
-Detects when users switch tabs
-
-
-
-Automatically disconnects the WebSocket connection
-
-
-
-Reconnects when the user returns
-
-3. Use activity-based timeouts
+### 3. Use activity-based timeouts
 
 Set up a timer system in your interface that:
 
+- Monitors user activity (typing, interactions, etc.)
+- Hides the preview after a period of inactivity
+- Prompts the user to confirm they're still using the sandbox
 
+You can use the Sandbox SDK from the frontend if you have the right headers set on the session. Use the [`sandbox.sessions.create` function](/Sandboxes/Sessions) to manage sessions.
 
+<Warning>SDK requests are limited to sandbox operations like process, filesystem, and terminal access. You cannot use the SDK to manage sandbox lifecycle (creating, updating, removing sandboxes, or creating volumes) from a session. In addition, there are no built-in stop or start functions available in the Sandbox SDK for force hibernation. This means you'll need to rely on the connection-based approach and the optimization strategies mentioned above.</Warning>
 
+Here is an example of auto disconnect on tab switch with NextJS through a plugin:
 
-Monitors user activity (typing, interactions, etc.)
-
-
-
-Hides the preview after a period of inactivity
-
-
-
-Prompts the user to confirm they're still using the sandbox
-
-Using the Sandbox SDK
-
-You can use the Sandbox SDK from the frontend if you have the right headers set on the session. Use the sandbox.sessions.create function to manage sessions.
-
-Important limitation: SDK requests are limited to sandbox operations like process, filesystem, and terminal access. You cannot use the SDK to manage sandbox lifecycle (creating, updating, removing sandboxes, or creating volumes) from a session.
-
-Current limitations
-
-Currently, there are no built-in stop or start functions available in the Sandbox SDK for force hibernation. This means you'll need to rely on the connection-based approach and the optimization strategies mentioned above.
-
-
-
-An example of auto disconnect on tab switch with NextJS through a plugin
-
-
-
-
-
+```typescript
 // vite.config.ts
 import { defineConfig } from 'vite'
 import { hmrVisibility } from './vite-plugin-hmr-visibility'
@@ -455,12 +408,6 @@ export default defineConfig({
     },
   },
 })
-
-
-
-
-
-
 
 // vite-plugin-hmr-visibility.ts
 /**
@@ -708,8 +655,7 @@ export function hmrVisibility(options: HMRVisibilityOptions = {}): Plugin {
     },
   }
 }
-
-
+```
 
 ## Sandbox statuses
 
