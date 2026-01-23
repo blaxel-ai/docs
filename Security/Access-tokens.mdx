@@ -45,13 +45,13 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'Authorization: Bearer YOUR-API-KEY'
 ```
 
-#### Use API keys via proxy
+#### Use API keys via middleware
 
 If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
 
-The solution is to add a proxy between your client application and the Blaxel API. The proxy serves as a secure intermediary layer, which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
+The solution is to add authentication middleware between your client application and the Blaxel API. The middleware serves as a secure "translator", which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
 
-This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that serves as a proxy, forwarding all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects it into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
+This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects it into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
 
 Here is a sample implementation of this catch-all route implemented in Next.js:
 
@@ -94,13 +94,13 @@ async function handleRequest(request: NextRequest, { params }: { params: { slug:
 export { handleRequest as DELETE, handleRequest as GET, handleRequest as PATCH, handleRequest as POST, handleRequest as PUT };
 ```
 
-Now, within the application, the Blaxel SDK should be configured at init-time to use the proxy route, as shown below. With this change, SDK requests are routed via the named proxy rather than directly transmitted to the Blaxel API.
+Now, within the application, the Blaxel SDK should be configured at init-time to use the catch-all route, as shown below. With this change, SDK requests are routed through the middleware rather than directly transmitted to the Blaxel API.
 
 ```typescript
 import blaxel from "@blaxel/core";
 
 blaxel.initialize({
-  proxy: 'http://localhost:3000/api/blaxel',  // Your proxy endpoint
+  proxy: 'http://localhost:3000/api/blaxel',  // Your catch-all route
   workspace: 'YOUR_WORKSPACE',
 });
 
@@ -110,7 +110,7 @@ const sandbox = await blaxel.SandboxInstance.create({
 });
 ```
 
-Under this approach, your Blaxel API key is never exposed to the calling client, ensuring security. SDK requests continue to work as before, except that now they are automatically routed via the proxy rather than directly to the Blaxel API.
+Under this approach, your Blaxel API key is never exposed to the calling client, ensuring security. SDK requests continue to work as before, except that now they are routed through the catch-all route rather than directly to the Blaxel API.
 
 ### Manage API keys
 
