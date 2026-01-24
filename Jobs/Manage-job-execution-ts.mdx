@@ -94,6 +94,36 @@ When polling:
 - set the `maxWait` timeout longer than the expected total task duration
 </Tip>
 
+### Override environment and memory for a single job execution
+
+Override memory and/or environment variables for a single job execution, without modifying the deployed job configuration:
+
+```typescript
+import { blJob } from "@blaxel/core"
+
+const job = blJob("my-job")
+
+const executionId = await job.createExecution({
+  tasks: [{ name: "Combined" }],
+  memory: 1024, // MB (must be <= deployed job memory)
+  env: {
+    TEST_MODE: "true",
+    LOG_LEVEL: "debug",
+  },
+})
+
+const execution = await job.getExecution(executionId)
+
+console.log(execution.status)
+```
+
+<Note>
+- Memory overrides are expressed in MB and are downward-only: the value must be <= the memory configured at deployment time. For example, if the job is deployed with 4096 MB, execution overrides must be <= 4096.
+- `env` supports multiple environment variables
+- `memory` and `env` can be set independently or together
+- Overrides apply only to the current execution
+</Note>
+
 ### Complete example
 
 Here is a complete example:

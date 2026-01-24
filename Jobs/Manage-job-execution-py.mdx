@@ -110,6 +110,49 @@ When polling:
 - set the `max_wait` timeout longer than the expected total task duration
 </Tip>
 
+### Override environment and memory for a single job execution
+
+Override memory and/or environment variables for a single job execution, without modifying the deployed job configuration:
+
+```python
+from blaxel.core.jobs import bl_job
+from blaxel.core.client.models.create_job_execution_request import (
+    CreateJobExecutionRequest,
+)
+from blaxel.core.client.models.create_job_execution_request_env import (
+    CreateJobExecutionRequestEnv,
+)
+
+job = bl_job("my-job")
+
+env = CreateJobExecutionRequestEnv()
+env["CUSTOM_ENV"] = "OVERRIDE"
+env["LOG_LEVEL"] = "debug"
+
+request = CreateJobExecutionRequest(
+    tasks=[{"name": "Combined"}],
+    memory=1024,  # MB (must be <= deployed job memory)
+    env=env,
+)
+
+# synchronous
+execution_id = job.create_execution(request)
+execution = job.get_execution(execution_id)
+
+# asynchronous
+execution_id = await job.acreate_execution(request)
+execution = await job.aget_execution(execution_id)
+
+print(execution.status)
+```
+
+<Note>
+- Memory overrides are expressed in MB and are downward-only: the value must be <= the memory configured at deployment time. For example, if the job is deployed with 4096 MB, execution overrides must be <= 4096.
+- `env` supports multiple environment variables
+- `memory` and `env` can be set independently or together
+- Overrides apply only to the current execution
+</Note>
+
 ### Complete example
 
 Here is a complete example using synchronous operations:
