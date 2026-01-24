@@ -103,6 +103,55 @@ Delete a volume by calling:
     ```
     </CodeGroup>
 
+## Resize a volume
+
+<Note>Currently, it is only possible to increase the volume size (not decrease it). </Note>
+
+Resize a volume by calling:
+
+- the class-level `update()` method with the volume `name` and new size as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Update volume size
+    const updatedVolume = await VolumeInstance.update("my-volume", { size: 1024 });
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Update volume size
+    updated_volume = await VolumeInstance.update("my-volume", { "size": 1024 })
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `update()` method with the new size as argument:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    // Get existing volume
+    const volume = await VolumeInstance.get("my-volume");
+
+    // Update volume size
+    const updatedVolume = await volume.update({ size: 1024 });
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    # Get existing volume
+    volume = await VolumeInstance.get("my-volume")
+
+    # Update volume size
+    updated_volume = await volume.update({ "size": 1024 })
+    ```
+    </CodeGroup>
+
+
 ## List volumes
 
 To list existing volumes:

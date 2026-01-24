@@ -206,6 +206,8 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 - expire after a total maximum lifetime using the `ttl` parameter
 - expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
 
+You can also [update the sandbox time-to-live and expiration policy](#update-a-sandbox’s-expiry-rules) after it has been created.
+
 <Info>This differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.</Info>
 
 <CodeGroup>
@@ -337,6 +339,59 @@ Delete a sandbox by calling:
     await sandbox.delete()
     ```
     </CodeGroup>
+
+## Update a sandbox's expiry rules
+
+You can update a sandbox's time-to-live (TTL) configuration after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
+```
+
+</CodeGroup>
+
+You can also update the expiration policy of a sandbox after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox expiration policy
+await SandboxInstance.updateLifecycle("my-sandbox", {
+  expirationPolicies: [
+    { type: "ttl-max-age", value: "30m", action: "delete" }
+  ]
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox expiration policy
+await SandboxInstance.update_lifecycle(
+    "my-sandbox",
+    {
+        "expiration_policies": [
+            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
+        ]
+    },
+)
+```
+
+</CodeGroup>
 
 ## Connect to a sandbox with an interactive terminal
 
