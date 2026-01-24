@@ -15,8 +15,6 @@ Mark 3 infrastructure is currently available to run the following workloads:
 - [MCP servers](../Functions/Overview)
 - [batch jobs](../Jobs/Overview)
 
-Mark 3 currently requires quotas which are not granted by default: [contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+Mark+3+because+&purpose=mk3&origin=docs) to get access.
-
 ## What about Mark 1
 
 Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed to federate multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
