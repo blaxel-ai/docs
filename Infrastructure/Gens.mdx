@@ -2,57 +2,37 @@
 
 title: 'Generations'
 
-description: 'Run your workloads on one of our infrastructure generations.'
+description: 'Understand our infrastructure generations.'
 
 ---
 
-Blaxel features two infrastructure generations on which deployed workloads run. Depending on the workload type, not all generations may be available. You can set a default generation value in your [workspace](../Security/Workspace-access-control), which applies when creating new resources unless overridden. Choose the generation based on which features best suit your specific use case.
-
-**Mk 2 infrastructure** features extensive global distribution, with more than 15 points of presence worldwide.
-
-**Mk 3 infrastructure** delivers dramatically lower cold starts, with sub-25-ms boot times for workloads. It currently requires quotas which are not granted by default: [contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+Mark+3+because+&purpose=mk3&origin=docs) to get access.
-
-## How to choose an infrastructure generation
-
-### Mark 2 infrastructure
-
-Mk 2 infrastructure uses containers to run workloads, providing emulation of most Linux system calls. Cold starts typically take between 2 and 10 seconds. After a deployment is queried, it stays warm for a period that varies based on overall infrastructure usage, allowing it to serve subsequent requests instantly.
-
-You should choose Mk 2 infrastructure if:
-
-- your workload requires system calls not yet supported by Mk 3 infrastructure
-- boot times of around 5 seconds are suitable for your needs
-- your deployment receives consistent traffic that keeps it running warm
-- you need to run workloads in specific regions for sovereignty or regulatory compliance using [deployment policies](../Model-Governance/Policies)
-- you require revision control for rollbacks or canary deployments
-
-Mark 2 infrastructure is currently available to run the following workloads:
-
-- [agents](../Agents/Overview)
-- [MCP servers](../Functions/Overview)
-- [batch jobs](../Jobs/Overview)
-
-### Mark 3 infrastructure
-
-Mk 3 infrastructure leverages micro VMs to run with critical-low cold-starts. 
-
-You should choose Mk 3 infrastructure if:
-
-- low latency is important to your use case (sub-25ms boot times)
+By default, deployed workloads run on Mark 3 infrastructure. Mark 3 infrastructure leverages micro VMs to run with critical-low cold-starts.
 
 Mark 3 infrastructure is currently available to run the following workloads:
 
 - [sandboxes](../Sandboxes/Overview)
 - [agents](../Agents/Overview)
 - [MCP servers](../Functions/Overview)
-- *coming soon: [batch jobs](../Jobs/Overview)*
+- [batch jobs](../Jobs/Overview)
 
-<Warning>Mark 3 infrastructure currently requires quotas which are not granted by default. [Contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+Mark+3+because+&purpose=mk3&origin=docs) to get access.</Warning>
+## What about Mark 1
 
-## What about Mk 1
-
-Mk 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed to federate multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
+Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed to federate multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
 
 While it demonstrated reasonable stability even at 20+ requests per second and achieved somewhat acceptable cold starts through runtime optimization, its architecture wasn’t suited for the more lightweight workloads that make up most of autonomous agents: tool calls, agent orchestration, and external model routing.
 
 Mark 1 infrastructure was decommissioned in January 2025.
+
+## What about Mark 2
+
+Mark 2 infrastructure used containers to run workloads, providing emulation of most Linux system calls. Cold starts typically took between 2 and 10 seconds. After a deployment was queried, it stayed warm for a period that varies based on overall infrastructure usage, allowing it to serve subsequent requests instantly.
+
+Mark 2 infrastructure was suitable when:
+
+- your workload required system calls not supported by Mk 3 infrastructure
+- boot times of around 5 seconds was suitable for your needs
+- your deployment received consistent traffic that keeps it running warm
+- you needed to run workloads in specific regions for sovereignty or regulatory compliance using [deployment policies](../Model-Governance/Policies)
+- you required revision control for rollbacks or canary deployments
+
+Mark 2 infrastructure was deprecated in Q4 2025.

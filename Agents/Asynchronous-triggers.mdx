@@ -3,17 +3,13 @@ title: 'Asynchronous triggers'
 description: 'Use asynchronous triggers for long-running agent tasks'
 ---
 
-Asynchronous triggers allow you to run an agent request asynchronously. The agent responds immediately while it continues processing the task in the background. You can optionally receive the result through a callback. This lets tasks run for up to 15 minutes (on Mark 3 infrastructure) or 10 minutes (on Mark 2 infrastructure) without keeping an HTTP connection open.
+Asynchronous triggers allow you to run an agent request asynchronously. The agent responds immediately while it continues processing the task in the background. You can optionally receive the result through a callback. This lets tasks run for up to 15 minutes without keeping an HTTP connection open.
 
 ## Create an asynchronous request
 
 To create an asynchronous request, call your agent URL as shown below:
 
 ```
-# on Mark 2 infrastructure
-POST https://run.blaxel.ai/{your-workspace}/agents/{your-agent}/async
-
-# on Mark 3 infrastructure
 POST https://run.blaxel.ai/{your-workspace}/agents/{your-agent}?async=true
 ```
 
