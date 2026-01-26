@@ -127,7 +127,7 @@ The `entrypoint.sh` script runs when a sandbox is created from your template:
 
 # Wait for sandbox API to be ready
 echo "Waiting for sandbox API..."
-while ! nc -z localhost 8080; do
+while ! nc -z 127.0.0.1 8080; do
   sleep 0.1
 done
 
@@ -143,7 +143,7 @@ if [ -f /app/package.json ]; then
     # Execute curl command, we execute it through the sandbox-api so that you can access logs,
     # process status and everything you can do with the sandbox api
     echo "Running Next.js dev server..."
-    curl http://localhost:8080/process -X POST -d '{"workingDir": "/app", "command": "npm run dev", "waitForCompletion": false}' -H "Content-Type: application/json"
+    curl http://127.0.0.1:8080/process -X POST -d '{"workingDir": "/app", "command": "npm run dev", "waitForCompletion": false}' -H "Content-Type: application/json"
 fi
 
 # Keep the container running
@@ -162,8 +162,8 @@ make build
 make run
 
 # Access your sandbox-api on exposed ports
-# e.g., http://localhost:8080
-# Example: curl http://localhost:8080/process
+# e.g., http://127.0.0.1:8080
+# Example: curl http://127.0.0.1:8080/process
 ```
 
 ### 6. Deploy the template
