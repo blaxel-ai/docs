@@ -1,27 +1,24 @@
 ---
-
 title: 'Quickstart'
-
-description: 'Create and deploy an agent on Blaxel as a serverless auto-scalable API.'
-
+description: 'Create and deploy an agent on Blaxel as a serverless auto-scalable API'
 ---
 
-Blaxel Agent Hosting lets you bring your own agent code and deploys it as a serverless auto-scalable endpoint — no matter your development framework.
+Blaxel Agent Hosting lets you bring your own agent code and deploys it as a serverless auto-scalable endpoint - no matter your development framework.
 
 This quickstart walks you through the steps to create and deploy an AI agent on Blaxel in minutes.
 
 ## Assumptions
 
-You can deploy agents developed with any framework or SDK on Blaxel, so long as the agent exposes an HTTP endpoint for requests. This quickstart uses the Claude Agent SDK, but you could also use other frameworks like LangChain, Vercel AI SDK, Mastra, or your own custom code.
+You can deploy agents developed with any framework or SDK on Blaxel, so long as the agent exposes an HTTP endpoint for requests. This quickstart uses the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview), but you could also use other frameworks like LangChain, Vercel AI SDK, Mastra, or your own custom code.
 
 This quickstart assumes that you have the following:
 
-- An Anthropic API key, required by Claude Agent SDK. If not, sign up for an Anthropic account and obtain an API key.
-- A Blaxel account. If not, sign up for a Blaxel account.
+- An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
+- A Blaxel account. If not, [sign up for a Blaxel account](https://blaxel.ai).
 
 ## 1. Install the Blaxel CLI and log in to Blaxel
 
-The main way to deploy an agent on Blaxel is with the Blaxel CLI. This method is detailed in this quickstart. Alternatively you can connect a GitHub repository - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
+The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this quickstart. Alternatively you can [connect a GitHub repository](./Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
 
 [Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
 
@@ -31,7 +28,7 @@ bl login
 
 ## 2. Install required dependencies
 
-In your project directory, install the Claude Agent SDK for the agent loop and Express (TypeScript) / Fastify (Python) to handle HTTP requests and responses:
+In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop and [Express](https://expressjs.com/) (TypeScript) / [FastAPI](https://fastapi.tiangolo.com/) (Python) to handle HTTP requests and responses:
 
 <CodeGroup>
 ```shell TypeScript (npm)
@@ -76,6 +73,52 @@ In your project directory, create a file named `index.ts` (TypeScript) or `main.
 <CodeGroup>
 
 ```typescript TypeScript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+import express from "express";
+import "@blaxel/telemetry";
+
+const host = process.env.HOST || "0.0.0.0";
+const port = parseInt(process.env.PORT || "8000");
+
+const app = express();
+
+app.use(express.json());
+
+interface QueryRequest {
+  prompt: string;
+}
+
+app.post("/query", async (req, res) => {
+  const { prompt } = req.body as QueryRequest;
+
+  if (!prompt) {
+    return res.status(400).json({ error: "prompt is required" });
+  }
+
+  try {
+    let response = "";
+
+    for await (const message of query({
+      prompt,
+      options: {
+        maxTurns: 1
+      }
+    })) {
+      if (message.type === "result") {
+        response = message.result;
+        break;
+      }
+    }
+
+    return res.json({ response });
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
+  }
+});
+
+app.listen(port, host, () => {
+  console.log(`Server listening on ${host}:${port}`);
+});
 ```
 
 ```python Python
@@ -84,7 +127,7 @@ In your project directory, create a file named `index.ts` (TypeScript) or `main.
 </CodeGroup>
 
 <Note>
-The agent's HTTP service must be bound to the `HOST` and `PORT` provided by Blaxel. Blaxel automatically injects these variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
+The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
 </Note>
 
 In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
@@ -129,7 +172,6 @@ Instrumentation happens automatically when workloads run on Blaxel. To enable te
     ```shell Python (pip)
     pip install "blaxel[telemetry]"
     ```
-
     </CodeGroup>
 
 - Import the package in your code:
@@ -167,7 +209,7 @@ curl -X POST http://0.0.0.0:1338/query  \
 
 You should see output similar to the following:
 
-```
+```shell
 {"response":"I'm Claude, an AI assistant made by Anthropic. I'm here to help you with coding tasks, file operations, terminal commands, and many other development-related activities. How can I help you today?"}
 ```
 
