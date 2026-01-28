@@ -3,7 +3,7 @@ title: 'Quickstart'
 description: 'Create and deploy an agent on Blaxel as a serverless auto-scalable API'
 ---
 
-Blaxel Agent Hosting lets you bring your own agent code and deploys it as a serverless auto-scalable endpoint - no matter your development framework.
+Agent Hosting lets you bring your own agent code and deploys it as a serverless auto-scalable endpoint - no matter your development framework.
 
 This quickstart walks you through the steps to create and deploy an AI agent on Blaxel in minutes.
 
@@ -27,6 +27,12 @@ bl login
 ```
 
 ## 2. Install required dependencies
+
+Create a directory for the project:
+
+```shell
+mkdir assistant-agent && cd assistant-agent
+```
 
 In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop and [Express](https://expressjs.com/) (TypeScript) / [FastAPI](https://fastapi.tiangolo.com/) (Python) to handle HTTP requests and responses:
 
@@ -121,10 +127,53 @@ app.listen(port, host, () => {
 ```
 
 ```python Python
-TODO
+import os
+from fastapi import FastAPI, HTTPException, Request
+from claude_agent_sdk import query, ClaudeAgentOptions
+import uvicorn
+
+host = os.getenv("HOST", "0.0.0.0")
+port = int(os.getenv("PORT", "8000"))
+
+app = FastAPI()
+
+
+@app.post("/query")
+async def query_endpoint(request: Request):
+    body = await request.json()
+    prompt = body.get("prompt")
+
+    if not prompt:
+        raise HTTPException(status_code=400, detail="prompt is required")
+
+    try:
+        response = ""
+
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(max_turns=1)
+        ):
+            if hasattr(message, "result"):
+                response = message.result
+                break
+
+        return {"response": response}
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error) if error else "Unknown error"
+        )
+
+
+if __name__ == "__main__":
+    print(f"Server listening on {host}:{port}")
+    uvicorn.run(app, host=host, port=port)
+
 ```
 
 </CodeGroup>
+
+This creates a simple single-message agent with the Claude Agent SDK and an endpoint at `/query` to acccept requests.
 
 <Note>
 The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
@@ -134,7 +183,6 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
 
 <CodeGroup>
 
-TODO
 ```json TypeScript (npm/pnpm/yarn)
 {
   "scripts": {
@@ -144,7 +192,7 @@ TODO
   },
   // ...
 }
-
+```
 
 ```json TypeScript (bun)
 {
@@ -243,11 +291,11 @@ Blaxel uses its default `Dockerfile` to build your agent. If you already have a 
 
 Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
 
-
+![image](Query-agents/endpoint.png)
 
 ## 8. Test the agent on Blaxel
 
-By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens).
+By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens). Requests can be made either via the Blaxel API or the Blaxel CLI.
 
 Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `prompt` as desired):
 
@@ -260,11 +308,17 @@ curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-ag
 ```
 You should see a response from the agent to your query.
 
+You can also send a request through the Blaxel CLI:
+
+```shell
+bl run agent assistant-agent/query --data '{"prompt":"what is your name?"}'
+```
+
 <Tip>
 Although deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
 </Tip>
 
-That's it! You’re ready to start building and deploying agents on Blaxel.
+That's it! You're ready to start building and deploying agents on Blaxel.
 
 ## Resources
 
