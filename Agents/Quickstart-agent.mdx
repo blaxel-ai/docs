@@ -1,50 +1,27 @@
 ---
 
-title: 'Quickstart: run an agent on Blaxel'
+title: 'Quickstart'
 
-description: 'Deploy and run your existing code as a serverless auto-scalable API.'
+description: 'Create and deploy an agent on Blaxel as a serverless auto-scalable API.'
 
 ---
 
-Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework.
+Blaxel Agent Hosting lets you bring your own agent code and deploys it as a serverless auto-scalable endpoint — no matter your development framework.
 
-Follow these steps to get your AI agent up and running on Blaxel.
+This quickstart walks you through the steps to create and deploy an AI agent on Blaxel in minutes.
 
-## 1. Create configuration files
+## Assumptions
 
-At the root of your project repository, create a `blaxel.toml` file for configuration, and a `.env` file for your sensitive [environment variables](Variables-and-secrets).
+You can deploy agents developed with any framework or SDK on Blaxel, so long as the agent exposes an HTTP endpoint for requests. This quickstart uses the Claude Agent SDK, but you could also use other frameworks like LangChain, Vercel AI SDK, Mastra, or your own custom code.
 
-**Example `blaxel.toml`:**
+This quickstart assumes that you have the following:
 
-```toml
-type = "agent"
+- An Anthropic API key, required by Claude Agent SDK. If not, sign up for an Anthropic account and obtain an API key.
+- A Blaxel account. If not, sign up for a Blaxel account.
 
-[runtime]
-generation = "mk3"
-memory = 4096
+## 1. Install the Blaxel CLI and log in to Blaxel
 
-[env]
-MY_NON_SENSITIVE_ENV = "MY_NON_SENSITIVE_ENV"
-```
-
-## 2. Update host and port in your code
-
-Ensure your app listens on the host and port provided by Blaxel. Update your code accordingly:
-
-<CodeGroup>
-```tsx TypeScript
-const host = process.env.HOST || "0.0.0.0";
-const port = parseInt(process.env.PORT || "80");
-```
-```python Python
-import os
-
-host = os.getenv("HOST", "0.0.0.0")
-port = int(os.getenv("PORT", "80"))
-```
-</CodeGroup>
-
-## 3. Authenticate via the CLI
+The main way to deploy an agent on Blaxel is with the Blaxel CLI. This method is detailed in this quickstart. Alternatively you can connect a GitHub repository - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
 
 [Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
 
@@ -52,135 +29,186 @@ port = int(os.getenv("PORT", "80"))
 bl login
 ```
 
-## 4. Deploy your agent
+## 2. Install required dependencies
 
-When deploying, there are two possible scenarios:
-
-### Option A: You already have a `Dockerfile`
-
-Blaxel will automatically use it to build your agent. Just run:
-
-```bash
-bl deploy
-```
-
-### Option B: No `Dockerfile`
-
-Blaxel will detect or read configuration to define an entrypoint when building the agent.
-
-<Tabs>
-<Tab title="TypeScript">
-In TypeScript, entrypoints are managed in the `scripts` in the `package.json` file at the root of the directory.
-
-- `start` : start the agent locally through the TypeScript command, to avoid having to build the project when developing.
-- `build` : build the project. It is done automatically when deploying.
-- `prod` : start the agent remotely from the dist folder, the project needs to be have been built before.
-- `dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
-
-The remaining fields in `package.json` follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that `devDependencies` are only used during the build process and are removed afterwards.
-
-```json
-{
-  "name": "name",
-  "version": "1.0.0",
-  "description": "<no value>",
-  "keywords": [],
-  "license": "MIT",
-  "author": "cdrappier",
-  "scripts": {
-    "start": "tsx src/index.ts",
-    "prod": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc"
-  },
-  "dependencies": {
-    "@ai-sdk/openai": "^1.2.5",
-    "@blaxel/sdk": "0.1.1-preview.9",
-    "ai": "^4.1.61",
-    "fastify": "^5.2.1",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.1",
-    "@types/node": "^22.13.11",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
-  }
-}
-```
-</Tab>
-<Tab title="Python">
-You can define an optional `[entrypoint]` section to specify how Blaxel will start your agent.
-
-```
-[entrypoint]
-prod = ".venv/bin/python3 src/agent.py"
-dev = "npx nodemon --exec uv run python src/agent.py"
-```
-
-If not specified, Blaxel will auto-detect settings and configure your agent.
-</Tab>
-</Tabs>
-
-Then run:
-
-```bash
-bl deploy
-```
-
-## 5. (Optional) Enable telemetry
-
-Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry, simply import the SDK in your project's entry point.
+In your project directory, install the Claude Agent SDK for the agent loop and Express (TypeScript) / Fastify (Python) to handle HTTP requests and responses:
 
 <CodeGroup>
-```tsx TypeScript
-import "@blaxel/telemetry";
+```shell TypeScript (npm)
+npm init # if new project
+npm install @anthropic-ai/claude-agent-sdk express
+```
+
+```shell TypeScript (pnpm)
+pnpm init # if new project
+pnpm install @anthropic-ai/claude-agent-sdk express
+```
+
+```shell TypeScript (yarn)
+yarn init # if new project
+yarn add @anthropic-ai/claude-agent-sdk express
+```
+
+```shell TypeScript (bun)
+bun init -m --yes # if new project
+bun install @anthropic-ai/claude-agent-sdk express
+```
+
+```shell Python (pip)
+python3 -m venv .venv && source .venv/bin/activate # if new project
+pip install claude-agent-sdk "fastapi[standard]"
+```
+
+</CodeGroup>
+
+## 3. Configure the environment
+
+Add your Anthropic API key to a `.env` file in the project directory:
+
+```shell
+echo "ANTHROPIC_API_KEY=your_key_here" > .env
+```
+
+## 3. Build the agent
+
+In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code:
+
+<CodeGroup>
+
+```typescript TypeScript
 ```
 
 ```python Python
-import blaxel.core
 ```
+
 </CodeGroup>
 
-## 6. (Optional) Run locally with Blaxel CLI
+<Note>
+The agent's HTTP service must be bound to the `HOST` and `PORT` provided by Blaxel. Blaxel automatically injects these variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
+</Note>
 
-If you want to run your agent locally and start using the SDK, make sure the `start` and `dev` scripts are defined, then run:
+In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
 
-```bash
-bl serve
-# or
-bl serve --hotreload
+<CodeGroup>
+
+```shell TypeScript (bun)
+{
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  // ...
+}
 ```
 
-## 7. Test your agent
+</CodeGroup>
 
-By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens). Requests are made to the agent's [inference endpoint](./Query-agents) via the Blaxel API or Blaxel CLI.
+## 4. Enable telemetry (optional)
 
-### Blaxel API
+Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
 
-Make a POST request to the inference endpoint for your agent deployment:
+- Add the required package to your project:
 
-```
-curl 'https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT' \
-  -H 'Content-Type: application/json' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \
-  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
-  -d $'{"inputs":"Enter your input here."}'
-```
+    <CodeGroup>
+    ```shell TypeScript (npm)
+    npm install @blaxel/telemetry
+    ```
 
-### Blaxel CLI
+    ```shell TypeScript (pnpm)
+    pnpm install @blaxel/telemetry
+    ```
 
-Run the following command:
+    ```shell TypeScript (yarn)
+    yarn add @blaxel/telemetry
+    ```
+
+    ```shell TypeScript (bun)
+    bun install @blaxel/telemetry
+    ```
+
+    ```shell Python (pip)
+    pip install "blaxel[telemetry]"
+    ```
+
+    </CodeGroup>
+
+- Import the package in your code:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import "@blaxel/telemetry";
+    ```
+
+    ```python Python
+    import blaxel.telemetry
+    ```
+    </CodeGroup>
+
+
+## 5. Test the agent locally
+
+Test the agent by making the endpoint available locally:
 
 ```shell
-bl run agent YOUR-AGENT --data '{"inputs":"Enter your input here."}'
+bl serve --hotreload &
 ```
+
+This starts the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as they would be when deployed on Blaxel. The `--hotreload` flag monitors and reloads the agent if the source code changes.
+
+Note the host port on which the agent is running.
+
+In another terminal, send the agent a request (update the endpoint URL below with the correct port number for your agent):
+
+```shell
+curl -X POST http://0.0.0.0:1338/query  \
+ -H "Content-Type: application/json" \
+ -d '{"prompt": "what is your name?"}'
+```
+
+You should see output similar to the following:
+
+```
+{"response":"I'm Claude, an AI assistant made by Anthropic. I'm here to help you with coding tasks, file operations, terminal commands, and many other development-related activities. How can I help you today?"}
+```
+
+## 6. Deploy the agent on Blaxel
+
+You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your deployment policies.
+
+Deploying the agent is as simple as running the following command:
+
+```shell
+bl deploy
+```
+
+The Blaxel CLI will prompt for the type of resource you are deploying. It will then auto-detect other details of your project and begin the deployment. The deployment process usually takes a few minutes, and you can watch progress from the Blaxel Console.
+
+<Note>
+Blaxel uses its default `Dockerfile` to build your agent. If you already have a `Dockerfile` in the root of your project directory, Blaxel will automatically use that instead. You can set custom parameters for an agent deployment (for example, the agent name, memory, environment, or custom entrypoint) by adding an optional [`blaxel.toml` file](/deployment-reference) in the root of your project directory.
+</Note>
+
+Once the deployment process is complete, the Blaxel CLI will return a global endpoint that you can use to access the agent.
+
+## 7. Test the agent on Blaxel
+
+By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens).
+
+Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `prompt` as desired):
+
+```
+curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-agent/query  \
+  -H "X-Blaxel-Workspace: $(bl workspace --current)" \
+  -H "X-Blaxel-Authorization: Bearer $(bl token)" \
+ -H "Content-Type: application/json" \
+ -d '{"prompt": "what is your name?"}'
+```
+You should see a response from the agent to your query.
 
 <Tip>
 Althought deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
 </Tip>
 
-That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.
+That's it! You’re ready to start building and deploying agents on Blaxel.
 
 ## Resources
 
