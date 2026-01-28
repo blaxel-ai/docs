@@ -299,8 +299,8 @@ Test the deployed agent by sending an authenticated request to its global endpoi
 curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-agent/query  \
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \
- -H "Content-Type: application/json" \
- -d '{"prompt": "what is your name?"}'
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "what is your name?"}'
 ```
 You should see a response from the agent to your query.
 
