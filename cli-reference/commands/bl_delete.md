@@ -60,6 +60,21 @@ bl delete [flags]
   # Safe deletion workflow
   bl get agent my-agent    # Review resource first
   bl delete agent my-agent # Delete after confirmation
+
+  # --- Bulk deletion with jq filtering ---
+  # WARNING: Bulk deletions are irreversible. Always preview first!
+
+  # STEP 1: Preview what would be deleted (ALWAYS DO THIS FIRST)
+  bl get jobs -o json | jq -r '.[] | select(.status == "DELETING") | .metadata.name'
+
+  # STEP 2: After verifying the list, proceed with deletion
+  bl delete jobs $(bl get jobs -o json | jq -r '.[] | select(.status == "DELETING") | .metadata.name')
+
+  # More bulk deletion examples (always preview first):
+  bl delete sandboxes $(bl get sandboxes -o json | jq -r '.[] | select(.status == "FAILED") | .metadata.name')
+  bl delete agents $(bl get agents -o json | jq -r '.[] | select(.metadata.name | contains("test")) | .metadata.name')
+  bl delete volumes $(bl get volumes -o json | jq -r '.[] | select(.metadata.labels.environment == "dev") | .metadata.name')
+  bl delete sandboxes $(bl get sandboxes -o json | jq -r '.[] | select(.metadata.name | test("^temp-")) | .metadata.name')
 ```
 
 ### Options
