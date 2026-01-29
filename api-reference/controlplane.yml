@@ -226,6 +226,8 @@ components:
           type: object
           description: Environment variable overrides (optional, will merge with job's
             environment variables)
+          additionalProperties:
+            type: string
           example: '{"MY_VAR": "custom_value", "BATCH_SIZE": "100"}'
         executionId:
           type: string
@@ -1142,6 +1144,12 @@ components:
       - $ref: '#/components/schemas/TimeFields'
       - $ref: '#/components/schemas/OwnerFields'
       - properties:
+          deletionIn:
+            type: integer
+            description: Time in seconds until the resource is automatically deleted
+              based on TTL and lifecycle policies. Only present for resources with
+              expiration configured.
+            readOnly: true
           displayName:
             type: string
             description: Human-readable name for display in the UI. Can contain spaces
