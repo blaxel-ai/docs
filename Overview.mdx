@@ -78,7 +78,7 @@ We also recommend more general best-practices aiming to provide guardrails and f
 
 When building your agentic system, you'll need to make architecture design choices. Blaxel offers several high-perf compute options, summarized below in order of latency performance:
 
-- [**Sandboxes**](Sandboxes/Overview): Perfect for maximum workload flexibility. These micro VMs provide full access to filesystem, network, and processes, booting from hibernation in under 25ms.
+- [**Sandboxes**](Sandboxes/Overview): Perfect for maximum workload flexibility. These microVMs provide full access to filesystem, network, and processes, booting from hibernation in under 25ms.
 - [**Agents Hosting (sync mode)**](https://docs.blaxel.ai/Agents/Query-agents#default-synchronous-endpoint): Ideal for running HTTP API services that process requests within a few seconds.
 - [**Agents Hosting (async mode)**](https://docs.blaxel.ai/Agents/Query-agents#async-endpoint): Best for running HTTP API services handling longer requests without maintaining an open connection.
 - [**Batch Jobs**](Jobs/Overview): Designed for asynchronous tasks that may run for extended periods where boot latency is less critical. These jobs are triggered by providing specific input parameters, unlike Agents that are a fully hosted API.
