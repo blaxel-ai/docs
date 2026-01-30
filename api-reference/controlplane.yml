@@ -1144,12 +1144,6 @@ components:
       - $ref: '#/components/schemas/TimeFields'
       - $ref: '#/components/schemas/OwnerFields'
       - properties:
-          deletionIn:
-            type: integer
-            description: Time in seconds until the resource is automatically deleted
-              based on TTL and lifecycle policies. Only present for resources with
-              expiration configured.
-            readOnly: true
           displayName:
             type: string
             description: Human-readable name for display in the UI. Can contain spaces
@@ -1762,6 +1756,12 @@ components:
       properties:
         events:
           $ref: '#/components/schemas/CoreEvents'
+        expiresIn:
+          type: integer
+          description: Time in seconds until the sandbox is automatically deleted
+            based on TTL and lifecycle policies. Only present for sandboxes with lifecycle
+            configured.
+          readOnly: true
         lastUsedAt:
           type: string
           description: Last time the sandbox was used (read-only, managed by the system)
