@@ -270,6 +270,42 @@ sandbox = await SandboxInstance.create({
 
 The TTL-type parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
 
+### Labels
+
+You can also add optional labels for sandboxes. Labels are specified as key-value pairs during sandbox creation.
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",   // public or custom image
+  memory: 4096,   // in MB
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"   // optional; if not specified, Blaxel will choose a default region
+});
+```
+
+```python Python
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",   # public or custom image
+  "memory": 4096,   # in MB
+  "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+  "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+})
+```
+</CodeGroup>
+
+You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Console:
+
+```shell
+# Get sandboxes with specific label (e.g., env=dev)
+bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
+```
+
 ## Retrieve an existing sandbox
 
 To reconnect to an existing sandbox, simply provide its name:
