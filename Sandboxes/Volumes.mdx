@@ -38,7 +38,6 @@ const volume = await VolumeInstance.create({
   name: "my-volume",
   size: 2048,          // in MB
   region: "us-pdx-1",   // if not specified, Blaxel will choose a default region
-  labels: { env: "test", project: "12345" }, // labels
 });
 ```
 
@@ -48,6 +47,17 @@ You can create a volume from a [template](Volumes-templates) to automatically pr
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
   template: "mytemplate:1"  // Use template-name:revision or template-name:latest
+});
+```
+
+Labels are specified as key-value pairs during volume creation.
+
+```tsx
+const volume = await VolumeInstance.create({
+  name: "my-volume",
+  size: 2048,          // in MB
+  region: "us-pdx-1",   // if not specified, Blaxel will choose a default region
+  labels: { env: "test", project: "12345" }, // labels
 });
 ```
 
@@ -163,6 +173,13 @@ const volumes = await VolumeInstance.list()
 bl get volumes
 ```
 </CodeGroup>
+
+You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
+
+```shell
+# Get volumes with specific label (e.g., env=test)
+bl get volumes -o json | jq -r '.[] | select(.metadata.labels.env == "test") | .metadata.name'
+```
 
 ## Attach a volume to a sandbox
 
