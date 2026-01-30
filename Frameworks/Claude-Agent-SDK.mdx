@@ -1,5 +1,5 @@
 ---
-title: 'Example: Deploy an agent with Claude Agent SDK'
+title: 'Claude Agent SDK'
 description: 'Create an agent with Claude Agent SDK and deploy it on Blaxel as a serverless auto-scalable API'
 ---
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
 </CodeGroup>
 
-This creates a simple single-message agent with the Claude Agent SDK and an endpoint at `/query` to acccept requests.
+This creates a simple single-message agent with the Claude Agent SDK and an endpoint at `/query` to accept requests.
 
 <Note>
 The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
@@ -283,7 +283,7 @@ Blaxel uses its default `Dockerfile` to build your agent. If you already have a 
 
 Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
 
-![image](Query-agents/endpoint.png)
+![image](../Agents/Query-agents/endpoint.png)
 
 ## 8. Test the agent on Blaxel
 
