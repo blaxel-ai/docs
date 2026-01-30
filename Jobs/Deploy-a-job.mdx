@@ -219,6 +219,12 @@ schedule = "0 * * * *"
 
 You can set a maximum number of **retries per task** in the job definition. Check out the reference for `blaxel.toml` configuration file down below.
 
+### Metrics
+
+The **Blaxel Console** > **Dashboard** displays detailed job metrics, including the number of active jobs, failures, and requests (both count and requests per second (RPS)) across all deployments.
+
+![image](./Overview/job-metrics.png)
+
 ### Deploy with a Dockerfile
 
 While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your workload using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
