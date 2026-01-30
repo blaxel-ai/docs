@@ -118,6 +118,7 @@
                 "group": "Frameworks",
                 "pages": [
                   "Frameworks/Overview",
+                  "Frameworks/Claude-Agent-SDK",
                   "Frameworks/LangChain",
                   "Frameworks/CrewAI",
                   "Frameworks/LlamaIndex",
