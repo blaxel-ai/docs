@@ -13,7 +13,7 @@ This example assumes that you have the following:
 
 - An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
 - A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
-- The Blaxel CLI. If not, [download and install the Blaxel CLI]((../cli-reference/introduction))
+- The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction)
 
 ## 1. Install required dependencies
 
@@ -175,7 +175,7 @@ async def query_endpoint(request: Request):
     try:
         sandbox = await SandboxInstance.create_if_not_exists({
             "name": "my-sandbox",
-            "image": "blaxel/my-sandbox:latest",
+            "image": "blaxel/base-image:latest",
             "memory": 4096,
         })
 
