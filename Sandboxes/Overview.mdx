@@ -26,14 +26,16 @@ src="/img/general/sbx-lifecycle-dark.png"
 alt="Lifecycle of Blaxel Sandboxes"
 />
 
-<Accordion title="Some examples of use cases include…">
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration).
+
+## Use cases
+
+Some examples of use cases include:
 
 - **Code review agents** that analyze repositories to detect the effects of changes. These agents run fully isolated compute environments for each tenant while keeping them snapshotted in standby between sessions, eliminating the need to clone the repo every time.
 - **Code generation agents** that iterate in their own compute environments, and instantly render live application previews as human users build, step away, and log back in.
 - **Data analyst agents** that execute adhoc data analysis workflows, generating scripts on-the-fly and running them securely against private files or data within an isolated, ZDR-compliant environment.
 - **Background agents** that operate beyond their pre-configured tools. Each agent gets its own "personal computer" where it can autonomously install packages, execute custom scripts, store files, and adapt to new requirements securely. They can parallelize dozens of those personal computers.
-
-</Accordion>
 
 ## Create a sandbox
 
@@ -198,78 +200,6 @@ You can expose specific non-reserved ports [**when creating a new sandbox**](Ove
 
 Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. If you don't specify a region, Blaxel will automatically use a default region.
 
-### Expiration date
-
-Set time-to-live & expiration policies on a sandbox to **automatically** **delete** it based on specific conditions:
-
-- expire at a specific date using the `expires` parameter.
-- expire after a total maximum lifetime using the `ttl` parameter
-- expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
-
-You can also [update the sandbox time-to-live and expiration policy](#update-a-sandbox’s-expiry-rules) after it has been created.
-
-<Info>This differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.</Info>
-
-<CodeGroup>
-
-```typescript TypeScript {11-23}
-import { SandboxInstance } from "@blaxel/core";
-
-// Create a new sandbox
-const sandbox = await SandboxInstance.create({
-  name: "my-sandbox",
-  image: "blaxel/base-image:latest",
-  memory: 4096,
-  ports: [{ target: 3000, protocol: "HTTP" }],
-  region: "us-pdx-1",
-  ttl: "24h", // Total duration before auto-deletion. Supported units: h, d, w
-  // OR
-  // expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
-  // OR / AND
-  lifecycle: {
-    expirationPolicies: [
-      {
-        type: "ttl-idle",
-        value: "24h",  // Delete after 24 hours of inactivity. Supported units: h, d, w
-        action: "delete"
-      }
-    ]
-  }
-});
-```
-
-```python Python {11-23}
-from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
-
-# Create a new sandbox
-sandbox = await SandboxInstance.create({
-  "name": "my-sandbox",
-  "image": "blaxel/base-image:latest",
-  "memory": 4096,
-  "ports": [{ "target": 3000 }],
-  "region": "us-pdx-1",
-  "ttl": "24h", ## Total duration before auto-deletion. Supported units: h, d, w
-  ## OR
-  ## expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
-  ## OR / AND
-  "lifecycle": SandboxLifecycle(
-    expiration_policies=[
-      ExpirationPolicy(
-        type_="ttl-idle",
-        value="24h",  # Delete after 24 hours of inactivity. Supported units: h, d, w
-        action="delete"
-      )
-    ]
-  )
-})
-```
-
-</CodeGroup>
-
-<Tip>Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the API reference for a full documentation. You can combine multiple expiration policies: whichever condition is met first will trigger the action.</Tip>
-
-The TTL-type parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
-
 ### Labels
 
 You can also add optional labels for sandboxes. Labels are specified as key-value pairs during sandbox creation.
@@ -305,6 +235,10 @@ You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Con
 # Get sandboxes with specific label (e.g., env=dev)
 bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
 ```
+
+### Expiration
+
+Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions.
 
 ## Retrieve an existing sandbox
 
@@ -376,58 +310,6 @@ Delete a sandbox by calling:
     ```
     </CodeGroup>
 
-## Update a sandbox's expiry rules
-
-You can update a sandbox's time-to-live (TTL) configuration after it has been created:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Update sandbox TTL
-const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Update sandbox TTL
-sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
-```
-
-</CodeGroup>
-
-You can also update the expiration policy of a sandbox after it has been created:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Update sandbox expiration policy
-await SandboxInstance.updateLifecycle("my-sandbox", {
-  expirationPolicies: [
-    { type: "ttl-max-age", value: "30m", action: "delete" }
-  ]
-});
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Update sandbox expiration policy
-await SandboxInstance.update_lifecycle(
-    "my-sandbox",
-    {
-        "expiration_policies": [
-            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
-        ]
-    },
-)
-```
-
-</CodeGroup>
 
 ## Connect to a sandbox with an interactive terminal
 

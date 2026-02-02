@@ -1,0 +1,144 @@
+---
+title: 'Expiration policies'
+description: 'Automatic deletion based on specific conditions'
+---
+
+Blaxel supports automatic sandbox deletion based on specific expiration policies.
+
+Automatic deletion differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.
+
+## Expiration policies
+
+The following options are available for sandbox expiry and deletion:
+
+- expire at a specific date using the `expires` parameter
+- expire after a total maximum lifetime (time-to-live or TTL) using the `ttl` parameter
+- expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
+
+<Note>
+If these parameters are absent, sandboxes will not be deleted.
+</Note>
+
+## Configure sandbox expiry rules at creation
+
+You can define a sandbox's time-to-live (TTL) configuration at creation time:
+
+<CodeGroup>
+
+```typescript TypeScript {11-23}
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  ports: [{ target: 3000, protocol: "HTTP" }],
+  region: "us-pdx-1",
+  ttl: "24h", // Total duration before auto-deletion. Supported units: h, d, w
+  // OR
+  // expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
+  // OR / AND
+  lifecycle: {
+    expirationPolicies: [
+      {
+        type: "ttl-idle",
+        value: "24h",  // Delete after 24 hours of inactivity. Supported units: h, d, w
+        action: "delete"
+      }
+    ]
+  }
+});
+```
+
+```python Python {11-23}
+from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000 }],
+  "region": "us-pdx-1",
+  "ttl": "24h", ## Total duration before auto-deletion. Supported units: h, d, w
+  ## OR
+  ## expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
+  ## OR / AND
+  "lifecycle": SandboxLifecycle(
+    expiration_policies=[
+      ExpirationPolicy(
+        type_="ttl-idle",
+        value="24h",  # Delete after 24 hours of inactivity. Supported units: h, d, w
+        action="delete"
+      )
+    ]
+  )
+})
+```
+
+</CodeGroup>
+
+Important notes:
+
+- The `ttl` parameter accepts a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
+- Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
+- You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
+
+## Update sandbox expiry rules
+
+You can update a sandbox's time-to-live (TTL) configuration after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
+```
+
+</CodeGroup>
+
+You can also update the expiration policy of a sandbox after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox expiration policy
+await SandboxInstance.updateLifecycle("my-sandbox", {
+  expirationPolicies: [
+    { type: "ttl-max-age", value: "30m", action: "delete" }
+  ]
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox expiration policy
+await SandboxInstance.update_lifecycle(
+    "my-sandbox",
+    {
+        "expiration_policies": [
+            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
+        ]
+    },
+)
+```
+
+</CodeGroup>
+
+
+## Account tiers and TTL
+
+Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses. Higher tiers have access to longer sandbox TTLs. For example, in the "Free" tier, the TTL cannot exceed 7 days whereas, in higher tiers, unlimited TTLs are permitted. You can see the TTL-related features of each tier in the [Blaxel Console](https://app.blaxel.dev/account/quota).

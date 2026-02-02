@@ -38,6 +38,7 @@
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
               "Sandboxes/MCP",
+              "Sandboxes/Expiration",
               "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
               {
