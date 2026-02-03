@@ -5,14 +5,14 @@ description: 'Monitor usage and manage quotas associated with your account.'
 
 The Blaxel Console provides detailed analytics for you to monitor account usage. You can also see your account's current quotas, and request an increase in quotas if required.
 
-## Usage analytics
+## Analytics
 
 Blaxel provides detailed cost and usage analytics at account level. These metrics are available for the current billing period, last 30 days, last 7 days, and last 24 hours.
 
 To view usage analytics for your account:
 
 - Click the workspace name at the bottom left of the Blaxel Console.
-- In the sub-menu, click **Account**.
+- Click **Account**.
 - Click the **Subscription** tab.
 - Navigate to the **Usage analytics** section of the page.
 
@@ -27,37 +27,55 @@ The usage analytics section provides details on:
 
 You can toggle between usage and cost metrics using the switch in the top right corner of the section.
 
-![Usage analytics](/images/administration/cost.png)
-
 ## Quotas
 
-Blaxel also lets you view and manage quotas associated with your account.
+### Quota tiers
 
-To view quota usage for your account:
+Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses.
+
+Higher tiers have access to additional features, such as higher numbers of standby/concurrent sandboxes, higher number of concurrent jobs, higher sandbox and volume sizes, longer sandbox TTLs, custom domains, and more.
+
+You can see the [limits and features of each tier](https://app.blaxel.ai/account/quotas) in the **Quotas** tab.
 
 - Click the workspace name at the bottom left of the Blaxel Console.
 - In the sub-menu, click **Account**.
-- Click the **Plan quotas** tab.
+- Click the **Quotas** tab.
 
-![Quotas](/images/administration/quotas.png)
+![Quotas](/images/administration/all-quotas.png)
 
-The quotas section provides details on quotas for:
+A top-up qualifies you for the selected tier for 30 days. If your usage decreases later, you naturally drop to a lower tier. A top-up does not commit you to a specific level of usage permanently.
+
+### Quota usage
+
+Blaxel also lets you view and manage quotas associated with your account.
+
+Quotas for your account are listed in the **All current quotas** section
+
+![Quotas](/images/administration/current-quotas.png)
+
+This section provides details on quotas for:
 
 - Deployed sandboxes, agents, MCP servers, model APIs, policies, triggers, and jobs
 - Sandboxes: volumes, volume templates, default TTL, previews, volume sizes and versions
 - Jobs: maximum parallel executions, maximum concurrent tasks
 - Workspaces: users, service accounts, integrations, custom domains, revisions, timeouts
 
-### Request a quote increase
+### Increase account quotas
 
-It is possible to request an increase in quotas for your account through the Blaxel Console. To do this:
+#### Automatically increase quotas via top-up
+
+To unlock access to [higher quotas and limits](https://app.blaxel.ai/account/quotas), you must upgrade to a higher tier by topping up the appropriate amount of credit in your account. These top-up amounts go directly into your Blaxel wallet. This is not a fee for the tier itself, but rather a pre-payment for the usage you are about to run.
+
+### Manually request a quota increase
+
+Upgrading to a higher tier is the usual way to unlock higher quotas for your account. In case of issues, it is also possible to manually request an increase in quotas for your account through the Blaxel Console. To do this:
 
 - Click the pencil icon.
 - Input the requested quota value.
 
 ![Quotas](/images/administration/request-quota-1.png)
 
-In some cases, you may see an **Upgrade** button instead of a pencil icon. Click this to access our contact form, in which you can provide details of your request.
+In some cases, you may see an **Upgrade** button instead of a pencil icon. Click this to access our payment gateway, in which you can provide details for payment.
 
 ![Quotas](/images/administration/request-quota-2.png)
 
