@@ -1511,10 +1511,14 @@ components:
       type: object
       description: Preview of a Resource
       properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/PreviewMetadata'
         spec:
           $ref: '#/components/schemas/PreviewSpec'
+        status:
+          $ref: '#/components/schemas/Status'
       required:
       - metadata
       - spec
