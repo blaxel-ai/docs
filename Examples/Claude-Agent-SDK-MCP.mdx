@@ -257,75 +257,17 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
 
 </CodeGroup>
 
+Your agent is now ready to operate the sandbox using the sandbox's MCP tools! For example, you could instruct the agent to "install a Python dev environment" and it would use the available MCP tools to find, download and install all the required libraries and tools for Python development in the sandbox.
 
-## 4. Test the agent locally
+## Next steps
 
-Log in to Blaxel:
+Blaxel isn't just a sandbox platform. It also lets you [co-host and deploy your agent](../Agents/Overview) as a serverless auto-scalable endpoint, with near-instant latency. Agent hosting provides endpoints for both synchronous and asynchronous requests and includes full observability and tracing out of the box.
 
-```bash
-bl login
-```
+The following resources will help you go further:
 
-Test the agent by making the endpoint available locally:
-
-```shell
-bl serve --hotreload
-```
-
-This starts the agent locally while sandboxing the core agent logic, function calls and model API calls exactly as they would be when deployed on Blaxel. The `--hotreload` flag monitors and reloads the agent if the source code changes.
-
-Note the host port on which the agent is running.
-
-In another terminal, send the agent a request (update the endpoint URL below with the correct port number for your agent):
-
-```shell
-curl -X POST http://0.0.0.0:1338/query  \
- -H "Content-Type: application/json" \
- -d '{"prompt": "what tools are available to you?"}'
-```
-
-You should see output similar to the following (abbreviated for clarity):
-
-```shell
-{"response":"I have access to the following tools:\n\n## Code Analysis & Navigation\n- **codegenCodebaseSearch** - Semantic search to find relevant code snippets\n- **codegenFileSearch** ..."}
-```
-
-Give the agent a more complex task that requires it to use the sandbox tools over MCP:
-
-```shell
-curl -X POST http://0.0.0.0:1338/query  \
- -H "Content-Type: application/json" \
- -d '{"prompt": "install a complete Python development environment in the sandbox. Create a hello world program in Python and save the code file to the sandbox filesystem. Once done, respond with the location of your saved code file and a summary of the tools you used."}'
-```
-
-If the agent is successful, it will return output similar to the following (abbreviated for clarity):
-
-```json
-{"response":"## ✅ Installation Complete!\n\n### 📍 Code File Location:\n**`/blaxel/hello_world.py`**\n\nThe hello world program has been successfully created and tested. ... ### 🛠️ Tools Used:\n\n1. **mcp__sandbox__fsGetWorkingDirectory** - Determined the working directory (/blaxel)\n2. **mcp__sandbox__processExecute** - Used multiple times to:\n   - Check for existing Python installation\n ..."}
-```
-
-Connect to the sandbox and validate the agent's output:
-
-```shell
-bl connect sandbox my-sandbox
-cat /blaxel/hello_world.py
-```
-
-## 5. Deploy the agent on Blaxel
-
-Deploying the agent on Blaxel is as simple as running the following command:
-
-```shell
-bl deploy
-```
-
-The Blaxel CLI will prompt for, or auto-detect, details of your project and begin the deployment. Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
-
-![image](../Agents/Query-agents/endpoint.png)
-
-## Resources
-
-Want the complete guide on developing and deploying agents on Blaxel? Check out the following resources:
+<Card title="Build and deploy an agent on Blaxel with Claude Agent SDK" icon="square-js" href="/Frameworks/Claude-Agent-SDK">
+Complete guide for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
+</Card>
 
 <Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
 Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
