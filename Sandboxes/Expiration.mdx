@@ -3,7 +3,9 @@ title: 'Expiration policies'
 description: 'Automatic deletion based on specific conditions'
 ---
 
-Blaxel supports automatic sandbox deletion based on specific expiration policies.
+Blaxel supports automatic sandbox deletion based on specific expiration policies. This feature is available in all tiers, although TTL constraints differ. For example, in the "Free" tier, the TTL cannot exceed 7 days whereas, in higher tiers, unlimited TTLs are permitted.
+
+<Note>Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses. Higher tiers have access to longer sandbox TTLs. You can see the TTL-related features of each tier in the [Blaxel Console](https://app.blaxel.dev/account/quota).</Note>
 
 Automatic deletion differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.
 
@@ -81,7 +83,7 @@ sandbox = await SandboxInstance.create({
 
 Important notes:
 
-- The `ttl` parameter accepts a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
+- The `ttl` parameter accepts a string with the following time units: `h` (hours), `d` (days), and `w` (weeks).
 - Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
 - You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
 
@@ -137,8 +139,3 @@ await SandboxInstance.update_lifecycle(
 ```
 
 </CodeGroup>
-
-
-## Account tiers and TTL
-
-Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses. Higher tiers have access to longer sandbox TTLs. For example, in the "Free" tier, the TTL cannot exceed 7 days whereas, in higher tiers, unlimited TTLs are permitted. You can see the TTL-related features of each tier in the [Blaxel Console](https://app.blaxel.dev/account/quota).
