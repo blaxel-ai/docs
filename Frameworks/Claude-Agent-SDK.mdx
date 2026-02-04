@@ -1,9 +1,9 @@
 ---
-title: 'Claude Agent SDK'
-description: 'Create an agent with Claude Agent SDK and deploy it on Blaxel as a serverless auto-scalable API'
+title: "Claude Agent SDK"
+description: "Deploy a Claude Agent SDK agent to Blaxel as a serverless auto-scalable API and colocate it close to the sandboxes it works on."
 ---
 
-[Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) is a library for building autonomous AI agents using Claude Code. You can deploy your Claude Agent SDK projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+[Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) is a library for building autonomous AI agents using Claude Code. You can deploy your Claude Agent SDK projects to Blaxel with minimal code editing (and zero configuration), enabling you to colocate them close to the [sandboxes](/Sandboxes/Overview) the agents work on.
 
 This guide assumes that you have the following:
 
@@ -28,30 +28,35 @@ Create a directory for the project:
 mkdir assistant-agent && cd assistant-agent
 ```
 
-Agents deployed on Blaxel must expose an HTTP endpoint for requests.
+The best way to deploy this project is through [Blaxel Agents Hosting](/Agents/Overview), which uses the same underlying infrastructure as sandboxes. Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests.
 
 In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop and [Express](https://expressjs.com/) (TypeScript) / [FastAPI](https://fastapi.tiangolo.com/) (Python) to handle HTTP requests and responses:
 
 <CodeGroup>
+
 ```shell TypeScript (npm)
 npm init # if new project
 npm install @anthropic-ai/claude-agent-sdk express
 ```
+
 
 ```shell TypeScript (pnpm)
 pnpm init # if new project
 pnpm install @anthropic-ai/claude-agent-sdk express
 ```
 
+
 ```shell TypeScript (yarn)
 yarn init # if new project
 yarn add @anthropic-ai/claude-agent-sdk express
 ```
 
+
 ```shell TypeScript (bun)
 bun init -m --yes # if new project
 bun install @anthropic-ai/claude-agent-sdk express
 ```
+
 
 ```shell Python (pip)
 python3 -m venv .venv && source .venv/bin/activate # if new project
@@ -70,7 +75,7 @@ echo "ANTHROPIC_API_KEY=your_key_here" > .env
 
 ## 4. Build the agent
 
-In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code:
+In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code. Otherwise, [this other code](/Examples/Claude-Agent-SDK-MCP) shows how to **equip the agent with its own **[**Blaxel Sandbox**](/Sandboxes/Overview)**.**
 
 <CodeGroup>
 
@@ -118,6 +123,7 @@ app.listen(port, host, () => {
 });
 ```
 
+
 ```python Python
 import os
 from fastapi import FastAPI, HTTPException, Request
@@ -160,7 +166,6 @@ async def query_endpoint(request: Request):
 if __name__ == "__main__":
     print(f"Server listening on {host}:{port}")
     uvicorn.run(app, host=host, port=port)
-
 ```
 
 </CodeGroup>
@@ -168,7 +173,7 @@ if __name__ == "__main__":
 This creates a simple single-message agent with the Claude Agent SDK and an endpoint at `/query` to accept requests.
 
 <Note>
-The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
+  The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
 </Note>
 
 In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
@@ -185,6 +190,7 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
   // ...
 }
 ```
+
 
 ```json TypeScript (bun)
 {
@@ -204,40 +210,47 @@ Instrumentation happens automatically when workloads run on Blaxel. To enable te
 
 - Add the required package to your project:
 
-    <CodeGroup>
-    ```shell TypeScript (npm)
-    npm install @blaxel/telemetry
-    ```
+  <CodeGroup>
 
-    ```shell TypeScript (pnpm)
-    pnpm install @blaxel/telemetry
-    ```
+  ```shell TypeScript (npm)
+  npm install @blaxel/telemetry
+  ```
 
-    ```shell TypeScript (yarn)
-    yarn add @blaxel/telemetry
-    ```
+  
+  ```shell TypeScript (pnpm)
+  pnpm install @blaxel/telemetry
+  ```
 
-    ```shell TypeScript (bun)
-    bun install @blaxel/telemetry
-    ```
+  
+  ```shell TypeScript (yarn)
+  yarn add @blaxel/telemetry
+  ```
 
-    ```shell Python (pip)
-    pip install "blaxel[telemetry]"
-    ```
-    </CodeGroup>
+  
+  ```shell TypeScript (bun)
+  bun install @blaxel/telemetry
+  ```
 
+  
+  ```shell Python (pip)
+  pip install "blaxel[telemetry]"
+  ```
+
+  </CodeGroup>
 - Import the package in your code:
 
-    <CodeGroup>
-    ```typescript TypeScript
-    import "@blaxel/telemetry";
-    ```
+  <CodeGroup>
 
-    ```python Python
-    import blaxel.telemetry
-    ```
-    </CodeGroup>
+  ```typescript TypeScript
+  import "@blaxel/telemetry";
+  ```
 
+  
+  ```python Python
+  import blaxel.telemetry
+  ```
+
+  </CodeGroup>
 
 ## 6. Test the agent locally
 
@@ -278,7 +291,7 @@ bl deploy
 The Blaxel CLI will prompt for the type of resource you are deploying. It will then auto-detect other details of your project and begin the deployment. The deployment process usually takes a few minutes, and you can watch progress from the Blaxel Console.
 
 <Note>
-Blaxel uses its default `Dockerfile` to build your agent. If you already have a `Dockerfile` in the root of your project directory, Blaxel will automatically use that instead. You can set custom parameters for an agent deployment (for example, the agent name, memory, environment, or custom entrypoint) by adding an optional [`blaxel.toml` file](/deployment-reference) in the root of your project directory.
+  Blaxel uses its default `Dockerfile` to build your agent. If you already have a `Dockerfile` in the root of your project directory, Blaxel will automatically use that instead. You can set custom parameters for an agent deployment (for example, the agent name, memory, environment, or custom entrypoint) by adding an optional [`blaxel.toml file`](/deployment-reference) in the root of your project directory.
 </Note>
 
 Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
@@ -298,6 +311,7 @@ curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-ag
   -H "Content-Type: application/json" \
   -d '{"prompt": "what is your name?"}'
 ```
+
 You should see a response from the agent to your query.
 
 You can also send a request through the Blaxel CLI:
@@ -307,7 +321,7 @@ bl run agent assistant-agent/query --data '{"prompt":"what is your name?"}'
 ```
 
 <Tip>
-Although deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
+  Although deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
 </Tip>
 
 That's it! You're ready to start building and deploying agents with Claude Agent SDK on Blaxel.
@@ -317,21 +331,21 @@ That's it! You're ready to start building and deploying agents with Claude Agent
 Want more info on developing and deploying agents on Blaxel? Check out the following resources:
 
 <Card title="Connect to a Blaxel sandbox from Claude Agent SDK" icon="thumbs-up" href="../Examples/Claude-Agent-SDK-MCP">
-Build an agent with Claude Agent SDK that can operate a Blaxel sandbox using MCP.
+  Build an agent with Claude Agent SDK that can operate a Blaxel sandbox using MCP.
 </Card>
 
 <Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="../Agents/Develop-an-agent-ts">
-Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
+  Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Give compute to your agent with the Python SDK " icon="python" href="../Agents/Develop-an-agent-py">
-Complete guide for using the Python SDK to develop an agent using Blaxel services.
+  Complete guide for using the Python SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Deploy your agent code to Blaxel" icon="server" href="../Agents/Deploy-an-agent">
-Complete guide for deploying AI agents on Blaxel.
+  Complete guide for deploying AI agents on Blaxel.
 </Card>
 
 <Card title="Manage environment variables" icon="lock" href="../Agents/Variables-and-secrets">
-Complete guide for managing variables and secrets when deploying on Blaxel.
+  Complete guide for managing variables and secrets when deploying on Blaxel.
 </Card>

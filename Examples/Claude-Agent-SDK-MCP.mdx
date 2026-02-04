@@ -1,7 +1,7 @@
 ---
-title: 'Connect to a Blaxel sandbox from Claude Agent SDK'
-description: 'Connect a Claude-powered agent to a Blaxel sandbox'
-sidebarTitle: 'Example: Connect from Claude Agent SDK'
+title: "Connect Claude Agent SDK to a Blaxel sandbox"
+description: "Connect Claude Agent SDK (Claude Code SDK) to a Blaxel sandbox and operate it using its MCP server."
+sidebarTitle: "Example: Connect from Claude Agent SDK"
 ---
 
 Every Blaxel sandbox exposes a Model Context Protocol (MCP) server that allows agents to operate the sandbox using tool calls. This includes [tools for process management, filesystem operations, and code generation](../Sandboxes/MCP#tools-available-in-the-mcp-server).
@@ -29,25 +29,30 @@ Agents deployed on Blaxel must expose an HTTP endpoint for requests.
 In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop, the Blaxel TypeScript SDK / Python SDK for sandbox operations, and [Express](https://expressjs.com/) (TypeScript) / [FastAPI](https://fastapi.tiangolo.com/) (Python) to handle HTTP requests and responses:
 
 <CodeGroup>
+
 ```shell TypeScript (npm)
 npm init # if new project
 npm install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
+
 
 ```shell TypeScript (pnpm)
 pnpm init # if new project
 pnpm install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
 
+
 ```shell TypeScript (yarn)
 yarn init # if new project
 yarn add @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
 
+
 ```shell TypeScript (bun)
 bun init -m --yes # if new project
 bun install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
+
 
 ```shell Python (pip)
 python3 -m venv .venv && source .venv/bin/activate # if new project
@@ -147,6 +152,7 @@ app.listen(port, host, () => {
 });
 ```
 
+
 ```python Python
 import os
 from fastapi import FastAPI, HTTPException, Request
@@ -226,7 +232,7 @@ if __name__ == "__main__":
 
 This creates a Blaxel sandbox named `my-sandbox` and an agent using the Claude Agent SDK.
 
-- The sandbox exposes a streamable HTTP MCP server at the sandbox's base URL: `https://<SANDBOX_BASE_URL>/mcp`.
+- The sandbox exposes a streamable [HTTP MCP server](/Sandboxes/MCP) at the sandbox's base URL: `https://<SANDBOX_BASE_URL>/mcp`. The base URL can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) under `metadata.url` in the sandbox.
 - The agent exposes an HTTP endpoint at `/query` to accept user requests.
 - The agent's HTTP service is bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment.
 - The agent configuration includes the sandbox MCP server URL and uses the Blaxel API key as credential to gain access to it (the `Authorization` header).
@@ -245,6 +251,7 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
   // ...
 }
 ```
+
 
 ```json TypeScript (bun)
 {
@@ -267,21 +274,21 @@ Blaxel isn't just a sandbox platform. It also lets you [co-host and deploy your 
 The following resources will help you go further:
 
 <Card title="Build and deploy an agent on Blaxel with Claude Agent SDK" icon="square-js" href="/Frameworks/Claude-Agent-SDK">
-Complete guide for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
+  Complete guide for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
 </Card>
 
 <Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
-Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
+  Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
-Complete guide for using the Python SDK to develop an agent using Blaxel services.
+  Complete guide for using the Python SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
-Complete guide for deploying AI agents on Blaxel.
+  Complete guide for deploying AI agents on Blaxel.
 </Card>
 
 <Card title="Manage environment variables" icon="lock" href="/Agents/Variables-and-secrets">
-Complete guide for managing variables and secrets when deploying on Blaxel.
+  Complete guide for managing variables and secrets when deploying on Blaxel.
 </Card>

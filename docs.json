@@ -35,10 +35,11 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
+              "Examples/Claude-Agent-SDK-MCP",
+              "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
               "Sandboxes/MCP",
-              "Sandboxes/Expiration",
               "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
               {
@@ -50,14 +51,13 @@
                 ]
               },
               {
-                "group": "Volumes \ud83c\udd95",
+                "group": "Volumes",
                 "pages": [
                   "Sandboxes/Volumes",
                   "Sandboxes/Volumes-templates"
                 ]
               },
-              "Sandboxes/Templates",
-              "Examples/Claude-Agent-SDK-MCP"
+              "Sandboxes/Templates"
             ]
           },
           {

@@ -1,24 +1,26 @@
 ---
-title: 'Expiration policies'
-description: 'Automatic deletion based on specific conditions'
+title: "Expiration policies"
+description: "Automatically delete sandboxes based on specific conditions."
 ---
 
-Blaxel supports automatic sandbox deletion based on specific expiration policies. This feature is available in all tiers, although TTL constraints differ. For example, in the "Free" tier, the TTL cannot exceed 7 days whereas, in higher tiers, unlimited TTLs are permitted.
+While Blaxel is designed for you to keep your sandboxes in standby perpetually, it also supports automatic deletion of sandboxes based on specific expiration policies. This is useful if you want to avoid keeping snapshot storage for a long tail of sandboxes that will never be reactivated again.
 
-<Note>Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses. Higher tiers have access to longer sandbox TTLs. You can see the TTL-related features of each tier in the [Blaxel Console](https://app.blaxel.dev/account/quota).</Note>
+<Note>
+  Blaxel has a [quota tiering system](https://app.blaxel.ai/account/quotas) that unlocks higher limits and features on the platform as your tier progresses. Some quota tiers enforce expiration dates (Tier 0 and 1, with respectively up to 7 and 30 days). In higher tiers, unlimited persistence is permitted.
+</Note>
 
-Automatic deletion differs from the automatic standby (*scale-to-zero*) which happens to all sandboxes when inactive and where the memory and filesystem are snapshotted to be resumed instantly.
+Automatic deletion differs from the automatic standby (_scale-to-zero_) which happens to**all sandboxes**  when inactive and where the memory and filesystem are snapshotted to be resumed instantly.
 
 ## Expiration policies
 
 The following options are available for sandbox expiry and deletion:
 
-- expire at a specific date using the `expires` parameter
 - expire after a total maximum lifetime (time-to-live or TTL) using the `ttl` parameter
 - expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
+- expire at a specific date using the `expires` parameter
 
 <Note>
-If these parameters are absent, sandboxes will not be deleted.
+  If these parameters are absent, sandboxes will not be deleted.
 </Note>
 
 ## Configure sandbox expiry rules at creation
@@ -27,7 +29,7 @@ You can define a sandbox's time-to-live (TTL) configuration at creation time:
 
 <CodeGroup>
 
-```typescript TypeScript {11-23}
+```typescript TypeScript {11,12,13,14,15,16,17,18,19,20,21,22,23}
 import { SandboxInstance } from "@blaxel/core";
 
 // Create a new sandbox
@@ -53,7 +55,8 @@ const sandbox = await SandboxInstance.create({
 });
 ```
 
-```python Python {11-23}
+
+```python Python {11,12,13,14,15,16,17,18,19,20,21,22,23}
 from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
 
 # Create a new sandbox
@@ -100,6 +103,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
 ```
 
+
 ```python Python
 from blaxel.core import SandboxInstance
 
@@ -123,6 +127,7 @@ await SandboxInstance.updateLifecycle("my-sandbox", {
   ]
 });
 ```
+
 
 ```python Python
 from blaxel.core import SandboxInstance

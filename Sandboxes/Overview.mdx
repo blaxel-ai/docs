@@ -1,11 +1,7 @@
 ---
-
-title: 'Sandboxes'
-
+title: "Sandboxes"
 sidebarTitle: "Overview"
-
-description: 'Lightweight virtual machines where your agents can run AI code with sub-25ms cold starts.'
-
+description: "Lightweight virtual machines where your agents can run AI code with sub-25ms cold starts."
 ---
 
 Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
@@ -15,18 +11,18 @@ They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/f
 Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity**. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 <img
-className="block dark:hidden"
-src="/img/general/sbx-lifecycle-light.png"
-alt="Lifecycle of Blaxel Sandboxes"
+  className="block dark:hidden"
+  src="/img/general/sbx-lifecycle-light.png"
+  alt="Lifecycle of Blaxel Sandboxes"
 />
 
 <img
-className="hidden dark:block"
-src="/img/general/sbx-lifecycle-dark.png"
-alt="Lifecycle of Blaxel Sandboxes"
+  className="hidden dark:block"
+  src="/img/general/sbx-lifecycle-dark.png"
+  alt="Lifecycle of Blaxel Sandboxes"
 />
 
-In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration).
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
 
 ## Use cases
 
@@ -44,18 +40,16 @@ Some examples of use cases include:
 Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
+  The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
-The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+  1. when running on Blaxel, authentication is handled automatically
+  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+  3. environment variables from your machine
+  4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
-1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
-3. environment variables from your machine
-4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+  When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
-When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
-
-When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
-
+  When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
 </Accordion>
 
 <CodeGroup>
@@ -73,6 +67,7 @@ const sandbox = await SandboxInstance.create({
   region: "us-pdx-1"   // optional; if not specified, Blaxel will choose a default region
 });
 ```
+
 
 ```python Python
 import asyncio
@@ -114,6 +109,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
 });
 ```
 
+
 ```python Python
 import asyncio
 from blaxel.core import SandboxInstance
@@ -141,42 +137,41 @@ if __name__ == "__main__":
 Although less common, it is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console.
 
 <Tabs>
-<Tab title="CLI">
-```shell
-bl new sandbox my-sandbox
-cd my-sandbox
-bl deploy
-```
+  <Tab title="CLI">
+    ```shell
+    bl new sandbox my-sandbox
+    cd my-sandbox
+    bl deploy
+    ```
 
-This command initializes a new sandbox project and configuration file in the named directory `my-sandbox` and then deploys the sandbox on Blaxel.
+    This command initializes a new sandbox project and configuration file in the named directory `my-sandbox` and then deploys the sandbox on Blaxel.
 
-The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [Learn more about the `blaxel.toml` file](/deployment-reference).
+    The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [`Learn more about the blaxel.toml file`](/deployment-reference).
 
-<Tip>
-Running `bl deploy` here also saves the image to be reused later as a template.
-</Tip>
-
-</Tab>
-<Tab title="Console">
-
-- Log in to the [Blaxel Console](https://app.blaxel.ai/).
-- Click **Sandboxes** in the left navigation menu.
-- Click **+Create sandbox** -> **Deploy from console**.
-- Select an image template.
-- On the next page, configure the sandbox resources, including memory, time-to-live and region.
-- Click **Next** to proceed.
-- On the next page, reconfirm the sandbox parameters. Click **Create** to create the sandbox.
-
-</Tab>
+    <Tip>
+      Running `bl deploy` here also saves the image to be reused later as a template.
+    </Tip>
+  </Tab>
+  <Tab title="Console">
+    - Log in to the [Blaxel Console](https://app.blaxel.ai/).
+    - Click **Sandboxes** in the left navigation menu.
+    - Click **\+Create sandbox** -\> **Deploy from console**.
+    - Select an image template.
+    - On the next page, configure the sandbox resources, including memory, time-to-live and region.
+    - Click **Next** to proceed.
+    - On the next page, reconfirm the sandbox parameters. Click **Create** to create the sandbox.
+  </Tab>
 </Tabs>
 
 ## Understand sandbox configuration
 
 ### Images
 
-<Info>The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/{NAME}:latest` (e.g. *blaxel/nextjs:latest*).</Info>
+<Info>
+  The list of public images [can be found here](https://github.com/blaxel-ai/sandbox/tree/main/hub). To create a sandbox with one of those images, enter `blaxel/{NAME}:latest` (e.g. _blaxel/nextjs:latest_).
+</Info>
 
-[Custom sandbox images](Templates) (or *templates*) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
+[Custom sandbox images](Templates) (or _templates_) enable you to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
 
 ### Memory and filesystem
 
@@ -217,6 +212,7 @@ const sandbox = await SandboxInstance.create({
 });
 ```
 
+
 ```python Python
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
@@ -227,6 +223,7 @@ sandbox = await SandboxInstance.create({
   "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
 })
 ```
+
 </CodeGroup>
 
 You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Console:
@@ -253,6 +250,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.get("my-sandbox");
 ```
 
+
 ```python Python
 from blaxel.core import SandboxInstance
 
@@ -262,7 +260,9 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 </CodeGroup>
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).</Tip>
+<Tip>
+  Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox).
+</Tip>
 
 ## Delete a sandbox
 
@@ -270,103 +270,58 @@ Delete a sandbox by calling:
 
 - the class-level `delete()` method with the sandbox `name` as argument, or
 
-    <CodeGroup>
-    ```typescript TypeScript
-    import { SandboxInstance } from "@blaxel/core";
+  <CodeGroup>
 
-    // Delete sandbox using class-level method
-    await SandboxInstance.delete("my-sandbox");
-    ```
+  ```typescript TypeScript
+  import { SandboxInstance } from "@blaxel/core";
+  
+  // Delete sandbox using class-level method
+  await SandboxInstance.delete("my-sandbox");
+  ```
 
-    ```python Python
-    from blaxel.core import SandboxInstance
+  
+  ```python Python
+  from blaxel.core import SandboxInstance
+  
+  # Delete sandbox using class-level method
+  await SandboxInstance.delete("my-sandbox")
+  ```
 
-    # Delete sandbox using class-level method
-    await SandboxInstance.delete("my-sandbox")
-    ```
-    </CodeGroup>
-
+  </CodeGroup>
 - by calling the instance-level `delete()` method:
 
-    <CodeGroup>
-    ```typescript TypeScript
-    import { SandboxInstance } from "@blaxel/core";
+  <CodeGroup>
 
-    // Get existing sandbox
-    const sandbox = await SandboxInstance.get("my-sandbox");
+  ```typescript TypeScript
+  import { SandboxInstance } from "@blaxel/core";
+  
+  // Get existing sandbox
+  const sandbox = await SandboxInstance.get("my-sandbox");
+  
+  // Delete sandbox using instance-level method
+  await sandbox.delete()
+  ```
 
-    // Delete sandbox using instance-level method
-    await sandbox.delete()
-    ```
+  
+  ```python Python
+  from blaxel.core import SandboxInstance
+  
+  # Get existing sandbox
+  sandbox = await SandboxInstance.get("my-sandbox")
+  
+  # Delete sandbox using instance-level method
+  await sandbox.delete()
+  ```
 
-    ```python Python
-    from blaxel.core import SandboxInstance
-
-    # Get existing sandbox
-    sandbox = await SandboxInstance.get("my-sandbox")
-
-    # Delete sandbox using instance-level method
-    await sandbox.delete()
-    ```
-    </CodeGroup>
-
-## Update a sandbox's expiry rules
-
-You can update a sandbox's time-to-live (TTL) configuration after it has been created:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Update sandbox TTL
-const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Update sandbox TTL
-sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
-```
-
-</CodeGroup>
-
-You can also update the expiration policy of a sandbox after it has been created:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Update sandbox expiration policy
-await SandboxInstance.updateLifecycle("my-sandbox", {
-  expirationPolicies: [
-    { type: "ttl-max-age", value: "30m", action: "delete" }
-  ]
-});
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-# Update sandbox expiration policy
-await SandboxInstance.update_lifecycle(
-    "my-sandbox",
-    {
-        "expiration_policies": [
-            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
-        ]
-    },
-)
-```
-</CodeGroup>
+  </CodeGroup>
 
 ## Upgrade a sandbox's API
 
 Every Blaxel sandbox includes a [custom API binary](./Templates#how-sandbox-templates-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
 
-<Note>This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.</Note>
+<Note>
+  This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.
+</Note>
 
 <CodeGroup>
 
@@ -379,6 +334,7 @@ const sandbox = await SandboxInstance.get("my-sandbox")
 // Upgrade sandbox API to "latest"
 await sandbox.system.upgrade({ version: "latest" })
 ```
+
 
 ```python Python
 from blaxel.core import SandboxInstance
@@ -400,22 +356,21 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
 
 - From the Blaxel Console, by visiting the detail page for your sandbox in your web browser and selecting the **Terminal** tab:
 
-    ![image.png](Overview/connect-web-terminal.png)
-
+  ![image.png](Overview/connect-web-terminal.png)
 - From your local host, by running:
 
-    ```bash
-    bl connect sandbox your-sandbox-name
-    ```
+  ```bash
+  bl connect sandbox your-sandbox-name
+  ```
 
-    ![image.png](Overview/connect-terminal.png)
+  ![image.png](Overview/connect-terminal.png)
 
 ## Sandbox statuses
 
 Blaxel sandboxes go from standby to active in **under 25 milliseconds**, and scale back down to standby **after a few seconds of inactivity**, maintaining their previous state after scaling down.
 
-- In standby mode: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
-- In active mode: You are charged for CPU/memory and storage while a sandbox is in active mode. Sandboxes automatically return to standby mode after 1 second of inactivity.
+- In STANDBY mode: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
+- In ACTIVE mode: You are charged for CPU/memory and storage while a sandbox is in active mode. Sandboxes automatically return to standby mode after 1 second of inactivity.
 
 The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds.
 
@@ -432,7 +387,7 @@ The possible sandbox statuses are:
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
 
 <Note>
-`UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
+  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
 </Note>
 
 ### Best practices
@@ -442,42 +397,55 @@ Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up an
 - If the end-user or agent is expected to continue a session soon, just leave the sandbox be. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
 - The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
 - Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](Volumes).
-- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~2–4 seconds) and restart processes to restore the same state.
-- For automatic cleanup, set TTLs when creating your sandbox to delete it after a set idle duration or maximum age.
+- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~400–600ms) and restart processes to restore the same state.
+- For automatic cleanup, set [TTLs](/Sandboxes/Expiration) when creating your sandbox to delete it after a set idle duration or maximum age.
 - When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
 
 <CardGroup>
-<Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
-Execute and manage processes in sandboxes.
-</Card>
-<Card title="File system operations" icon="file-lines" href="/Sandboxes/Filesystem">
-Manage directories and files in sandboxes.
-</Card>
-<Card title="Tools for AI codegen" icon="file-lines" href="/Sandboxes/Codegen-tools">
-Manage codebases with tools specifically designed for code generation.
-</Card>
-<Card title="Log streaming" icon="table-list" href="/Sandboxes/Log-streaming">
-Access logs generated in a sandbox.
-</Card>
-<Card title="Ports" icon="network-wired" href="/Sandboxes/Ports">
-Expose and connect to ports of a sandbox.
-</Card>
-<Card title="Preview in real-time" icon="eye" href="/Sandboxes/Preview-url">
-Render code in real-time via a direct preview URL.
-</Card>
-<Card title="Sessions" icon="user" href="/Sandboxes/Sessions">
-Manage temporary sessions to connect to sandboxes from a frontend client.
-</Card>
-<Card title="Volumes" icon="database" href="/Sandboxes/Volumes">
-Attach volumes to sandboxes to persist files.
-</Card>
-<Card title="Templates" icon="box" href="/Sandboxes/Templates">
-Create custom sandbox templates.
-</Card>
+  <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
+    Automatically delete sandboxes based on specific conditions.
+  </Card>
+  <Card title="MCP server" icon="robot" href="/Sandboxes/MCP">
+    Interact with a sandbox through its MCP server.
+  </Card>
 </CardGroup>
+
+<CardGroup>
+  <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
+    Execute and manage processes in sandboxes.
+  </Card>
+  <Card title="File system operations" icon="file-lines" href="/Sandboxes/Filesystem">
+    Manage directories and files in sandboxes.
+  </Card>
+  <Card title="Tools for AI codegen" icon="file-lines" href="/Sandboxes/Codegen-tools">
+    Manage codebases with tools specifically designed for code generation.
+  </Card>
+  <Card title="Log streaming" icon="table-list" href="/Sandboxes/Log-streaming">
+    Access logs generated in a sandbox.
+  </Card>
+  <Card title="Ports" icon="network-wired" href="/Sandboxes/Ports">
+    Expose and connect to ports of a sandbox.
+  </Card>
+  <Card title="Preview in real-time" icon="eye" href="/Sandboxes/Preview-url">
+    Render code in real-time via a direct preview URL.
+  </Card>
+  <Card title="Sessions" icon="user" href="/Sandboxes/Sessions">
+    Manage temporary sessions to connect to sandboxes from a frontend client.
+  </Card>
+  <Card title="Volumes" icon="database" href="/Sandboxes/Volumes">
+    Attach volumes to sandboxes to persist files.
+  </Card>
+  <Card title="Templates" icon="box" href="/Sandboxes/Templates">
+    Create custom sandbox templates.
+  </Card>
+</CardGroup>
+
+<Card title="Example: Connect Claude Code to a Blaxel Sandbox" icon="cube" iconType="light" href="../Examples/Claude-Agent-SDK-MCP">
+  Connect a Claude Agent SDK agent to a Blaxel sandbox and operate it using its MCP server.
+</Card>
 
 Or explore the Sandbox API reference:
 
 <Card title="Sandbox API" icon="code" href="https://docs.blaxel.ai/api-reference/filesystem">
-Access the your sandbox with an HTTP REST API.
+  Access the your sandbox with an HTTP REST API.
 </Card>
