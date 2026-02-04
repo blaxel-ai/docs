@@ -82,13 +82,12 @@ If you prefer to set up authentication manually or are using a different CI plat
 - Set the API key as an environment variable in your CI environment:
 
     ```shell
-    export BL_API_KEY=your-api-key-here
+    export BL_API_KEY=YOUR-API-KEY
     ```
 
-- Download and install the Blaxel CLI in your CI environment and log in to your Blaxel workspace:
+- Add steps to [Download and install the Blaxel CLI](/cli-reference/introduction#install) in your CI environment and log in to your Blaxel workspace:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh | BINDIR=/usr/local/bin sudo -E sh
     bl login YOUR-WORKSPACE
     ```
 
