@@ -45,7 +45,37 @@ curl 'https://api.blaxel.ai/v0/models' \
 
 ### Use API keys in CI
 
+#### GitHub Action
+
 The easiest way to integrate the Blaxel CLI into a CI pipeline is with the official [Blaxel GitHub Action](https://github.com/blaxel-ai/bl-action).
+
+To use this, add a new secret to your GitHub repository named `BL_API_KEY` and set it to the value of your Blaxel API key. You can then use the GitHub Action in a GitHub workflow, as shown below:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to Blaxel
+        uses: blaxel-ai/bl-action@v1
+        with:
+          workspace: "YOUR_WORKSPACE"
+          apikey: ${{ secrets.BL_API_KEY }}
+      - name: Deploy to Blaxel
+        run: bl deploy
+```
+
+#### Manual configuration
 
 If you prefer to set up authentication manually or are using a different CI platform, follow these steps:
 
@@ -59,7 +89,7 @@ If you prefer to set up authentication manually or are using a different CI plat
 
     ```shell
     curl -fsSL https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh | BINDIR=/usr/local/bin sudo -E sh
-    bl login your-workspace
+    bl login YOUR-WORKSPACE
     ```
 
 You can now use the Blaxel CLI to interact with your workspace, including creating sandboxes, executing batch jobs, or deploying agents or MCP servers.
