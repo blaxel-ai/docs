@@ -310,6 +310,89 @@ Delete a sandbox by calling:
     ```
     </CodeGroup>
 
+## Update a sandbox's expiry rules
+
+You can update a sandbox's time-to-live (TTL) configuration after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
+```
+
+</CodeGroup>
+
+You can also update the expiration policy of a sandbox after it has been created:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox expiration policy
+await SandboxInstance.updateLifecycle("my-sandbox", {
+  expirationPolicies: [
+    { type: "ttl-max-age", value: "30m", action: "delete" }
+  ]
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox expiration policy
+await SandboxInstance.update_lifecycle(
+    "my-sandbox",
+    {
+        "expiration_policies": [
+            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
+        ]
+    },
+)
+```
+</CodeGroup>
+
+## Upgrade a sandbox's API
+
+Every Blaxel sandbox includes a [custom API binary](./Templates#how-sandbox-templates-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
+
+<Note>This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.</Note>
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+// Upgrade sandbox API to "latest"
+await sandbox.system.upgrade({ version: "latest" })
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Upgrade sandbox API to "latest"
+await sandbox.system.upgrade(version="latest")
+```
+
+</CodeGroup>
+
+You can find a list of available API versions in [Blaxel's public repository](https://github.com/blaxel-ai/sandbox/).
 
 ## Connect to a sandbox with an interactive terminal
 
