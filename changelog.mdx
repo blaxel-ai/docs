@@ -17,6 +17,25 @@ description: 'Keep track of changes and updates on Blaxel.'
 
 <Update label="2026-01-31">
 
+### Clearer visibility of sandbox expiry time
+
+- Added new read-only parameter, `expires_in`, to sandbox metadata that specifies the exact date and time when a sandbox will terminate due to its TTL or lifecycle policy.
+
+</Update>
+
+<Update label="2026-01-31">
+
+### Improvements to sandbox process management and logging
+
+- Added ability to view logs for specific processes within a sandbox: `bl logs sandbox my-sandbox my-process`
+- Support for real-time log streaming with `-f`/`--follow` flag for sandbox processes (similar to tail -f)
+- Added new command to list processes in a sandbox: `bl get sandbox my-sandbox process` (or `bl get sbx my-sandbox ps`)
+- New `.oyaml` and `.ojson` output formats for process listings
+
+</Update>
+
+<Update label="2026-01-31">
+
 ### The Big CLI Upgrade
 
 - Added shell completion for CLI commands including workspace, sandbox, job, agent, function, model, volume, policy, and image names
