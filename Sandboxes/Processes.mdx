@@ -295,7 +295,7 @@ To use this feature, you must first:
     ```
 
     ```shell Python (uv)
-    uv pip install blaxel=0.2.63-dev.68
+    uv pip install blaxel==0.2.63-dev.68
     ```
 
     ```shell TypeScript (npm)
@@ -375,18 +375,18 @@ from blaxel.core import SandboxInstance
 sandbox = await SandboxInstance.get("my-sandbox")
 
 await sandbox.process.exec({
-    "name": "worker",
-    "command": "npm run start:worker",
+    "name": "api-server",
+    "command": "npm run start:api",
     "keep_alive": True,
     "timeout": 3600
-});
+})
 
 await sandbox.process.exec({
   "name": "worker",
   "command": "npm run start:worker",
   "keep_alive": True,
   "timeout": 3600
-});
+})
 
 ```
 </CodeGroup>
