@@ -16,7 +16,7 @@ This packaging makes Blaxel **fully agnostic of the framework** used to develop 
 
 ## Overview of the development/deployment process
 
-Blaxel’s development paradigm is designed to have a minimal footprint on your usual development process. 
+Blaxel’s development paradigm is designed to have a minimal footprint on your usual development process.
 
 Your custom code remains platform-agnostic: you can deploy it on Blaxel or through traditional methods like Docker containers on VMs or Kubernetes clusters. When you deploy on Blaxel (CLI command `bl deploy`), Blaxel runs a specialized build process that integrates your code with its [Global Agentics Network](../Infrastructure/Global-Inference-Network) features.
 
@@ -25,7 +25,7 @@ Your custom code remains platform-agnostic: you can deploy it on Blaxel or throu
 Here is a high-level overview of how agents can be built and deployed using Blaxel:
 
 1. **Initialize a new project by creating a local git repository**. This will contain your agent's logic and connections, as well as all required dependencies. For quick setup, use [Blaxel CLI](../cli-reference/introduction) command `bl new agent`, which creates a pre-scaffolded local repository ready for development that you can deploy to Blaxel in one command.
-2. **Develop and test your agent iteratively in a local environment**. 
+2. **Develop and test your agent iteratively in a local environment**.
     1. Develop your agent logic however you want (using an agentic framework or any custom TypeScript/Python code). Write your own functions as needed. Use Blaxel SDK commands to connect to resources from Blaxel such as model APIs and tool servers.
     2. Use Blaxel CLI command `bl serve` to serve your agent on your local machine. The execution workflow—including agent logic, functions, and model API calls—is broken down and sandboxed exactly as it would be when served on Blaxel.
 3. **Deploy your agent**. Use Blaxel CLI command `bl deploy` to build and deploy your agent on Blaxel. You can manage a development & production life-cycle by deploying multiple agents, with the according prefix or label.
@@ -34,18 +34,22 @@ Here is a high-level overview of how agents can be built and deployed using Blax
 
 Check out the following guide to learn how to develop and deploy an agent using your preferred programming language on Blaxel.
 
-<CardGroup cols={2}>  
+<CardGroup cols={2}>
 
-<Card title="TypeScript" icon="js" href="/Agents/Develop-an-agent-ts">    
+<Card title="TypeScript" icon="js" href="/Agents/Develop-an-agent-ts">
 Develop your AI agents in TypeScript using the Blaxel SDK.
 </Card>
 
-<Card title="Python" icon="python" href="/Agents/Develop-an-agent-py">    
+<Card title="Python" icon="python" href="/Agents/Develop-an-agent-py">
 Develop your AI agents in Python using the Blaxel SDK.
 </Card>
 
 </CardGroup>
 
+<Card title="Develop and deploy an agent on Blaxel using Claude Agent SDK" icon="rocket" href="../Frameworks/Claude-Agent-SDK">
+See an example of building and deploying an agent on Blaxel with Claude Agent SDK.
+</Card>
+
 <Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
-Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint. 
+Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
 </Card>

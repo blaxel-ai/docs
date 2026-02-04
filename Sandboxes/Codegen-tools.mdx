@@ -16,7 +16,7 @@ Traditional code generation requires generating the entire files every time, whi
 
 ### Configure environment variables
 
-Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account. 
+Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account.
 
 <Tabs>
 <Tab title="Morph">
@@ -193,3 +193,5 @@ Use the following codegen-optimized functions by making tool calls through the M
 6. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
 7. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
 8. `codegenRerank` - Performs semantic search/reranking on code files in a directory.
+
+[Learn how to build and deploy a Claude Agent SDK-powered agent that performs tasks in a sandbox using the sandbox's MCP server](../Examples/Claude-Agent-SDK-MCP).

@@ -56,7 +56,8 @@
                   "Sandboxes/Volumes-templates"
                 ]
               },
-              "Sandboxes/Templates"
+              "Sandboxes/Templates",
+              "Examples/Claude-Agent-SDK-MCP"
             ]
           },
           {
@@ -119,6 +120,7 @@
                 "group": "Frameworks",
                 "pages": [
                   "Frameworks/Overview",
+                  "Frameworks/Claude-Agent-SDK",
                   "Frameworks/LangChain",
                   "Frameworks/CrewAI",
                   "Frameworks/LlamaIndex",
