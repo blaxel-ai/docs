@@ -1,9 +1,9 @@
 ---
-title: 'MCP server'
-description: 'Built-in MCP server that allows agents to operate a sandbox using tool calls'
+title: "MCP server"
+description: "Built-in MCP server that allows agents to operate a sandbox using tool calls."
 ---
 
-Every sandbox is exposed via an MCP server that allows agents to **operate a sandbox using tool calls.**
+Every sandbox is exposed via an MCP server that allows agents to **operate it using tool calls.**
 
 ## Connect to the MCP server
 
@@ -13,14 +13,15 @@ The MCP server operates through streamable HTTP at the sandbox's base URL:
 https://<SANDBOX_BASE_URL>/mcp
 ```
 
+The base URL of a sandbox can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) via the management API of sandboxes under `metadata.url`.
+
 Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) though the endpoint shown above. Instructions for some popular applications are provided below.
 
 <Note>
-You must provide your [Blaxel API key](../Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+  You must provide your [Blaxel API key](../Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
-- Required: `Authorization: Bearer <APIKEY>`
-- Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
-
+  - Required: `Authorization: Bearer <APIKEY>`
+  - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 </Note>
 
 ### Add to Cursor
@@ -50,6 +51,8 @@ claude mcp add --transport http blaxel https://<SANDBOX_BASE_URL>/mcp \\
   --header "Authorization: Bearer <APIKEY>" \\
   --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
+
+[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](../Examples/Claude-Agent-SDK-MCP).
 
 ### Add to Windsurf
 
@@ -94,46 +97,51 @@ extensions:
 ## Tools available in the MCP server
 
 1. Process management:
-    1. `processExecute` - Execute a command.
-    2. `processGet` - Get process information by identifier (PID or name).
-    3. `processGetLogs` - Get logs for a specific process.
-    4. `processKill` - Kill a specific process.
-    5. `processStop` - Stop a specific process.
-    6. `processesList` - List all running processes.
-2. Filesystem operations
-    1. `fsDeleteFileOrDirectory` - Delete a file or directory.
-    2. `fsGetWorkingDirectory` - Get the current working directory.
-    3. `fsListDirectory` - List contents of a directory.
-    4. `fsReadFile` - Read contents of a file.
-    5. `fsWriteFile` - Create or update a file.
-3. Tools specialized for code generation AI:
-    1. `codegenEditFile` - Propose and apply a targeted edit to a specified file, with instructions and partial contents. This tool uses [Morph](https://morphllm.com/) or [Relace](https://relace.ai/) for fast edits, and requires the corresponding API key set as an environment variable when creating the sandbox.
-    2. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
-    3. `codegenFileSearch` - Fast fuzzy filename search in the project.
-    4. `codegenGrepSearch` - Run fast, exact regex/text searches on files for locating patterns or strings.
-    5. `codegenListDir` - List contents of a directory in the project.
-    6. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
-    7. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
-    8. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
+   1. `processExecute` - Execute a command.
+   2. `processGet` - Get process information by identifier (PID or name).
+   3. `processGetLogs` - Get logs for a specific process.
+   4. `processKill` - Kill a specific process.
+   5. `processStop` - Stop a specific process.
+   6. `processesList` - List all running processes.
+1. Filesystem operations
+   1. `fsDeleteFileOrDirectory` - Delete a file or directory.
+   2. `fsGetWorkingDirectory` - Get the current working directory.
+   3. `fsListDirectory` - List contents of a directory.
+   4. `fsReadFile` - Read contents of a file.
+   5. `fsWriteFile` - Create or update a file.
+2. Tools specialized for code generation AI:
+   1. `codegenEditFile` - Propose and apply a targeted edit to a specified file, with instructions and partial contents. This tool uses [Morph](https://morphllm.com/) or [Relace](https://relace.ai/) for fast edits, and requires the corresponding API key set as an environment variable when creating the sandbox.
+   2. `codegenCodebaseSearch` - Find semantic code snippets from the codebase based on a natural language query.
+   3. `codegenFileSearch` - Fast fuzzy filename search in the project.
+   4. `codegenGrepSearch` - Run fast, exact regex/text searches on files for locating patterns or strings.
+   5. `codegenListDir` - List contents of a directory in the project.
+   6. `codegenParallelApply` - Plan and apply similar changes to multiple locations/files simultaneously.
+   7. `codegenReadFileRange` - Read a specific range of lines in a file (max 250 lines at once).
+   8. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
 
 Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph:
 
 <CodeGroup>
+
 ```typescript TypeScript
 import { blTools } from "@blaxel/vercel";
 
 const tools = await blTools([`sandbox/${sandboxName}`])
 ```
 
+
 ```python Python
 from blaxel.langgraph import bl_tools
 
 tools = await bl_tools([f"sandbox/{sandbox_name}"])
 ```
+
 </CodeGroup>
 
 [Read more documentation](../Functions/Invoke-functions) on connecting to the MCP server directly from your code.
 
-## Example: Connect to a sandbox using Claude Agent SDK
+## Example: Connect to a sandbox from Claude Agent SDK
 
-[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](../Examples/Claude-Agent-SDK-MCP).
+<Card title="Connect Claude Code to a Blaxel Sandbox" icon="cube" iconType="light" href="../Examples/Claude-Agent-SDK-MCP">
+  Build a Claude Agent SDK agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server.
+</Card>
