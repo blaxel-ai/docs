@@ -453,7 +453,7 @@ export function hmrVisibility(options: HMRVisibilityOptions = {}): Plugin {
 // HMR Visibility Manager - Disconnects HMR when tab is hidden
 (function() {
   const log = (...args) => {
-    if (${debug}) {
+    if (${JSON.stringify(debug)}) {
       console.log('[HMR Visibility]', ...args);
     }
   };
