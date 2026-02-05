@@ -460,7 +460,7 @@ export function hmrVisibility(options: HMRVisibilityOptions = {}): Plugin {
 
   let disconnectTimer = null;
   let isTabVisible = !document.hidden;
-  const DISCONNECT_DELAY = ${disconnectDelay};
+  const DISCONNECT_DELAY = ${JSON.stringify(disconnectDelay)};
 
   // Store reference to original functions
   const OriginalWebSocket = window.WebSocket;
