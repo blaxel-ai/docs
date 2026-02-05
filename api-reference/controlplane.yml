@@ -68,6 +68,12 @@ components:
           default: true
         policies:
           $ref: '#/components/schemas/PoliciesList'
+        public:
+          type: boolean
+          description: When true, the agent is publicly accessible without authentication.
+            Only available for mk3 generation.
+          example: false
+          default: false
         repository:
           $ref: '#/components/schemas/Repository'
         revision:
@@ -513,6 +519,12 @@ components:
           $ref: '#/components/schemas/IntegrationConnectionsList'
         policies:
           $ref: '#/components/schemas/PoliciesList'
+        public:
+          type: boolean
+          description: When true, the function is publicly accessible without authentication.
+            Only available for mk3 generation.
+          example: false
+          default: false
         revision:
           $ref: '#/components/schemas/RevisionConfiguration'
         runtime:
