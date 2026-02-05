@@ -1,9 +1,6 @@
 ---
-
-title: 'Deploy jobs'
-
-description: 'Deploy your batch jobs on Blaxel as serverless autoscalable endpoints.'
-
+title: "Deploy jobs"
+description: "Deploy your batch jobs on Blaxel as serverless autoscalable endpoints."
 ---
 
 This guide assumes you have developed a job locally.
@@ -11,21 +8,19 @@ This guide assumes you have developed a job locally.
 The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when jobs are deployed.
 
 <Accordion title="Set up authentication to Blaxel">
+  The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
-The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+  1. when running on Blaxel, authentication is handled automatically
+  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+  3. environment variables from your machine
+  4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
-1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
-3. environment variables from your machine
-4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+  When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
-When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
-
-When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
-
+  When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
 </Accordion>
 
-### Deploy on production
+## Deploy on production
 
 You can deploy the job in order to make the entrypoint function (by default: `index.ts` / `server.py`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
 
@@ -35,12 +30,12 @@ Run the following command to build and deploy a local job on Blaxel:
 bl deploy
 ```
 
-### Run a job
+## Run a job
 
 Each deployed job has an HTTP endpoint to trigger a batch execution. You can find this endpoint in the Blaxel console, on the detail page for your deployed job.
 
 <Note>
-HTTP endpoints are only available for deployed jobs.
+  HTTP endpoints are only available for deployed jobs.
 </Note>
 
 You can invoke a job in multiple ways:
@@ -49,11 +44,12 @@ You can invoke a job in multiple ways:
 - using the Blaxel CLI;
 - scheduling it to run periodically via a cron.
 
-**SDK**
+### **SDK**
 
 Start batch job execution using the SDK:
 
 <CodeGroup>
+
 ```tsx TypeScript
 import { blJob } from "@blaxel/core";
 
@@ -67,6 +63,7 @@ async function execJob() {
 
 execJob().catch(console.error);
 ```
+
 
 ```python Python (asynchronous)
 from blaxel.core.jobs import bl_job
@@ -83,6 +80,7 @@ async def exec_job():
 asyncio.run(exec_job())
 ```
 
+
 ```python Python (synchronous)
 from blaxel.core.jobs import bl_job
 
@@ -96,9 +94,10 @@ def exec_job():
 
 exec_job()
 ```
+
 </CodeGroup>
 
-**API**
+### **API**
 
 Start batch job execution by [calling the inference API for your deployed batch job](../api-reference/inference).
 
@@ -146,6 +145,7 @@ async function execJob() {
 execJob().catch(console.error);
 ```
 
+
 ```python Python
 import os
 import aiohttp
@@ -179,9 +179,10 @@ async def exec_job():
 
 asyncio.run(exec_job())
 ```
+
 </CodeGroup>
 
-**CLI**
+### **CLI**
 
 For deployed jobs, you can start a batch job execution by running:
 
@@ -202,9 +203,9 @@ bl run job <<JOB-NAME>> --local --file batches/sample-batch.json
 
 You can cancel a job execution from the Blaxel Console or via API.
 
-**Cron schedule**
+### **Cron schedule**
 
-Set a job on a cron schedule by adding the following to the `blaxel.toml` configuration file (read full reference on *blaxel.toml* down below):
+Set a job on a cron schedule by adding the following to the `blaxel.toml` configuration file (read full reference on _blaxel.toml_ down below):
 
 ```toml
 [[triggers]]
@@ -221,24 +222,24 @@ You can set a maximum number of **retries per task** in the job definition. Chec
 
 ### Metrics
 
-The **Blaxel Console** > **Dashboard** displays detailed job metrics, including the number of active jobs, failures, and requests (both count and requests per second (RPS)) across all deployments.
+The **Blaxel Console** \> **Dashboard** displays detailed job metrics, including the number of active jobs, failures, and requests (both count and requests per second (RPS)) across all deployments.
 
 ![image](./Overview/job-metrics.png)
 
-### Deploy with a Dockerfile
+## Deploy with a Dockerfile
 
 While Blaxel uses predefined, optimized container images to build and deploy your code, you can also deploy your workload using your own [Dockerfile](https://docs.docker.com/reference/dockerfile/).
 
 <Card title="Deploy using Dockerfile" icon="folder-tree" href="/Jobs/Deploy-dockerfile-jobs">
-Deploy resources using a custom Dockerfile.
+  Deploy resources using a custom Dockerfile.
 </Card>
 
-### Deploy multiple jobs at once
+## Deploy multiple jobs at once
 
 Using a custom Dockerfile allows for [deploying multiple jobs from the same repository](Deploy-multiple-jobs) with shared dependencies.
 
 <Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Jobs/Deploy-multiple-jobs">
-Deploy multiple jobs with shared context from a single repository.
+  Deploy multiple jobs with shared context from a single repository.
 </Card>
 
 ## Template directory reference
@@ -340,8 +341,8 @@ tasks = [
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
 - `[tasks]` sections allows to specify
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to schedule job executions.
-    - `type = "http"` lets you create an HTTP endpoint to execute the job
-    - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
-        - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
+  - `type = "http"` lets you create an HTTP endpoint to execute the job
+  - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
+    - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
 
-    A private HTTP endpoint is always created by default, even if you don’t define any trigger here.
+  A private HTTP endpoint is always created by default, even if you don’t define any trigger here.
