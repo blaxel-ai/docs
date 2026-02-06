@@ -20,8 +20,6 @@ Long-lived tokens are easier to use but are less secure as their validity can go
 
 Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration can be infinite.
 
-### Use API keys
-
 API keys can be used in the Blaxel APIs, CLI and SDK.
 
 **To authenticate in the SDKs**, use the following two variables **`BL_WORKSPACE`** and **`BL_API_KEY`**, which can be set in one of these sources:
@@ -45,7 +43,61 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'Authorization: Bearer YOUR-API-KEY'
 ```
 
-#### Use API keys via middleware
+### Use API keys in CI
+
+#### GitHub Action
+
+The easiest way to integrate the Blaxel CLI into a CI pipeline is with the official [Blaxel GitHub Action](https://github.com/blaxel-ai/bl-action).
+
+To use this, add a new secret to your GitHub repository named `BL_API_KEY` and set it to the value of your Blaxel API key. You can then use the GitHub Action in a GitHub workflow, as shown below:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to Blaxel
+        uses: blaxel-ai/bl-action@v1
+        with:
+          workspace: "YOUR_WORKSPACE"
+          apikey: ${{ secrets.BL_API_KEY }}
+      - name: Deploy to Blaxel
+        run: bl deploy
+```
+
+#### Manual configuration
+
+If you prefer to set up authentication manually or are using a different CI platform, follow these steps:
+
+- Set the API key as an environment variable in your CI environment:
+
+    ```shell
+    export BL_API_KEY=YOUR-API-KEY
+    ```
+
+- Add steps to [Download and install the Blaxel CLI](/cli-reference/introduction#install) in your CI environment and log in to your Blaxel workspace:
+
+    ```shell
+    bl login YOUR-WORKSPACE
+    ```
+
+You can now use the Blaxel CLI to interact with your workspace, including creating sandboxes, executing batch jobs, or deploying agents or MCP servers.
+
+<Tip>
+  For security, you should always create a separate API key for your CI environment. [Create an API key in the Blaxel Console](https://app.blaxel.ai/profile/security).
+</Tip>
+
+### Use API keys via middleware
 
 If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
 
