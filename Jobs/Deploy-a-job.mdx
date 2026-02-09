@@ -337,4 +337,4 @@ tasks = [
     - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
 
-A private HTTP endpoint for POST requests is always created by default, even if you don’t define any trigger here e.g. `https://api.blaxel.ai/v0/jobs/my-job/executions?workspace=my-workspace`.
+A private HTTP endpoint to launch job executions is always available by default, even if you don't define a trigger in this file. You can launch a job execution by sending a POST request with the correct job and workspace arguments to `https://api.blaxel.ai/v0/jobs/my-job/executions?workspace=my-workspace`.
