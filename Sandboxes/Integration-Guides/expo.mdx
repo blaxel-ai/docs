@@ -370,18 +370,8 @@ async function main() {
     // Configure Expo (will restart dev server if needed)
     await configureExpo(sandbox, preview.spec?.url!);
 
-    // Start dev server if not already running
-    const processes = await sandbox.process.list();
-    if (!processes.find((p) => p.name === "dev-server")) {
-      await sandbox.process.exec({
-        name: "dev-server",
-        command: "npx expo start --web --port 8081 --scheme exp",
-        workingDir: "/app",
-        waitForPorts: [8081],
-        restartOnFailure: true,
-        maxRestarts: 25,
-      });
-    }
+    // Configure Expo and start dev server
+    await configureExpo(sandbox, preview.spec?.url!);
 
     // Print access URLs
     const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
