@@ -126,6 +126,14 @@ app.run(host=host, port=port)
 ```
 </CodeGroup>
 
+## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code.
+
+This error indicates that the maximum memory limit for the account has been reached in the current tier.
+
+Blaxel has a tiering system that unlocks higher limits and features on the platform as your tier progresses. To resolve this error, upgrade your account to a higher tier, which unlocks higher RAM limits for sandboxes.
+
+To see more details on which quota was exceeded or to upgrade to a higher tier, visit the [**Quotas** page of the Blaxel Console](https://app.blaxel.ai/account/quotas).
+
 ## Models return a 429 error
 
 This error occurs when a model reaches its maximum token limit.
@@ -136,7 +144,21 @@ To resolve this error, adjust the model's token usage policy. Token usage polici
 
 This error occurs when your sandbox runs out of storage space. This usually happens when your file storage requirements exceed the available memory since, for performance reasons, Blaxel sandboxes reserve, when possible, [approximately 50% of their available memory](/Sandboxes/Overview#memory-and-filesystem) for the filesystem.
 
-To resolve this error, increase the available memory allocation for the sandbox, or add storage using [volumes](/Sandboxes/Volumes). Adding storage requires deleting and recreating the sandbox first.
+To resolve this error, you have two options:
+
+- Increase the available memory allocation for the sandbox, which also increases the available filesystem storage.
+
+    <Note>
+    Increasing memory also increases CPU allocation
+    - 8GB memory = 4 CPU cores
+    - 16GB memory = 8 CPU cores
+    </Note>
+
+- Add storage using [volumes](/Sandboxes/Volumes). Adding storage requires deleting and recreating the sandbox first.
+
+    <Note>
+    Volumes are slower than the in-memory filesystem.
+    </Note>
 
 ## Volume creation fails with an error
 
