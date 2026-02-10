@@ -266,6 +266,10 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## Delete a sandbox
 
+<Important>
+  When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
+</Important>
+
 Delete a sandbox by calling:
 
 - the class-level `delete()` method with the sandbox `name` as argument, or
@@ -274,15 +278,15 @@ Delete a sandbox by calling:
 
   ```typescript TypeScript
   import { SandboxInstance } from "@blaxel/core";
-  
+
   // Delete sandbox using class-level method
   await SandboxInstance.delete("my-sandbox");
   ```
 
-  
+
   ```python Python
   from blaxel.core import SandboxInstance
-  
+
   # Delete sandbox using class-level method
   await SandboxInstance.delete("my-sandbox")
   ```
@@ -294,21 +298,21 @@ Delete a sandbox by calling:
 
   ```typescript TypeScript
   import { SandboxInstance } from "@blaxel/core";
-  
+
   // Get existing sandbox
   const sandbox = await SandboxInstance.get("my-sandbox");
-  
+
   // Delete sandbox using instance-level method
   await sandbox.delete()
   ```
 
-  
+
   ```python Python
   from blaxel.core import SandboxInstance
-  
+
   # Get existing sandbox
   sandbox = await SandboxInstance.get("my-sandbox")
-  
+
   # Delete sandbox using instance-level method
   await sandbox.delete()
   ```
@@ -693,17 +697,6 @@ The possible sandbox statuses are:
 <Note>
   `UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
 </Note>
-
-## Best practices
-
-Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds. As such, here are some recommended best practices:
-
-- If the end-user or agent is expected to continue a session soon, just leave the sandbox be. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
-- The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
-- Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](Volumes).
-- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~400–600ms) and restart processes to restore the same state.
-- For automatic cleanup, set [TTLs](/Sandboxes/Expiration) when creating your sandbox to delete it after a set idle duration or maximum age.
-- When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
 
 <CardGroup>
   <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
