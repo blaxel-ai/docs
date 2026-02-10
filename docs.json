@@ -58,7 +58,13 @@
                 ]
               },
               "Sandboxes/Templates",
-              "Sandboxes/best-practices"
+              "Sandboxes/best-practices",
+              {
+                "group": "Integration guides",
+                "pages": [
+                  "Sandboxes/Integration-Guides/expo"
+                ]
+              }
             ]
           },
           {
