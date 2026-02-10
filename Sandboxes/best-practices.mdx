@@ -1,26 +1,30 @@
 ---
-title: 'Best practices'
-description: 'Understand best practices for using Blaxel sandboxes'
+title: "Best practices"
+description: "Understand best practices for using Blaxel sandboxes."
 ---
 
-Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds. As such, here are some recommended best practices:
+Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds, and persist forever in standby. As such, here are some recommended best practices so you can best make use of the platform features.
 
-# Use the sandbox lifecycle strategically
+## Use the sandbox lifecycle strategically
 
-If the end-user or agent is expected to continue a session soon, just leave the sandbox as is. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
+**Treat sandboxes as** **persistent computers**, rather than thinking of them as ephemeral runtimes that must be wiped clean after every interaction. Just as your laptop isn't reformatted every time you close the lid, you shouldn't destroy a sandbox's state simply because a session ended. Blaxel Sandboxes are designed to maintain persistent storage and system state, allowing agents to retain context, shell history, and installed dependencies indefinitely.
 
-<Note>
-  The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
-</Note>
-
-# Use volumes for persistent data
-
-Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](./Volumes).
+The most efficient way to manage lifecycle is to let the sandbox suspend automatically when idle, rather than explicitly destroying it. Auto-suspend happens automatically after 15s inactivity. Resuming a standby sandbox is orders of magnitude faster than cold-booting a new box and re-running setup scripts (like `npm install` or `apt-get`). By relying on suspension, you ensure that when an agent returns (whether in ten minutes or ten weeks) the environment is restored exactly as it was left, enabling a seamless instant resume experience that saves both time and compute costs.
 
 <Note>
-  If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~400–600ms) and restart processes to restore the same state.
+  The definition of a session is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for 7-60 days -- see down below.
 </Note>
 
-# Set sandbox TTLs
+## Use volumes for data durability
 
-For automatic cleanup, set [TTLs](../Sandboxes/Expiration) when creating your sandbox to delete it after a set idle duration or maximum age.
+The sandbox's root filesystem is like your laptop's local SSD. While it's very fast and retains data during suspension, it isn't strictly guaranteed against long-term risks (e.g. if you spill coffee on your computer). **For data that must survive indefinitely, use **[**Volumes**](./Volumes)**.**
+
+Think of Volumes as redundant external hard drives. They are decoupled from the compute hardware, meaning they exist independently of the sandbox. Blaxel ensures high redundancy on these volumes, making them the correct choice for critical user data, databases, or project files that need to be accessed by multiple different agents.
+
+However, relying solely on volumes for state management comes with a trade-off. If you delete a sandbox and rely on re-attaching a volume to a new one, you lose the "instant resume" benefit of the previous section. You will incur a ~400–600ms cold-boot penalty to create the new sandbox and will need to restart your processes. Use volumes for safety, but rely on sandbox suspension for speed.
+
+## Automate cleanup with TTLs
+
+While we advocate for treating sandboxes as perpetual computers, not every machine needs to last forever. In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (e.g., completed tasks, abandoned user sessions). To prevent digital clutter and unnecessary storage usage, you need automated garbage collection.
+
+Use [lifecycle policies and time-to-live (TTL)](../Sandboxes/Expiration) settings to define exactly when a computer should be retired. You can configure this based on idle duration (_e.g., delete if it hasn't been active for 7 days_) or absolute maximum age (_e.g., delete after 30 days_).
