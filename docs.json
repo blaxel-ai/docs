@@ -57,7 +57,8 @@
                   "Sandboxes/Volumes-templates"
                 ]
               },
-              "Sandboxes/Templates"
+              "Sandboxes/Templates",
+              "Sandboxes/best-practices"
             ]
           },
           {
