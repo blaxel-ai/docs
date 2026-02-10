@@ -2976,6 +2976,123 @@ paths:
       summary: Verify custom domain
       tags:
       - customdomains
+  /features:
+    get:
+      description: Returns only the feature flags that are currently enabled for the
+        specified workspace. Disabled features are not included to prevent information
+        leakage.
+      operationId: getWorkspaceFeatures
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                features:
+                  advanced_metrics: true
+                  gpu_deployments: true
+                  new_ui: true
+              schema:
+                properties:
+                  features:
+                    additionalProperties:
+                      type: boolean
+                    description: Map of feature keys to enabled state (always true).
+                      Disabled features are omitted.
+                    type: object
+                type: object
+          description: Map of enabled features (only enabled flags are included)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have access to this workspace
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+      security:
+      - OAuth2:
+        - featureFlags:list
+      - ApiKeyAuth: []
+      summary: Get enabled features for workspace
+      tags:
+      - workspaces
+  /features/{featureKey}:
+    get:
+      description: Evaluates a specific feature flag for the workspace with full details
+        including variant and payload. Useful for testing and debugging feature flag
+        targeting.
+      operationId: testFeatureFlag
+      parameters:
+      - description: Name of the feature flag
+        in: path
+        name: featureKey
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                enabled: true
+                evaluatedAt: "2026-02-09T10:30:00Z"
+                featureKey: gpu_deployments
+                payload:
+                  allowed_types:
+                  - A100
+                  - H100
+                  max_gpus: 4
+                variant: variant_a
+              schema:
+                properties:
+                  enabled:
+                    type: boolean
+                  evaluatedAt:
+                    format: date-time
+                    type: string
+                  featureKey:
+                    type: string
+                  payload:
+                    type: object
+                  variant:
+                    type: string
+                type: object
+          description: Feature flag evaluation result with details
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have access to this feature flag
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Feature flag not found
+      security:
+      - OAuth2:
+        - featureFlags:get
+      - ApiKeyAuth: []
+      summary: Retrieve feature flag evaluation for workspace
+      tags:
+      - featureFlags
   /functions:
     get:
       description: Returns all MCP server functions deployed in the workspace. Each
