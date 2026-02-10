@@ -1,9 +1,6 @@
 ---
-
-title: 'Templates'
-
-description: 'Create sandboxes from customized templates'
-
+title: "Templates"
+description: "Create sandboxes from customized templates"
 ---
 
 Sandbox templates allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
@@ -29,7 +26,7 @@ When you create a sandbox from a template, Blaxel provisions a new instance with
 4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
 
 <Note>
-You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom template images for your sandboxes using Dockerfiles and ensure that each template image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
+  You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom template images for your sandboxes using Dockerfiles and ensure that each template image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
 </Note>
 
 ## Create a sandbox template
@@ -80,7 +77,7 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 ```
 
-**Always include** the *sandbox-api* binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
+**Always include** the _sandbox-api_ binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
 
 ### 3. Configure template settings
 
@@ -112,7 +109,7 @@ PYTHON_ENV = "development"
 ```
 
 <Note>
-Currently, it is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs.
+  Currently, it is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs.
 </Note>
 
 ### 4. Define initialization
@@ -175,15 +172,19 @@ bl deploy
 ```
 
 This will:
+
 1. Build your Docker image
-2. Push it to Blaxel’s registry
+2. Push it to Blaxel’s registry (private to your workspace)
 3. Return an image ID you can use for creating sandboxes
+4. Create a first sandbox with that template. It is completely fine to delete the sandbox afterwards, the template will be kept.
 
 You can monitor the template creation:
 
 ```bash
 bl get sandbox mytemplate --watch
 ```
+
+A first sandbox with that template is automatically created on Blaxel upon bl deploy, for you to test in prod-like conditions. You can safely delete the sandbox and keep using the template for new sandboxes.
 
 ## Use a template
 
@@ -207,6 +208,7 @@ const sandbox = await SandboxInstance.create({
   ports: [{ name: "nextjs-dev", target: 3000 }, { name: "another-api", target: 8888 }]
 });
 ```
+
 
 ```python Python
 from blaxel.core import SandboxInstance
@@ -268,8 +270,8 @@ RUN npm install
 
 Choose appropriate resources for your use case:
 
-| Use Case | Memory |
-| --- | --- |
-| Light development | 2GB |
-| Small web application | 4GB |
-| Full-stack web | 8GB |
+| Use Case              | Memory |
+| --------------------- | ------ |
+| Light development     | 2GB    |
+| Small web application | 4GB    |
+| Full-stack web        | 8GB    |
