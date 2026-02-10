@@ -24,28 +24,3 @@ Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't gu
 # Set sandbox TTLs
 
 For automatic cleanup, set [TTLs](../Sandboxes/Expiration) when creating your sandbox to delete it after a set idle duration or maximum age.
-
-# Adopt a hybrid filesystem approach for TypeScript applications
-
-All sandboxes come with a [default in-memory filesystem](../Overview#memory-and-filesystem), which is extremely fast and does not rely on the interface currently used by volumes.
-
-The `pnpm` and `bun` package managers offer significantly better performance for dependency installation and management as compared to `npm`. There is one important caveat: `pnpm` performs poorly when used with volumes.
-
-A hybrid setup provides the best of both worlds: volumes for durability and in-memory filesystem for speed
-
-It therefore makes sense to:
-
-- Keep application code on the volume
-- Install dependencies (eg. `node_modules`) on the in-memory filesystem
-
-This approach significantly speeds up both package installation and application boot times.
-
-### Suggested implementation
-
-- Create a custom base image (not a volume template) that:
-  - Includes the standard packages you always (or almost always) need to avoid installing them at sandbox start;
-  - Configures `pnpm` so that the `node_modules` directory live on the in-memory filesystem.
-
-- Create a symlink to the `node_modules` directory, either in the entrypoint or as the first command when creating the sandbox.
-
-- Run `pnpm install` or `bun install` each time a sandbox is created, right after symlink creation, to install dependencies.
