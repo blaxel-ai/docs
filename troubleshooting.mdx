@@ -45,10 +45,10 @@ python main.py --host 0.0.0.0
 
 This error occurs when the sandbox API is unexpectedly terminated - for example, if the sandbox runs out of memory.
 
-To resolve this error, restart the sandbox, which also restarts the sandbox API.
+To resolve this error, delete and recreate the sandbox, which also restarts the sandbox API.
 
 <Note>
-Restarting will cause the current state of the sandbox to be lost.
+Deleting and recreating will cause the current state of the sandbox to be lost.
 </Note>
 
 An alternative approach is to use process supervision ([Supervisor](https://supervisord.org)) inside the sandbox to enable auto-restarts of the sandbox API. To do this, follow the steps below:
