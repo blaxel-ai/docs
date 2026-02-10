@@ -17,7 +17,7 @@ The most efficient way to manage lifecycle is to let the sandbox suspend automat
 
 ## Use volumes for data durability
 
-The sandbox's root filesystem is like your laptop's local SSD. While it's very fast and retains data during suspension, it isn't strictly guaranteed against long-term risks (e.g. if you spill coffee on your computer). **For data that must survive indefinitely, use **[**Volumes**](./Volumes)**.**
+The sandbox's root filesystem is like your laptop's local SSD. While it's very fast and retains data during suspension, it isn't strictly guaranteed against long-term risks (e.g. if you spill coffee on your computer). [******For data that must survive indefinitely, use Volumes.******](./Volumes)
 
 Think of Volumes as redundant external hard drives. They are decoupled from the compute hardware, meaning they exist independently of the sandbox. Blaxel ensures high redundancy on these volumes, making them the correct choice for critical user data, databases, or project files that need to be accessed by multiple different agents.
 
@@ -28,3 +28,7 @@ However, relying solely on volumes for state management comes with a trade-off. 
 While we advocate for treating sandboxes as perpetual computers, not every machine needs to last forever. In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (e.g., completed tasks, abandoned user sessions). To prevent digital clutter and unnecessary storage usage, you need automated garbage collection.
 
 Use [lifecycle policies and time-to-live (TTL)](../Sandboxes/Expiration) settings to define exactly when a computer should be retired. You can configure this based on idle duration (_e.g., delete if it hasn't been active for 7 days_) or absolute maximum age (_e.g., delete after 30 days_).
+
+<Note>
+  In [quota tiers 0 and 1](https://app.blaxel.ai/account/quotas), a maximum TTL is enforced on all sandboxes. On quota tier 2 and above, no expiration policy is set by default.
+</Note>
