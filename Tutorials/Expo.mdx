@@ -335,7 +335,7 @@ async function startDevServer(sandbox: SandboxInstance) {
 async function configureExpo(sandbox: SandboxInstance, previewUrl: string) {
   await addRouterOriginToAppJson(sandbox, previewUrl);
   const proxyUrlChanged = await configureExpoProxyUrl(sandbox, previewUrl);
-  await startDevServer(sandbox)
+  await startDevServer(sandbox);
 }
 
 async function main() {
