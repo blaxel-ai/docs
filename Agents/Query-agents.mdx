@@ -54,25 +54,25 @@ You can create async endpoints either from the Blaxel Console, or from your code
   name = "my-agent"
   workspace = "my-workspace"
   type = "agent"
-  
+
   agents = []
   functions = ["blaxel-search"]
   models = ["gpt-4o-mini"]
-  
+
   [env]
   DEFAULT_CITY = "San Francisco"
-  
+
   [runtime]
   timeout = 900
   memory = 1024
-  
+
   [[triggers]]
     id = "trigger-async-my-agent"
     type = "http-async"
   [triggers.configuration]
     path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}
     retry = 1
-  
+
   [[triggers]]
     id = "trigger-my-agent"
     type = "http"
@@ -147,6 +147,6 @@ Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-refe
 
 Inference requests can be made from the Blaxel console from the agent deployment’s **Playground** page.
 
-<Card title="Develop and deploy an agent on Blaxel using Claude Agent SDK" icon="rocket" href="../Frameworks/Claude-Agent-SDK">
+<Card title="Develop and deploy an agent on Blaxel using Claude Agent SDK" icon="rocket" href="../Tutorials/Claude-Agent-SDK">
   See an example of building and deploying an agent on Blaxel with Claude Agent SDK.
 </Card>

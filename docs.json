@@ -35,7 +35,7 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Examples/Claude-Agent-SDK-MCP",
+              "Tutorials/Claude-Agent-SDK-MCP",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
@@ -122,22 +122,7 @@
                 ]
               },
               "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers",
-              {
-                "group": "Frameworks",
-                "pages": [
-                  "Frameworks/Overview",
-                  "Frameworks/Claude-Agent-SDK",
-                  "Frameworks/LangChain",
-                  "Frameworks/CrewAI",
-                  "Frameworks/LlamaIndex",
-                  "Frameworks/Vercel-AI",
-                  "Frameworks/Mastra",
-                  "Frameworks/OpenAI-Agents",
-                  "Frameworks/PydanticAI",
-                  "Frameworks/ADK"
-                ]
-              }
+              "Agents/Asynchronous-triggers"
             ]
           },
           {
@@ -238,12 +223,39 @@
         ]
       },
       {
-        "tab": "Templates & Cookbooks",
+        "tab": "Tutorials and Examples",
         "groups": [
           {
-            "group": "Templates & Cookbooks",
+            "group": "Sandboxes",
+            "expanded": true,
             "pages": [
-              "Examples/Templates-and-Cookbooks"
+              "Tutorials/Sandboxes-Overview",
+              "Tutorials/Astro",
+              "Tutorials/Expo",
+              "Tutorials/Nextjs"
+            ]
+          },
+          {
+            "group": "Agents",
+            "expanded": true,
+            "pages": [
+              "Tutorials/Agents-Overview",
+              "Tutorials/Claude-Agent-SDK-Index",
+              "Tutorials/CrewAI",
+              "Tutorials/ADK",
+              "Tutorials/LangChain",
+              "Tutorials/LlamaIndex",
+              "Tutorials/Mastra",
+              "Tutorials/OpenAI-Agents",
+              "Tutorials/PydanticAI",
+              "Tutorials/Vercel-AI",
+              "Tutorials/Custom-Agents"
+            ]
+          },
+          {
+            "group": "Example Applications",
+            "pages": [
+              "Examples/Overview"
             ]
           }
         ]
