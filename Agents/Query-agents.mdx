@@ -1,9 +1,6 @@
 ---
-
-title: 'Query an agent'
-
-description: 'Make inference requests on your agents.'
-
+title: "Query an agent"
+description: "Make inference requests on your agents."
 ---
 
 Agent [deployments](Overview) on Blaxel have a default **inference endpoint** which can be used by external consumers to request an inference execution. This inference endpoint is synchronous so the connection remains open until the end of your request is entirely processed by the agent. You can also query an asynchronous endpoint for agents, allowing to send requests that last for longer times without keeping connections open.
@@ -21,7 +18,6 @@ The inference URL looks like this:
 ```http Query agent
 
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
-
 ```
 
 Timeout limit:
@@ -38,7 +34,7 @@ In addition to the default synchronous endpoint, Blaxel provides the ability to 
 This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene.
 
 <Note>
-You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
+  You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
 </Note>
 
 The timeout duration for this endpoint is 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
@@ -52,48 +48,45 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}?async=true
 You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file. For more information, read the [documentation on asynchronous triggers](./Asynchronous-triggers).
 
 <Accordion title="blaxel.toml reference">
+  The agent deployment can be configured via the `blaxel.toml` file in your agent directory. This file is not mandatory; if the file is not found or a required option is not set, you will be prompted for the information during deployment.
 
-The agent deployment can be configured via the `blaxel.toml` file in your agent directory. This file is not mandatory; if the file is not found or a required option is not set, you will be prompted for the information during deployment.
+  ```toml
+  name = "my-agent"
+  workspace = "my-workspace"
+  type = "agent"
+  
+  agents = []
+  functions = ["blaxel-search"]
+  models = ["gpt-4o-mini"]
+  
+  [env]
+  DEFAULT_CITY = "San Francisco"
+  
+  [runtime]
+  timeout = 900
+  memory = 1024
+  
+  [[triggers]]
+    id = "trigger-async-my-agent"
+    type = "http-async"
+  [triggers.configuration]
+    path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}
+    retry = 1
+  
+  [[triggers]]
+    id = "trigger-my-agent"
+    type = "http"
+  [triggers.configuration]
+    path = "agents/my-agent/sync"
+    retry = 1
+    authenticationType = "public"
+  ```
 
-```toml
-name = "my-agent"
-workspace = "my-workspace"
-type = "agent"
-
-agents = []
-functions = ["blaxel-search"]
-models = ["gpt-4o-mini"]
-
-[env]
-DEFAULT_CITY = "San Francisco"
-
-[runtime]
-timeout = 900
-memory = 1024
-
-[[triggers]]
-  id = "trigger-async-my-agent"
-  type = "http-async"
-[triggers.configuration]
-  path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}
-  retry = 1
-
-[[triggers]]
-  id = "trigger-my-agent"
-  type = "http"
-[triggers.configuration]
-  path = "agents/my-agent/sync"
-  retry = 1
-  authenticationType = "public"
-```
-
-- `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
-- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
-- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`).
-A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
-
+  - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
+  - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+  - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+  - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+  - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 </Accordion>
 
 ### Endpoint authentication
@@ -102,7 +95,9 @@ By default, agents deployed on Blaxel **aren’t public**. It is necessary to au
 
 The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
 
-<Tip>See how to remove authentication on a deployed agent down below.</Tip>
+<Tip>
+  See how to remove authentication on a deployed agent down below.
+</Tip>
 
 ### Manage sessions
 
@@ -112,17 +107,14 @@ To simulate multi-turn conversations, you can pass on request headers. You'll ne
 
 To make an agent publicly accessible, add the following to the `blaxel.toml` configuration file, as explained above:
 
-```toml blaxel.toml
-
-…
+```toml blaxel.toml {7}
 [[triggers]]
 id = "http"
 type = "http"
 
 [triggers.configuration]
-path = "/<PATH>" # This will be translated to https://run.blaxel.ai/<YOUR_WORKSPACE>/<PATH>
+path = "/<PATH>"
 authenticationType = "public"
-
 ```
 
 ## Make an inference request
@@ -155,7 +147,6 @@ Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-refe
 
 Inference requests can be made from the Blaxel console from the agent deployment’s **Playground** page.
 
-
 <Card title="Develop and deploy an agent on Blaxel using Claude Agent SDK" icon="rocket" href="../Frameworks/Claude-Agent-SDK">
-See an example of building and deploying an agent on Blaxel with Claude Agent SDK.
+  See an example of building and deploying an agent on Blaxel with Claude Agent SDK.
 </Card>
