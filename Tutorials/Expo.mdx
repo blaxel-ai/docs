@@ -370,9 +370,6 @@ async function main() {
     // Configure Expo (will restart dev server if needed)
     await configureExpo(sandbox, preview.spec?.url!);
 
-    // Configure Expo and start dev server
-    await configureExpo(sandbox, preview.spec?.url!);
-
     // Print access URLs
     const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
     const expoUrl = webUrl.replace("https://", "exp://");
