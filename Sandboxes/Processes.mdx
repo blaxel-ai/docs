@@ -272,7 +272,7 @@ process = await sandbox.process.exec({
 ## Sandbox keep-alive
 
 <Warning>
-  This is an alpha feature that may change or be removed in future. It can only be used with specified versions of the sandbox API and the Blaxel SDKs.
+  This is an alpha feature that may change or be removed in future. It can only be used with specified versions of the sandbox API and the Blaxel TypeScript SDK.
 </Warning>
 
 By default, sandboxes automatically switch to standby after a few seconds of inactivity to save resources. However, it is possible to adjust this behaviour and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a server running in the sandbox environment even when it is not serving requests.
@@ -286,17 +286,9 @@ To use this feature, you must first:
     COPY --from=ghcr.io/blaxel-ai/sandbox:develop-6a4e7c3 /sandbox-api /usr/local/bin/sandbox-api
     ```
 
-- use a specific development version of the Blaxel SDK:
+- use a specific development version of the Blaxel TypeScript SDK:
 
     <CodeGroup>
-
-    ```shell Python (pip)
-    pip install blaxel==0.2.63-dev.68
-    ```
-
-    ```shell Python (uv)
-    uv pip install blaxel==0.2.63-dev.68
-    ```
 
     ```shell TypeScript (npm)
     npm install @blaxel/core@0.2.63-dev.68
@@ -314,7 +306,6 @@ To use this feature, you must first:
 
 With these changes, you can include additional keep-alive metadata when launching a new sandbox:
 
-<CodeGroup>
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
@@ -323,32 +314,16 @@ const sandbox = await SandboxInstance.get("my-sandbox");
 // Start a dev server that keeps the sandbox awake
 await sandbox.process.exec({
   name: "dev-server",
-  command: "npm run dev",
+  command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
   keepAlive: true,        // Prevents auto-hibernation
   timeout: 3600           // Auto-kill after 1 hour
 });
 ```
 
-```python Python
-from blaxel.core import SandboxInstance
-
-sandbox = await SandboxInstance.get("my-sandbox")
-
-# Start a dev server that keeps the sandbox awake
-await sandbox.process.exec({
-    "name": "dev-server",
-    "command": "npm run dev",
-    "keep_alive": True,       # Prevents auto-hibernation
-    "timeout": 3600           # Auto-kill after 1 hour
-})
-```
-</CodeGroup>
-
 If a `timeout` value is not specified, it defaults to 600 seconds. For processes that should run indefinitely until they complete naturally, set the `timeout` to `0`.
 
 You can run multiple processes, and the sandbox will stay active until all of them complete:
 
-<CodeGroup>
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
@@ -368,29 +343,6 @@ await sandbox.process.exec({
   timeout: 3600
 });
 ```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-sandbox = await SandboxInstance.get("my-sandbox")
-
-await sandbox.process.exec({
-    "name": "api-server",
-    "command": "npm run start:api",
-    "keep_alive": True,
-    "timeout": 3600
-})
-
-await sandbox.process.exec({
-  "name": "worker",
-  "command": "npm run start:worker",
-  "keep_alive": True,
-  "timeout": 3600
-})
-
-```
-</CodeGroup>
-
 
 ## Process statuses
 
