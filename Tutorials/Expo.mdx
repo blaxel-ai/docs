@@ -7,7 +7,7 @@ This guide explains how to run an Expo (React Native / Web) application inside a
 
 ## Prerequisites
 
-- [Blaxel CLI](../../cli-reference/introduction) installed and authenticated (`bl login`)
+- [Blaxel CLI](../cli-reference/introduction) installed and authenticated (`bl login`)
 - Node.js 18+ installed
 - `@blaxel/core` package installed in your project (`npm install @blaxel/core`)
 
@@ -18,7 +18,7 @@ Running Expo inside a Blaxel sandbox requires a few adjustments:
 1. Injecting the preview URL into `app.json`
 2. Setting `EXPO_PACKAGER_PROXY_URL` to force Expo to proxy assets through the preview URL
 3. Restarting the dev server after configuration changes
-4. Exposing the Expo dev server via a Blaxel Preview
+4. Exposing the Expo dev server via a Blaxel preview URL
 
 ## Create a base sandbox image
 
@@ -124,7 +124,7 @@ Alternatively, you can use [custom domains](https://docs.blaxel.ai/Infrastructur
 
 ## Create the preview URL
 
-Expo runs on port 8081, so expose that port via a [preview URL](../Preview-url):
+Expo runs on port 8081, so expose that port via a [preview URL](../Sandboxes/Preview-url):
 
 ```typescript
 const preview = await sandbox.previews.createIfNotExists({
