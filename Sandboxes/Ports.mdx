@@ -75,6 +75,31 @@ Generally speaking:
 - for file and process management in your sandbox, use the sandbox API or SDK.
 - to access running applications within the sandbox *(such as a NextJS preview server on port 3000)*, use a preview URL instead.
 
+### Via SDK
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+// Get URL for port access
+const url = `${sandbox.metadata.url}/port/${portNumber}`
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Get URL for port access
+url = f"{sandbox.metadata.url}/port/{port_number}"
+```
+</CodeGroup>
+
 <Card title="Create preview URLs" icon="eye" href="/Sandboxes/Preview-url">
 Expose applications running within the sandbox via a direct preview URL.
 </Card>
