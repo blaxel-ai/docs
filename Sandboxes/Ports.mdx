@@ -77,6 +77,8 @@ Generally speaking:
 
 ### Via SDK
 
+This option requires your request to be [authenticated](../Security/Access-tokens).
+
 <CodeGroup>
 
 ```typescript TypeScript
@@ -85,18 +87,31 @@ import { SandboxInstance } from "@blaxel/core";
 // Connect to existing sandbox
 const sandbox = await SandboxInstance.get("my-sandbox")
 
+// Assume port 3000
+const portNumber = 3000;
+
 // Get URL for port access
 const url = `${sandbox.metadata.url}/port/${portNumber}`
+
+// Use the URL with authenticated requests
+// Example: const response = await fetch(url, { headers: { 'Authorization': 'Bearer YOUR_TOKEN' } })
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
+import requests
 
 # Connect to existing sandbox
 sandbox = await SandboxInstance.get("my-sandbox")
 
+# Assume port 3000
+port_number = 3000;
+
 # Get URL for port access
 url = f"{sandbox.metadata.url}/port/{port_number}"
+
+# Use the URL with authenticated requests
+# Example: response = requests.get(url, headers={ "Authorization": f"Bearer YOUR_TOKEN" })
 ```
 </CodeGroup>
 
