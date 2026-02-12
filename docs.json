@@ -113,16 +113,9 @@
               },
               "Agents/Github-integration",
               "Agents/Query-agents",
-              {
-                "group": "Integrate in your apps",
-                "pages": [
-                  "Agents/Integrate-in-apps",
-                  "Agents/Integrate-in-apps/n8n",
-                  "Agents/Integrate-in-apps/CopilotKit"
-                ]
-              },
               "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers"
+              "Agents/Asynchronous-triggers",
+              "Agents/Integrate-in-apps"
             ]
           },
           {
