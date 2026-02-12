@@ -133,12 +133,6 @@
               "Functions/Create-MCP-server",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
-              {
-                "group": "Integrate in your apps",
-                "pages": [
-                  "Functions/Integrate-in-apps/Toolprint"
-                ]
-              },
               "Functions/Variables-and-secrets",
               "Functions/oauth-flow-mcp"
             ]
