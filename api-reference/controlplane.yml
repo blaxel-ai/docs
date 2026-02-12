@@ -326,6 +326,134 @@ components:
           type: string
           description: Error message if verification failed
           readOnly: true
+    EgressGateway:
+      type: object
+      description: An egress gateway that manages outbound traffic routing within
+        a VPC. Multiple egress IPs can be allocated from a single gateway.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/EgressGatewayMetadata'
+        spec:
+          $ref: '#/components/schemas/EgressGatewaySpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    EgressGatewayMetadata:
+      type: object
+      description: Metadata for an egress gateway resource including workspace, VPC,
+        and name
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces
+              and special characters, max 63 characters.
+            example: My Egress Gateway
+          name:
+            type: string
+            description: Unique identifier for the egress gateway within the VPC.
+              Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable
+              after creation.
+            example: my-egress-gateway
+          vpcName:
+            type: string
+            description: Name of the VPC this egress gateway belongs to
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only,
+              set automatically)
+            readOnly: true
+        required:
+        - name
+    EgressGatewaySpec:
+      type: object
+      description: Specification for an egress gateway including region and capacity
+        configuration
+      properties:
+        region:
+          type: string
+          description: Region where the egress gateway is provisioned (e.g. us-pdx-1,
+            eu-lon-1)
+          example: us-pdx-1
+      required:
+      - region
+    EgressIP:
+      type: object
+      description: An individual IP address allocated from an egress gateway for dedicated
+        outbound traffic
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/EgressIPMetadata'
+        spec:
+          $ref: '#/components/schemas/EgressIPSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    EgressIPMetadata:
+      type: object
+      description: Metadata for an egress IP address including gateway association
+        and name
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces
+              and special characters, max 63 characters.
+            example: My Egress IP
+          gatewayName:
+            type: string
+            description: Name of the egress gateway this IP is allocated from
+            readOnly: true
+          name:
+            type: string
+            description: Unique identifier for the egress IP within the gateway. Must
+              be lowercase alphanumeric with hyphens, max 49 characters. Immutable
+              after creation.
+            example: my-egress-ip
+          vpcName:
+            type: string
+            description: Name of the VPC this egress IP belongs to
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only,
+              set automatically)
+            readOnly: true
+        required:
+        - name
+    EgressIPSpec:
+      type: object
+      description: Specification for an egress IP including IP family and the provisioned
+        address
+      properties:
+        ipFamily:
+          type: string
+          description: IP address family, either IPv4 or IPv6
+          enum:
+          - IPv4
+          - IPv6
+          example: IPv4
+          default: IPv4
+        publicIp:
+          type: string
+          description: Public IP address assigned to this egress IP (read-only, set
+            after provisioning)
+          readOnly: true
+      required:
+      - ipFamily
     Entrypoint:
       type: object
       description: Entrypoint of the artifact
@@ -1901,6 +2029,25 @@ components:
             whichever condition is met first triggers the action.
           items:
             $ref: '#/components/schemas/ExpirationPolicy'
+    SandboxNetwork:
+      type: object
+      description: Network configuration for a sandbox including egress IP binding.
+        All three fields (vpcName, egressGatewayName, egressIpName) must be specified
+        together to assign a dedicated IP.
+      properties:
+        egressGatewayName:
+          type: string
+          description: Name of the egress gateway in the VPC. Must be specified together
+            with vpcName and egressIpName.
+          example: my-egress-gateway
+        vpcName:
+          type: string
+          description: Name of the VPC where the egress gateway is provisioned. Must
+            be specified together with egressGatewayName and egressIpName.
+          example: my-vpc
+      required:
+      - vpcName
+      - egressGatewayName
     SandboxRuntime:
       type: object
       description: Runtime configuration defining how the sandbox VM is provisioned
@@ -1946,6 +2093,8 @@ components:
           default: true
         lifecycle:
           $ref: '#/components/schemas/SandboxLifecycle'
+        network:
+          $ref: '#/components/schemas/SandboxNetwork'
         region:
           type: string
           description: Region where the sandbox should be created (e.g. us-pdx-1,
@@ -2123,6 +2272,26 @@ components:
       description: Triggers to use your agent
       items:
         $ref: '#/components/schemas/Trigger'
+    VPC:
+      type: object
+      description: Virtual Private Cloud scoped to a workspace for network isolation
+        and dedicated egress
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VPCSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    VPCSpec:
+      type: object
+      description: VPC specification (controlplane-only, no external resources)
+      additionalProperties: true
     Volume:
       type: object
       description: Persistent storage volume that can be attached to sandboxes for
@@ -5980,6 +6149,280 @@ paths:
       summary: Update volume
       tags:
       - volumes
+  /vpcs:
+    get:
+      operationId: ListVPCs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VPC'
+                type: array
+          description: successful operation
+      summary: List all VPCs in the workspace
+      tags:
+      - vpcs
+    post:
+      operationId: CreateVPC
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VPC'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Create a VPC for the workspace
+      tags:
+      - vpcs
+  /vpcs/{vpcName}:
+    delete:
+      operationId: DeleteVPC
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Delete a VPC
+      tags:
+      - vpcs
+    get:
+      operationId: GetVPC
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Get a VPC by name
+      tags:
+      - vpcs
+  /vpcs/{vpcName}/egressgateways:
+    get:
+      operationId: ListEgressGateways
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressGateway'
+                type: array
+          description: successful operation
+      summary: List egress gateways in a VPC
+      tags:
+      - vpcs
+    post:
+      operationId: CreateEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EgressGateway'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Create an egress gateway in a VPC
+      tags:
+      - vpcs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}:
+    delete:
+      operationId: DeleteEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Delete an egress gateway
+      tags:
+      - vpcs
+    get:
+      operationId: GetEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Get an egress gateway by name
+      tags:
+      - vpcs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}/ips:
+    get:
+      operationId: ListEgressIPs
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressIP'
+                type: array
+          description: successful operation
+      summary: List egress IPs in a gateway
+      tags:
+      - vpcs
+    post:
+      operationId: CreateEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EgressIP'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Allocate a new egress IP from the gateway
+      tags:
+      - vpcs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}/ips/{ipName}:
+    delete:
+      operationId: DeleteEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: ipName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Delete an egress IP
+      tags:
+      - vpcs
+    get:
+      operationId: GetEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: ipName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Get an egress IP by name
+      tags:
+      - vpcs
   /workspaces:
     get:
       description: Returns all workspaces the authenticated user has access to. Each
