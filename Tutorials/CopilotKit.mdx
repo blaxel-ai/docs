@@ -12,8 +12,8 @@ This tutorial will walk you through how to use [CopilotKit](https://www.copilotk
 
 ## Requirements
 
-- One or several [MCP servers](../../Functions/Overview), hosted on Blaxel
-- A [model API](../../Models/Overview), connected on Blaxel
+- One or several [MCP servers](../Functions/Overview), hosted on Blaxel
+- A [model API](../Models/Overview), connected on Blaxel
 
 ## Step 1: Create a LangGraph agent
 
@@ -32,7 +32,7 @@ cd myagent
 uv add copilotkit
 ```
 
-Develop your LangGraph agent, using [Blaxel SDK](../Develop-an-agent-py) to connect to Blaxel AI gateway for model APIs and MCP servers, and making sure to add a **memory checkpointer**. You can copy-paste the following code snippet into `agent.py` to get started:
+Develop your LangGraph agent, using [Blaxel SDK](../Agents/Develop-an-agent-py) to connect to Blaxel AI gateway for model APIs and MCP servers, and making sure to add a **memory checkpointer**. You can copy-paste the following code snippet into `agent.py` to get started:
 
 ```python agent.py
 
