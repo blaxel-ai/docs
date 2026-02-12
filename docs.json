@@ -228,11 +228,13 @@
             "pages": [
               "Tutorials/Agents-Overview",
               "Tutorials/Claude-Agent-SDK-Index",
+              "Tutorials/CopilotKit",
               "Tutorials/CrewAI",
               "Tutorials/ADK",
               "Tutorials/LangChain",
               "Tutorials/LlamaIndex",
               "Tutorials/Mastra",
+              "Tutorials/n8n",
               "Tutorials/OpenAI-Agents",
               "Tutorials/OpenClaw",
               "Tutorials/PydanticAI",
