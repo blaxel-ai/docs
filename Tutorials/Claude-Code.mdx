@@ -24,7 +24,27 @@ Before starting, ensure you have:
 1. In a new directory, install the Blaxel SDK ([Python](https://github.com/blaxel-ai/sdk-python) and [TypeScript](https://github.com/blaxel-ai/sdk-typescript) are both supported)):
 
     <CodeGroup>
-    ```shell TypeScript
+    ```shell TypeScript (npm)
+    npm init # if new project
+    npm install @blaxel/core
+    ```
+
+
+    ```shell TypeScript (pnpm)
+    pnpm init # if new project
+    pnpm install @blaxel/core
+    ```
+
+
+    ```shell TypeScript (yarn)
+    yarn init # if new project
+    yarn add @blaxel/core
+    ```
+
+
+    ```shell TypeScript (bun)
+    bun init -m --yes # if new project
+    bun install @blaxel/core
     ```
 
     ```shell Python
@@ -37,10 +57,9 @@ Before starting, ensure you have:
 
 ## Create sandboxes
 
-1. In the host environment, define the following variables:
+1. In the host environment, define the following variable:
 
     ```shell
-    export ANTHROPIC_KEY=YOUR-ANTHROPIC-API-KEY-HERE
     export BLAXEL_API_KEY=YOUR-BLAXEL-API-KEY-HERE
     ```
 
@@ -62,10 +81,6 @@ Before starting, ensure you have:
       async def main():
 
           # Check for required variables
-          anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
-          if not anthropic_api_key:
-              raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
-
           blaxel_api_key = os.getenv("BLAXEL_API_KEY")
           if not blaxel_api_key:
               raise ValueError("BLAXEL_API_KEY environment variable is not set")
@@ -113,7 +128,6 @@ Before starting, ensure you have:
               "memory": 4096,
               "region": "us-pdx-1",
               "envs": [
-                  {"name": "ANTHROPIC_KEY", "value": anthropic_api_key},
                   {"name": "BLAXEL_API_KEY", "value": blaxel_api_key}
               ]
           })
@@ -130,7 +144,7 @@ Before starting, ensure you have:
       - `app-sandbox` using Blaxel's Next.js base image
 
     In the Claude Code sandbox, it:
-    - adds the Anthropic and Blaxel API keys to `claude-sandbox` as environment variables named `ANTHROPIC_API_KEY` and `BLAXEL_API_KEY`.
+    - adds the Blaxel API key to `claude-sandbox` as an environment variable named `BLAXEL_API_KEY`.
 
     In the application sandbox, it:
     - starts the Next.js dev server in `app-sandbox` on port 3000;
