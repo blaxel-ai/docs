@@ -222,6 +222,7 @@
             "pages": [
               "Tutorials/Agents-Overview",
               "Tutorials/Claude-Agent-SDK-Index",
+              "Tutorials/Claude-Code",
               "Tutorials/CopilotKit",
               "Tutorials/CrewAI",
               "Tutorials/ADK",

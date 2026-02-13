@@ -3,7 +3,7 @@ title: 'Claude Code'
 description: 'Configure Claude Code to run in a Blaxel sandbox'
 ---
 
-This tutorial explains how to run [Claude Code](https://openclaw.ai) inside a Blaxel sandbox and have it execute coding tasks on a codebase hosted in a different sandbox.
+This tutorial explains how to run [Claude Code](https://claude.com/product/claude-code) inside a Blaxel sandbox and have it execute coding tasks on a codebase hosted in a different sandbox.
 
 ## Prerequisites
 
@@ -12,6 +12,10 @@ Before starting, ensure you have:
 - a Python or TypeScript development environment;
 - a Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [create a Blaxel API key](../Security/Access-tokens#api-keys);
 - a Claude account with an active subscription or an Anthropic Console account with usage-based billing, required by Claude Code. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain a subscription or API credits as required;
+
+<Note>
+  If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, you can still follow this tutorial but you will need to perform [alternative steps for API key recognition when starting Claude Code](https://github.com/anthropics/claude-code/issues/441).
+</Note>
 
 ## Install the Blaxel CLI and SDK
 
@@ -68,6 +72,66 @@ Before starting, ensure you have:
     <CodeGroup>
 
     ```typescript TypeScript
+    import { SandboxInstance } from "@blaxel/core";
+
+    async function main() {
+      // Check for required variables
+      const blaxelApiKey = process.env.BLAXEL_API_KEY;
+      if (!blaxelApiKey) {
+        throw new Error("BLAXEL_API_KEY environment variable is not set");
+      }
+
+      // Create application sandbox
+      const appSandbox = await SandboxInstance.createIfNotExists({
+        name: "nextjs-sandbox",
+        image: "blaxel/nextjs:latest",
+        memory: 4096,
+        ports: [{ target: 3000, protocol: "HTTP" }],
+        region: "us-pdx-1",
+      });
+      console.log("Application sandbox created");
+
+      // Start dev server in application sandbox
+      await appSandbox.process.exec({
+        workingDir: "/blaxel/app",
+        command: "npm run dev -- --hostname 0.0.0.0 --port 3000"
+      });
+      console.log("Application server started");
+
+      // Create preview URL
+      const appPreview = await appSandbox.previews.createIfNotExists({
+        metadata: { name: "app-preview" },
+        spec: {
+          port: 3000,
+          public: false,
+        }
+      });
+      console.log("Preview URL created");
+
+      // Create preview token
+      // Valid for 24 hours
+      const expiresAt = new Date(Date.now() + 1440 * 60 * 1000);
+      const token = await appPreview.tokens.create(expiresAt);
+
+      // Get preview URL
+      console.log(`Preview URL: ${appPreview.spec.url}?bl_preview_token=${token.value}`);
+      console.log(`MCP URL: ${appSandbox.metadata.url}/mcp`);
+
+      // Create Claude Code sandbox
+      const claudeSandbox = await SandboxInstance.createIfNotExists({
+        name: "claude-sandbox2",
+        image: "blaxel/node:latest",
+        memory: 4096,
+        region: "us-pdx-1",
+        envs: [
+          { name: "BLAXEL_API_KEY", value: blaxelApiKey }
+        ]
+      });
+      console.log("Claude Code sandbox created");
+    }
+
+    main();
+
     ```
 
     ```python Python
@@ -183,7 +247,7 @@ Before starting, ensure you have:
     echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc && source ~/.bashrc
     ```
 
-    For detailed installation instructions, refer to the [Claude Code documentation](https://docs.openclaw.ai/install).
+    For detailed installation instructions, refer to the [Claude Code documentation](https://code.claude.com/docs/en/overview).
 
 1. Add the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) to Claude Code:
 
@@ -210,7 +274,7 @@ claude
 You will be prompted for authentication, theme selection and permissions.
 
 <Note>
-  If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, refer to the [alternative steps for API key recognition in Claude Code](https://github.com/anthropics/claude-code/issues/441).
+  If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, refer to the [alternative steps for API key recognition when starting Claude Code](https://github.com/anthropics/claude-code/issues/441).
 </Note>
 
  Once these steps are completed, give Claude Code a coding task referencing the application sandbox, as in the example prompt below:
