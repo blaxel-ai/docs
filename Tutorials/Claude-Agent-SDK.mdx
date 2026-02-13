@@ -5,14 +5,14 @@ description: "Deploy a Claude Agent SDK agent to Blaxel as a serverless auto-sca
 
 [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) is a library for building autonomous AI agents using Claude Code. You can deploy your Claude Agent SDK projects to Blaxel with minimal code editing (and zero configuration), enabling you to colocate them close to the [sandboxes](/Sandboxes/Overview) the agents work on.
 
-This guide assumes that you have the following:
+This tutorial assumes that you have the following:
 
 - An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
 - A Blaxel account. If not, [sign up for a Blaxel account](https://blaxel.ai).
 
 ## 1. Install the Blaxel CLI and log in to Blaxel
 
-The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this guide. Alternatively you can [connect a GitHub repository](./Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
+The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](./Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
 
 [Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
 
@@ -216,22 +216,22 @@ Instrumentation happens automatically when workloads run on Blaxel. To enable te
   npm install @blaxel/telemetry
   ```
 
-  
+
   ```shell TypeScript (pnpm)
   pnpm install @blaxel/telemetry
   ```
 
-  
+
   ```shell TypeScript (yarn)
   yarn add @blaxel/telemetry
   ```
 
-  
+
   ```shell TypeScript (bun)
   bun install @blaxel/telemetry
   ```
 
-  
+
   ```shell Python (pip)
   pip install "blaxel[telemetry]"
   ```
@@ -245,7 +245,7 @@ Instrumentation happens automatically when workloads run on Blaxel. To enable te
   import "@blaxel/telemetry";
   ```
 
-  
+
   ```python Python
   import blaxel.telemetry
   ```
@@ -335,17 +335,17 @@ Want more info on developing and deploying agents on Blaxel? Check out the follo
 </Card>
 
 <Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="../Agents/Develop-an-agent-ts">
-  Complete guide for using the TypeScript SDK to develop an agent using Blaxel services.
+  Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Give compute to your agent with the Python SDK " icon="python" href="../Agents/Develop-an-agent-py">
-  Complete guide for using the Python SDK to develop an agent using Blaxel services.
+  Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
 </Card>
 
 <Card title="Deploy your agent code to Blaxel" icon="server" href="../Agents/Deploy-an-agent">
-  Complete guide for deploying AI agents on Blaxel.
+  Complete tutorial for deploying AI agents on Blaxel.
 </Card>
 
 <Card title="Manage environment variables" icon="lock" href="../Agents/Variables-and-secrets">
-  Complete guide for managing variables and secrets when deploying on Blaxel.
+  Complete tutorial for managing variables and secrets when deploying on Blaxel.
 </Card>
