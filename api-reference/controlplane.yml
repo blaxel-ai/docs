@@ -1346,6 +1346,12 @@ components:
           type: string
           description: Provider-specific endpoint name (e.g., HuggingFace Inference
             Endpoints name)
+        generation:
+          type: string
+          description: Infrastructure generation. Empty (default) uses the classic
+            deployment path. mk3 deploys through the model-gateway on microVM clusters.
+          enum:
+          - mk3
         model:
           type: string
           description: Model identifier at the provider (e.g., gpt-4.1, claude-sonnet-4-20250514,
