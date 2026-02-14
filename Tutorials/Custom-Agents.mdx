@@ -1,26 +1,15 @@
 ---
-
-title: 'Development guide'
-
-sidebarTitle: "Overview"
-
-description: 'Run any custom AI agent on Blaxel.'
-
+title: "Custom Agents"
+description: "Build and deploy custom agents on Blaxel in Python or TypeScript"
 ---
-
-You can **develop agents however you want** — either using a framework such as LangChain, Google ADK or AI SDK; or using just custom code — and deploy the agents to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), [GitHub app](Github-integration), GitHub action, etc.).
-
-[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
-
-This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
-
-## Overview of the development/deployment process
 
 Blaxel’s development paradigm is designed to have a minimal footprint on your usual development process.
 
 Your custom code remains platform-agnostic: you can deploy it on Blaxel or through traditional methods like Docker containers on VMs or Kubernetes clusters. When you deploy on Blaxel (CLI command `bl deploy`), Blaxel runs a specialized build process that integrates your code with its [Global Agentics Network](../Infrastructure/Global-Inference-Network) features.
 
-<Warning>At this time, Blaxel only supports custom agents developed in TypeScript or Python.</Warning>
+<Warning>
+  At this time, Blaxel only supports custom agents developed in TypeScript or Python.
+</Warning>
 
 Here is a high-level overview of how agents can be built and deployed using Blaxel:
 
@@ -32,24 +21,15 @@ Here is a high-level overview of how agents can be built and deployed using Blax
 
 ## Develop an agent on Blaxel
 
-Check out the following guide to learn how to develop and deploy an agent using your preferred programming language on Blaxel.
 
 <CardGroup cols={2}>
 
-<Card title="TypeScript" icon="js" href="/Agents/Develop-an-agent-ts">
+<Card title="TypeScript" icon="js" href="../Agents/Develop-an-agent-ts">
 Develop your AI agents in TypeScript using the Blaxel SDK.
 </Card>
 
-<Card title="Python" icon="python" href="/Agents/Develop-an-agent-py">
+<Card title="Python" icon="python" href="../Agents/Develop-an-agent-py">
 Develop your AI agents in Python using the Blaxel SDK.
 </Card>
 
 </CardGroup>
-
-<Card title="Develop and deploy an agent on Blaxel using Claude Agent SDK" icon="rocket" href="../Tutorials/Claude-Agent-SDK">
-See an example of building and deploying an agent on Blaxel with Claude Agent SDK.
-</Card>
-
-<Card title="Deploy an agent" icon="server" href="/Agents/Deploy-an-agent">
-Learn how to deploy your custom AI agents on Blaxel as a serverless endpoint.
-</Card>
