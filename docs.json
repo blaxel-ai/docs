@@ -48,7 +48,7 @@
                   "Sandboxes/Ports",
                   "Sandboxes/Preview-url",
                   "Sandboxes/Sessions",
-                  "Sandboxes/Hibernation"
+                  "Sandboxes/Standby-control"
                 ]
               },
               {

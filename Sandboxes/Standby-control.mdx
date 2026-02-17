@@ -1,12 +1,11 @@
 ---
-title: "Hibernation"
-description: "Approaches to control sandbox hibernation"
+title: "Standby control"
+description: "Approaches to manage sandbox standby"
 ---
-
 
 Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
 
-There are no built-in stop or start functions available in the SDKs to force hibernation. This means you'll need to rely on other approaches to better control when sandboxes remain active:
+There are no built-in stop or start functions available in the SDKs to manage standby mode. This means you'll need to rely on other approaches to better control when sandboxes remain active:
 
 1. Hide iframe when tab is inactive
 
