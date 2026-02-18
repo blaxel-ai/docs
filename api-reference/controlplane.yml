@@ -1822,6 +1822,10 @@ components:
         country:
           type: string
           description: Region display name
+        egressAvailable:
+          type: boolean
+          description: Egress availability status - indicates if network plane URL
+            is configured for the region
         infoGeneration:
           type: string
           description: Region display name
@@ -3151,6 +3155,44 @@ paths:
       summary: Verify custom domain
       tags:
       - customdomains
+  /egressgateways:
+    get:
+      operationId: ListAllEgressGateways
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressGateway'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressgateways:list
+      - ApiKeyAuth: []
+      summary: List all egress gateways across all VPCs in the workspace
+      tags:
+      - vpcs
+  /egressips:
+    get:
+      operationId: ListAllEgressIPs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressIP'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressips:list
+      - ApiKeyAuth: []
+      summary: List all egress IPs across all VPCs and gateways in the workspace
+      tags:
+      - vpcs
   /features:
     get:
       description: Returns only the feature flags that are currently enabled for the
