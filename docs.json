@@ -221,6 +221,7 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/OpenClaw",
               "Tutorials/Claude-Agent-SDK-Index",
               "Tutorials/CopilotKit",
               "Tutorials/CrewAI",
@@ -230,7 +231,6 @@
               "Tutorials/Mastra",
               "Tutorials/n8n",
               "Tutorials/OpenAI-Agents",
-              "Tutorials/OpenClaw",
               "Tutorials/PydanticAI",
               "Tutorials/Vercel-AI",
               "Tutorials/Custom-Agents"
