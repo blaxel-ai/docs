@@ -189,7 +189,11 @@ The following ports are reserved by Blaxel's system:
 - **80**: Reserved for system operations
 - **8080**: Reserved for sandbox API functionality
 
-You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox, typically to create a [preview URL](Preview-url) on them.
+You can expose specific non-reserved ports [**when creating a new sandbox**](Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox.
+
+<Important>
+  If you plan to access the sandbox on a specific port, typically using a [preview URL](Preview-url), you **must** expose the port at sandbox creation time. It is currently not possible to expose sandbox ports post-creation.
+</Important>
 
 ### Regions
 
