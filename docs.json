@@ -207,6 +207,12 @@
         "tab": "Tutorials and Examples",
         "groups": [
           {
+            "group": "Example Applications",
+            "pages": [
+              "Examples/Overview"
+            ]
+          },
+          {
             "group": "Sandboxes",
             "expanded": true,
             "pages": [
@@ -234,12 +240,6 @@
               "Tutorials/PydanticAI",
               "Tutorials/Vercel-AI",
               "Tutorials/Custom-Agents"
-            ]
-          },
-          {
-            "group": "Example Applications",
-            "pages": [
-              "Examples/Overview"
             ]
           }
         ]
