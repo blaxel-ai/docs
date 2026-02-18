@@ -25,7 +25,7 @@ Before starting, ensure you have:
     bl login
     ```
 
-1. In a new directory, install the Blaxel SDK ([Python](https://github.com/blaxel-ai/sdk-python) and [TypeScript](https://github.com/blaxel-ai/sdk-typescript) are both supported)):
+1. In a new directory, install the Blaxel SDK ([Python](https://github.com/blaxel-ai/sdk-python) and [TypeScript](https://github.com/blaxel-ai/sdk-typescript) are both supported):
 
     <CodeGroup>
     ```shell TypeScript (npm)
@@ -135,71 +135,70 @@ Before starting, ensure you have:
     ```
 
     ```python Python
-      import asyncio
-      import os
-      import sys
-      from datetime import datetime, timedelta, UTC
+    import asyncio
+    import os
+    import sys
+    from datetime import datetime, timedelta, UTC
 
-      from blaxel.core import SandboxInstance
+    from blaxel.core import SandboxInstance
 
-      async def main():
+    async def main():
 
-          # Check for required variables
-          blaxel_api_key = os.getenv("BLAXEL_API_KEY")
-          if not blaxel_api_key:
-              raise ValueError("BLAXEL_API_KEY environment variable is not set")
+        # Check for required variables
+        blaxel_api_key = os.getenv("BLAXEL_API_KEY")
+        if not blaxel_api_key:
+            raise ValueError("BLAXEL_API_KEY environment variable is not set")
 
-          # Create application sandbox
-          app_sandbox = await SandboxInstance.create_if_not_exists({
-              "name": "nextjs-sandbox",
-              "image": "blaxel/nextjs:latest",
-              "memory": 4096,
-              "ports": [{ "target": 3000, "protocol": "HTTP" }],
-              "region": "us-pdx-1",
-          })
-          print("Application sandbox created")
+        # Create application sandbox
+        app_sandbox = await SandboxInstance.create_if_not_exists({
+            "name": "nextjs-sandbox",
+            "image": "blaxel/nextjs:latest",
+            "memory": 4096,
+            "ports": [{ "target": 3000, "protocol": "HTTP" }],
+            "region": "us-pdx-1",
+        })
+        print("Application sandbox created")
 
-          # Start dev server in application sandbox
-          await app_sandbox.process.exec({
-            "working_dir": "/blaxel/app",
-            "command": "npm run dev -- --hostname 0.0.0.0 --port 3000"
-          })
-          print("Application server started")
+        # Start dev server in application sandbox
+        await app_sandbox.process.exec({
+          "working_dir": "/blaxel/app",
+          "command": "npm run dev -- --hostname 0.0.0.0 --port 3000"
+        })
+        print("Application server started")
 
-          # Create preview URL
-          app_preview = await app_sandbox.previews.create_if_not_exists({
-              "metadata": {"name": "app-preview"},
-              "spec": {
-                  "port": 3000,
-                  "public": False,
-              }
-          })
-          print("Preview URL created")
+        # Create preview URL
+        app_preview = await app_sandbox.previews.create_if_not_exists({
+            "metadata": {"name": "app-preview"},
+            "spec": {
+                "port": 3000,
+                "public": False,
+            }
+        })
+        print("Preview URL created")
 
-          # Create preview token
-          # Valid for 24 hours
-          expires_at = datetime.now(UTC) + timedelta(minutes=1440)
-          token = await app_preview.tokens.create(expires_at)
+        # Create preview token
+        # Valid for 24 hours
+        expires_at = datetime.now(UTC) + timedelta(minutes=1440)
+        token = await app_preview.tokens.create(expires_at)
 
-          # Get preview URL
-          print(f"Preview URL: {app_preview.spec.url}?bl_preview_token={token.value}")
-          print(f"MCP URL: {app_sandbox.metadata.url}/mcp")
+        # Get preview URL
+        print(f"Preview URL: {app_preview.spec.url}?bl_preview_token={token.value}")
+        print(f"MCP URL: {app_sandbox.metadata.url}/mcp")
 
-          # Create Claude Code sandbox
-          claude_sandbox = await SandboxInstance.create_if_not_exists({
-              "name": "claude-sandbox",
-              "image": "blaxel/node:latest",
-              "memory": 4096,
-              "region": "us-pdx-1",
-              "envs": [
-                  {"name": "BLAXEL_API_KEY", "value": blaxel_api_key}
-              ]
-          })
-          print("Claude Code sandbox created")
+        # Create Claude Code sandbox
+        claude_sandbox = await SandboxInstance.create_if_not_exists({
+            "name": "claude-sandbox",
+            "image": "blaxel/node:latest",
+            "memory": 4096,
+            "region": "us-pdx-1",
+            "envs": [
+                {"name": "BLAXEL_API_KEY", "value": blaxel_api_key}
+            ]
+        })
+        print("Claude Code sandbox created")
 
-      if __name__ == "__main__":
-          asyncio.run(main())
-
+    if __name__ == "__main__":
+        asyncio.run(main())
     ```
     </CodeGroup>
 
