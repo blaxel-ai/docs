@@ -138,9 +138,12 @@ const preview = await sandbox.previews.createIfNotExists({
   metadata: { name: "dev-server-preview" },
   spec: {
     responseHeaders,
-    // Must be public: Expo Go on Android doesn't forward the auth
+    // Must be public for Android scenarios: Expo Go on Android doesn't forward the auth
     // cookie to subsequent bundle/asset requests, so private previews
     // fail with 401 when fetching the JS bundle.
+    // WARNING: This makes the preview publicly accessible with no authentication.
+    // Do not use this pattern for sensitive workloads.
+    // If Android support is not required, set to false for private previews
     public: true,
     port: 8081,
   },
@@ -384,9 +387,12 @@ async function main() {
       metadata: { name: "preview" },
       spec: {
         responseHeaders,
-        // Must be public: Expo Go on Android doesn't forward the auth
+        // Must be public for Android scenarios: Expo Go on Android doesn't forward the auth
         // cookie to subsequent bundle/asset requests, so private previews
         // fail with 401 when fetching the JS bundle.
+        // WARNING: This makes the preview publicly accessible with no authentication.
+        // Do not use this pattern for sensitive workloads.
+        // If Android support is not required, set to false for private previews
         public: true,
         port: 8081,
       },
