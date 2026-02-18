@@ -28,15 +28,19 @@ Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully ma
 
 Sandboxes stay active as long as there's an active connection to them.
 
-You are charged for CPU/memory and storage while a sandbox is in active mode.
+You are charged for CPU/memory and storage while a sandbox is in active mode. [Learn more about pricing](https://blaxel.ai/pricing).
 
 ### Standby mode
 
-An idle WebSocket/TCP connection to a sandbox with no traffic will timeout after 15 minutes (also called _scale-to-zero_). When this happens, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 5 seconds.
+If a sandbox does not have an active connection, it automatically transitions to standby mode (also called _scale-to-zero_). This transition happens in approximately 15 seconds.
+
+If a sandbox has an ongoing WebSocket/TCP connection, there is a 15-minute idle timeout for such a connection. This means that if the WebSocket/TCP connection remains idle for 15 minutes with no activity, the sandbox will automatically transition to standby mode.
+
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 5 seconds.
 
 Reconnecting to the sandbox transitions it back to active mode. Any running processes are included in this snapshot and will be instantly restored when you reconnect to the sandbox.
 
-You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
+You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
 
 <Note>
   To prevent a sandbox from going into standby, you can use WebSocket ping/pong keepalive messages or [other techniques](./Standby-control) to prevent the timeout.
