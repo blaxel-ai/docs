@@ -54,6 +54,9 @@ RUN sed -i "s|'http://' + manifest2.extra.expoGo.debuggerHost|'https://' + manif
 # This warms up the cache better than export since it matches actual dev usage
 RUN timeout 120 npx expo start --web --port 8081 --no-dev-client 2>/dev/null || true
 
+# Expose port for Expo web
+EXPOSE 8081
+
 # Add npm global modules to PATH
 ENV PATH="/usr/local/bin:$PATH"
 
@@ -226,16 +229,14 @@ After setting the proxy URL you can start the dev server:
 
 ```typescript
 async function startDevServer(sandbox: SandboxInstance) {
-  // Start a new dev server with the updated environment
-  console.log("Starting dev server with updated configuration...");
   await sandbox.process.exec({
-    name: "dev-server",
-    command: "npx expo start --web --port 8081 --scheme exp",
-    workingDir: "/app",
+    name: 'dev-server',
+    command: 'npx expo start --web --port 8081',
+    workingDir: '/app',
     waitForPorts: [8081],
     restartOnFailure: true,
     maxRestarts: 25,
-  });
+  })
 }
 ```
 
@@ -330,19 +331,37 @@ async function configureExpoProxyUrl(
 
 async function startDevServer(sandbox: SandboxInstance) {
   await sandbox.process.exec({
-    name: "dev-server",
-    command: "npx expo start --web --port 8081 --scheme exp",
-    workingDir: "/app",
+    name: 'dev-server',
+    command: 'npx expo start --web --port 8081',
+    workingDir: '/app',
     waitForPorts: [8081],
     restartOnFailure: true,
     maxRestarts: 25,
-  });
+  })
+}
+
+async function restartDevServer(sandbox: SandboxInstance) {
+  try {
+    await sandbox.process.kill('dev-server')
+  } catch {
+    // Process might not be running
+  }
+  await new Promise((r) => setTimeout(r, 1000))
+  await startDevServer(sandbox)
 }
 
 async function configureExpo(sandbox: SandboxInstance, previewUrl: string) {
-  await addRouterOriginToAppJson(sandbox, previewUrl);
-  const proxyUrlChanged = await configureExpoProxyUrl(sandbox, previewUrl);
-  await startDevServer(sandbox);
+  await addRouterOriginToAppJson(sandbox, previewUrl)
+  const proxyChanged = await configureExpoProxyUrl(sandbox, previewUrl)
+
+  const processes = await sandbox.process.list()
+  const devServerRunning = processes.find((p) => p.name === 'dev-server')
+
+  if (proxyChanged && devServerRunning) {
+    await restartDevServer(sandbox)
+  } else if (!devServerRunning) {
+    await startDevServer(sandbox)
+  }
 }
 
 async function main() {
