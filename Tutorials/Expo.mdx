@@ -40,15 +40,19 @@ COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox
 # Create Expo project with default template
 RUN npx create-expo-app@latest .
 
-# Install web dependencies required for Expo web support
-RUN npx expo install react-dom react-native-web
+# Install web dependencies and expo-asset for asset loading support
+RUN npx expo install react-dom react-native-web expo-asset
+
+# Patch expo-asset: it hardcodes http:// when constructing asset URLs
+# from the manifest's debuggerHost. Behind the Blaxel HTTPS proxy,
+# Android's native downloader can't follow the HTTP→HTTPS redirect,
+# so fonts and images fail to load. Force https://.
+RUN sed -i "s|'http://' + manifest2.extra.expoGo.debuggerHost|'https://' + manifest2.extra.expoGo.debuggerHost|g" \
+    node_modules/expo-asset/build/AssetSources.js
 
 # Pre-warm Metro bundler cache by starting the dev server briefly
 # This warms up the cache better than export since it matches actual dev usage
 RUN timeout 120 npx expo start --web --port 8081 --no-dev-client 2>/dev/null || true
-
-# Expose port for Expo web
-EXPOSE 8081
 
 # Add npm global modules to PATH
 ENV PATH="/usr/local/bin:$PATH"
@@ -131,7 +135,10 @@ const preview = await sandbox.previews.createIfNotExists({
   metadata: { name: "dev-server-preview" },
   spec: {
     responseHeaders,
-    public: false,
+    // Must be public: Expo Go on Android doesn't forward the auth
+    // cookie to subsequent bundle/asset requests, so private previews
+    // fail with 401 when fetching the JS bundle.
+    public: true,
     port: 8081,
   },
 });
@@ -358,7 +365,10 @@ async function main() {
       metadata: { name: "preview" },
       spec: {
         responseHeaders,
-        public: false,
+        // Must be public: Expo Go on Android doesn't forward the auth
+        // cookie to subsequent bundle/asset requests, so private previews
+        // fail with 401 when fetching the JS bundle.
+        public: true,
         port: 8081,
       },
     });
@@ -372,7 +382,11 @@ async function main() {
 
     // Print access URLs
     const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
-    const expoUrl = webUrl.replace("https://", "exp://");
+    // Use exps:// (HTTPS variant) so Expo Go connects over TLS.
+    // Android 9+ blocks cleartext HTTP, and the Blaxel proxy redirects
+    // HTTP→HTTPS which Android's native downloader can't follow.
+    const expoUrl = webUrl.replace("https://", "exps://");
+
 
     console.log(`Web Preview URL: ${webUrl}`);
     console.log(`Expo Mobile URL: ${expoUrl}`);
