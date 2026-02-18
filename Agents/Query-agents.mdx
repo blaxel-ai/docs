@@ -54,36 +54,37 @@ You can create async endpoints either from the Blaxel Console, or from your code
   name = "my-agent"
   workspace = "my-workspace"
   type = "agent"
-  
+  public = false
+
   agents = []
   functions = ["blaxel-search"]
   models = ["gpt-4o-mini"]
-  
+
   [env]
   DEFAULT_CITY = "San Francisco"
-  
+
   [runtime]
   timeout = 900
   memory = 1024
-  
+
   [[triggers]]
     id = "trigger-async-my-agent"
     type = "http-async"
   [triggers.configuration]
     path = "agents/my-agent/async" # This will create this endpoint on the following base URL: https://run.blaxel.ai/{YOUR-WORKSPACE}
     retry = 1
-  
+
   [[triggers]]
     id = "trigger-my-agent"
     type = "http"
   [triggers.configuration]
     path = "agents/my-agent/sync"
     retry = 1
-    authenticationType = "public"
   ```
 
   - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
   - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+  - `public` field specifies if the agent is publicly accessible (defaults to `false`).
   - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
   - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
   - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
@@ -105,16 +106,17 @@ To simulate multi-turn conversations, you can pass on request headers. You'll ne
 
 ## Make an agent public
 
-To make an agent publicly accessible, add the following to the `blaxel.toml` configuration file, as explained above:
+To make an agent publicly accessible, add the `public` field to the root of the `blaxel.toml` configuration file, as explained above:
 
 ```toml blaxel.toml {7}
+public = true
+
 [[triggers]]
 id = "http"
 type = "http"
 
 [triggers.configuration]
 path = "/<PATH>" # This will be translated to https://run.blaxel.ai/<YOUR_WORKSPACE>/<PATH>
-authenticationType = "public"
 ```
 
 ## Make an inference request
