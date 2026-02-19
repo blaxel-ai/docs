@@ -1,12 +1,13 @@
 ---
 title: 'Run OpenClaw on Blaxel'
 description: 'Run OpenClaw in a Blaxel sandbox'
-seo:
-  metatags:
-    canonical: "https://blaxel.ai/blog/experiment-safely-with-open-claw-in-a-blaxel-sandbox"
 ---
 
-This tutorial explains how to run the [OpenClaw agent](https://openclaw.ai) inside a Blaxel sandbox and expose it securely using sandbox preview URLs.
+Blaxel provides an agent template that packages the [OpenClaw agent](https://openclaw.ai) for near-instant deployment on Blaxel's infrastructure, giving you a fully managed OpenClaw instance accessible via a public URL.
+
+A key benefit of using this template is that it comes with built-in skills to work with Blaxel sandboxes, including starting and stopping them, writing and running code in them, and creating preview URLs. This makes it easy to explore OpenClaw's capabilities safely, as all operations (such as arbitrary code generation and execution) can be performed in a secure, isolated Blaxel sandbox with zero additional configuration.
+
+This tutorial explains how to deploy and run the OpenClaw agent on Blaxel.
 
 ## Prerequisites
 
@@ -14,9 +15,8 @@ Before starting, ensure you have:
 
 - a [Blaxel account](https://blaxel.ai)
 - an API key from any of the [supported model providers](https://docs.openclaw.ai/concepts/model-providers)
-- a Python development environment
 
-## Create a sandbox
+## Configure the OpenClaw agent template
 
 1. [Download and install the Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction#install) and log in to your Blaxel account:
 
@@ -24,212 +24,70 @@ Before starting, ensure you have:
     bl login
     ```
 
-1. In a new directory, install the Blaxel [Python SDK](https://github.com/blaxel-ai/sdk-python) (there's also a [TypeScript SDK](https://github.com/blaxel-ai/sdk-typescript)):
+1. Clone the agent template:
 
     ```shell
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install blaxel
+    bl new agent -t template-openclaw my-openclaw
+    cd my-openclaw
     ```
 
-1. Create a script named `main.py` in the same directory:
-
-    ```python
-    import asyncio
-    import os
-    import sys
-    from datetime import datetime, timedelta, UTC
-
-
-    from blaxel.core import SandboxInstance
-
-
-    async def main():
-        # Create sandbox
-        sandbox = await SandboxInstance.create_if_not_exists({
-            "name": "openclaw-sandbox",
-            "image": "blaxel/node:latest",
-            "memory": 4096,
-            "ports": [{ "target": 18789, "protocol": "HTTP" }],
-            "region": "us-pdx-1",
-        })
-
-
-        # Create preview
-        preview = await sandbox.previews.create_if_not_exists({
-            "metadata": {"name": "openclaw-gateway"},
-            "spec": {
-                "port": 18789,
-                "public": False,
-            }
-        })
-
-
-        # Create preview token
-        # Valid for 24 hours
-        expires_at = datetime.now(UTC) + timedelta(minutes=1440)
-        token = await preview.tokens.create(expires_at)
-
-
-        # Get preview URL and token
-        print(f"Preview URL: {preview.spec.url}")
-        print(f"Token: {token}")
-
-
-    if __name__ == "__main__":
-        asyncio.run(main())
-    ```
-
-    This script:
-
-
-    - creates a new Blaxel sandbox named `openclaw-sandbox` using Blaxel's Node.js base image;
-    - opens the sandbox port 18789, which OpenClaw uses for WebSocket and HTTP connections; and
-    - creates a preview URL for the service running on that port;
-    - creates an access token for the preview URL, valid for 24 hours.
-
-1. Run the script to create the sandbox and preview URL:
+1. Copy the `.env.example` file to `.env`:
 
     ```shell
-    python main.py
+    cp .env.example .env
     ```
 
-    Once complete, the script displays the generated preview URL (for example, `https://b186....preview.bl.run`) and preview URL access token (for example, `cbba622560db78e...`). Note these values, as you will require them in subsequent steps.
+1. Update the `.env` file with the following configuration values:
 
-## Install and configure OpenClaw
+    - `OPENCLAW_GATEWAY_TOKEN`: Set the token to authenticate with the OpenClaw Gateway. Use a random hard-to-guess value.
+    - `OPENCLAW_MODEL`: Set the model to use, such as `anthropic/claude-opus-4-6`.
+    - `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` or `OPENAI_API_KEY`: Set the model API key.
 
-1. Connect to the Blaxel sandbox terminal:
+    You can add other variables that your OpenClaw agent may need. These variables will be automatically stored in Blaxel's secret manager on deployment.
+
+## Deploy the agent
+
+<Important>
+  The OpenClaw template exposes the OpenClaw agent at a publicly accessible endpoint with no authentication or access controls enabled by default. If you require restricted access, you must deploy the agent behind an authentication/authorization layer (for example, API gateway, reverse proxy, or custom authentication middleware) before exposing the URL.
+</Important>
+
+1. Deploy the agent:
 
     ```shell
-    bl connect sandbox openclaw-sandbox
+    bl deploy
     ```
 
-1. Execute the following commands to install OpenClaw in the sandbox:
+1. Browse to the "Curl" URL shown at the end of the deployment output.
 
-    ```shell
-    apk add curl bash make cmake g++ build-base linux-headers jq
-    npm install -g openclaw@latest
-    ```
+    ![overview](/img/tutorials/openclaw/deployment.png)
 
-    For detailed installation instructions, refer to the [OpenClaw documentation](https://docs.openclaw.ai/install).
+    This displays the OpenClaw Control UI.
 
-1. Configure OpenClaw:
-
-    ```shell
-    openclaw onboard
-    ```
-
-    Read and accept the security warning to proceed.
-    Select the **Quickstart** mode to proceed. You will be prompted for more information, including choosing a model provider, channels, skills and hooks.
-    At minimum, you must select a model provider and model and enter the required API key. All other steps are optional and can be skipped if you don't have the details yet.
-
-1. Once the configuration process is complete, OpenClaw will display status output. This will usually include a message that `systemd` services are unavailable. This is expected as, for performance reasons, Blaxel sandboxes do not include the `systemd` process manager.
-
-1. The status output also displays a tokenized dashboard link. Note the dashboard token (for example, `e782efff66...`), as it will be required in the next step.
-
-    ![token](/img/tutorials/openclaw/token.png)
-
-## Configure OpenClaw Gateway access
-
-1. Edit the OpenClaw configuration file at `/blaxel/.openclaw/openclaw.json` and add the preview URL to the list of allowed origins:
-
-    ```json
-      "gateway": {
-        "controlUi": {
-          "allowedOrigins": ["https://b186....preview.bl.run"]
-        },
-        // ...
-      }
-    ```
-
-    An alternative way to do this is with `jq`:
-
-    ```shell
-    jq '.gateway.controlUi = {"allowedOrigins":["https://b186....preview.bl.run"]}' openclaw.json > openclaw.json.new && mv openclaw.json.new openclaw.json
-    ```
-
-
-1. Start the OpenClaw Gateway service manually, and keep it running.
-
-    ```shell
-    openclaw gateway --bind lan --verbose
-    ```
-
-    Confirm that you see log messages like the ones below about the Gateway service starting and listening for requests:
-
-    ```shell
-    14:25:22 [gateway] agent model: google/gemini-2.5-flash-preview-09-2025
-    14:25:22 [gateway] listening on ws://0.0.0.0:18789 (PID 1660)
-    14:25:22 [gateway] log file: /tmp/openclaw/openclaw-2026-02-06.log
-    14:25:22 [ws] → event health seq=1 clients=0 presenceVersion=1 healthVersion=2
-    ```
-
-    **IMPORTANT: This is the OpenClaw Gateway process. Make sure that it is running for the rest of these instructions.**
-
-1. Browse to the sandbox preview URL, remembering to also include the preview URL access token in the URL string - for example, `https://b186....preview.bl.run?bl_preview_token=cbba...`.  This displays the OpenClaw Control UI.
-
-1. Navigate to the **Overview** page and enter the dashboard token in the **Gateway Token** field.
+1. Navigate to the **Overview** page of the OpenClaw Control UI. Enter the dashboard token configured earlier in the **Gateway Token** field. Click **Connect**.
 
     ![overview](/img/tutorials/openclaw/overview.png)
 
-1. The Control UI also displays the error `pairing required`. This is because the OpenClaw Gateway requires a [one-time pairing approval](https://docs.openclaw.ai/web/control-ui#device-pairing-first-connection) for connections from a new browser/device.
-
-    ![unpaired](/img/tutorials/openclaw/unpaired.png)
-
-1. Connect to the sandbox terminal **in a separate terminal window** (to not kill the gateway process running):
-
-    ```shell
-    bl connect sandbox openclaw-sandbox
-    ```
-
-
-1. List the available pairing requests:
-
-
-    ```shell
-    openclaw devices list
-    ```
-
-
-1. Typically, there will only be one pending pairing request. Approve it using its request identifier:
-
-
-    ```shell
-    openclaw devices approve f06d4e9b...
-    ```
-
-1. Browse to the sandbox preview URL again. The Control UI should now be fully functional and ready to accept requests, verified by the health check in the top right corner.
+The Control UI should now be fully functional and ready to accept requests, verified by the health check in the top right corner.
 
     ![paired](/img/tutorials/openclaw/paired.png)
 
 ## Test OpenClaw
 
-Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm that the OpenClaw agent is working:
+Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm that the OpenClaw agent is working. You will be asked a few setup questions to provision the agent.
 
 ![chat](/img/tutorials/openclaw/chat.png)
 
+You can use the built-in Blaxel skills to give the agent tasks to perform in a sandboxed environment, as with the example below:
 
-**NOTE**: As mentioned earlier, the OpenClaw Gateway process must remain running while you interact with the agent. However, if you end your interactive shell session with the Blaxel sandbox, the Gateway process will terminate automatically as well. To keep the Gateway process running even if you're not in an active shell session with the sandbox, create and execute the following script:
+![chat](/img/tutorials/openclaw/chat2.png)
 
-```python
-import asyncio
-import os
-import sys
+OpenClaw will create a new sandbox, generate the required code, and return a URL which you can use to preview the result. The agent's actions will take place within the boundaries of the Blaxel sandbox, ensuring complete isolation of the agent-generated code and commands.
 
-from blaxel.core import SandboxInstance
+## Configure OpenClaw channels
 
-async def main():
-    # Get sandbox
-    sandbox = await SandboxInstance.get("openclaw-sandbox")
+OpenClaw supports multiple channels. To enable them, set the relevant environment variable and redeploy. For example, for Telegram:
 
-    # Start process
-    process = await sandbox.process.exec({
-      "name": "start-openclaw-gateway",
-      "command": "openclaw gateway --bind lan --verbose",
-      "restart_on_failure": True,
-      "max_restarts": 5
-    })
+- Add the token to the `.env` file: `TELEGRAM_BOT_TOKEN=123456:ABC-DEF...`
+- Redeploy: `bl deploy`
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
+For other channels, configure them through the Control UI after connecting, or add them to the `openclaw.json` config in `entrypoint.sh`.
