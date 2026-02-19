@@ -1,19 +1,19 @@
 ---
 
-title: 'Vercel AI SDK'
+title: 'Run Mastra agents on Blaxel'
 
-description: 'Learn how to leverage Blaxel with Vercel AI SDK agents.'
+description: 'Learn how to leverage Blaxel with Mastra agents.'
 
 ---
 
-You can deploy your [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+You can deploy your [Mastra](https://mastra.ai/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
 
-## Get started with Vercel AI SDK on Blaxel
+## Get started with Mastra on Blaxel
 
-To get started with Vercel AI SDK on Blaxel:
+To get started with Mastra on Blaxel:
 
-- if you already have a Vercel AI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
-- else initialize an example project with Vercel AI SDK by using the following Blaxel CLI command and selecting the *Vercel AI hello world:*
+- if you already have a Mastra agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
+- else initialize an example project in Mastra by using the following Blaxel CLI command and selecting the *Mastra hello world:*
 
 ```bash
 bl new agent
@@ -25,9 +25,9 @@ bl new agent
 bl deploy
 ```
 
-## Develop a Vercel AI agent using Blaxel features
+## Develop a Mastra agent using Blaxel features
 
-While building your agent with Vercel AI SDK, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
+While building your agent in Mastra, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
 
 - [MCP servers](../Functions/Overview)
 - [LLMs](../Models/Overview)
@@ -37,13 +37,13 @@ While building your agent with Vercel AI SDK, use Blaxel [SDK](../sdk-reference/
 
 Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
 
-Run the following command to retrieve tools in Vercel AI format:
+Run the following command to retrieve tools in Mastra format:
 
 <CodeGroup>
 
 ```typescript TypeScript
 
-import { blTools } from '@blaxel/vercel';
+import { blTools } from '@blaxel/mastra';
 
 const tools = await blTools(['mcp-server-name'])
 
@@ -59,7 +59,7 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 
 ```typescript TypeScript
 
-import { blModel } from "@blaxel/vercel";
+import { blModel } from "@blaxel/mastra";
 
 const model = await blModel("model-api-name");
 

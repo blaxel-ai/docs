@@ -1,19 +1,19 @@
 ---
 
-title: 'PydanticAI'
+title: 'Run Google ADK agents on Blaxel'
 
-description: 'Learn how to leverage Blaxel with PydanticAI agents.'
+description: 'Learn how to leverage Blaxel with Google ADK agents.'
 
 ---
 
-You can deploy your [PydanticAI](https://ai.pydantic.dev/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+You can deploy your [Google Agent Development Kit (ADK)](https://github.com/google/adk-python/tree/main) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
 
-## Get started with PydanticAI on Blaxel
+## Get started with ADK on Blaxel
 
-To get started with PydanticAI on Blaxel:
+To get started with ADK on Blaxel:
 
-- if you already have a PydanticAI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
-- else initialize an example project in PydanticAI by using the following Blaxel CLI command and selecting the *PydanticAI hello world:*
+- if you already have a ADK agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
+- else initialize an example project with ADK by using the following Blaxel CLI command and selecting the *Google ADK hello world:*
 
 ```bash
 bl new agent
@@ -25,9 +25,9 @@ bl new agent
 bl deploy
 ```
 
-## Develop a PydanticAI agent using Blaxel features
+## Develop a ADK agent using Blaxel features
 
-While building your agent in PydanticAI, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
+While building your agent in ADK, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
 
 - [MCP servers](../Functions/Overview)
 - [LLMs](../Models/Overview)
@@ -37,13 +37,13 @@ While building your agent in PydanticAI, use Blaxel [SDK](../sdk-reference/intro
 
 Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
 
-Run the following command to retrieve tools in PydanticAI format:
+Run the following command to retrieve tools in ADK format:
 
 <CodeGroup>
 
 ```python Python
 
-from blaxel.pydantic import bl_tools
+from blaxel.googleadk import bl_tools
 
 await bl_tools(['mcp-server-name'])
 
@@ -59,7 +59,7 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 
 ```python Python
 
-from blaxel.pydantic import bl_model
+from blaxel.googleadk import bl_model
 
 model = await bl_model("model-api-name")
 

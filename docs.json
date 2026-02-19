@@ -35,7 +35,7 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Examples/Claude-Agent-SDK-MCP",
+              "Tutorials/Claude-Agent-SDK-MCP",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
@@ -107,31 +107,9 @@
               },
               "Agents/Github-integration",
               "Agents/Query-agents",
-              {
-                "group": "Integrate in your apps",
-                "pages": [
-                  "Agents/Integrate-in-apps",
-                  "Agents/Integrate-in-apps/n8n",
-                  "Agents/Integrate-in-apps/CopilotKit"
-                ]
-              },
               "Agents/Variables-and-secrets",
               "Agents/Asynchronous-triggers",
-              {
-                "group": "Frameworks",
-                "pages": [
-                  "Frameworks/Overview",
-                  "Frameworks/Claude-Agent-SDK",
-                  "Frameworks/LangChain",
-                  "Frameworks/CrewAI",
-                  "Frameworks/LlamaIndex",
-                  "Frameworks/Vercel-AI",
-                  "Frameworks/Mastra",
-                  "Frameworks/OpenAI-Agents",
-                  "Frameworks/PydanticAI",
-                  "Frameworks/ADK"
-                ]
-              }
+              "Agents/Integrate-in-apps"
             ]
           },
           {
@@ -142,12 +120,6 @@
               "Functions/Create-MCP-server",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
-              {
-                "group": "Integrate in your apps",
-                "pages": [
-                  "Functions/Integrate-in-apps/Toolprint"
-                ]
-              },
               "Functions/Variables-and-secrets",
               "Functions/oauth-flow-mcp"
             ]
@@ -232,12 +204,41 @@
         ]
       },
       {
-        "tab": "Templates & Cookbooks",
+        "tab": "Tutorials and Examples",
         "groups": [
           {
-            "group": "Templates & Cookbooks",
+            "group": "Example Applications",
             "pages": [
-              "Examples/Templates-and-Cookbooks"
+              "Examples/Overview"
+            ]
+          },
+          {
+            "group": "Sandboxes",
+            "expanded": true,
+            "pages": [
+              "Tutorials/Sandboxes-Overview",
+              "Tutorials/Astro",
+              "Tutorials/Expo",
+              "Tutorials/Nextjs"
+            ]
+          },
+          {
+            "group": "Agents",
+            "expanded": true,
+            "pages": [
+              "Tutorials/Agents-Overview",
+              "Tutorials/OpenClaw",
+              "Tutorials/Claude-Agent-SDK-Index",
+              "Tutorials/CrewAI",
+              "Tutorials/ADK",
+              "Tutorials/LangChain",
+              "Tutorials/LlamaIndex",
+              "Tutorials/Mastra",
+              "Tutorials/n8n",
+              "Tutorials/OpenAI-Agents",
+              "Tutorials/PydanticAI",
+              "Tutorials/Vercel-AI",
+              "Tutorials/Custom-Agents"
             ]
           }
         ]
