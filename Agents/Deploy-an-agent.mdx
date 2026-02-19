@@ -140,6 +140,7 @@ The agent deployment can be configured via the ***blaxel.toml*** file in your ag
 name = "my-agent"
 workspace = "my-workspace"
 type = "agent"
+public = false
 
 agents = []
 functions = ["blaxel-search"]
@@ -165,14 +166,14 @@ memory = 1024
 [triggers.configuration]
   path = "agents/my-agent/sync"
   retry = 1
-  authenticationType = "public"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
+- `public` field specifies if the agent is publicly accessible (defaults to `false`).
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`).
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 ### Deployment manifests (advanced usage)

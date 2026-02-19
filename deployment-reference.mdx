@@ -16,7 +16,7 @@ The format of Blaxel's configuration file is described below.
 # defaults to the directory name
 # name = "my-resource"
 
-# public access to resource (only for resource type="agent" and Mark 3.0 infrastructure)
+# public access to resource (only for resource type="agent")
 # possible values: [true, false]
 # defaults to false
 # public = false
@@ -90,7 +90,7 @@ The format of Blaxel's configuration file is described below.
 # endpoint URL (only for trigger type="http" and trigger type="http-async")
 # path = "/webhook"
 
-# endpoint authentication (only for trigger type="http" and trigger type="http-async")
+# endpoint authentication (only for resource type="function" and trigger type="http")
 # possible values: ["public", "private"]
 # authenticationType = "public"
 
