@@ -87,7 +87,7 @@ You can create async endpoints either from the Blaxel Console, or from your code
   - `public` field specifies if the agent is publicly accessible (defaults to `false`).
   - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
   - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
-  - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). You can also make them either private (default) or public (`authenticationType = "public"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+  - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 </Accordion>
 
 ### Endpoint authentication
