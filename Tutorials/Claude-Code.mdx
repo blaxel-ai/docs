@@ -1,0 +1,307 @@
+---
+title: 'Run Claude Code in a sandbox'
+description: 'Configure Claude Code to run in a Blaxel sandbox'
+---
+
+This tutorial explains how to run [Claude Code](https://claude.com/product/claude-code) inside a Blaxel sandbox and have it execute coding tasks on a codebase hosted in a different sandbox.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- a Python or TypeScript development environment;
+- a Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [create a Blaxel API key](../Security/Access-tokens#api-keys);
+- a Claude account with an active subscription or an Anthropic Console account with usage-based billing, required by Claude Code. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain a subscription or API credits as required;
+
+<Note>
+  If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, you can still follow this tutorial but you will need to perform [alternative steps for API key recognition when starting Claude Code](https://github.com/anthropics/claude-code/issues/441).
+</Note>
+
+## Install the Blaxel CLI and SDK
+
+1. [Download and install the Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction#install) and log in to your Blaxel account:
+
+    ```shell
+    bl login
+    ```
+
+1. In a new directory, install the Blaxel SDK ([Python](https://github.com/blaxel-ai/sdk-python) and [TypeScript](https://github.com/blaxel-ai/sdk-typescript) are both supported):
+
+    <CodeGroup>
+    ```shell TypeScript (npm)
+    npm init # if new project
+    npm install @blaxel/core
+    ```
+
+
+    ```shell TypeScript (pnpm)
+    pnpm init # if new project
+    pnpm install @blaxel/core
+    ```
+
+
+    ```shell TypeScript (yarn)
+    yarn init # if new project
+    yarn add @blaxel/core
+    ```
+
+
+    ```shell TypeScript (bun)
+    bun init -m --yes # if new project
+    bun install @blaxel/core
+    ```
+
+    ```shell Python
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install blaxel
+    ```
+
+    </CodeGroup>
+
+## Create sandboxes
+
+1. In the host environment, define the following variable:
+
+    ```shell
+    export BLAXEL_API_KEY=YOUR-BLAXEL-API-KEY-HERE
+    ```
+
+1. Create a script named `main.py` (Python) or `index.ts` (TypeScript) in the same directory.
+
+    <CodeGroup>
+
+    ```typescript TypeScript
+    import { SandboxInstance } from "@blaxel/core";
+
+    async function main() {
+      // Check for required variables
+      const blaxelApiKey = process.env.BLAXEL_API_KEY;
+      if (!blaxelApiKey) {
+        throw new Error("BLAXEL_API_KEY environment variable is not set");
+      }
+
+      // Create application sandbox
+      const appSandbox = await SandboxInstance.createIfNotExists({
+        name: "nextjs-sandbox",
+        image: "blaxel/nextjs:latest",
+        memory: 4096,
+        ports: [{ target: 3000, protocol: "HTTP" }],
+        region: "us-pdx-1",
+      });
+      console.log("Application sandbox created");
+
+      // Start dev server in application sandbox
+      await appSandbox.process.exec({
+        workingDir: "/blaxel/app",
+        command: "npm run dev -- --hostname 0.0.0.0 --port 3000"
+      });
+      console.log("Application server started");
+
+      // Create preview URL
+      const appPreview = await appSandbox.previews.createIfNotExists({
+        metadata: { name: "app-preview" },
+        spec: {
+          port: 3000,
+          public: false,
+        }
+      });
+      console.log("Preview URL created");
+
+      // Create preview token
+      // Valid for 24 hours
+      const expiresAt = new Date(Date.now() + 1440 * 60 * 1000);
+      const token = await appPreview.tokens.create(expiresAt);
+
+      // Get preview URL
+      console.log(`Preview URL: ${appPreview.spec.url}?bl_preview_token=${token.value}`);
+      console.log(`MCP URL: ${appSandbox.metadata.url}/mcp`);
+
+      // Create Claude Code sandbox
+      const claudeSandbox = await SandboxInstance.createIfNotExists({
+        name: "claude-sandbox",
+        image: "blaxel/node:latest",
+        memory: 4096,
+        region: "us-pdx-1",
+        envs: [
+          { name: "BLAXEL_API_KEY", value: blaxelApiKey }
+        ]
+      });
+      console.log("Claude Code sandbox created");
+    }
+
+    main();
+
+    ```
+
+    ```python Python
+    import asyncio
+    import os
+    import sys
+    from datetime import datetime, timedelta, UTC
+
+    from blaxel.core import SandboxInstance
+
+    async def main():
+
+        # Check for required variables
+        blaxel_api_key = os.getenv("BLAXEL_API_KEY")
+        if not blaxel_api_key:
+            raise ValueError("BLAXEL_API_KEY environment variable is not set")
+
+        # Create application sandbox
+        app_sandbox = await SandboxInstance.create_if_not_exists({
+            "name": "nextjs-sandbox",
+            "image": "blaxel/nextjs:latest",
+            "memory": 4096,
+            "ports": [{ "target": 3000, "protocol": "HTTP" }],
+            "region": "us-pdx-1",
+        })
+        print("Application sandbox created")
+
+        # Start dev server in application sandbox
+        await app_sandbox.process.exec({
+          "working_dir": "/blaxel/app",
+          "command": "npm run dev -- --hostname 0.0.0.0 --port 3000"
+        })
+        print("Application server started")
+
+        # Create preview URL
+        app_preview = await app_sandbox.previews.create_if_not_exists({
+            "metadata": {"name": "app-preview"},
+            "spec": {
+                "port": 3000,
+                "public": False,
+            }
+        })
+        print("Preview URL created")
+
+        # Create preview token
+        # Valid for 24 hours
+        expires_at = datetime.now(UTC) + timedelta(minutes=1440)
+        token = await app_preview.tokens.create(expires_at)
+
+        # Get preview URL
+        print(f"Preview URL: {app_preview.spec.url}?bl_preview_token={token.value}")
+        print(f"MCP URL: {app_sandbox.metadata.url}/mcp")
+
+        # Create Claude Code sandbox
+        claude_sandbox = await SandboxInstance.create_if_not_exists({
+            "name": "claude-sandbox",
+            "image": "blaxel/node:latest",
+            "memory": 4096,
+            "region": "us-pdx-1",
+            "envs": [
+                {"name": "BLAXEL_API_KEY", "value": blaxel_api_key}
+            ]
+        })
+        print("Claude Code sandbox created")
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+    ```
+    </CodeGroup>
+
+    This script creates two Blaxel sandboxes:
+      - `claude-sandbox` using Blaxel's Node.js base image
+      - `nextjs-sandbox` using Blaxel's Next.js base image
+
+    In the Claude Code sandbox, it:
+    - adds the Blaxel API key to `claude-sandbox` as an environment variable named `BLAXEL_API_KEY`.
+
+    In the application sandbox, it:
+    - starts the Next.js dev server in `nextjs-sandbox` on port 3000;
+    - creates a preview URL for the Next.js service running in `nextjs-sandbox` on port 3000;
+    - creates an access token for the preview URL, valid for 24 hours;
+    - returns the preview URL.
+
+1. Run the script to create the sandboxes and preview URL:
+
+    <CodeGroup>
+    ```python Python
+    python main.py
+    ```
+
+    ```typescript TypeScript
+    bun index.ts
+    ```
+    </CodeGroup>
+
+    Once complete, the script displays the generated preview URL for the Next.js application (for example, `https://b186....preview.bl.run?bl_preview_token=cbba622560db78e...`) and the MCP server URL (for example, ` https://sbx-nextjs-sandbox....bl.run/mcp`) for the Next.js sandbox. Note these values, as you will require them in subsequent steps.
+
+## Install and configure Claude Code
+
+1. Connect to the Claude Code sandbox terminal:
+
+    ```shell
+    bl connect sandbox claude-sandbox
+    ```
+
+1. Execute the following commands to install Claude Code in the sandbox and include it in the system PATH:
+
+    ```shell
+    apk add curl bash
+    curl -fsSL https://claude.ai/install.sh | bash
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc && source ~/.bashrc
+    ```
+
+    For detailed installation instructions, refer to the [Claude Code documentation](https://code.claude.com/docs/en/overview).
+
+1. Add the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) to Claude Code:
+
+    ```shell
+    claude mcp add --transport http sandbox YOUR-SANDBOX-MCP-URL-HERE  --header "Authorization: Bearer $BLAXEL_API_KEY"
+    ```
+
+1. Confirm that Claude Code is able to connect to the application sandbox's MCP server. Run the following command and confirm that you see output like `sandbox: .... connected`:
+
+    ```shell
+    claude mcp list
+    ```
+
+Claude Code is now ready to operate the sandbox using the sandbox's MCP tools.
+
+## Test Claude Code
+
+Start Claude Code in the sandbox:
+
+```shell
+claude
+```
+
+You will be prompted for authentication, theme selection and permissions.
+
+<Note>
+  If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, refer to the [alternative steps for API key recognition when starting Claude Code](https://github.com/anthropics/claude-code/issues/441).
+</Note>
+
+ Once these steps are completed, give Claude Code a coding task referencing the application sandbox, as in the example prompt below:
+
+```shell
+You have access to a sandbox environment over MCP. The sandbox includes tools to read and write files and directories and run commands. The sandbox includes a skeleton Next.js application at /blaxel/app. Update the application codebase and complete the coding task below.
+
+You must make all your changes only in the sandbox.
+Do not make any changes in the local environment.
+
+Your task is: create a website for a new board game of your own invention, including an interactive demo
+```
+
+Claude Code will connect to the application sandbox, inspect the Next.js codebase and make changes as per your request. You may be prompted for permissions to use the sandbox MCP tools during the process. Once complete, visit the application sandbox's preview URL (obtained from the sandbox creation script in the previous section) to see the result.
+
+## Resources
+
+Want more information on building and deploying with Claude on Blaxel? Check out the following resources:
+
+<CardGroup>
+  <Card title="Claude Agent SDK" icon="star-christmas" href="Claude-Agent-SDK">
+    Build and deploy Claude Agent SDK agents on Blaxel.
+  </Card>
+
+  <Card title="Connect to a Blaxel sandbox from Claude Agent SDK" icon="thumbs-up" href="Claude-Agent-SDK-MCP">
+    An agent that operates a sandbox using the sandbox's MCP server and Claude Agent SDK.
+  </Card>
+
+  <Card title="Deploy your agent code to Blaxel" icon="server" href="../Agents/Deploy-an-agent">
+    Complete tutorial for deploying AI agents on Blaxel.
+  </Card>
+</CardGroup>
