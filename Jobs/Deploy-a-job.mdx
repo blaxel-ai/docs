@@ -317,13 +317,6 @@ timeout = 900
 maxRetries=0
 
 [[triggers]]
-  id = "trigger-my-job"
-  type = "http"
-[triggers.configuration]
-  path = "jobs/my-job/execute"
-  retry = 1
-
-[[triggers]]
 id = "cron-trigger"
 type = "cron"
 
@@ -341,8 +334,7 @@ tasks = [
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
 - `[tasks]` sections allows to specify
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to schedule job executions.
-  - `type = "http"` lets you create an HTTP endpoint to execute the job
-  - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
-    - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
+    - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
+        - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurence of the cron (default value is one task, without arguments)
 
-  A private HTTP endpoint is always created by default, even if you don’t define any trigger here.
+A private HTTP endpoint to launch job executions is always available by default, even if you don't define a trigger in this file. You can launch a job execution by sending a POST request with the correct job and workspace arguments to `https://api.blaxel.ai/v0/jobs/my-job/executions?workspace=my-workspace`.
