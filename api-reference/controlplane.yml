@@ -1352,6 +1352,7 @@ components:
             deployment path. mk3 deploys through the model-gateway on microVM clusters.
           enum:
           - mk3
+          - mk2
         model:
           type: string
           description: Model identifier at the provider (e.g., gpt-4.1, claude-sonnet-4-20250514,
