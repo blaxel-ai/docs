@@ -241,6 +241,28 @@ asyncio.run(main())
 
 </CodeGroup>
 
+## 4. Test the agent
+
+Send the agent a query:
+
+<CodeGroup>
+
+```typescript TypeScript (npm/pnpm/yarn)
+tsx index.ts "list all pets"
+```
+
+```typescript TypeScript (Bun)
+bun index.ts "list all pets"
+```
+
+```python Python
+python main.py "list all pets"
+```
+
+</CodeGroup>
+
+You should see the agent using the two available tools, first searching for the correct API endpoint and then writing and executing code to query the API and respond to your prompt.
+
 In case of errors, you can view the logs of the deployed MCP server with the command below:
 
 ```bash
