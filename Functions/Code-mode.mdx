@@ -61,7 +61,7 @@ Once status shows `DEPLOYED`, any agent can use the MCP server as a tool provide
 
 ## Authentication
 
-Code Mode auto-detects security schemes defined in the OpenAPI spec and maps them to environment variables named `AUTH_<SCHEME_NAME>`. For example, if the spec defines a scheme called `ApiKeyAuth`, define an environment variable inf your deployment schema called `AUTH_APIKEYAUTH` with the corresponding secret:
+Code Mode auto-detects security schemes defined in the OpenAPI spec and maps them to environment variables named `AUTH_<SCHEME_NAME>`. For example, if the spec defines a scheme called `ApiKeyAuth`, define an environment variable in your deployment schema called `AUTH_APIKEYAUTH` with the corresponding secret:
 
 ```yaml
     envs:
