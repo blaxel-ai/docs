@@ -5,7 +5,9 @@ description: 'Run OpenClaw in a Blaxel sandbox'
 
 Blaxel provides an agent template that packages the [OpenClaw agent](https://openclaw.ai) for near-instant deployment on Blaxel's infrastructure, giving you a fully managed OpenClaw instance accessible via a public URL.
 
-A key benefit of using this template is that it comes with built-in skills to work with Blaxel sandboxes, including starting and stopping them, writing and running code in them, and creating preview URLs. This makes it easy to explore OpenClaw's capabilities safely, as all operations (such as arbitrary code generation and execution) can be performed in a secure, isolated Blaxel sandbox with zero additional configuration.
+<Note>
+  A key benefit of using this template is that it comes with built-in skills to work with Blaxel sandboxes, including starting and stopping them, writing and running code in them, and creating preview URLs. This makes it easy to explore OpenClaw's capabilities safely, as all operations (such as arbitrary code generation and execution) can be performed in a secure, isolated Blaxel sandbox with zero additional configuration.
+</Note>
 
 This tutorial explains how to deploy and run the OpenClaw agent on Blaxel.
 
@@ -13,7 +15,7 @@ This tutorial explains how to deploy and run the OpenClaw agent on Blaxel.
 
 Before starting, ensure you have:
 
-- a [Blaxel account](https://blaxel.ai)
+- a [Blaxel account](https://blaxel.ai) at [Tier 2 or higher](https://app.blaxel.ai/account/quotas)
 - an API key from any of the [supported model providers](https://docs.openclaw.ai/concepts/model-providers)
 
 ## Configure the OpenClaw agent template
@@ -47,9 +49,16 @@ Before starting, ensure you have:
 
 ## Deploy the agent
 
-<Important>
-  The OpenClaw template exposes the OpenClaw agent at a publicly accessible endpoint with no authentication or access controls enabled by default. If you require restricted access, you must deploy the agent behind an authentication/authorization layer (for example, API gateway, reverse proxy, or custom authentication middleware) before exposing the URL.
-</Important>
+<Note>
+  The template exposes the OpenClaw Gateway at a publicly accessible endpoint with no authentication or access controls enabled by default. If you require restricted access, you must deploy the agent behind an authentication/authorization layer (for example, API gateway, reverse proxy, or custom authentication middleware) before exposing the URL.
+
+  Although the OpenClaw Gateway endpoint is publicly accessible by default, agent access still requires the correct OpenClaw Gateway token. You can configure the token after accessing the OpenClaw Gateway, using the value set in the `.env` file in the previous step.
+
+  For additional protection, you may configure the OpenClaw Gateway as private. However, if you do this, you will not be able to access the user interface directly. In this case, you have two options:
+
+  - Use a browser extension to automatically attach the required authentication headers to your requests when accessing OpenClaw on Blaxel's domain.
+  - Configure your own domain to proxy requests to Blaxel's domain and inject the required authentication header at the proxy layer, eliminating the need for a browser extension.
+</Note>
 
 1. Deploy the agent:
 
@@ -77,11 +86,11 @@ Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm t
 
 ![chat](/img/tutorials/openclaw/chat.png)
 
-You can use the built-in Blaxel skills to give the agent tasks to perform in a sandboxed environment, as with the example below:
+Use the built-in Blaxel skills to give the agent tasks to perform in a sandboxed environment, as with the example below:
 
 ![chat](/img/tutorials/openclaw/chat2.png)
 
-OpenClaw will create a new sandbox, generate the required code, and return a URL which you can use to preview the result. The agent's actions will take place within the boundaries of the Blaxel sandbox, ensuring complete isolation of the agent-generated code and commands.
+With the Blaxel skill, OpenClaw will create a new sandbox, generate the required code, and return a URL which you can use to preview the result. The agent's actions will take place within the boundaries of the Blaxel sandbox, ensuring complete isolation of the agent-generated code and commands.
 
 ## Configure OpenClaw channels
 
