@@ -83,7 +83,7 @@ async function main() {
           memory: 2048,
           envs: [
             { name: "OPENAPI_REFERENCE", value: "https://petstore.swagger.io/v2/swagger.json" },
-            { name: "AUTH_APIKEY", value: "special-key" },
+            { name: "AUTH_API_KEY", value: "special-key" },
           ],
         },
       },
@@ -128,7 +128,7 @@ async def main():
                             value="https://petstore.swagger.io/v2/swagger.json",
                         ),
                         Env(
-                            name="AUTH_APIKEY",
+                            name="AUTH_API_KEY",
                             value="special-key",
                         ),
                     ],
@@ -156,7 +156,7 @@ spec:
     envs:
       - name: OPENAPI_REFERENCE
         value: https://petstore.swagger.io/v2/swagger.json
-      - name: AUTH_APIKEY
+      - name: AUTH_API_KEY
         value: special-key
 EOF
 ```
