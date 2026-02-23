@@ -7,6 +7,10 @@ Blaxel supports "code mode" natively, enabling a more efficient way to execute t
 
 This tutorial demonstrates by deploying an API as a MCP server on Blaxel and using an agent to work with it. It uses the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview), but you could also use other frameworks like LangChain, Vercel AI SDK, Mastra, or your own custom code.
 
+<Tip>
+  For more information on "code mode", refer to blog posts by [Cloudflare](https://blog.cloudflare.com/code-mode/) and [Anthropic](https://www.anthropic.com/engineering/code-execution-with-mcp).
+</Tip>
+
 ## Prerequisites
 
 - An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
@@ -15,7 +19,7 @@ This tutorial demonstrates by deploying an API as a MCP server on Blaxel and usi
 
 ## 1. Build and deploy an MCP server in code mode
 
-This tutorial creates and deploys an MCP server for the example [Petstore API](https://petstore.swagger.io/).
+This tutorial creates and deploys an MCP server for the example [Petstore API](https://petstore.swagger.io/). This API requires [authentication](../Functions/Code-mode#authentication), but the maintainers provide the authentication key `special-key` for testing purposes.
 
 Run the following command to deploy the API on Blaxel:
 
@@ -106,15 +110,33 @@ In your project directory, create a file named `index.ts` (TypeScript) or `main.
 ```typescript TypeScript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
+const blApiKey = process.env.BL_API_KEY;
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+const prompt = process.argv[2];
+
+if (!blApiKey) {
+  console.error("Error: BL_API_KEY environment variable is not set");
+  process.exit(1);
+}
+
+if (!anthropicApiKey) {
+  console.error("Error: ANTHROPIC_API_KEY environment variable is not set");
+  process.exit(1);
+}
+
+if (!prompt) {
+  console.error("Error: prompt argument is required");
+  process.exit(1);
+}
 
 for await (const message of query({
-  prompt: "List all available pets",
+  prompt: prompt,
   options: {
     mcpServers: {
       petstore: {
         type: "http",
         url: "<MCP-SERVER-URL>/mcp",
-        headers: { "Authorization": `Bearer ${process.env.BL_API_KEY}` },
+        headers: { "Authorization": `Bearer ${blApiKey}` },
       },
     },
     allowedTools: ["mcp__petstore__*"],
@@ -133,7 +155,7 @@ for await (const message of query({
         console.log(`  input: ${JSON.stringify(block.input).slice(0, 200)}`);
       }
       if (block.type === "text") {
-        console.log(`  text: ${block.text.slice(0, 300)}${block.text.length > 300 ? "..." : ""}`);
+        console.log(`  text: ${block.text.slice(0, 300)}${block.text.length > 300 ? "…" : ""}`);
       }
     }
   }
@@ -148,14 +170,81 @@ for await (const message of query({
 ```
 
 ```python Python
+import asyncio
+import json
+import os
+import sys
+
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    SystemMessage,
+    AssistantMessage,
+    ResultMessage,
+    TextBlock,
+    ToolUseBlock,
+)
+
+
+bl_api_key = os.environ.get("BL_API_KEY")
+anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+prompt = sys.argv[1] if len(sys.argv) > 1 else None
+
+if not bl_api_key:
+    print("Error: BL_API_KEY environment variable is not set", file=sys.stderr)
+    sys.exit(1)
+
+if not anthropic_api_key:
+    print("Error: ANTHROPIC_API_KEY environment variable is not set", file=sys.stderr)
+    sys.exit(1)
+
+if not prompt:
+    print("Error: prompt argument is required", file=sys.stderr)
+    sys.exit(1)
+
+
+async def main():
+    async for message in query(
+        prompt=prompt,
+        options=ClaudeAgentOptions(
+            mcp_servers={
+                "petstore": {
+                    "type": "http",
+                    "url": "<MCP-SERVER-URL>/mcp",
+                    "headers": {"Authorization": f"Bearer {bl_api_key}"},
+                }
+            },
+            allowed_tools=["mcp__petstore__*"],
+        ),
+    ):
+        if isinstance(message, SystemMessage) and message.subtype == "init":
+            for s in message.data.get("mcp_servers", []):
+                print(f'MCP server "{s["name"]}": {s["status"]}')
+
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, ToolUseBlock):
+                    print(f"\n--- {block.name} ---")
+                    print(f"  input: {json.dumps(block.input)[:200]}")
+                if isinstance(block, TextBlock):
+                    text = block.text
+                    print(f"  text: {text[:300]}{'…' if len(text) > 300 else ''}")
+
+        if isinstance(message, ResultMessage) and message.subtype == "success":
+            print(f"\n{message.result}")
+        if isinstance(message, ResultMessage) and message.subtype != "success":
+            print("Error:", message, file=sys.stderr)
+
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
 
-You can view the logs of the deployed MCP server with the command below:
+In case of errors, you can view the logs of the deployed MCP server with the command below:
 
 ```bash
-bl logs mcp petstore-code-mode # view logs
+bl logs mcp petstore-code-mode
 ```
 
 The following resources will help you go further:
