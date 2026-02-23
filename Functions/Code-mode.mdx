@@ -21,30 +21,17 @@ Under the hood:
 - When an agent calls `search`, code mode evaluates a JavaScript function against the in-memory OpenAPI specification. All `$ref` pointers are auto-resolved so the agent sees the complete schema.
 - When an agent calls `execute`, the code runs inside an auto-scaling sandbox with a 10-minute idle TTL.
 
-## Authentication
+## Deployment
 
-Code Mode auto-detects security schemes defined in the OpenAPI spec and maps them to environment variables named `AUTH_<SCHEME_NAME>`. For example, if the spec defines a scheme called `ApiKeyAuth`, the environment variable will be called `AUTH_APIKEYAUTH`:
-
-### Supported auth types
-
-| OpenAPI scheme type       | Env var usage                                      |
-|---------------------------|----------------------------------------------------|
-| `http` / `bearer`         | `Authorization: Bearer <token>`                    |
-| `http` / `basic`          | `Authorization: Basic <base64>`                    |
-| `apiKey` (header)         | Custom header with the key value                   |
-| `apiKey` (query)          | Appended as query parameter                        |
-| `oauth2` / `openIdConnect`| `Authorization: Bearer <token>`                    |
-
-
-### 1. Deploy
+Use the following command to deploy an MCP server in code mode. Replace the `OPENAPI_REFERENCE` variable with the URL to the API specification you want to expose.
 
 ```bash
 bl apply -f - <<EOF
 apiVersion: blaxel.ai/v1alpha1
 kind: Function
 metadata:
-  displayName: Petstore Code Mode
-  name: petstore-code-mode
+  displayName: API Code Mode
+  name: my-api-code-mode
 spec:
   runtime:
     type: mcp
@@ -56,24 +43,23 @@ spec:
 EOF
 ```
 
-### 2. Verify
+Check status:
 
 ```bash
-# Check status of deployment for your MCP
-bl get mcp petstore-code-mode
-# Get logs for your MCP (can take some time to appear)
-bl logs mcps petstore-code-mode
-# Retrieve MCP url for later
-bl get mcp petstore-code-mode -o json | jq -r '.[] | .metadata.url'
+bl get mcp my-api-code-mode
 ```
 
-Once status shows `DEPLOYED`, any agent can use `petstore-code-mode` as a tool provider (easy connection with MCP clients).
+Retrieve MCP endpoint url:
 
-## Adding authentication
+```bash
+bl get mcp my-api-code-mode -o json | jq -r '.[] | .metadata.url'
+```
 
-Code Mode auto-detects security schemes defined in the OpenAPI spec and maps them to environment variables named `AUTH_<SCHEME_NAME>`.
+Once status shows `DEPLOYED`, any agent can use the MCP server as a tool provider.
 
-For example, if the spec defines a scheme called `ApiKeyAuth`:
+## Authentication
+
+Code Mode auto-detects security schemes defined in the OpenAPI spec and maps them to environment variables named `AUTH_<SCHEME_NAME>`. For example, if the spec defines a scheme called `ApiKeyAuth`, define an environment variable inf your deployment schema called `AUTH_APIKEYAUTH` with the corresponding secret:
 
 ```yaml
     envs:
@@ -92,73 +78,3 @@ For example, if the spec defines a scheme called `ApiKeyAuth`:
 | `apiKey` (header)         | Custom header with the key value                   |
 | `apiKey` (query)          | Appended as query parameter                        |
 | `oauth2` / `openIdConnect`| `Authorization: Bearer <token>`                    |
-
-## Using it with the Claude Agent SDK
-
-Once deployed, you can connect to your Code Mode MCP directly from TypeScript using the Claude Agent SDK:
-
-```typescript
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-for await (const message of query({
-  prompt: "List all available pets",
-  options: {
-    mcpServers: {
-      petstore: {
-        type: "http",
-        url: "<your-mcp-url>/mcp",
-        headers: { "Authorization": `Bearer <your-api-key>` },
-      },
-    },
-    allowedTools: ["mcp__petstore__*"],
-  },
-})) {
-  if (message.type === "system" && message.subtype === "init") {
-    for (const s of message.mcp_servers) {
-      console.log(`MCP server "${s.name}": ${s.status}`);
-    }
-  }
-
-  if (message.type === "assistant") {
-    for (const block of message.message.content) {
-      if (block.type === "tool_use") {
-        console.log(`\n--- ${block.name} ---`);
-        console.log(`  input: ${JSON.stringify(block.input).slice(0, 200)}`);
-      }
-      if (block.type === "text") {
-        console.log(`  text: ${block.text.slice(0, 300)}${block.text.length > 300 ? "…" : ""}`);
-      }
-    }
-  }
-
-  if (message.type === "result" && message.subtype === "success") {
-    console.log(`\n${message.result}`);
-  }
-  if (message.type === "result" && message.subtype !== "success") {
-    console.error("Error:", message);
-  }
-}
-```
-
-Find your MCP url:
-- Console: [https://app.blaxel.ai](https://app.blaxel.ai)
-- CLI: `bl get mcp petstore-code-mode -o json | jq -r '.[] | .metadata.url'`
-
-Configure an Api Key:
-- https://app.blaxel.ai/profile/security
-
-## How it works under the hood
-
-When an agent calls search, Code Mode evaluates a JavaScript function against the in-memory OpenAPI spec — no network calls, instant results. All `$ref` pointers are pre-resolved so the agent sees fully expanded schemas.
-
-When an agent calls execute, the code runs inside an auto-scaling sandbox with a 10-minute idle TTL. Auth env vars are injected automatically. The agent typically does a search first to find the right endpoint, then executes a fetch call.
-
-## Useful commands
-
-```bash
-bl get mcp # list all MCPs
-bl get mcp petstore-code-mode # check deployment status
-bl delete mcp petstore-code-mode # remove it
-bl logs mcp petstore-code-mode # view logs
-bl get mcp petstore-code-mode -o json | jq -r '.[] | .metadata.url' # Get URL for your MCP
-```
