@@ -54,7 +54,7 @@ Before starting, ensure you have:
 
   Although the OpenClaw Gateway endpoint is publicly accessible by default, agent access still requires the correct OpenClaw Gateway token. You can configure the token after accessing the OpenClaw Gateway, using the value set in the `.env` file in the previous step.
 
-  For additional protection, you may configure the OpenClaw Gateway as private. However, if you do this, you will not be able to access the user interface directly. In this case, you have two options:
+  For additional protection, you may [configure the OpenClaw Gateway as private](/Agents/Deploy-an-agent/#agent-deployment-reference) in the agent's deployment manifest. However, if you do this, you will not be able to access the user interface directly. In this case, you have two options:
 
   - Use a browser extension to automatically attach the required authentication headers to your requests when accessing OpenClaw on Blaxel's domain.
   - Configure your own domain to proxy requests to Blaxel's domain and inject the required authentication header at the proxy layer, eliminating the need for a browser extension.
