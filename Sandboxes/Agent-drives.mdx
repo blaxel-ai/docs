@@ -1,0 +1,326 @@
+---
+title: 'Agent Drives'
+description: 'Share files between sandboxes and agents.'
+---
+
+<Important>
+  This feature is currently in private preview. During the preview, drives are only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. A quotas system for drive storage is coming soon.
+</Important>
+
+Agent Drives are distributed filesystems that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
+
+Unlike [volumes](./Volumes), which are block storage devices attached at sandbox creation to a single sandbox, drives are backed by [SeaweedFS](https://github.com/seaweedfs/seaweedfs) buckets and behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give you a POSIX-compliant interface.
+
+- A drive can be attached to an already-running sandbox at any mount path, without needing to recreate the sandbox
+- Multiple sandboxes can mount the same drive simultaneously with full read-write access.
+- A specific subdirectory of a drive can be mounted using `drivePath` (instead of mounting the entire drive).
+- Drives scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
+
+## Use cases
+
+Some examples of use cases are:
+
+- Passing data or files from one sandbox to another directly, without needing intermediary storage or services
+- Storing tool call outputs and context histories for use in other agents
+- Sharing common datasets across agents
+- Creating a shared filesystem cache of package dependencies to speed up future agent/sandbox deployments
+
+## Create a drive
+
+Create a standalone drive by specifying a unique `name` and `region`. You can also optionally specify the size, display name and labels for the drive.
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.create({
+  name: "my-drive",
+  region: "us-was-1",
+  size: "10", // optional; defaults to 10GB
+  displayName: "My Project Drive", // optional; defaults to `name`
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+});
+```
+
+```python Python
+from blaxel.core import DriveInstance
+drive = await DriveInstance.create(
+    {
+        "name": "my-drive",
+        "region": "us-was-1",
+        "size": 10,  # optional; defaults to 10GB
+        "display_name": "My Project Drive", # optional; defaults to `name`
+        "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+    }
+)
+```
+
+</CodeGroup>
+
+You can also use `createIfNotExists()` to retrieve an existing drive or create a new one if it doesn't exist:
+
+<CodeGroup>
+
+```tsx TypeScript
+const drive = await DriveInstance.createIfNotExists({
+  name: "my-drive",
+  region: "us-was-1",
+  size: "10", // optional; defaults to 10GB
+  displayName: "My Project Drive", // optional; defaults to `name`
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+});
+```
+
+```python Python
+from blaxel.core import DriveInstance
+drive = await DriveInstance.create_if_not_exists(
+    {
+        "name": "my-drive",
+        "region": "us-was-1",
+        "size": 10,  # optional; defaults to 10GB
+        "display_name": "My Project Drive", # optional; defaults to `name`
+        "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+    }
+)
+```
+
+</CodeGroup>
+
+## Mount a drive to a sandbox
+
+Mount a drive to a running sandbox by specifying the `driveName`, the `mountPath` (where the drive will appear in the sandbox's filesystem), and optionally the `drivePath` (a subdirectory within the drive to mount).
+
+<CodeGroup>
+
+```tsx TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.drive.mount({
+  driveName: "my-drive",
+  mountPath: "/mnt/data",
+  drivePath: "/",   // optional; defaults to root of the drive
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+await sandbox.drive.mount(
+    drive_name="my-drive",
+    mount_path="/mnt/data",
+    drive_path="/", # optional; defaults to root of the drive
+)
+```
+
+</CodeGroup>
+
+Once mounted, any file written to `/mnt/data` inside the sandbox will be stored on the drive and persist even after the sandbox is deleted.
+
+### Mount a subdirectory
+
+You can mount a specific subdirectory of a drive rather than its root. This is useful when a single drive contains multiple project directories:
+
+<CodeGroup>
+
+```tsx TypeScript
+await sandbox.drive.mount({
+  driveName: "my-drive",
+  mountPath: "/app/project",
+  drivePath: "/projects/alpha",
+});
+```
+
+```python Python
+await sandbox.drive.mount(
+    drive_name="my-drive",
+    mount_path="/app/project",
+    drive_path="/projects/alpha",
+)
+```
+
+</CodeGroup>
+
+## List mounted drives
+
+List all drives currently mounted to a sandbox:
+
+<CodeGroup>
+
+```tsx TypeScript
+const mounts = await sandbox.drive.list();
+console.log(mounts);
+```
+
+```python Python
+mounts = await sandbox.drive.list()
+print(mounts)
+```
+
+</CodeGroup>
+
+## List all drives
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drives = await DriveInstance.list();
+```
+
+```python Python
+from blaxel.core import DriveInstance
+drives = await DriveInstance.list()
+```
+
+</CodeGroup>
+
+Or via CLI:
+
+```bash
+bl get drives
+```
+
+## Unmount a drive
+
+Unmount a drive from a running sandbox by specifying the mount path:
+
+<CodeGroup>
+
+```tsx TypeScript
+await sandbox.drive.unmount("/mnt/data");
+```
+
+```python Python
+await sandbox.drive.unmount("/mnt/data")
+```
+
+</CodeGroup>
+
+## Delete a drive
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+// Class-level
+await DriveInstance.delete("my-drive");
+
+// Or instance-level
+const drive = await DriveInstance.get("my-drive");
+await drive.delete();
+```
+
+```python Python
+from blaxel.core import DriveInstance
+
+# Class-level
+await DriveInstance.delete("my-drive")
+
+# Or instance-level
+drive = await DriveInstance.get("my-drive")
+await drive.delete()
+```
+
+</CodeGroup>
+
+
+<Tip>
+  Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/integration/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/core/sandbox).
+</Tip>
+
+## Full example
+
+The following example creates a drive, creates a sandbox, mounts the drive, writes a file to the mounted path, and reads it back:
+
+<CodeGroup>
+
+```tsx TypeScript
+import { SandboxInstance, DriveInstance } from "@blaxel/core";
+
+// 1. Create a drive
+const drive = await DriveInstance.createIfNotExists({
+  name: "agent-storage",
+  size: "20",
+  region: "us-was-1",
+});
+
+// 2. Create a sandbox
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-agent-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 2048,
+  region: "us-was-1",
+});
+
+// 3. Mount the drive to the sandbox
+await sandbox.drive.mount({
+  driveName: "agent-storage",
+  mountPath: "/mnt/storage",
+  drivePath: "/",
+});
+
+// 4. Write a file to the mounted drive
+await sandbox.fs.write("/mnt/storage/hello.txt", "Hello from the drive!");
+
+// 5. Read it back
+const content = await sandbox.fs.read("/mnt/storage/hello.txt");
+console.log(content); // "Hello from the drive!"
+
+// 6. List mounted drives
+const mounts = await sandbox.drive.list();
+console.log(mounts);
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance, DriveInstance
+
+async def main():
+    # 1. Create a drive
+    drive = await DriveInstance.create_if_not_exists(
+        {
+            "name": "agent-storage",
+            "size": 20,
+            "region": "us-was-1",
+        }
+    )
+
+    # 2. Create a sandbox
+    sandbox = await SandboxInstance.create_if_not_exists(
+        {
+            "name": "my-agent-sandbox",
+            "image": "blaxel/base-image:latest",
+            "memory": 2048,
+            "region": "us-was-1",
+        }
+    )
+
+    # 3. Mount the drive to the sandbox
+    await sandbox.drive.mount(
+        drive_name="agent-storage",
+        mount_path="/mnt/storage",
+        drive_path="/",
+    )
+
+    # 4. Write a file to the mounted drive
+    await sandbox.fs.write("/mnt/storage/hello.txt", "Hello from the drive!")
+
+    # 5. Read it back
+    content = await sandbox.fs.read("/mnt/storage/hello.txt")
+    print(content)  # "Hello from the drive!"
+
+    # 6. List mounted drives
+    mounts = await sandbox.drive.list()
+    print(mounts)
+
+asyncio.run(main())
+```
+
+</CodeGroup>
