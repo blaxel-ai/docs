@@ -120,6 +120,7 @@
               "Functions/Create-MCP-server",
               "Functions/Deploy-a-function",
               "Functions/Invoke-functions",
+              "Functions/Code-mode",
               "Functions/Variables-and-secrets",
               "Functions/oauth-flow-mcp"
             ]
