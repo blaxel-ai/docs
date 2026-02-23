@@ -19,7 +19,7 @@ This tutorial demonstrates by deploying an API as a MCP server on Blaxel and usi
 
 ## 1. Build and deploy an MCP server in code mode
 
-This tutorial creates and deploys an MCP server for the example [Petstore API](https://petstore.swagger.io/). This API requires [authentication](../Functions/Code-mode#authentication), but the maintainers provide the authentication key `special-key` for testing purposes.
+This tutorial creates and deploys an MCP server for the example [Petstore API](https://petstore.swagger.io/).
 
 Run the following command to deploy the API on Blaxel:
 
@@ -38,8 +38,6 @@ spec:
     envs:
       - name: OPENAPI_REFERENCE
         value: https://petstore3.swagger.io/api/v3/openapi.json
-      - name: AUTH_API_KEY
-        value: special-key
 EOF
 ```
 
