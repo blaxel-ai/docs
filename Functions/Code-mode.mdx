@@ -25,9 +25,80 @@ Under the hood:
 
 ## Deployment
 
-Use the following command to deploy an MCP server in code mode. Replace the `OPENAPI_REFERENCE` variable with the URL to the API specification you want to expose.
+Use the following code or Blaxel CLI command to deploy an MCP server in code mode. Replace the `OPENAPI_REFERENCE` variable with the URL to the API specification you want to expose.
 
-```bash
+<CodeGroup>
+
+```typescript TypeScript
+import { createFunction } from "@blaxel/core";
+
+async function main() {
+  await createFunction({
+    body: {
+      metadata: {
+        name: "my-api-code-mode",
+        displayName: "API Code Mode",
+      },
+      spec: {
+        runtime: {
+          image: "blaxel/code-mode:latest",
+          memory: 2048,
+          envs: [
+            { name: "OPENAPI_REFERENCE", value: "https://petstore3.swagger.io/api/v3/openapi.json" },
+          ],
+        },
+      },
+    },
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+```python Python
+import asyncio
+import sys
+
+from blaxel.core.client import client
+from blaxel.core.client.api.functions.create_function import asyncio as create_function
+from blaxel.core.client.models.env import Env
+from blaxel.core.client.models.function import Function
+from blaxel.core.client.models.function_runtime import FunctionRuntime
+from blaxel.core.client.models.function_spec import FunctionSpec
+from blaxel.core.client.models.metadata import Metadata
+
+
+async def main():
+    await create_function(
+        client=client,
+        body=Function(
+            metadata=Metadata(
+                name="my-api-code-mode",
+                display_name="API Code Mode",
+            ),
+            spec=FunctionSpec(
+                runtime=FunctionRuntime(
+                    image="blaxel/code-mode:latest",
+                    memory=2048,
+                    envs=[
+                        Env(
+                            name="OPENAPI_REFERENCE",
+                            value="https://petstore3.swagger.io/api/v3/openapi.json",
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    )
+
+
+asyncio.run(main())
+```
+
+```bash Blaxel CLI
 bl apply -f - <<EOF
 apiVersion: blaxel.ai/v1alpha1
 kind: Function
@@ -44,6 +115,8 @@ spec:
         value: https://petstore3.swagger.io/api/v3/openapi.json
 EOF
 ```
+</CodeGroup
+
 
 Check status:
 

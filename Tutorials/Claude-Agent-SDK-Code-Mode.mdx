@@ -17,41 +17,7 @@ This tutorial demonstrates by deploying an API as a MCP server on Blaxel and usi
 - A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
 - The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction)
 
-## 1. Build and deploy an MCP server in code mode
-
-This tutorial creates and deploys an MCP server for the example [Petstore v2 API](https://petstore.swagger.io/). For authorization purposes, the API maintainers offer a sample key (`special-key`) for test purposes.
-
-Run the following command to deploy the API on Blaxel:
-
-```bash
-bl apply -f - <<EOF
-apiVersion: blaxel.ai/v1alpha1
-kind: Function
-metadata:
-  displayName: Petstore Code Mode
-  name: petstore-code-mode
-spec:
-  runtime:
-    type: mcp
-    image: blaxel/code-mode:latest
-    memory: 2048
-    envs:
-      - name: OPENAPI_REFERENCE
-        value: https://petstore.swagger.io/v2/swagger.json
-      - name: AUTH_APIKEY
-        value: special-key
-EOF
-```
-
-Check the deployment status:
-
-```bash
-bl get mcp petstore-code-mode
-```
-
-Once the status shows `DEPLOYED`, any agent can use `petstore-code-mode` as a tool provider.
-
-## 2. Install required dependencies
+## 1. Install required dependencies
 
 In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop and the Blaxel TypeScript SDK / Python SDK for sandbox operations:
 
@@ -92,6 +58,117 @@ Export your API keys to the local environment:
 export ANTHROPIC_API_KEY=<ANTHROPIC-API-KEY>
 export BL_API_KEY=<BLAXEL-API-KEY>
 ```
+
+## 2. Build and deploy an MCP server in code mode
+
+This tutorial creates and deploys an MCP server for the example [Petstore v2 API](https://petstore.swagger.io/). For authorization purposes, the API maintainers offer a sample key (`special-key`) for test purposes.
+
+In your project directory, create and run a file named `setup.ts` (TypeScript) or `setup.py` (Python) with the following code, or use the Blaxel CLI command shown, to deploy the API on Blaxel.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { createFunction } from "@blaxel/core";
+
+async function main() {
+  await createFunction({
+    body: {
+      metadata: {
+        name: "petstore-code-mode",
+        displayName: "Petstore Code Mode",
+      },
+      spec: {
+        runtime: {
+          image: "blaxel/code-mode:latest",
+          memory: 2048,
+          envs: [
+            { name: "OPENAPI_REFERENCE", value: "https://petstore.swagger.io/v2/swagger.json" },
+            { name: "AUTH_APIKEY", value: "special-key" },
+          ],
+        },
+      },
+    },
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+```python Python
+import asyncio
+import sys
+
+from blaxel.core.client import client
+from blaxel.core.client.api.functions.create_function import asyncio as create_function
+from blaxel.core.client.models.env import Env
+from blaxel.core.client.models.function import Function
+from blaxel.core.client.models.function_runtime import FunctionRuntime
+from blaxel.core.client.models.function_spec import FunctionSpec
+from blaxel.core.client.models.metadata import Metadata
+
+
+async def main():
+    await create_function(
+        client=client,
+        body=Function(
+            metadata=Metadata(
+                name="petstore-code-mode",
+                display_name="Petstore Code Mode",
+            ),
+            spec=FunctionSpec(
+                runtime=FunctionRuntime(
+                    image="blaxel/code-mode:latest",
+                    memory=2048,
+                    envs=[
+                        Env(
+                            name="OPENAPI_REFERENCE",
+                            value="https://petstore.swagger.io/v2/swagger.json",
+                        ),
+                        Env(
+                            name="AUTH_APIKEY",
+                            value="special-key",
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    )
+
+
+asyncio.run(main())
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+apiVersion: blaxel.ai/v1alpha1
+kind: Function
+metadata:
+  displayName: Petstore Code Mode
+  name: petstore-code-mode
+spec:
+  runtime:
+    type: mcp
+    image: blaxel/code-mode:latest
+    memory: 2048
+    envs:
+      - name: OPENAPI_REFERENCE
+        value: https://petstore.swagger.io/v2/swagger.json
+      - name: AUTH_APIKEY
+        value: special-key
+EOF
+```
+</CodeGroup>
+
+Check the deployment status:
+
+```bash
+bl get mcp petstore-code-mode
+```
+
+Once the status shows `DEPLOYED`, any agent can use `petstore-code-mode` as a tool provider.
 
 ## 3. Build the agent
 
@@ -246,15 +323,15 @@ Send the agent a query:
 <CodeGroup>
 
 ```typescript TypeScript (npm/pnpm/yarn)
-tsx index.ts "list all pets"
+tsx index.ts "list all available pets"
 ```
 
 ```typescript TypeScript (Bun)
-bun index.ts "list all pets"
+bun index.ts "list all available pets"
 ```
 
 ```python Python
-python main.py "list all pets"
+python main.py "list all available pets"
 ```
 
 </CodeGroup>
