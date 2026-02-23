@@ -1,11 +1,14 @@
 ---
 title: "Code mode"
-description: ""
+description: "Turn any OpenAPI specification into a "code mode" MCP server on Blaxel"
 ---
 
-Blaxel supports "code mode" natively, enabling a more efficient way to execute tool calls over MCP. Essentially, code mode turns any OpenAPI specification into a two-tool MCP server: search lets an AI agent explore the API spec, and execute runs JavaScript code in a sandbox to call the actual API.
+Blaxel supports "code mode" natively, enabling a more efficient way to execute tool calls over MCP.
 
-## Flow
+<Tip>
+  For more information on "code mode", refer to blog posts by [Cloudflare](https://blog.cloudflare.com/code-mode/) and [Anthropic](https://www.anthropic.com/engineering/code-execution-with-mcp).
+</Tip>
+
 
 The typical flow is:
 
@@ -78,3 +81,8 @@ Code Mode auto-detects security schemes defined in the OpenAPI spec and maps the
 | `apiKey` (header)         | Custom header with the key value                   |
 | `apiKey` (query)          | Appended as query parameter                        |
 | `oauth2` / `openIdConnect`| `Authorization: Bearer <token>`                    |
+
+
+<Card title="Use Claude Agent SDK with MCP code mode on Blaxel" icon="thumbs-up" href="/Tutorials/Claude-Agent-SDK-Code-Mode">
+Build an agent that connects to a Blaxel MCP server running in code mode using Claude Agent SDK.
+</Card>

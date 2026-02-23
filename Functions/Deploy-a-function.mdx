@@ -175,6 +175,10 @@ Deployment revisions are updated following a **blue-green** paradigm. The Global
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
+### Code mode
+
+Blaxel supports ["code mode"](Code-mode) natively, enabling a more efficient way to execute tool calls over MCP.
+
 ## Deployment reference
 
 The MCP server deployment can be configured via the ***blaxel.toml*** file in your MCP server directory. This file is not mandatory; if the file is not found or a required option is not set, you will be prompted for the information during deployment.
@@ -255,4 +259,8 @@ Read our [reference for MCP server deployments](https://docs.blaxel.ai/api-refer
 
 <Card title="Query MCP servers" icon="bolt" href="/Functions/Invoke-functions">
 Learn how to run tool calls on your MCP server.
+</Card>
+
+<Card title="Use Claude Agent SDK with MCP code mode on Blaxel" icon="thumbs-up" href="/Tutorials/Claude-Agent-SDK-Code-Mode">
+Build an agent that connects to a Blaxel MCP server running in code mode using Claude Agent SDK.
 </Card>
