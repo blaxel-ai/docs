@@ -9,7 +9,7 @@ description: 'Share files between sandboxes and agents.'
 
 Agent Drives are distributed filesystems that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
 
-Unlike [volumes](./Volumes), which are block storage devices attached at sandbox creation to a single sandbox, drives are backed by [SeaweedFS](https://github.com/seaweedfs/seaweedfs) buckets and behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give you a POSIX-compliant interface.
+Unlike [volumes](./Volumes), which are block storage devices attached at sandbox creation to a single sandbox, drives are backed by [SeaweedFS](https://github.com/seaweedfs/seaweedfs) buckets and behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give a POSIX-compliant interface.
 
 - A drive can be attached to an already-running sandbox at any mount path, without needing to recreate the sandbox
 - Multiple sandboxes can mount the same drive simultaneously with full read-write access.
