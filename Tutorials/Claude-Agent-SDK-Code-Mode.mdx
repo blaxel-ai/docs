@@ -1,0 +1,356 @@
+---
+title: "Use Claude Agent SDK with MCP Code Mode on Blaxel"
+description: "Use Claude Agent SDK to connect to a Blaxel MCP server running in code mode."
+---
+
+Blaxel supports "code mode" natively, enabling a more efficient way to execute tool calls over MCP. Essentially, code mode turns any OpenAPI specification into a two-tool MCP server: search lets an AI agent explore the API spec, and execute runs JavaScript code in a sandbox to call the actual API.
+
+This tutorial demonstrates by deploying an API as a MCP server on Blaxel and using an agent to work with it. It uses the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview), but you could also use other frameworks like LangChain, Vercel AI SDK, Mastra, or your own custom code.
+
+<Tip>
+  For more information on "code mode" or "code execution with MCP", refer to blog posts by [Cloudflare](https://blog.cloudflare.com/code-mode/) and [Anthropic](https://www.anthropic.com/engineering/code-execution-with-mcp).
+</Tip>
+
+## Prerequisites
+
+- An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
+- A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
+- The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction)
+
+## 1. Install required dependencies
+
+In your project directory, install the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop and the Blaxel TypeScript SDK / Python SDK for sandbox operations:
+
+<CodeGroup>
+
+```shell TypeScript (npm)
+npm init # if new project
+npm install @anthropic-ai/claude-agent-sdk @blaxel/core
+```
+
+
+```shell TypeScript (pnpm)
+pnpm init # if new project
+pnpm install @anthropic-ai/claude-agent-sdk @blaxel/core
+```
+
+
+```shell TypeScript (yarn)
+yarn init # if new project
+yarn add @anthropic-ai/claude-agent-sdk @blaxel/core
+```
+
+```shell TypeScript (bun)
+bun init -m --yes # if new project
+bun install @anthropic-ai/claude-agent-sdk @blaxel/core
+```
+
+```shell Python (pip)
+python3 -m venv .venv && source .venv/bin/activate # if new project
+pip install claude-agent-sdk blaxel
+```
+
+</CodeGroup>
+
+Export your API keys to the local environment:
+
+```shell
+export ANTHROPIC_API_KEY=<ANTHROPIC-API-KEY>
+export BL_API_KEY=<BLAXEL-API-KEY>
+```
+
+## 2. Build and deploy an MCP server in code mode
+
+This tutorial creates and deploys an MCP server for the example [Petstore v2 API](https://petstore.swagger.io/).
+
+In your project directory, create and run a file named `setup.ts` (TypeScript) or `setup.py` (Python) with the following code, or use the Blaxel CLI command shown, to deploy the API on Blaxel.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { createFunction } from "@blaxel/core";
+
+async function main() {
+  await createFunction({
+    body: {
+      metadata: {
+        name: "petstore-code-mode",
+        displayName: "Petstore Code Mode",
+      },
+      spec: {
+        runtime: {
+          image: "blaxel/code-mode:latest",
+          memory: 2048,
+          envs: [
+            { name: "OPENAPI_REFERENCE", value: "https://petstore.swagger.io/v2/swagger.json" },
+          ],
+        },
+      },
+    },
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+```python Python
+import asyncio
+import sys
+
+from blaxel.core.client import client
+from blaxel.core.client.api.functions.create_function import asyncio as create_function
+from blaxel.core.client.models.env import Env
+from blaxel.core.client.models.function import Function
+from blaxel.core.client.models.function_runtime import FunctionRuntime
+from blaxel.core.client.models.function_spec import FunctionSpec
+from blaxel.core.client.models.metadata import Metadata
+
+
+async def main():
+    await create_function(
+        client=client,
+        body=Function(
+            metadata=Metadata(
+                name="petstore-code-mode",
+                display_name="Petstore Code Mode",
+            ),
+            spec=FunctionSpec(
+                runtime=FunctionRuntime(
+                    image="blaxel/code-mode:latest",
+                    memory=2048,
+                    envs=[
+                        Env(
+                            name="OPENAPI_REFERENCE",
+                            value="https://petstore.swagger.io/v2/swagger.json",
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    )
+
+
+asyncio.run(main())
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+apiVersion: blaxel.ai/v1alpha1
+kind: Function
+metadata:
+  displayName: Petstore Code Mode
+  name: petstore-code-mode
+spec:
+  runtime:
+    type: mcp
+    image: blaxel/code-mode:latest
+    memory: 2048
+    envs:
+      - name: OPENAPI_REFERENCE
+        value: https://petstore.swagger.io/v2/swagger.json
+EOF
+```
+</CodeGroup>
+
+Check the deployment status:
+
+```bash
+bl get mcp petstore-code-mode
+```
+
+Once the status shows `DEPLOYED`, any agent can use `petstore-code-mode` as a tool provider.
+
+## 3. Build the agent
+
+Obtain the MCP server URL with the following command:
+
+```bash
+bl get mcp petstore-code-mode -o json | jq -r '.[] | .metadata.url'
+```
+
+In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code. Replace the placeholder with the MCP server URL from the previous command.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+const blApiKey = process.env.BL_API_KEY;
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+const prompt = process.argv[2];
+
+if (!blApiKey) {
+  console.error("Error: BL_API_KEY environment variable is not set");
+  process.exit(1);
+}
+
+if (!anthropicApiKey) {
+  console.error("Error: ANTHROPIC_API_KEY environment variable is not set");
+  process.exit(1);
+}
+
+if (!prompt) {
+  console.error("Error: prompt argument is required");
+  process.exit(1);
+}
+
+for await (const message of query({
+  prompt: prompt,
+  options: {
+    mcpServers: {
+      petstore: {
+        type: "http",
+        url: "<MCP-SERVER-URL>/mcp",
+        headers: { "Authorization": `Bearer ${blApiKey}` },
+      },
+    },
+    allowedTools: ["mcp__petstore__*"],
+  },
+})) {
+  if (message.type === "system" && message.subtype === "init") {
+    for (const s of message.mcp_servers) {
+      console.log(`MCP server "${s.name}": ${s.status}`);
+    }
+  }
+
+  if (message.type === "assistant") {
+    for (const block of message.message.content) {
+      if (block.type === "tool_use") {
+        console.log(`\n--- ${block.name} ---`);
+        console.log(`  input: ${JSON.stringify(block.input).slice(0, 200)}`);
+      }
+      if (block.type === "text") {
+        console.log(`  text: ${block.text.slice(0, 300)}${block.text.length > 300 ? "…" : ""}`);
+      }
+    }
+  }
+
+  if (message.type === "result" && message.subtype === "success") {
+    console.log(`\n${message.result}`);
+  }
+  if (message.type === "result" && message.subtype !== "success") {
+    console.error("Error:", message);
+  }
+}
+```
+
+```python Python
+import asyncio
+import json
+import os
+import sys
+
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    SystemMessage,
+    AssistantMessage,
+    ResultMessage,
+    TextBlock,
+    ToolUseBlock,
+)
+
+
+bl_api_key = os.environ.get("BL_API_KEY")
+anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+prompt = sys.argv[1] if len(sys.argv) > 1 else None
+
+if not bl_api_key:
+    print("Error: BL_API_KEY environment variable is not set", file=sys.stderr)
+    sys.exit(1)
+
+if not anthropic_api_key:
+    print("Error: ANTHROPIC_API_KEY environment variable is not set", file=sys.stderr)
+    sys.exit(1)
+
+if not prompt:
+    print("Error: prompt argument is required", file=sys.stderr)
+    sys.exit(1)
+
+
+async def main():
+    async for message in query(
+        prompt=prompt,
+        options=ClaudeAgentOptions(
+            mcp_servers={
+                "petstore": {
+                    "type": "http",
+                    "url": "<MCP-SERVER-URL>/mcp",
+                    "headers": {"Authorization": f"Bearer {bl_api_key}"},
+                }
+            },
+            allowed_tools=["mcp__petstore__*"],
+        ),
+    ):
+        if isinstance(message, SystemMessage) and message.subtype == "init":
+            for s in message.data.get("mcp_servers", []):
+                print(f'MCP server "{s["name"]}": {s["status"]}')
+
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, ToolUseBlock):
+                    print(f"\n--- {block.name} ---")
+                    print(f"  input: {json.dumps(block.input)[:200]}")
+                if isinstance(block, TextBlock):
+                    text = block.text
+                    print(f"  text: {text[:300]}{'…' if len(text) > 300 else ''}")
+
+        if isinstance(message, ResultMessage) and message.subtype == "success":
+            print(f"\n{message.result}")
+        if isinstance(message, ResultMessage) and message.subtype != "success":
+            print("Error:", message, file=sys.stderr)
+
+
+asyncio.run(main())
+```
+
+</CodeGroup>
+
+## 4. Test the agent
+
+Send the agent a query:
+
+<CodeGroup>
+
+```typescript TypeScript (npm/pnpm/yarn)
+tsx index.ts "list all available pets"
+```
+
+```typescript TypeScript (Bun)
+bun index.ts "list all available pets"
+```
+
+```python Python
+python main.py "list all available pets"
+```
+
+</CodeGroup>
+
+You should see the agent using the two available tools, first searching for the correct API endpoint and then writing and executing code to query the API and respond to your prompt.
+
+In case of errors, you can view the logs of the deployed MCP server with the command below:
+
+```bash
+bl logs mcp petstore-code-mode
+```
+
+The following resources will help you go further:
+
+<Card title="Build and deploy an agent on Blaxel with Claude Agent SDK" icon="square-js" href="./Claude-Agent-SDK">
+  Complete tutorial for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
+</Card>
+
+<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
+  Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
+  Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
+  Complete tutorial for deploying AI agents on Blaxel.
+</Card>
