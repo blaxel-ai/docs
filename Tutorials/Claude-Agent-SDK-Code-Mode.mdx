@@ -61,7 +61,7 @@ export BL_API_KEY=<BLAXEL-API-KEY>
 
 ## 2. Build and deploy an MCP server in code mode
 
-This tutorial creates and deploys an MCP server for the example [Petstore v2 API](https://petstore.swagger.io/). For authorization purposes, the API maintainers offer a sample key (`special-key`) for test purposes.
+This tutorial creates and deploys an MCP server for the example [Petstore v2 API](https://petstore.swagger.io/).
 
 In your project directory, create and run a file named `setup.ts` (TypeScript) or `setup.py` (Python) with the following code, or use the Blaxel CLI command shown, to deploy the API on Blaxel.
 
@@ -83,7 +83,6 @@ async function main() {
           memory: 2048,
           envs: [
             { name: "OPENAPI_REFERENCE", value: "https://petstore.swagger.io/v2/swagger.json" },
-            { name: "AUTH_API_KEY", value: "special-key" },
           ],
         },
       },
@@ -127,10 +126,6 @@ async def main():
                             name="OPENAPI_REFERENCE",
                             value="https://petstore.swagger.io/v2/swagger.json",
                         ),
-                        Env(
-                            name="AUTH_API_KEY",
-                            value="special-key",
-                        ),
                     ],
                 ),
             ),
@@ -156,8 +151,6 @@ spec:
     envs:
       - name: OPENAPI_REFERENCE
         value: https://petstore.swagger.io/v2/swagger.json
-      - name: AUTH_API_KEY
-        value: special-key
 EOF
 ```
 </CodeGroup>
