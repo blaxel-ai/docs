@@ -28,19 +28,19 @@ Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully ma
 
 Sandboxes stay active as long as there's an active connection to them.
 
-You are charged for CPU/memory and storage while a sandbox is in active mode. [Learn more about pricing](https://blaxel.ai/pricing).
+You are charged for memory (based on how much you allocated at sandbox creation) and storage while a sandbox is in active mode. CPU resources are allocated accordingly by Blaxel based on your selected memory allocation and are not charged separately. [Learn more about pricing](https://blaxel.ai/pricing).
 
 ### Standby mode
 
-If a sandbox does not have an active connection, it automatically transitions to standby mode (also called _scale-to-zero_). This transition happens in approximately 15 seconds.
+If a sandbox does not have an active connection, it automatically transitions to a warm standby mode (also called _scale-to-zero_). This transition happens in approximately 15 seconds.
 
 If a sandbox has an ongoing WebSocket/TCP connection, there is a 15-minute idle timeout for such a connection. This means that if the WebSocket/TCP connection remains idle for 15 minutes with no activity, the sandbox will automatically transition to standby mode.
 
-When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 5 seconds.
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 15 seconds.
 
 Reconnecting to the sandbox transitions it back to active mode. Any running processes are included in this snapshot and will be instantly restored when you reconnect to the sandbox.
 
-You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
+You are not charged for memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
 
 <Note>
   To prevent a sandbox from going into standby, you can use WebSocket ping/pong keepalive messages or [other techniques](./Standby-control) to prevent the timeout.
@@ -61,7 +61,7 @@ During the deployment process, the possible sandbox statuses are:
 - `UPLOADING`: A new sandbox version has just been uploaded; the build has not started yet.
 - `BUILDING`: A new sandbox version has been uploaded and the build is in progress.
 - `DEPLOYING`: The sandbox deployment is in progress.
-- `DEPLOYED`: The sandbox is ready to use.
+- `DEPLOYED`: The sandbox is ready to use. It is either in active mode or standby mode.
 - `FAILED`: An error occurred during the build or deployment of the sandbox.
 - `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
