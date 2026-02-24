@@ -326,6 +326,51 @@ components:
           type: string
           description: Error message if verification failed
           readOnly: true
+    Drive:
+      type: object
+      description: Drive providing persistent storage that can be attached to agents,
+        functions, and sandboxes. Drives are backed by SeaweedFS buckets and can be
+        mounted at runtime via the sbx API.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/DriveSpec'
+        state:
+          $ref: '#/components/schemas/DriveState'
+        status:
+          type: string
+          description: Drive status computed from events
+          readOnly: true
+      required:
+      - metadata
+      - spec
+    DriveSpec:
+      type: object
+      description: Immutable drive configuration set at creation time
+      properties:
+        infrastructureId:
+          type: string
+          description: The internal infrastructure resource identifier for this drive
+            (bucket name)
+          readOnly: true
+        region:
+          type: string
+          description: Deployment region for the drive (e.g., us-pdx-1, eu-lon-1).
+            Must match the region of resources it attaches to.
+          example: us-pdx-1
+        size:
+          type: integer
+          description: Optional size limit for the drive in GB. If not specified,
+            drive has no size limit.
+          example: 100
+    DriveState:
+      type: object
+      description: Current runtime state of the drive
+      additionalProperties: true
+      readOnly: true
     EgressGateway:
       type: object
       description: An egress gateway that manages outbound traffic routing within
@@ -3156,6 +3201,153 @@ paths:
       summary: Verify custom domain
       tags:
       - customdomains
+  /drives:
+    get:
+      description: Returns all drives in the workspace. Drives provide persistent
+        storage that can be attached to agents, functions, and sandboxes.
+      operationId: ListDrives
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Drive'
+                type: array
+          description: successful operation
+        "401":
+          description: Unauthorized
+      security:
+      - OAuth2:
+        - drives:list
+      - ApiKeyAuth: []
+      summary: List drives
+      tags:
+      - drives
+    post:
+      description: Creates a new drive in the workspace. Drives are backed by SeaweedFS
+        buckets and can be mounted at runtime to sandboxes.
+      operationId: CreateDrive
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Drive'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        "401":
+          description: Unauthorized
+      security:
+      - OAuth2:
+        - drives:create
+      - ApiKeyAuth: []
+      summary: Create a drive
+      tags:
+      - drives
+  /drives/{driveName}:
+    delete:
+      description: Deletes a drive immediately. The drive record is removed from the
+        database synchronously.
+      operationId: DeleteDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Drive deleted successfully
+                    type: string
+                  name:
+                    example: my-drive
+                    type: string
+                type: object
+          description: successful operation
+        "401":
+          description: Unauthorized
+        "404":
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:delete
+      - ApiKeyAuth: []
+      summary: Delete a drive
+      tags:
+      - drives
+    get:
+      description: Retrieves details of a specific drive including its status and
+        events.
+      operationId: GetDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        "401":
+          description: Unauthorized
+        "404":
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Get a drive
+      tags:
+      - drives
+    put:
+      description: Updates an existing drive. Metadata fields like displayName and
+        labels can be changed. Size can be set if not already configured.
+      operationId: UpdateDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Drive'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        "401":
+          description: Unauthorized
+        "404":
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:create
+      - ApiKeyAuth: []
+      summary: Update a drive
+      tags:
+      - drives
   /egressgateways:
     get:
       operationId: ListAllEgressGateways
