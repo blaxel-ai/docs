@@ -7,9 +7,9 @@ This page describes common issues and how to troubleshoot them.
 
 ## Preview URLs return a `502 Bad Gateway` server error
 
-This error occurs when the application server running inside the sandbox is binding to `localhost`. As a result, it is only reachable inside the sandbox; the external preview URL will not be able to access it.
+This error occurs when the application server is either not running inside the sandbox, or is running but binding to `localhost`. In the latter case, it is only reachable inside the sandbox and the external preview URL will not be able to access it.
 
-To resolve this error, configure your application server to bind to IP address `0.0.0.0`, so that it listens on all available network interfaces, and then restart the application server. To avoid IPv4/IPv6 compatibility issues, we recommend using the environment variable `HOST` instead of setting the address to a static value.
+To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to IP address `0.0.0.0`, so that it listens on all available network interfaces. Once this is done, restart the application server. To avoid IPv4/IPv6 compatibility issues, we recommend using the environment variable `HOST` instead of setting the address to a static value.
 
 For example, in code:
 
@@ -43,64 +43,17 @@ python main.py --host 0.0.0.0
 
 ## Sandbox commands return a `502 Bad Gateway` server error
 
-This error occurs when the sandbox API is unexpectedly terminated - for example, if the sandbox runs out of memory.
+This error occurs for three possible reasons:
 
-To resolve this error, delete and recreate the sandbox, which also restarts the sandbox API.
+1. The sandbox API is called too soon after sandbox creation. The solution is to retry the request.
+
+2. The sandbox API was unexpectedly terminated - for example, if the sandbox runs out of memory. The solution is to delete and recreate the sandbox, which also restarts the sandbox API.
+
+3. The sandbox never started so the deployment status is set to `ERROR`. The solution is to recreate the sandbox.
 
 <Note>
 Deleting and recreating will cause the current state of the sandbox to be lost.
 </Note>
-
-An alternative approach is to use process supervision ([Supervisor](https://supervisord.org)) inside the sandbox to enable auto-restarts of the sandbox API. To do this, follow the steps below:
-
-1. Add `supervisor` to your Dockerfile's `apt-get install`:
-
-    ```
-    RUN apt-get update && apt-get install -y \
-        ... \
-        supervisor \
-        && apt-get clean && rm -rf /var/lib/apt/lists/*
-    ```
-
-1. Create a config file named `supervisord.conf`:
-
-    ```
-    [supervisord]
-    nodaemon=true
-    logfile=/var/log/supervisord.log
-    pidfile=/var/run/supervisord.pid
-    loglevel=info
-
-    [program:sandbox-api]
-    command=/usr/local/bin/sandbox-api
-    directory=/home/user
-    autostart=true
-    autorestart=true
-    startsecs=2
-    startretries=9999
-    ; Restart aggressively on any exit (including OOM kill)
-    exitcodes=0
-    ; Priority ensures sandbox-api starts first
-    priority=100
-    stdout_logfile=/var/log/sandbox-api.log
-    stderr_logfile=/var/log/sandbox-api-error.log
-    stdout_logfile_maxbytes=10MB
-    stderr_logfile_maxbytes=10MB
-    ```
-
-1. Copy the configuration file to your container image:
-
-    ```
-    COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-    ```
-
-1. Update your entrypoint script to use `supervisord`, which will start and monitor the sandbox API:
-
-    ```shell
-    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-    ```
-
-This approach ensures the sandbox API automatically restarts if it runs out of memory or crashes unexpectedly.
 
 ## Sandbox deployment fails with `STARTUP TCP probe failed` or `DEADLINE_EXCEEDED` error
 
