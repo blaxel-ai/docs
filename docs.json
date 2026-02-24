@@ -47,7 +47,8 @@
                 "pages": [
                   "Sandboxes/Ports",
                   "Sandboxes/Preview-url",
-                  "Sandboxes/Sessions"
+                  "Sandboxes/Sessions",
+                  "Sandboxes/Standby-control"
                 ]
               },
               {

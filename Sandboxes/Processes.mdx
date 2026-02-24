@@ -315,7 +315,7 @@ const sandbox = await SandboxInstance.get("my-sandbox");
 await sandbox.process.exec({
   name: "dev-server",
   command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
-  keepAlive: true,        // Prevents auto-hibernation
+  keepAlive: true,        // Prevents auto-standby
   timeout: 3600           // Auto-kill after 1 hour
 });
 ```

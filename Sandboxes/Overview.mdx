@@ -8,7 +8,9 @@ Sandboxes are instant-launching virtual machines serving as **sandboxed compute 
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](./MCP) that makes these capabilities available as tool calls.
 
-Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is fully managed lifecycle. Sandboxes resume from standby in **under 25 milliseconds** and automatically scale to zero **after a few seconds of inactivity**. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
+## Sandbox lifecycle
+
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
 
 <img
   className="block dark:hidden"
@@ -22,7 +24,51 @@ Unlike traditional sandbox infrastructure, Blaxel's **standout feature** is full
   alt="Lifecycle of Blaxel Sandboxes"
 />
 
+### Active mode
+
+Sandboxes stay active as long as there's an active connection to them.
+
+You are charged for memory (based on how much you allocated at sandbox creation) and storage while a sandbox is in active mode. CPU resources are allocated accordingly by Blaxel based on your selected memory allocation and are not charged separately. [Learn more about pricing](https://blaxel.ai/pricing).
+
+### Standby mode
+
+If a sandbox does not have an active connection, it automatically transitions to a warm standby mode (also called _scale-to-zero_). This transition happens in approximately 15 seconds.
+
+If a sandbox has an ongoing WebSocket/TCP connection, there is a 15-minute idle timeout for such a connection. This means that if the WebSocket/TCP connection remains idle for 15 minutes with no activity, the sandbox will automatically transition to standby mode.
+
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 15 seconds.
+
+Reconnecting to the sandbox transitions it back to active mode. Any running processes are included in this snapshot and will be instantly restored when you reconnect to the sandbox.
+
+You are not charged for memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
+
+<Note>
+  To prevent a sandbox from going into standby, you can use WebSocket ping/pong keepalive messages or [other techniques](./Standby-control) to prevent the timeout.
+</Note>
+
+### Deletion
+
 In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
+
+<Note>
+  Automatic deletion differs from automatic standby (_scale-to-zero_). Deleted sandboxes cannot be recovered, while sandboxes in standby mode can be resumed instantly.
+</Note>
+
+### Sandbox deployment statuses
+
+During the deployment process, the possible sandbox statuses are:
+
+- `UPLOADING`: A new sandbox version has just been uploaded; the build has not started yet.
+- `BUILDING`: A new sandbox version has been uploaded and the build is in progress.
+- `DEPLOYING`: The sandbox deployment is in progress.
+- `DEPLOYED`: The sandbox is ready to use. It is either in active mode or standby mode.
+- `FAILED`: An error occurred during the build or deployment of the sandbox.
+- `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
+- `DELETING`: A deletion request has been triggered and the deletion is in progress.
+
+<Note>
+  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
+</Note>
 
 ## Use cases
 
@@ -373,334 +419,6 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
 
   ![image.png](Overview/connect-terminal.png)
 
-## Manage sandbox hibernation
-
-Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
-
-There are no built-in stop or start functions available in the SDKs to force hibernation. This means you'll need to rely on other approaches to better control when sandboxes remain active:
-
-1. Hide iframe when tab is inactive
-
-    Use JavaScript events to detect when a user is not active on the tab:
-    - Listen for tab visibility events that indicate when the user switches away from your tab
-    - When the user becomes inactive, hide the iframe containing the sandbox preview
-    - Show the iframe again when the user returns to the tab
-
-1. Implement auto-disconnect on tab switch
-
-    Some browsers (like Chrome) may keep WebSockets alive even when tabs are inactive to improve performance. You can implement an auto-disconnect feature that:
-    - Detects when users switch tabs
-    - Automatically disconnects the WebSocket connection
-    - Reconnects when the user returns
-
-1. Use activity-based timeouts
-
-    Set up a timer system in your interface that:
-    - Monitors user activity (typing, interactions, etc.)
-    - Hides the preview after a period of inactivity
-    - Prompts the user to confirm they're still using the sandbox
-
-You can use the SDKs from the frontend if you have the right headers set on the session. Use the [`sandbox.sessions.create` function](/Sandboxes/Sessions) to manage sessions.
-
-Here is an example of auto disconnect on tab switch with Vite through a plugin:
-
-<Warning>
-The code below is illustrative and not intended for production use.
-</Warning>
-
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
-import { hmrVisibility } from './vite-plugin-hmr-visibility'
-
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    hmrVisibility({
-      disconnectDelay: 2000, // Wait 2 seconds before disconnecting
-      debug: true, // Enable debug logging
-    }),
-  ],
-  server: {
-    // Prevent Vite from aggressive reconnection attempts
-    hmr: {
-      overlay: false, // Disable error overlay which can trigger reconnections
-    },
-  },
-})
-
-// vite-plugin-hmr-visibility.ts
-/**
- * Vite Plugin: HMR Visibility Manager
- * Automatically disconnects/reconnects HMR websocket based on tab visibility
- * to reduce serverless billing costs
- */
-
-import type { Plugin } from 'vite'
-
-export interface HMRVisibilityOptions {
-  /**
-   * Grace period before disconnecting (ms)
-   * @default 2000
-   */
-  disconnectDelay?: number
-
-  /**
-   * Enable debug logging
-   * @default false
-   */
-  debug?: boolean
-}
-
-export function hmrVisibility(options: HMRVisibilityOptions = {}): Plugin {
-  const {
-    disconnectDelay = 2000,
-    debug = false,
-  } = options
-
-  return {
-    name: 'vite-plugin-hmr-visibility',
-    apply: 'serve', // Only apply in dev mode
-
-    transformIndexHtml() {
-      // Inject the HMR visibility manager as an inline script
-      return [
-        {
-          tag: 'script',
-          attrs: { type: 'module' },
-          children: `
-// HMR Visibility Manager - Disconnects HMR when tab is hidden
-(function() {
-  const log = (...args) => {
-    if (${JSON.stringify(debug)}) {
-      console.log('[HMR Visibility]', ...args);
-    }
-  };
-
-  let disconnectTimer = null;
-  let isTabVisible = !document.hidden;
-  const DISCONNECT_DELAY = ${JSON.stringify(disconnectDelay)};
-
-  // Store reference to original functions
-  const OriginalWebSocket = window.WebSocket;
-  const OriginalSetTimeout = window.setTimeout;
-  const OriginalSetInterval = window.setInterval;
-
-  let hmrSocket = null;
-  let shouldBlockReconnect = false;
-  let blockedTimers = new Set();
-
-  // Patch setTimeout and setInterval to block Vite's reconnection timers
-  window.setTimeout = function(callback, delay, ...args) {
-    // Block timers when tab is hidden and it looks like a reconnection attempt
-    if (shouldBlockReconnect && delay && delay >= 500 && delay <= 5000) {
-      const callbackStr = callback.toString();
-      if (callbackStr.includes('connect') || callbackStr.includes('WebSocket') || callbackStr.includes('ws')) {
-        log('Blocked reconnection timer (setTimeout)');
-        const timerId = OriginalSetTimeout(() => {}, 999999999);
-        blockedTimers.add(timerId);
-        return timerId;
-      }
-    }
-    return OriginalSetTimeout.call(this, callback, delay, ...args);
-  };
-
-  window.setInterval = function(callback, delay, ...args) {
-    // Block intervals when tab is hidden
-    if (shouldBlockReconnect) {
-      const callbackStr = callback.toString();
-      if (callbackStr.includes('connect') || callbackStr.includes('WebSocket') || callbackStr.includes('ws')) {
-        log('Blocked reconnection interval (setInterval)');
-        const timerId = OriginalSetInterval(() => {}, 999999999);
-        blockedTimers.add(timerId);
-        return timerId;
-      }
-    }
-    return OriginalSetInterval.call(this, callback, delay, ...args);
-  };
-
-  // Patch WebSocket to track and block HMR connections
-  window.WebSocket = function(url, protocols) {
-    // Block new WebSocket connections when tab is hidden
-    if (shouldBlockReconnect) {
-      log('Blocked WebSocket connection attempt while tab is hidden:', url);
-      // Return a fake WebSocket that stays in CONNECTING state forever
-      const fakeWs = {
-        readyState: 0, // CONNECTING (keeps Vite waiting)
-        close: () => { log('Fake WebSocket close called'); },
-        send: () => { log('Fake WebSocket send called'); },
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        dispatchEvent: () => false,
-        onopen: null,
-        onclose: null,
-        onerror: null,
-        onmessage: null,
-      };
-      return fakeWs;
-    }
-
-    const ws = new OriginalWebSocket(url, protocols);
-
-    // Track HMR WebSocket and intercept its event handlers
-    if (typeof url === 'string') {
-      hmrSocket = ws;
-      log('HMR WebSocket created and tracked');
-
-      // Intercept the onclose setter to control reconnection behavior
-      let userOnClose = null;
-      Object.defineProperty(ws, 'onclose', {
-        get() { return userOnClose; },
-        set(handler) {
-          userOnClose = function(event) {
-            // If we're blocking reconnect, don't call Vite's onclose handler
-            if (shouldBlockReconnect) {
-              log('Suppressed onclose handler - blocking reconnection');
-              return;
-            }
-            // Otherwise, call the original handler
-            if (handler) {
-              handler.call(this, event);
-            }
-          };
-        },
-        configurable: true
-      });
-
-      // Also intercept addEventListener for 'close' events
-      const originalAddEventListener = ws.addEventListener;
-      ws.addEventListener = function(type, listener, options) {
-        if (type === 'close') {
-          const wrappedListener = function(event) {
-            if (shouldBlockReconnect) {
-              log('Suppressed close event listener - blocking reconnection');
-              return;
-            }
-            listener.call(this, event);
-          };
-          return originalAddEventListener.call(this, type, wrappedListener, options);
-        }
-        return originalAddEventListener.call(this, type, listener, options);
-      };
-    }
-
-    return ws;
-  };
-
-  // Copy static properties from original WebSocket
-  Object.setPrototypeOf(window.WebSocket, OriginalWebSocket);
-  window.WebSocket.prototype = OriginalWebSocket.prototype;
-
-  // Copy static constants
-  Object.defineProperty(window.WebSocket, 'CONNECTING', { value: 0, enumerable: true });
-  Object.defineProperty(window.WebSocket, 'OPEN', { value: 1, enumerable: true });
-  Object.defineProperty(window.WebSocket, 'CLOSING', { value: 2, enumerable: true });
-  Object.defineProperty(window.WebSocket, 'CLOSED', { value: 3, enumerable: true });
-
-  const disconnectHMR = () => {
-    if (hmrSocket && (hmrSocket.readyState === 0 || hmrSocket.readyState === 1)) {
-      log('Disconnecting HMR websocket (tab hidden) - saving costs ✅');
-      hmrSocket.close(1000, 'Tab hidden');
-      hmrSocket = null;
-    }
-    shouldBlockReconnect = true;
-  };
-
-  const reconnectHMR = () => {
-    shouldBlockReconnect = false;
-
-    // Clear any blocked timers
-    blockedTimers.forEach(timerId => {
-      try {
-        clearTimeout(timerId);
-        clearInterval(timerId);
-      } catch (e) {}
-    });
-    blockedTimers.clear();
-
-    // If HMR was disconnected, reload to reconnect
-    if (!hmrSocket || hmrSocket.readyState === 3) {
-      log('Reloading page to restore HMR connection');
-      setTimeout(() => window.location.reload(), 100);
-    }
-  };
-
-  // Handle tab visibility changes
-  document.addEventListener('visibilitychange', () => {
-    isTabVisible = !document.hidden;
-
-    if (document.hidden) {
-      log('Tab hidden - will disconnect HMR in ' + DISCONNECT_DELAY + 'ms');
-
-      disconnectTimer = OriginalSetTimeout(() => {
-        if (document.hidden) {
-          disconnectHMR();
-        }
-      }, DISCONNECT_DELAY);
-
-    } else {
-      log('Tab visible - allowing HMR reconnection');
-
-      // Clear disconnect timer if tab becomes visible again
-      if (disconnectTimer) {
-        clearTimeout(disconnectTimer);
-        disconnectTimer = null;
-      }
-
-      OriginalSetTimeout(() => {
-        reconnectHMR();
-      }, 100);
-    }
-  });
-
-  // Handle page freeze events
-  window.addEventListener('freeze', () => {
-    log('Page freeze detected - disconnecting HMR immediately');
-    disconnectHMR();
-  }, { capture: true });
-
-  window.addEventListener('resume', () => {
-    log('Page resume detected - allowing HMR reconnection');
-    OriginalSetTimeout(() => {
-      reconnectHMR();
-    }, 100);
-  }, { capture: true });
-
-  log('HMR Visibility Manager initialized - will block reconnection attempts when tab is hidden');
-})();
-          `,
-          injectTo: 'head-prepend',
-        },
-      ]
-    },
-  }
-}
-```
-
-## Sandbox statuses
-
-Blaxel sandboxes go from standby to active in **under 25 milliseconds**, and scale back down to standby **after a few seconds of inactivity**, maintaining their previous state after scaling down.
-
-- In STANDBY mode: You are not charged for CPU/memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes.
-- In ACTIVE mode: You are charged for CPU/memory and storage while a sandbox is in active mode. Sandboxes automatically return to standby mode after 1 second of inactivity.
-
-The **scale-to-zero functionality is based on network activity.** When your connection to the sandbox closes, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions to standby mode within approximately 5 seconds.
-
-Any running processes are included in this snapshot and will be **instantly restored** when you reconnect to the sandbox.
-
-The possible sandbox statuses are:
-
-- `UPLOADING`: A new sandbox version has just been uploaded; the build has not started yet.
-- `BUILDING`: A new sandbox version has been uploaded and the build is in progress.
-- `DEPLOYING`: The sandbox deployment is in progress.
-- `DEPLOYED`: The sandbox is ready to use.
-- `FAILED`: An error occurred during the build or deployment of the sandbox.
-- `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
-- `DELETING`: A deletion request has been triggered and the deletion is in progress.
-
-<Note>
-  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
-</Note>
 
 <CardGroup>
   <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
