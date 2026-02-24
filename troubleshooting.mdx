@@ -51,6 +51,8 @@ This error occurs for three possible reasons:
 
 3. The sandbox never started so the deployment status is set to `ERROR`. The solution is to recreate the sandbox.
 
+The sandbox logs will typically contain additional information to identify the root cause of this error. Sandbox logs can be viewed in the [Blaxel Console](https://app.blaxel.ai) or with the Blaxel CLI using the command `bl logs sandbox SANDBOX-NAME`.
+
 <Note>
 Deleting and recreating will cause the current state of the sandbox to be lost.
 </Note>
