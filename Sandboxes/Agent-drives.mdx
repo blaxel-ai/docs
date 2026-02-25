@@ -25,6 +25,43 @@ Some examples of use cases are:
 - Sharing common datasets across agents
 - Creating a shared filesystem cache of package dependencies to speed up future agent/sandbox deployments
 
+## Prerequisites
+
+<Note>
+  These steps are only required during the private preview stage.
+</Note>
+
+For the Agent Drives preview, a custom sandbox template is required. Run:
+
+```bash
+bl login
+bl new sandbox my-sandbox
+```
+
+This will create a new folder containing a `Dockerfile` and additional configuration files.
+
+To ensure compatibility with the Agent Drives preview, update the following line in the `Dockerfile`.
+
+Replace:
+
+```docker
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+```
+
+With:
+
+```docker
+COPY --from=ghcr.io/blaxel-ai/sandbox:develop-e6a4ef8 /sandbox-api /usr/local/bin/sandbox-api
+```
+
+From inside the newly created folder, run:
+
+```bash
+bl deploy
+```
+
+Your sandbox will now be ready to use with the Agent Drives preview.
+
 ## Create a drive
 
 Create a standalone drive by specifying a unique `name` and `region`. You can also optionally specify the size, display name and labels for the drive.
@@ -232,7 +269,7 @@ await drive.delete()
 
 
 <Tip>
-  Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/integration/sandbox) and [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/core/sandbox).
+  Complete code examples demonstrating all operations are available in Blaxel's GitHub repositories, [for TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/integration/sandbox) and [for Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/core/sandbox).
 </Tip>
 
 ## Full example
