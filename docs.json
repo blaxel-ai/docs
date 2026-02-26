@@ -51,8 +51,9 @@
                 ]
               },
               {
-                "group": "Volumes",
+                "group": "Persistent storage",
                 "pages": [
+                  "Sandboxes/Agent-drives",
                   "Sandboxes/Volumes",
                   "Sandboxes/Volumes-templates"
                 ]
