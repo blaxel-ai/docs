@@ -1,0 +1,102 @@
+---
+
+title: 'Dedicated egress IP addresses'
+
+description: 'Attach dedicated egress IP addresses to your workloads.'
+
+---
+
+<Note>
+  This feature is currently in private alpha preview. It is currently only available for sandboxes in the `us-was-1` region. [Request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20dedicated%20egress%20IPs%20for%20the%20following%20use%20case%3A ).
+</Note>
+
+Dedicated egress IP addresses enable customers to exclusively attach IP addresses to resources within their workspace. This makes it possible to whitelist outbound traffic from Blaxel's systems for use in downstream providers and eliminates the need for workarounds such as self-hosted proxy servers or VPNs.
+
+A single egress IP address supports up to 32,000 resources (sandboxes, workloads, etc.) It is also possible to group IP addresses into pools to automatically load-balance outbound traffic for high-demand workloads.
+
+Resources that do not have a dedicated egress IP pool will use the shared [public IP address pool](./Regions#public-ip-addresses) instead.
+
+## Order an egress IP address
+
+Egress IP address configuration takes place from the [Blaxel Console](https://app.blaxel.ai).
+
+- Navigate to **Network** > **Egress IPs**.
+- Click the **Order IP** button in the top right corner.
+
+    ![List IPs](/images/infrastructure/list-egress-ip.png)
+
+- Select the quantity, existing IP address pool (if any) and egress gateway region.
+
+    ![Order IPs](/images/infrastructure/order-egress-ip.png)
+
+Provisioning is automated and typically completes within a few minutes. In case the IP address is not already assigned to a dedicated pool, a new pool will be created.
+
+## Assign an egress IP address to resources
+
+Once provisioning is complete, you can attach the assigned IP addresses to one or more resources. This assignment is only possible at resource creation time. All outbound traffic from those resources will then originate from this unique address.
+
+You can assign an egress IP address to a resource at creation time via the Blaxel Console or via the Blaxel SDK.
+
+### Blaxel Console
+
+When creating a new resource via the Blaxel Console, use the **Egress IP** drop-down to assign an available egress IP address to that resource. Only egress IP addresses in the same region as the new resource are shown for assignment.
+
+![Assign IP](/images/infrastructure/assign-egress-ip.png)
+
+### Blaxel SDK
+
+When creating a new resource via the Blaxel SDK, you can bind it to a VPC with a dedicated egress IP address by passing a `network` option when creating the resource. Here is an example when creating a sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  network: {
+    vpcName: "my-vpc",
+    egressGatewayName: "my-egress-gateway",
+  },
+});
+```
+
+```python Python (async)
+from blaxel.core.sandbox import SandboxInstance
+from blaxel.core.sandbox.types import SandboxCreateConfiguration
+from blaxel.core.client.models import SandboxNetwork
+
+sandbox = await SandboxInstance.create(
+    SandboxCreateConfiguration(
+        name="my-sandbox",
+        image="blaxel/base-image:latest",
+        memory=4096,
+        network=SandboxNetwork(
+            vpc_name="my-vpc",
+            egress_gateway_name="my-egress-gateway",
+        ),
+    )
+)
+```
+
+```python Python (sync)
+from blaxel.core.sandbox.sync import SyncSandboxInstance
+from blaxel.core.sandbox.types import SandboxCreateConfiguration
+from blaxel.core.client.models import SandboxNetwork
+
+sandbox = SyncSandboxInstance.create(
+    SandboxCreateConfiguration(
+        name="my-sandbox",
+        image="blaxel/base-image:latest",
+        memory=4096,
+        network=SandboxNetwork(
+            vpc_name="my-vpc",
+            egress_gateway_name="my-egress-gateway",
+        ),
+    )
+)
+```
+
+</CodeGroup>
