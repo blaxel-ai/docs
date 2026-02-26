@@ -31,7 +31,7 @@ Some examples of use cases are:
   These steps are only required during the private preview stage.
 </Note>
 
-For the Agent Drives preview, a custom sandbox template is required. Run:
+For the Agent Drives preview, a [custom sandbox template](/Sandboxes/Templates#create-a-sandbox-template) is required. Run:
 
 ```bash
 bl login
@@ -58,6 +58,12 @@ From inside the newly created folder, run:
 
 ```bash
 bl deploy
+```
+
+Obtain the sandbox template's image ID:
+
+```bash
+bl get sandboxes my-sandbox -ojson | jq -r '.[0].spec.runtime.image'
 ```
 
 Your sandbox will now be ready to use with the Agent Drives preview.
@@ -274,7 +280,7 @@ await drive.delete()
 
 ## Full example
 
-The following example creates a drive, creates a sandbox, mounts the drive, writes a file to the mounted path, and reads it back:
+The following example creates a drive, creates a sandbox from the custom sandbox template using its image ID, mounts the drive, writes a file to the mounted path, and reads it back:
 
 <CodeGroup>
 
@@ -289,8 +295,9 @@ const drive = await DriveInstance.createIfNotExists({
 });
 
 // 2. Create a sandbox
+//    Use the image ID of the custom sandbox template
 const sandbox = await SandboxInstance.createIfNotExists({
-  name: "my-agent-sandbox",
+  name: "my-sandbox-image-id",
   image: "blaxel/base-image:latest",
   memory: 2048,
   region: "us-was-1",
