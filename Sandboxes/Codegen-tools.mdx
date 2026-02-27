@@ -10,13 +10,15 @@ Blaxel Sandboxes provide tools for managing files and their contents, specialize
 
 ## Fast apply of file edits
 
+<Note>
+  Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account.
+</Note>
+
 With this tool, you can **apply code changes** suggested by an LLM to your existing code files fast (2000+ tokens/second).
 
 Traditional code generation requires generating the entire files every time, which can be slower for large files. With this approach your LLM only generates the specific changes needed, and this tool applies them to the original file.
 
 ### Configure environment variables
-
-Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account.
 
 <Tabs>
 <Tab title="Morph">
@@ -194,4 +196,6 @@ Use the following codegen-optimized functions by making tool calls through the M
 7. `codegenReapply` - Retry the application of the last edit, in case it previously failed.
 8. `codegenRerank` - Performs semantic search/reranking on code files in a directory.
 
-[Learn how to build and deploy a Claude Agent SDK-powered agent that performs tasks in a sandbox using the sandbox's MCP server](../Examples/Claude-Agent-SDK-MCP).
+<Card title="Connect Claude Code to a Blaxel Sandbox" icon="cube" iconType="light" href="../Tutorials/Claude-Agent-SDK-MCP">
+  Build a Claude Agent SDK agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server.
+</Card>
