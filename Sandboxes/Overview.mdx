@@ -280,7 +280,9 @@ Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILE
 
 Here's a complete example script that performs all the steps above:
 
-```bash
+<CodeGroup>
+
+```bash Shell
 #!/bin/bash
 
 # Real deployment script that executes the documented API workflow
@@ -311,17 +313,17 @@ cleanup() {
 trap cleanup EXIT
 
 # Validate credentials
-if [ -z "$BLAXEL_API_KEY" ]; then
-  echo -e "${RED}Error: BLAXEL_API_KEY not set${NC}"
+if [ -z "$BL_API_KEY" ]; then
+  echo -e "${RED}Error: BL_API_KEY not set${NC}"
   echo "Get your API key from workspace settings and set it with:"
-  echo "  export BLAXEL_API_KEY='your-api-key'"
+  echo "  export BL_API_KEY='your-api-key'"
   exit 1
 fi
 
-if [ -z "$BLAXEL_WORKSPACE" ]; then
-  echo -e "${RED}Error: BLAXEL_WORKSPACE not set${NC}"
+if [ -z "$BL_WORKSPACE" ]; then
+  echo -e "${RED}Error: BL_WORKSPACE not set${NC}"
   echo "Set your workspace name with:"
-  echo "  export BLAXEL_WORKSPACE='your-workspace-name'"
+  echo "  export BL_WORKSPACE='your-workspace-name'"
   exit 1
 fi
 
@@ -347,8 +349,8 @@ echo -e "${BLUE}[1/4] Creating sandbox '$SANDBOX_NAME'...${NC}"
 HEADERS_FILE=$(mktemp)
 
 CREATE_RESPONSE=$(curl -s -D "$HEADERS_FILE" -w "\n%{http_code}" -X POST "$BASE_URL/sandboxes?upload=true" \
-  -H "Authorization: Bearer $BLAXEL_API_KEY" \
-  -H "X-Blaxel-Workspace: $BLAXEL_WORKSPACE" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
   -H "Content-Type: application/json" \
   -d '{
     "apiVersion": "blaxel.ai/v1alpha1",
@@ -420,8 +422,8 @@ while true; do
 
   # Get current status
   STATUS_RESPONSE=$(curl -s -X GET "$BASE_URL/sandboxes/$SANDBOX_NAME" \
-    -H "Authorization: Bearer $BLAXEL_API_KEY" \
-    -H "X-Blaxel-Workspace: $BLAXEL_WORKSPACE")
+    -H "Authorization: Bearer $BL_API_KEY" \
+    -H "X-Blaxel-Workspace: $BL_WORKSPACE")
 
   STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status // empty')
 
@@ -468,8 +470,8 @@ while true; do
     echo ""
     echo "Check build logs with:"
     echo "  curl -X GET '$BASE_URL/sandboxes/$SANDBOX_NAME/build-logs' \\"
-    echo "    -H 'Authorization: Bearer \$BLAXEL_API_KEY' \\"
-    echo "    -H 'X-Blaxel-Workspace: \$BLAXEL_WORKSPACE'"
+    echo "    -H 'Authorization: Bearer \$BL_API_KEY' \\"
+    echo "    -H 'X-Blaxel-Workspace: \$BL_WORKSPACE'"
     exit 1
   elif [ "$STATUS" = "DEACTIVATED" ] || [ "$STATUS" = "DEACTIVATING" ] || [ "$STATUS" = "DELETING" ]; then
     echo ""
@@ -481,14 +483,15 @@ while true; do
   sleep 3
 done
 ```
+</CodeGroup>
 
 The script accepts a source directory path containing the Dockerfile and related code and uses it to deploy a sandbox on Blaxel. It monitors the deployment status until completion and also cleans up temporary files.
 
 To use this script, first export your API key and credentials as below:
 
 ```
-export BLAXEL_API_KEY=YOUR-API-KEY
-export BLAXEL_WORKSPACE=YOUR-WORKSPACE-NAME
+export BL_API_KEY=YOUR-API-KEY
+export BL_WORKSPACE=YOUR-WORKSPACE-NAME
 ```
 
 Create a sandbox directory named `my-sandbox` with the Dockerfile and entrypoint script:
@@ -497,12 +500,16 @@ Create a sandbox directory named `my-sandbox` with the Dockerfile and entrypoint
 mkdir -p my-sandbox
 ```
 
-Save and run the script as `deploy-sandbox.sh`:
+Save and run the script:
 
-```bash
+<CodeGroup>
+
+```bash Shell
 chmod +x deploy-sandbox.sh
 ./deploy-sandbox.sh
 ```
+
+</CodeGroup>
 
 ## Understand sandbox configuration
 
