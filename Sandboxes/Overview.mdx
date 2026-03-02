@@ -169,8 +169,8 @@ Although less common, it is also possible to create a sandbox by directly intera
 
 Ensure that you have the following:
 
-- A [Blaxel API key](/Security/Access-tokens)
-- The workspace name
+- A [Blaxel API key](https://app.blaxel.ai/profile/security)
+- The workspace name, found at the bottom left corner of the [Blaxel Console](https://app.blaxel.ai/) or via `bl workspaces`
 
 #### 1. Create a ZIP archive
 
@@ -202,12 +202,19 @@ Once the files are ready, create a ZIP archive containing the files:
 
 #### 2. Create a sandbox resource
 
+Set your Blaxel API key and workspace as environment variables:
+
+```
+export BL_API_KEY=YOUR_API_KEY
+export BL_WORKSPACE=YOUR_WORKSPACE_NAME
+```
+
 Make an HTTP POST request to create or update your sandbox resource. This will return an upload URL for the ZIP archive.
 
 ```bash
-curl -X POST "https://api.blaxel.ai/v0/sandboxes?upload=true" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_NAME" \
+curl -v -X POST "https://api.blaxel.ai/v0/sandboxes?upload=true" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
   -H "Content-Type: application/json" \
   -d '{
     "apiVersion": "blaxel.ai/v1alpha1",
@@ -224,11 +231,7 @@ curl -X POST "https://api.blaxel.ai/v0/sandboxes?upload=true" \
   }'
 ```
 
-Note the `upload=true` query parameter, which indicates intent to upload custom code.
-
-Refer to the documentation on [sandbox configuration parameters](#understand-sandbox-configuration) for more information on the body of the POST request.
-
-#### 3. Upload ZIP archive
+Note the `upload=true` query parameter in the request, which indicates intent to upload custom code.
 
 The Blaxel API returns a JSON response. The response contains an `x-blaxel-upload-url` response header, containing the target URL to use when uploading your template. The URL is in the response headers, not the JSON body.
 
@@ -239,10 +242,15 @@ HTTP/2 200
 x-blaxel-upload-url: https://controlplane-prod-build-sources...
 ```
 
+Refer to the documentation on [sandbox configuration parameters](#understand-sandbox-configuration) for more information on the body of the POST request.
+
+#### 3. Upload ZIP archive
+
 Use an HTTP PUT request to upload the ZIP file to the upload URL. Replace the placeholder URL in the command below with the value of the `x-blaxel-upload-url` response header received earlier.
 
 ```bash
-curl -X PUT "https://storage.blaxel.ai/upload/sandbox/my-sandbox/abc123..." \
+export UPLOAD_URL="https://controlplane-prod-build-sources..."
+curl -X PUT $UPLOAD_URL \
   -H "Content-Type: application/zip" \
   --data-binary @my-sandbox.zip
 ```
@@ -257,8 +265,8 @@ Make a GET request to `https://api.blaxel.ai/v0/sandboxes/<SANDBOX-NAME>`, where
 
 ```bash
 curl -X GET https://api.blaxel.ai/v0/sandboxes/my-sandbox \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_NAME"
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE"
 ```
 
 The `status` field of the response will progress through these values:
@@ -484,7 +492,7 @@ done
 ```
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { SandboxInstance, settings } from "@blaxel/core";
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
@@ -492,20 +500,6 @@ import { resolve } from "node:path";
 const SANDBOX_NAME = `my-custom-sandbox-${Math.floor(Date.now() / 1000)}`;
 const SOURCE_DIR = "my-sandbox";
 const ZIP_FILE = "my-sandbox.zip";
-const BASE_URL = "https://api.blaxel.ai/v0";
-
-const apiKey = process.env.BL_API_KEY;
-const workspace = process.env.BL_WORKSPACE;
-
-if (!apiKey) {
-  console.error("Error: BL_API_KEY not set");
-  process.exit(1);
-}
-
-if (!workspace) {
-  console.error("Error: BL_WORKSPACE not set");
-  process.exit(1);
-}
 
 async function poll() {
   const maxWait = 900;
@@ -578,23 +572,25 @@ async function main() {
 
     console.log(`[1/4] Creating sandbox '${SANDBOX_NAME}'...`);
 
-    const createResponse = await fetch(`${BASE_URL}/sandboxes?upload=true`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "X-Blaxel-Workspace": workspace,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        apiVersion: "blaxel.ai/v1alpha1",
-        kind: "Sandbox",
-        metadata: { name: SANDBOX_NAME },
-        spec: {
-          runtime: { memory: 2048 },
-          region: "us-pdx-1",
+    await settings.authenticate();
+
+    const createResponse = await fetch(
+      `${settings.baseUrl}/sandboxes?upload=true`,
+      {
+        method: "POST",
+        headers: {
+          ...settings.headers,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          metadata: { name: SANDBOX_NAME },
+          spec: {
+            runtime: { memory: 2048 },
+            region: "us-pdx-1",
+          },
+        }),
+      }
+    );
 
     if (createResponse.status !== 200 && createResponse.status !== 201) {
       console.error(
@@ -648,30 +644,17 @@ main();
 
 ```python Python
 import asyncio
-import os
 import sys
 import time
 import zipfile
 from pathlib import Path
 
 import httpx
-from blaxel.core import SandboxInstance
+from blaxel.core import SandboxInstance, client
 
 SANDBOX_NAME = f"my-custom-sandbox-{int(time.time())}"
 SOURCE_DIR = "my-sandbox"
 ZIP_FILE = "my-sandbox.zip"
-BASE_URL = "https://api.blaxel.ai/v0"
-
-api_key = os.environ.get("BL_API_KEY")
-workspace = os.environ.get("BL_WORKSPACE")
-
-if not api_key:
-    print("Error: BL_API_KEY not set")
-    sys.exit(1)
-
-if not workspace:
-    print("Error: BL_WORKSPACE not set")
-    sys.exit(1)
 
 try:
     if not Path(SOURCE_DIR).is_dir():
@@ -689,17 +672,11 @@ try:
 
     print(f"[1/4] Creating sandbox '{SANDBOX_NAME}'...")
 
-    response = httpx.post(
-        f"{BASE_URL}/sandboxes",
+    httpx_client = client.get_httpx_client()
+    response = httpx_client.post(
+        "/sandboxes",
         params={"upload": "true"},
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "X-Blaxel-Workspace": workspace,
-            "Content-Type": "application/json",
-        },
         json={
-            "apiVersion": "blaxel.ai/v1alpha1",
-            "kind": "Sandbox",
             "metadata": {"name": SANDBOX_NAME},
             "spec": {
                 "runtime": {"memory": 2048},
