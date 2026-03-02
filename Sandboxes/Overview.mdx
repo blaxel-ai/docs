@@ -197,8 +197,7 @@ The Dockerfile can reference and use any files included in the ZIP archive. Ever
 Once the files are ready, create a ZIP archive containing the files:
 
 ```bash
-cd my-custom-sandbox
-zip -r ../my-sandbox.zip .
+(cd my-custom-sandbox && zip -r ../my-sandbox.zip .)
 ```
 
 #### 2. Create a sandbox resource
