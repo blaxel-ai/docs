@@ -615,7 +615,7 @@ async function main() {
 
     console.log(`[2/4] Uploading code archive (${fileSize} bytes)...`);
 
-    const uploadResponse = await fetch(uploadUrl as string, {
+    const uploadResponse = await fetch(uploadUrl, {
       method: "PUT",
       headers: { "Content-Type": "application/zip" },
       body: readFileSync(ZIP_FILE),
@@ -810,7 +810,7 @@ Create a sandbox directory named `my-sandbox` with your custom Dockerfile and en
 mkdir -p my-sandbox
 ```
 
-Save and run the script as `deploy-sandbox.sh` (Shell), `index.ts` (TypeScript or `main.py` (Python):
+Save and run the script as `deploy-sandbox.sh` (Shell), `index.ts` (TypeScript) or `main.py` (Python):
 
 <CodeGroup>
 
