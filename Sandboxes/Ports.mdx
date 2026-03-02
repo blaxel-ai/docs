@@ -40,6 +40,7 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",
   memory: 4096,
+  region: "us-pdx-1",
   ports: [{ target: 3000 }]
 });
 ```
@@ -52,6 +53,7 @@ sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
   "image": "blaxel/base-image:latest",
   "memory": 4096,
+  "region": "us-pdx-1",
   "ports": [{ "target": 3000 }]
 })
 ```

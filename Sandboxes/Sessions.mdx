@@ -101,6 +101,7 @@ export async function GET() {
     name: SANDBOX_NAME,
     image: "blaxel/base-image:latest",
     memory: 4096,
+    region: "us-pdx-1",
     ports: [
       { name: "preview", target: 3000 }
     ]
