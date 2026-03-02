@@ -264,10 +264,7 @@ After uploading, poll the sandbox status endpoint to track the build and deploym
 Make a GET request to `https://api.blaxel.ai/v0/sandboxes/<SANDBOX-NAME>`, where SANDBOX-NAME is the `metadata.name` specified in the initial POST request.
 
 ```bash
-curl -s -X GET https://api.blaxel.ai/v0/sandboxes/my-sandbox \
-  -H "Authorization: Bearer $BL_API_KEY" \
-  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
-| jq -r '.status'
+watch -n 1 'curl -s -X GET https://api.blaxel.ai/v0/sandboxes/my-sandbox -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE" | jq -r ".status"'
 ```
 
 The `status` field of the response will progress through these values:
@@ -290,7 +287,7 @@ Here's a complete example script that performs all the steps above:
 
 <CodeGroup>
 
-```bash Shell
+```bash Shell expandable
 #!/bin/bash
 
 # Real deployment script that executes the documented API workflow
@@ -492,7 +489,7 @@ while true; do
 done
 ```
 
-```typescript TypeScript
+```typescript TypeScript expandable
 import { SandboxInstance, settings } from "@blaxel/core";
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, statSync, unlinkSync } from "node:fs";
@@ -643,7 +640,7 @@ async function main() {
 main();
 ```
 
-```python Python
+```python Python expandable
 import asyncio
 import sys
 import time
