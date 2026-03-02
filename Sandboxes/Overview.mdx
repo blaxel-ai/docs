@@ -250,7 +250,7 @@ Use an HTTP PUT request to upload the ZIP file to the upload URL. Replace the pl
 
 ```bash
 export UPLOAD_URL="https://controlplane-prod-build-sources..."
-curl -X PUT $UPLOAD_URL \
+curl -X PUT "$UPLOAD_URL" \
   -H "Content-Type: application/zip" \
   --data-binary @my-sandbox.zip
 ```
