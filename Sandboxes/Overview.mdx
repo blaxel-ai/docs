@@ -169,7 +169,7 @@ Although less common, it is also possible to create a sandbox by directly intera
 
 Ensure that you have the following:
 
-- A [Blaxel API key](../Security/Access-tokens)
+- A [Blaxel API key](/Security/Access-tokens)
 - The workspace name
 
 #### 1. Create a ZIP archive
@@ -185,7 +185,7 @@ Here is an example of the expected project structure:
 
 ```
 my-custom-sandbox/
-├── Dockerfile              # Required - defines your image
+├── Dockerfile             # Required - defines your image
 └── entrypoint.sh          # Optional - for custom initialization
 ```
 
@@ -194,7 +194,7 @@ my-custom-sandbox/
 
 The Dockerfile can reference and use any files included in the ZIP archive. Everything gets extracted and built together as a Docker image.
 
-Once the files are ready, create a ZIP archive containing:
+Once the files are ready, create a ZIP archive containing the files:
 
 ```bash
 cd my-custom-sandbox
@@ -203,7 +203,7 @@ zip -r ../my-sandbox.zip .
 
 #### 2. Create a sandbox resource
 
-Make an HTTP POST request to create or update your sandbox resource. This will return an upload URL where you'll send your code archive.
+Make an HTTP POST request to create or update your sandbox resource. This will return an upload URL for the ZIP archive.
 
 ```bash
 curl -X POST "https://api.blaxel.ai/v0/sandboxes?upload=true" \
@@ -250,7 +250,7 @@ curl -X PUT "https://storage.blaxel.ai/upload/sandbox/my-sandbox/abc123..." \
 
 The upload is successful when you receive a `200 OK` status code.
 
-#### 4: Monitor deployment status
+#### 4. Monitor deployment status
 
 After uploading, poll the sandbox status endpoint to track the build and deployment progress.
 
@@ -485,7 +485,166 @@ done
 ```
 
 ```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync, statSync, unlinkSync } from "node:fs";
+import { resolve } from "node:path";
 
+const SANDBOX_NAME = `my-custom-sandbox-${Math.floor(Date.now() / 1000)}`;
+const SOURCE_DIR = "my-sandbox";
+const ZIP_FILE = "my-sandbox.zip";
+const BASE_URL = "https://api.blaxel.ai/v0";
+
+const apiKey = process.env.BL_API_KEY;
+const workspace = process.env.BL_WORKSPACE;
+
+if (!apiKey) {
+  console.error("Error: BL_API_KEY not set");
+  process.exit(1);
+}
+
+if (!workspace) {
+  console.error("Error: BL_WORKSPACE not set");
+  process.exit(1);
+}
+
+async function poll() {
+  const maxWait = 900;
+  const startTime = Date.now();
+  let lastStatus: string | null = null;
+
+  while (true) {
+    if ((Date.now() - startTime) / 1000 > maxWait) {
+      console.log(`Deployment timed out after ${maxWait} seconds`);
+      process.exit(1);
+    }
+
+    try {
+      const sandbox = await SandboxInstance.get(SANDBOX_NAME);
+      const status = sandbox.status;
+
+      if (!status) {
+        console.log("Warning: Could not get status, retrying...");
+        await new Promise((r) => setTimeout(r, 3000));
+        continue;
+      }
+
+      if (status !== lastStatus) {
+        console.log(`  Status: ${status}`);
+        lastStatus = status;
+      }
+
+      if (status === "DEPLOYED") {
+        const image = sandbox.spec?.runtime?.image;
+        console.log(
+          `\nDeployment complete!\nSandbox: ${SANDBOX_NAME}\nImage: ${image}\n`
+        );
+        return;
+      } else if (status === "FAILED") {
+        console.log(
+          `\nDeployment failed\n\nCheck build logs with:\n  bl logs sandbox ${SANDBOX_NAME}`
+        );
+        process.exit(1);
+      } else if (
+        status === "DEACTIVATED" ||
+        status === "DEACTIVATING" ||
+        status === "DELETING"
+      ) {
+        console.log(`\nUnexpected status: ${status}`);
+        process.exit(1);
+      }
+    } catch {
+      console.log("Warning: Could not get status, retrying...");
+    }
+
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+}
+
+async function main() {
+  try {
+    if (!existsSync(SOURCE_DIR) || !statSync(SOURCE_DIR).isDirectory()) {
+      console.error(`Error: ${SOURCE_DIR} directory not found`);
+      process.exit(1);
+    }
+
+    console.log(`Creating ZIP archive from ${SOURCE_DIR}...`);
+    execSync(`zip -r ${resolve(ZIP_FILE)} .`, {
+      cwd: resolve(SOURCE_DIR),
+      stdio: "pipe",
+    });
+
+    const fileSize = statSync(ZIP_FILE).size;
+    console.log(`ZIP archive created: ${ZIP_FILE} (${fileSize} bytes)\n`);
+
+    console.log(`[1/4] Creating sandbox '${SANDBOX_NAME}'...`);
+
+    const createResponse = await fetch(`${BASE_URL}/sandboxes?upload=true`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "X-Blaxel-Workspace": workspace,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        apiVersion: "blaxel.ai/v1alpha1",
+        kind: "Sandbox",
+        metadata: { name: SANDBOX_NAME },
+        spec: {
+          runtime: { memory: 2048 },
+          region: "us-pdx-1",
+        },
+      }),
+    });
+
+    if (createResponse.status !== 200 && createResponse.status !== 201) {
+      console.error(
+        `Failed to create sandbox (HTTP ${createResponse.status})`
+      );
+      console.error(await createResponse.text());
+      process.exit(1);
+    }
+
+    const uploadUrl = createResponse.headers.get("x-blaxel-upload-url");
+    if (!uploadUrl) {
+      console.error("No upload URL received in response headers");
+      process.exit(1);
+    }
+
+    console.log("Sandbox created\n");
+
+    console.log(`[2/4] Uploading code archive (${fileSize} bytes)...`);
+
+    const uploadResponse = await fetch(uploadUrl as string, {
+      method: "PUT",
+      headers: { "Content-Type": "application/zip" },
+      body: readFileSync(ZIP_FILE),
+    });
+
+    if (uploadResponse.status !== 200) {
+      console.error(`Upload failed with status ${uploadResponse.status}`);
+      process.exit(1);
+    }
+
+    console.log("Upload completed\n");
+
+    console.log("[3/4] Monitoring deployment status...");
+    await poll();
+
+    console.log(`[4/4] How to use your sandbox:\n`);
+    console.log(`Run a command:\n  bl run sandbox ${SANDBOX_NAME}\n`);
+    console.log(`Get sandbox details:\n  bl get sandbox ${SANDBOX_NAME}\n`);
+    console.log(`View logs:\n  bl logs sandbox ${SANDBOX_NAME}\n`);
+    console.log(`Delete sandbox:\n  bl delete sandbox ${SANDBOX_NAME}\n`);
+  } finally {
+    if (existsSync(ZIP_FILE)) {
+      unlinkSync(ZIP_FILE);
+      console.log("Cleaned up temporary files");
+    }
+  }
+}
+
+main();
 ```
 
 ```python Python
@@ -651,7 +810,7 @@ Create a sandbox directory named `my-sandbox` with your custom Dockerfile and en
 mkdir -p my-sandbox
 ```
 
-Save and run the script as `deploy-sandbox.sh` (Shell), `index.ts` (TypeScript)or `main.py` (Python):
+Save and run the script as `deploy-sandbox.sh` (Shell), `index.ts` (TypeScript or `main.py` (Python):
 
 <CodeGroup>
 
