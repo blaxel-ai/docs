@@ -485,9 +485,153 @@ done
 ```
 
 ```typescript TypeScript
+
 ```
 
 ```python Python
+import asyncio
+import os
+import sys
+import time
+import zipfile
+from pathlib import Path
+
+import httpx
+from blaxel.core import SandboxInstance
+
+SANDBOX_NAME = f"my-custom-sandbox-{int(time.time())}"
+SOURCE_DIR = "my-sandbox"
+ZIP_FILE = "my-sandbox.zip"
+BASE_URL = "https://api.blaxel.ai/v0"
+
+api_key = os.environ.get("BL_API_KEY")
+workspace = os.environ.get("BL_WORKSPACE")
+
+if not api_key:
+    print("Error: BL_API_KEY not set")
+    sys.exit(1)
+
+if not workspace:
+    print("Error: BL_WORKSPACE not set")
+    sys.exit(1)
+
+try:
+    if not Path(SOURCE_DIR).is_dir():
+        print(f"Error: {SOURCE_DIR} directory not found")
+        sys.exit(1)
+
+    print(f"Creating ZIP archive from {SOURCE_DIR}...")
+    with zipfile.ZipFile(ZIP_FILE, "w", zipfile.ZIP_DEFLATED) as zf:
+        for file in Path(SOURCE_DIR).rglob("*"):
+            if file.is_file():
+                zf.write(file, file.relative_to(SOURCE_DIR))
+
+    file_size = Path(ZIP_FILE).stat().st_size
+    print(f"ZIP archive created: {ZIP_FILE} ({file_size} bytes)\n")
+
+    print(f"[1/4] Creating sandbox '{SANDBOX_NAME}'...")
+
+    response = httpx.post(
+        f"{BASE_URL}/sandboxes",
+        params={"upload": "true"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "X-Blaxel-Workspace": workspace,
+            "Content-Type": "application/json",
+        },
+        json={
+            "apiVersion": "blaxel.ai/v1alpha1",
+            "kind": "Sandbox",
+            "metadata": {"name": SANDBOX_NAME},
+            "spec": {
+                "runtime": {"memory": 2048},
+                "region": "us-pdx-1",
+            },
+        },
+        timeout=30,
+    )
+
+    if response.status_code not in (200, 201):
+        print(f"Failed to create sandbox (HTTP {response.status_code})")
+        print(response.text)
+        sys.exit(1)
+
+    upload_url = response.headers.get("x-blaxel-upload-url")
+    if not upload_url:
+        print("No upload URL received in response headers")
+        sys.exit(1)
+
+    print("Sandbox created\n")
+    print(f"[2/4] Uploading code archive ({file_size} bytes)...")
+
+    with open(ZIP_FILE, "rb") as f:
+        upload_response = httpx.put(
+            upload_url,
+            content=f.read(),
+            headers={"Content-Type": "application/zip"},
+            timeout=300,
+        )
+
+    if upload_response.status_code != 200:
+        print(f"Upload failed with status {upload_response.status_code}")
+        sys.exit(1)
+
+    print("Upload completed\n")
+
+    print("[3/4] Monitoring deployment status...")
+
+    async def poll():
+        max_wait = 900
+        start_time = time.time()
+        last_status = None
+
+        while True:
+            if time.time() - start_time > max_wait:
+                print(f"Deployment timed out after {max_wait} seconds")
+                sys.exit(1)
+
+            try:
+                sandbox = await SandboxInstance.get(SANDBOX_NAME)
+                status = sandbox.status
+            except Exception:
+                print("Warning: Could not get status, retrying...")
+                await asyncio.sleep(3)
+                continue
+
+            if status is None:
+                print("Warning: Could not get status, retrying...")
+                await asyncio.sleep(3)
+                continue
+
+            if status != last_status:
+                print(f"  Status: {status}")
+                last_status = status
+
+            if status == "DEPLOYED":
+                image = sandbox.spec.runtime.image if sandbox.spec and sandbox.spec.runtime else None
+                print(f"\nDeployment complete!\nSandbox: {SANDBOX_NAME}\nImage: {image}\n")
+                return
+            elif status == "FAILED":
+                print(f"\nDeployment failed\n\nCheck build logs with:\n  bl logs sandbox {SANDBOX_NAME}")
+                sys.exit(1)
+            elif status in ("DEACTIVATED", "DEACTIVATING", "DELETING"):
+                print(f"\nUnexpected status: {status}")
+                sys.exit(1)
+
+            await asyncio.sleep(3)
+
+    asyncio.run(poll())
+
+    print(f"[4/4] How to use your sandbox:\n")
+    print(f"Run a command:\n  bl run sandbox {SANDBOX_NAME}\n")
+    print(f"Get sandbox details:\n  bl get sandbox {SANDBOX_NAME}\n")
+    print(f"View logs:\n  bl logs sandbox {SANDBOX_NAME}\n")
+    print(f"Delete sandbox:\n  bl delete sandbox {SANDBOX_NAME}\n")
+
+finally:
+    if Path(ZIP_FILE).exists():
+        Path(ZIP_FILE).unlink()
+        print("Cleaned up temporary files")
 ```
 
 </CodeGroup>
@@ -501,19 +645,27 @@ export BL_API_KEY=YOUR-API-KEY
 export BL_WORKSPACE=YOUR-WORKSPACE-NAME
 ```
 
-Create a sandbox directory named `my-sandbox` with the Dockerfile and entrypoint script:
+Create a sandbox directory named `my-sandbox` with your custom Dockerfile and entrypoint script:
 
 ```bash
 mkdir -p my-sandbox
 ```
 
-Save and run the script:
+Save and run the script as `deploy-sandbox.sh` (Shell), `index.ts` (TypeScript)or `main.py` (Python):
 
 <CodeGroup>
 
 ```bash Shell
 chmod +x deploy-sandbox.sh
 ./deploy-sandbox.sh
+```
+
+```typescript TypeScript
+node index.ts
+```
+
+```python Python
+python main.py
 ```
 
 </CodeGroup>
