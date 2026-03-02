@@ -369,7 +369,11 @@ components:
     DriveState:
       type: object
       description: Current runtime state of the drive
-      additionalProperties: true
+      properties:
+        s3Url:
+          type: string
+          description: S3-compatible endpoint URL for accessing drive contents
+          readOnly: true
       readOnly: true
     EgressGateway:
       type: object
@@ -1859,6 +1863,10 @@ components:
       type: object
       description: Region
       properties:
+        agentDrivePublicUrl:
+          type: object
+          description: S3-compatible endpoint URL for drive storage in this region.
+            Use {s3Endpoint}/{bucketName} to access drive contents.
         allowed:
           type: string
           description: Region display name
@@ -1868,6 +1876,10 @@ components:
         country:
           type: string
           description: Region display name
+        drivesAvailable:
+          type: boolean
+          description: Drives availability status - indicates if an S3 endpoint is
+            configured for the region
         egressAvailable:
           type: boolean
           description: Egress availability status - indicates if network plane URL
@@ -3346,6 +3358,68 @@ paths:
         - drives:create
       - ApiKeyAuth: []
       summary: Update a drive
+      tags:
+      - drives
+  /drives/{driveName}/access-token:
+    post:
+      description: Issues a short-lived JWT access token scoped to a specific drive.
+        The token can be used as Bearer authentication for direct S3 operations against
+        the drive's SeaweedFS bucket.
+      operationId: CreateDriveAccessToken
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: number
+                  token_type:
+                    example: Bearer
+                    type: string
+                type: object
+          description: successful operation
+        "401":
+          description: Unauthorized
+        "403":
+          description: Drives feature not enabled
+        "404":
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Create drive access token
+      tags:
+      - drives
+  /drives/jwks.json:
+    get:
+      description: Returns the JSON Web Key Set containing the Ed25519 public key
+        used to verify drive access tokens. SeaweedFS or other S3-compatible storage
+        can use this endpoint to validate Bearer tokens.
+      operationId: GetDriveJWKS
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  keys:
+                    items:
+                      type: object
+                    type: array
+                type: object
+          description: successful operation
+      security: []
+      summary: Get drive token JWKS
       tags:
       - drives
   /egressgateways:
@@ -5160,6 +5234,7 @@ paths:
       summary: Create sandbox
       tags:
       - compute
+      x-blaxel-authorizer-disabled: false
       x-amazon-apigateway-integration:
         ref: '#/components/x-amazon-apigateway-integrations/albapi'
   /sandboxes/{sandboxName}:
