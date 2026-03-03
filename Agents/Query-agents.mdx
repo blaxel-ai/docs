@@ -20,10 +20,10 @@ The inference URL looks like this:
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 ```
 
-Timeout limit:
+Connection limit:
 
-- The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
-- If your request processing is expected to take longer than 100 second without streaming data, you should use the asynchronous endpoint or [batch jobs](../Jobs/Overview) instead.
+- The synchronous endpoint closes the connection after **100 seconds** if no data flows through the API. If your agent streams back responses, the connection resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will close.
+- If your request processing is expected to take longer than 100 seconds without streaming data, you should use the asynchronous endpoint or [batch jobs](../Jobs/Overview) instead.
 
 ### Asynchronous endpoint
 
@@ -31,13 +31,13 @@ In addition to the default synchronous endpoint, Blaxel provides the ability to 
 
 ![Screenshot 2025-05-18 at 8.53.14 PM.png](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.png)
 
-This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations that might exceed typical connection timeouts. Blaxel handles queuing and execution behind the scene.
+This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations. Blaxel handles queuing and execution behind the scene.
 
 <Note>
   You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
 </Note>
 
-The timeout duration for this endpoint is 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+This endpoint supports requests up to 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
 
 The asynchronous endpoint looks like this:
 
@@ -64,7 +64,6 @@ You can create async endpoints either from the Blaxel Console, or from your code
   DEFAULT_CITY = "San Francisco"
 
   [runtime]
-  timeout = 900
   memory = 1024
 
   [[triggers]]
@@ -86,7 +85,7 @@ You can create async endpoints either from the Blaxel Console, or from your code
   - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
   - `public` field specifies if the agent is publicly accessible (defaults to `false`).
   - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
-  - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+  - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
   - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 </Accordion>
 
