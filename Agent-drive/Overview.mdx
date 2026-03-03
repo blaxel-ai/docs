@@ -195,12 +195,12 @@ List all drives currently mounted to a sandbox:
 <CodeGroup>
 
 ```tsx TypeScript
-const mounts = await sandbox.drive.list();
+const mounts = await sandbox.drives.list();
 console.log(mounts);
 ```
 
 ```python Python
-mounts = await sandbox.drive.list()
+mounts = await sandbox.drives.list()
 print(mounts)
 ```
 
@@ -236,11 +236,11 @@ Unmount a drive from a running sandbox by specifying the mount path:
 <CodeGroup>
 
 ```tsx TypeScript
-await sandbox.drive.unmount("/mnt/data");
+await sandbox.drives.unmount("/mnt/data");
 ```
 
 ```python Python
-await sandbox.drive.unmount("/mnt/data")
+await sandbox.drives.unmount("/mnt/data")
 ```
 
 </CodeGroup>
@@ -318,7 +318,7 @@ const content = await sandbox.fs.read("/mnt/storage/hello.txt");
 console.log(content); // "Hello from the drive!"
 
 // 6. List mounted drives
-const mounts = await sandbox.drive.list();
+const mounts = await sandbox.drives.list();
 console.log(mounts);
 ```
 
@@ -361,7 +361,7 @@ async def main():
     print(content)  # "Hello from the drive!"
 
     # 6. List mounted drives
-    mounts = await sandbox.drive.list()
+    mounts = await sandbox.drives.list()
     print(mounts)
 
 asyncio.run(main())
