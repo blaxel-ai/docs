@@ -37,7 +37,7 @@ Some examples of use cases include:
 
 ### Using the SDKs
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, optional [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
   The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
@@ -64,7 +64,7 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,   // in MB
   ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
-  region: "us-pdx-1"   // optional; if not specified, Blaxel will choose a default region
+  region: "us-pdx-1"   // deployment region
 });
 ```
 
@@ -82,7 +82,7 @@ async def main():
       "memory": 4096,   # in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
-      "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+      "region": "us-pdx-1"   # deployment region
     })
 
 if __name__ == "__main__":
@@ -105,7 +105,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
   memory: 4096,    // in MB
   ports: [{ target: 3000, protocol: "HTTP" }],  // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
-  region: "us-pdx-1"    // optional; if not specified, Blaxel will choose a default region
+  region: "us-pdx-1"    // deployment region
 });
 ```
 
@@ -123,7 +123,7 @@ async def main():
       "memory": 4096,   # in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
-      "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+      "region": "us-pdx-1"   # deployment region
     })
 
 if __name__ == "__main__":
@@ -837,7 +837,7 @@ You can expose specific non-reserved ports [**when creating a new sandbox**](Ove
 
 ### Regions
 
-Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. If you don't specify a region, Blaxel will automatically use a default region.
+Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. This parameter is required.
 
 ### Labels
 
@@ -852,7 +852,7 @@ const sandbox = await SandboxInstance.create({
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
   labels: { env: "dev", project: "my-project" }, // optional; labels
-  region: "us-pdx-1"   // optional; if not specified, Blaxel will choose a default region
+  region: "us-pdx-1"   // deployment region
 });
 ```
 
@@ -864,7 +864,7 @@ sandbox = await SandboxInstance.create({
   "image": "blaxel/base-image:latest",   # public or custom image
   "memory": 4096,   # in MB
   "labels": {"env": "dev", "project": "my-project"},  # optional; labels
-  "region": "us-pdx-1"   # optional; if not specified, Blaxel will choose a default region
+  "region": "us-pdx-1"   # deployment region
 })
 ```
 

@@ -103,6 +103,7 @@ app.post("/query", async (req, res) => {
       name: "my-sandbox",
       image: "blaxel/base-image:latest",
       memory: 4096,
+      region: "us-pdx-1",
     });
 
     let response = "";
@@ -182,6 +183,7 @@ async def query_endpoint(request: Request):
             "name": "my-sandbox",
             "image": "blaxel/base-image:latest",
             "memory": 4096,
+            "region": "us-pdx-1",
         })
 
         response = ""

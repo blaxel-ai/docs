@@ -211,7 +211,7 @@ async function main() {
     memory: 4096,   // in MB
     ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
     labels: { env: "dev", project: "my-project" }, // labels
-    region: "us-pdx-1"   // if not specified, Blaxel will choose a default region
+    region: "us-pdx-1"   // deployment region
   });
   console.log("Sandbox created: ", {sandbox});
 }
@@ -231,7 +231,7 @@ async def main():
       "memory": 4096,   # in MB
       "ports": [{ "target": 3000 }],   # ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # labels
-      "region": "us-pdx-1"   # if not specified, Blaxel will choose a default region
+      "region": "us-pdx-1"   # deployment region
     })
     print(f"Sandbox created: {sandbox}")
 
