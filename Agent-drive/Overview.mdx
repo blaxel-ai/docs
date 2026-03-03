@@ -297,8 +297,8 @@ const drive = await DriveInstance.createIfNotExists({
 // 2. Create a sandbox
 //    Use the image ID of the custom sandbox template
 const sandbox = await SandboxInstance.createIfNotExists({
-  name: "my-sandbox-image-id",
-  image: "blaxel/base-image:latest",
+  name: "my-agent-sandbox",
+  image: "my-sandbox-image-id",
   memory: 2048,
   region: "us-was-1",
 });
@@ -324,7 +324,8 @@ console.log(mounts);
 
 ```python Python
 import asyncio
-from blaxel.core.drive import SandboxInstance, DriveInstance
+from blaxel.core.drive import DriveInstance
+from blaxel.core import SandboxInstance
 
 async def main():
     # 1. Create a drive
@@ -340,7 +341,7 @@ async def main():
     sandbox = await SandboxInstance.create_if_not_exists(
         {
             "name": "my-agent-sandbox",
-            "image": "blaxel/base-image:latest",
+            "image": "my-sandbox-image-id",
             "memory": 2048,
             "region": "us-was-1",
         }
