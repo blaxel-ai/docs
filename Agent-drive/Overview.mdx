@@ -1,13 +1,13 @@
 ---
-title: 'Agent Drives'
+title: 'Agent Drive'
 description: 'Share files between sandboxes and agents.'
 ---
 
 <Important>
-  This feature is currently in private preview. During the preview, drives are only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. A quotas system for drive storage is coming soon.
+  This feature is currently in private preview. During the preview, the Agent Drive feature is only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. A quotas system for drive storage is coming soon.
 </Important>
 
-Agent Drives are distributed filesystems that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
+Agent Drive is a distributed filesystem that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
 
 Unlike [volumes](./Volumes), which are block storage devices attached at sandbox creation to a single sandbox, drives are backed by [SeaweedFS](https://github.com/seaweedfs/seaweedfs) buckets and behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give a POSIX-compliant interface.
 
@@ -31,7 +31,7 @@ Some examples of use cases are:
   These steps are only required during the private preview stage.
 </Note>
 
-For the Agent Drives preview, a [custom sandbox template](/Sandboxes/Templates#create-a-sandbox-template) is required. Run:
+For the Agent Drive preview, a [custom sandbox template](/Sandboxes/Templates#create-a-sandbox-template) is required. Run:
 
 ```bash
 bl login
@@ -40,7 +40,7 @@ bl new sandbox my-sandbox
 
 This will create a new folder containing a `Dockerfile` and additional configuration files.
 
-To ensure compatibility with the Agent Drives preview, update the following line in the `Dockerfile`.
+To ensure compatibility with the Agent Drive preview, update the following line in the `Dockerfile`.
 
 Replace:
 
@@ -66,7 +66,7 @@ Obtain the sandbox template's image ID:
 bl get sandboxes my-sandbox -ojson | jq -r '.[0].spec.runtime.image'
 ```
 
-Your sandbox will now be ready to use with the Agent Drives preview.
+Your sandbox will now be ready to use with the Agent Drive preview.
 
 ## Create a drive
 
@@ -87,7 +87,7 @@ const drive = await DriveInstance.create({
 ```
 
 ```python Python
-from blaxel.core import DriveInstance
+from blaxel.core.drive import DriveInstance
 drive = await DriveInstance.create(
     {
         "name": "my-drive",
@@ -116,7 +116,7 @@ const drive = await DriveInstance.createIfNotExists({
 ```
 
 ```python Python
-from blaxel.core import DriveInstance
+from blaxel.core.drive import DriveInstance
 drive = await DriveInstance.create_if_not_exists(
     {
         "name": "my-drive",
@@ -141,7 +141,7 @@ import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
 
-await sandbox.drive.mount({
+await sandbox.drives.mount({
   driveName: "my-drive",
   mountPath: "/mnt/data",
   drivePath: "/",   // optional; defaults to root of the drive
@@ -153,7 +153,7 @@ from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
 
-await sandbox.drive.mount(
+await sandbox.drives.mount(
     drive_name="my-drive",
     mount_path="/mnt/data",
     drive_path="/", # optional; defaults to root of the drive
@@ -171,7 +171,7 @@ You can mount a specific subdirectory of a drive rather than its root. This is u
 <CodeGroup>
 
 ```tsx TypeScript
-await sandbox.drive.mount({
+await sandbox.drives.mount({
   driveName: "my-drive",
   mountPath: "/app/project",
   drivePath: "/projects/alpha",
@@ -179,7 +179,7 @@ await sandbox.drive.mount({
 ```
 
 ```python Python
-await sandbox.drive.mount(
+await sandbox.drives.mount(
     drive_name="my-drive",
     mount_path="/app/project",
     drive_path="/projects/alpha",
@@ -217,7 +217,7 @@ const drives = await DriveInstance.list();
 ```
 
 ```python Python
-from blaxel.core import DriveInstance
+from blaxel.core.drive import DriveInstance
 drives = await DriveInstance.list()
 ```
 
@@ -261,7 +261,7 @@ await drive.delete();
 ```
 
 ```python Python
-from blaxel.core import DriveInstance
+from blaxel.core.drive import DriveInstance
 
 # Class-level
 await DriveInstance.delete("my-drive")
@@ -304,7 +304,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
 });
 
 // 3. Mount the drive to the sandbox
-await sandbox.drive.mount({
+await sandbox.drives.mount({
   driveName: "agent-storage",
   mountPath: "/mnt/storage",
   drivePath: "/",
@@ -324,7 +324,7 @@ console.log(mounts);
 
 ```python Python
 import asyncio
-from blaxel.core import SandboxInstance, DriveInstance
+from blaxel.core.drive import SandboxInstance, DriveInstance
 
 async def main():
     # 1. Create a drive
@@ -347,7 +347,7 @@ async def main():
     )
 
     # 3. Mount the drive to the sandbox
-    await sandbox.drive.mount(
+    await sandbox.drives.mount(
         drive_name="agent-storage",
         mount_path="/mnt/storage",
         drive_path="/",
