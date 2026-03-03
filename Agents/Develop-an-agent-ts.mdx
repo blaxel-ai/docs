@@ -29,9 +29,9 @@ Agents Hosting have few requirements or limitations:
 - The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `HOST` (for the host) and `PORT` (for the port). **These two environment variables are required for the host+port combo.**
     - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
 
-- Deployed agents have a runtime limit after which executions time out. The maximum timeout is 15 minutes.
+- Deployed agents have a maximum runtime of 15 minutes.
 
-- The synchronous endpoint has a timeout of **100 seconds** for keeping the connection open when no data flows through the API. If your agent streams back responses, the 100-second timeout resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will timeout.
+- The synchronous endpoint closes the connection after **100 seconds** if no data flows through the API. If your agent streams back responses, the connection resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will close.
 
 ## Accessing resources with Blaxel SDK
 
@@ -390,7 +390,6 @@ models = ["gpt-4o-mini"]
 DEFAULT_CITY = "San Francisco"
 
 [runtime]
-timeout = 900
 memory = 1024
 
 [[triggers]]
@@ -412,7 +411,7 @@ memory = 1024
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
-- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 <Tip>

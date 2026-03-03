@@ -98,7 +98,7 @@ Deploying an agent will create the associated agent deployment. At this time:
 
 ### Maximum runtime
 
-- Deployed agents have a runtime limit after which executions time out. The maximum timeout is 15 minutes.
+- Deployed agents have a maximum runtime of 15 minutes.
 
 ### Managing revisions
 
@@ -150,7 +150,6 @@ models = ["gpt-4o-mini"]
 DEFAULT_CITY = "San Francisco"
 
 [runtime]
-timeout = 900
 memory = 1024
 
 [[triggers]]
@@ -172,7 +171,7 @@ memory = 1024
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
-- `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
