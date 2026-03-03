@@ -5234,7 +5234,7 @@ paths:
       summary: Create sandbox
       tags:
       - compute
-      x-blaxel-authorizer-disabled: false
+      x-blaxel-authorizer-disabled: true
       x-amazon-apigateway-integration:
         ref: '#/components/x-amazon-apigateway-integrations/albapi'
   /sandboxes/{sandboxName}:
