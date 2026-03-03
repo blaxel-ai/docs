@@ -96,6 +96,16 @@ extensions:
 
 ## Tools available in the MCP server
 
+### Process management
+
+| Tool             | Description                                                   |
+|------------------|---------------------------------------------------------------|
+| `processExecute` | Execute a command with options for timeout, restart, env vars |
+| `processGet`     | Get info about a process by PID or name                       |
+| `processGetLogs` | Get logs for a specific process                               |
+| `processesList`  | List all running processes                                    |
+| `processStop`    | Stop a specific process                                       |
+| `processKill`    | Kill a specific process                                       |
 
 ### Filesystem operations
 
@@ -122,20 +132,9 @@ extensions:
 
 | Tool                   | Description                                        |
 |------------------------|----------------------------------------------------|
-| `codegenEditFile`      | Propose and apply a targeted edit to a file (requires Morph or Relace API key)       |
+| `codegenEditFile`      | Propose and apply a [targeted edit to a file](Codegen-tools) (⚠️ requires Morph or Relace API key)       |
 | `codegenParallelApply` | Plan parallel edits across multiple file locations |
 | `codegenReapply`       | Use smarter model to retry a failed edit           |
-
-### Process management
-
-| Tool             | Description                                                   |
-|------------------|---------------------------------------------------------------|
-| `processExecute` | Execute a command with options for timeout, restart, env vars |
-| `processGet`     | Get info about a process by PID or name                       |
-| `processGetLogs` | Get logs for a specific process                               |
-| `processesList`  | List all running processes                                    |
-| `processStop`    | Stop a specific process                                       |
-| `processKill`    | Kill a specific process                                       |
 
 Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph:
 
