@@ -1523,6 +1523,9 @@ components:
         invitedAt:
           type: string
           description: Invitation date
+        expiresAt:
+          type: string
+          description: The date and time when the invitation expires
         invitedBy:
           $ref: '#/components/schemas/PendingInvitationRenderInvitedBy'
         role:
@@ -2604,6 +2607,9 @@ components:
         email_verified:
           type: boolean
           description: Whether the user's email has been verified
+        expired:
+          type: boolean
+          description: Whether the invitation has expired
         family_name:
           type: string
           description: Workspace user family name
@@ -5236,7 +5242,7 @@ paths:
       - compute
       x-blaxel-authorizer-disabled: true
       x-amazon-apigateway-integration:
-        ref: '#/components/x-amazon-apigateway-integrations/albapi'
+        ref: '#/components/x-amazon-apigateway-integrations/albapi-noauth'
   /sandboxes/{sandboxName}:
     delete:
       description: Permanently deletes a sandbox and all its data. If no volumes are
