@@ -76,13 +76,7 @@ ENTRYPOINT ["npx", "pnpm", "start"]
 
 ### Entrypoint
 
-For [Agents Hosting](Overview) and [MCP Servers Hosting](../Functions/Overview):
-
 - The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `HOST` (for the host) and `PORT` (for the port).
-
-For [Batch Jobs](../Jobs/Overview):
-
-- The entrypoint must run a function that terminates—if it runs infinitely, your job will continue indefinitely.
 
 ### Environment variables
 
