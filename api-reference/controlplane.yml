@@ -1495,6 +1495,9 @@ components:
           email:
             type: string
             description: User email
+          expiresAt:
+            type: string
+            description: The date and time when the invitation expires
           invitedBy:
             type: string
             description: User sub
@@ -1520,12 +1523,12 @@ components:
         email:
           type: string
           description: User email
-        invitedAt:
-          type: string
-          description: Invitation date
         expiresAt:
           type: string
           description: The date and time when the invitation expires
+        invitedAt:
+          type: string
+          description: Invitation date
         invitedBy:
           $ref: '#/components/schemas/PendingInvitationRenderInvitedBy'
         role:
@@ -2103,18 +2106,18 @@ components:
     SandboxNetwork:
       type: object
       description: Network configuration for a sandbox including egress IP binding.
-        All three fields (vpcName, egressGatewayName, egressIpName) must be specified
-        together to assign a dedicated IP.
+        All fields (vpcName, egressGatewayName) must be specified together to assign
+        a dedicated IP.
       properties:
         egressGatewayName:
           type: string
           description: Name of the egress gateway in the VPC. Must be specified together
-            with vpcName and egressIpName.
+            with vpcName.
           example: my-egress-gateway
         vpcName:
           type: string
           description: Name of the VPC where the egress gateway is provisioned. Must
-            be specified together with egressGatewayName and egressIpName.
+            be specified together with egressGatewayName.
           example: my-vpc
       required:
       - vpcName
