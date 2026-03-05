@@ -190,9 +190,9 @@
               {
                 "group": "Infrastructure",
                 "pages": [
-                  "Infrastructure/Dedicated-egress-IPs 🆕",
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
+                  "Infrastructure/Dedicated-egress-IPs 🆕",
                   "Infrastructure/Custom-domains"
                 ]
               }
