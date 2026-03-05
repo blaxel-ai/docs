@@ -59,16 +59,26 @@ Each deployment creates a new revision of your template. Revisions are auto-incr
 
 Once deployed, you can create volumes from your template:
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
   template: "mytemplate:1"  // Use template-name:revision or template-name:latest
 });
 ```
 
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:1"  # Use template-name:revision or template-name:latest
+})
+```
+</CodeGroup>
+
 Override the default volume size if needed:
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 // Example with a custom size
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
@@ -76,6 +86,16 @@ const volume = await VolumeInstance.createIfNotExists({
   size: 4096  // Override the default size if needed
 });
 ```
+
+```python Python
+# Example with a custom size
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "size": 4096  # Override the default size if needed
+})
+```
+</CodeGroup>
 
 Template revisions are incremental and auto-generated. The system maintains a limited number of versions for each template.
 
@@ -107,13 +127,23 @@ du -sh mytemplate
 
 For example, if your template is 1.5GB, create volumes with at least 2GB of space:
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
   template: "mytemplate:latest",
   size: 2048  // 2GB for a 1.5GB template - leaves 500MB for new files
 });
 ```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "size": 2048  # 2GB for a 1.5GB template - leaves 500MB for new files
+})
+```
+</CodeGroup>
 
 This helps you set an appropriate `defaultSize` in your `blaxel.toml` or specify the correct size when creating volumes.
 

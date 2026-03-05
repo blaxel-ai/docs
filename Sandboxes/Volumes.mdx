@@ -29,7 +29,8 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 </Accordion>
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 import { SandboxInstance, VolumeInstance } from "@blaxel/core";
 
 const volume = await VolumeInstance.create({
@@ -39,18 +40,39 @@ const volume = await VolumeInstance.create({
 });
 ```
 
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,          # in MB
+  "region": "us-pdx-1",   # if not specified, Blaxel will choose a default region
+})
+```
+</CodeGroup>
+
 You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files.
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
   template: "mytemplate:1"  // Use template-name:revision or template-name:latest
 });
 ```
 
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:1"  # Use template-name:revision or template-name:latest
+})
+```
+</CodeGroup>
+
 Labels are specified as key-value pairs during volume creation.
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
 const volume = await VolumeInstance.create({
   name: "my-volume",
   size: 2048,          // in MB
@@ -58,6 +80,16 @@ const volume = await VolumeInstance.create({
   labels: { env: "test", project: "12345" }, // labels
 });
 ```
+
+```python Python
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,          # in MB
+  "region": "us-pdx-1",   # if not specified, Blaxel will choose a default region
+  "labels": {"env": "test", "project": "12345"},  # labels
+})
+```
+</CodeGroup>
 
 <Card title="Manage volume templates" icon="database" href="/Sandboxes/Volumes-templates">
 Create volumes containing the same set of files every time.
@@ -167,6 +199,10 @@ To list existing volumes:
 const volumes = await VolumeInstance.list()
 ```
 
+```python Python
+volumes = await VolumeInstance.list()
+```
+
 ```shell Blaxel CLI
 bl get volumes
 ```
@@ -187,7 +223,10 @@ To use a volume, attach it **when you create a sandbox** by passing an array of 
 
 Each configuration must include the `name` of the volume to attach and the `mountPath` where it will be accessible inside the sandbox's filesystem. The mount path **will override the existing content** of a directory.
 
-```tsx
+<CodeGroup>
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/nextjs:latest",
@@ -201,6 +240,24 @@ const sandbox = await SandboxInstance.create({
   // ... other sandbox properties
 });
 ```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "region": "us-pdx-1",     # Must be the same region as the created volume
+  "volumes": [{
+    "name": "my-volume",     # Must match the name of the created volume
+    "mount_path": "/app",    # Directory inside the sandbox
+    "read_only": False       # Set to True to prevent writes
+  }],
+  # ... other sandbox properties
+})
+```
+</CodeGroup>
 
 Any files written to the `/app` directory within this sandbox will be stored on `my-volume` and will persist even if this sandbox is deleted.
 
