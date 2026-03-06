@@ -20,7 +20,7 @@ Before starting, ensure you have:
 - a [Blaxel account](https://blaxel.ai) at [Tier 2 or higher](https://app.blaxel.ai/account/quotas)
 - an API key from any of the [supported model providers](https://docs.openclaw.ai/concepts/model-providers)
 
-Blaxel's agent template uses autoscaling to keep at least OpenClaw instance running at all times. Autoscaling is only available on Tier 2 and higher plans.
+Blaxel's agent template uses autoscaling to keep at least one OpenClaw instance running at all times. Autoscaling is only available on Tier 2 and higher plans.
 
 ### Configure the OpenClaw agent template
 
@@ -311,8 +311,6 @@ Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm t
 ### Configure OpenClaw channels
 
 OpenClaw supports multiple channels. To enable them, configure them through the Control UI after connecting, or add them to the `openclaw.json` file.
-
-For other channels, configure them through the Control UI after connecting, or add them to the openclaw.json config in entrypoint.sh.
 
 <Note>
   As mentioned earlier, the OpenClaw Gateway process must remain running while you interact with the agent. However, if you end your interactive shell session with the Blaxel sandbox, the Gateway process will terminate automatically as well. To keep the Gateway process running even if you're not in an active shell session with the sandbox, create and execute the following script:
