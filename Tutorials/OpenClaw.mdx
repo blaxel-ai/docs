@@ -246,7 +246,7 @@ Before starting, ensure you have:
     An alternative way to do this is with `jq`:
 
     ```shell
-    jq '.gateway.controlUi = {"allowedOrigins":["https://b186....preview.bl.run"]}' openclaw.json > openclaw.json.new && mv openclaw.json.new openclaw.json
+    jq '.gateway.controlUi = {"allowedOrigins":["https://b186....preview.bl.run"]}' /blaxel/.openclaw/openclaw.json > /blaxel/.openclaw/openclaw.json.new && mv /blaxel/.openclaw/openclaw.json.new /blaxel/.openclaw/openclaw.json
     ```
 
 1. Start the OpenClaw Gateway service manually, and keep it running.
