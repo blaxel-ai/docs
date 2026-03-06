@@ -192,6 +192,7 @@
                 "pages": [
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
+                  "Infrastructure/Dedicated-egress-IPs 🆕",
                   "Infrastructure/Custom-domains"
                 ]
               }
