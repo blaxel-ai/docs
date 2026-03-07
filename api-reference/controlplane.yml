@@ -5243,9 +5243,9 @@ paths:
       summary: Create sandbox
       tags:
       - compute
-      x-blaxel-authorizer-disabled: true
       x-amazon-apigateway-integration:
         ref: '#/components/x-amazon-apigateway-integrations/albapi-noauth'
+      x-blaxel-authorizer-disabled: true
   /sandboxes/{sandboxName}:
     delete:
       description: Permanently deletes a sandbox and all its data. If no volumes are
