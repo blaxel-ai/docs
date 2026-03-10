@@ -140,6 +140,7 @@ components:
           description: Regions
           items:
             $ref: '#/components/schemas/Region'
+      x-stainless-ignore: true
     Continent:
       type: object
       description: Continent
@@ -150,6 +151,7 @@ components:
         name:
           type: string
           description: Continent code
+      x-stainless-ignore: true
     CoreEvent:
       type: object
       description: Core event
@@ -194,6 +196,7 @@ components:
         name:
           type: string
           description: Country code
+      x-stainless-ignore: true
     CreateJobExecutionOutput:
       type: object
       description: Response returned when a job execution is successfully created.
@@ -273,6 +276,7 @@ components:
       required:
       - metadata
       - spec
+      x-stainless-ignore: true
     CustomDomainMetadata:
       type: object
       description: Custom domain metadata
@@ -326,6 +330,7 @@ components:
           type: string
           description: Error message if verification failed
           readOnly: true
+      x-stainless-ignore: true
     Drive:
       type: object
       description: Drive providing persistent storage that can be attached to agents,
@@ -708,6 +713,22 @@ components:
           $ref: '#/components/schemas/FunctionRuntime'
         triggers:
           $ref: '#/components/schemas/Triggers'
+    GroupWorkspaceMapping:
+      type: object
+      description: Mapping between an IdP group and a workspace role for directory
+        sync
+      properties:
+        groupName:
+          type: string
+          description: Name of the IdP group (e.g. "Engineering", "Platform")
+          example: Engineering
+        role:
+          type: string
+          description: Role to assign in this workspace (admin or member)
+          enum:
+          - admin
+          - member
+          example: admin
     Image:
       type: object
       properties:
@@ -1845,6 +1866,7 @@ components:
         name:
           type: string
           description: Location name
+      x-stainless-ignore: true
     PublicIp:
       type: object
       properties:
@@ -1899,6 +1921,7 @@ components:
         name:
           type: string
           description: Region name
+      x-stainless-ignore: true
     Repository:
       type: object
       description: Repository
@@ -1966,6 +1989,93 @@ components:
         trafficPercent:
           type: integer
           description: Percent of traffic to the revision
+    SSODomain:
+      type: object
+      description: |-
+        SSO domain for SAML-based Single Sign-On
+        An SSO domain links an email domain (e.g., acme.com) to a workspace so that
+        users with that email domain are redirected to the workspace's
+        SSO/SAML identity provider during login.
+      properties:
+        metadata:
+          $ref: '#/components/schemas/SSODomainMetadata'
+        spec:
+          $ref: '#/components/schemas/SSODomainSpec'
+      required:
+      - metadata
+      - spec
+      x-stainless-ignore: true
+    SSODomainMetadata:
+      type: object
+      description: SSO domain metadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          accountId:
+            type: string
+            description: Account ID
+          displayName:
+            type: string
+            description: Display name for the SSO domain
+            example: Acme Corp
+          name:
+            type: string
+            description: Domain name (e.g., "acme.com")
+            example: acme.com
+    SSODomainSpec:
+      type: object
+      description: SSO domain specification
+      properties:
+        allowedAuthMethods:
+          type: array
+          description: List of allowed login methods for this domain. When set, users
+            with this email domain can only use the specified methods. Possible values
+            are google, saml, email. Empty list means no restriction.
+          items:
+            type: string
+        autoJoinWorkspaces:
+          type: array
+          description: List of workspace names where users with this domain auto-join
+            on login
+          items:
+            type: string
+        lastUsedAuthMethod:
+          type: string
+          description: The authentication method last used by a user with this domain
+            (google, saml, email)
+          readOnly: true
+        lastUsedAuthMethodAt:
+          type: string
+          description: Timestamp of when the last authentication method was used
+          readOnly: true
+        lastVerifiedAt:
+          type: string
+          description: Last verification attempt timestamp
+          readOnly: true
+        status:
+          type: string
+          description: Current verification status of the domain (pending, verified,
+            failed)
+          enum:
+          - pending
+          - verified
+          - failed
+          readOnly: true
+          example: verified
+        txtRecordName:
+          type: string
+          description: DNS TXT record name that must be created for verification
+          readOnly: true
+        txtRecordValue:
+          type: string
+          description: DNS TXT record value that must be set for verification
+          readOnly: true
+        verificationError:
+          type: string
+          description: Error message if verification failed
+          readOnly: true
+      x-stainless-ignore: true
     Sandbox:
       type: object
       description: Lightweight virtual machine for secure AI code execution. Sandboxes
@@ -2555,6 +2665,11 @@ components:
             type: string
             description: Workspace display name
             example: My Workspace
+          groupMappings:
+            type: array
+            description: Group-to-role mappings for directory sync (SCIM) group membership
+            items:
+              $ref: '#/components/schemas/GroupWorkspaceMapping'
           id:
             type: string
             description: Autogenerated unique workspace id
@@ -2622,6 +2737,13 @@ components:
         role:
           type: string
           description: Workspace user role
+        source:
+          type: enum
+          description: Source of the user provisioning
+          enum:
+          - directory_sync
+          - invitation
+          - domain_capture
         sub:
           type: string
           description: Workspace user identifier
@@ -3076,6 +3198,7 @@ paths:
       summary: Get platform configuration
       tags:
       - configurations
+      x-stainless-ignore: true
   /customdomains:
     get:
       description: Returns all custom domains configured in the workspace. Custom
@@ -3097,6 +3220,7 @@ paths:
       summary: List custom domains
       tags:
       - customdomains
+      x-stainless-ignore: true
     post:
       description: Creates a new custom domain for preview deployments. After creation,
         you must configure DNS records and verify domain ownership before it becomes
@@ -3122,6 +3246,7 @@ paths:
       summary: Create custom domain
       tags:
       - customdomains
+      x-stainless-ignore: true
   /customdomains/{domainName}:
     delete:
       operationId: DeleteCustomDomain
@@ -3146,6 +3271,7 @@ paths:
       summary: Delete custom domain
       tags:
       - customdomains
+      x-stainless-ignore: true
     get:
       operationId: GetCustomDomain
       parameters:
@@ -3169,6 +3295,7 @@ paths:
       summary: Get custom domain
       tags:
       - customdomains
+      x-stainless-ignore: true
     put:
       operationId: UpdateCustomDomain
       parameters:
@@ -3198,6 +3325,7 @@ paths:
       summary: Update custom domain
       tags:
       - customdomains
+      x-stainless-ignore: true
   /customdomains/{domainName}/verify:
     post:
       operationId: VerifyCustomDomain
@@ -3222,6 +3350,7 @@ paths:
       summary: Verify custom domain
       tags:
       - customdomains
+      x-stainless-ignore: true
   /drives:
     get:
       description: Returns all drives in the workspace. Drives provide persistent
@@ -3519,6 +3648,7 @@ paths:
       summary: Get enabled features for workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /features/{featureKey}:
     get:
       description: Evaluates a specific feature flag for the workspace with full details
@@ -3530,6 +3660,13 @@ paths:
         in: path
         name: featureKey
         required: true
+        schema:
+          type: string
+      - description: Account ID to check feature flags for. When provided, evaluates
+          the feature flag at the account level instead of the workspace level.
+        in: query
+        name: account
+        required: false
         schema:
           type: string
       responses:
@@ -3586,6 +3723,7 @@ paths:
       summary: Retrieve feature flag evaluation for workspace
       tags:
       - featureFlags
+      x-stainless-ignore: true
   /functions:
     get:
       description: Returns all MCP server functions deployed in the workspace. Each
@@ -4305,6 +4443,7 @@ paths:
       summary: Get integration connection model endpoint configurations
       tags:
       - integrations
+      x-stainless-ignore: true
   /integrations/connections/{connectionName}/models:
     get:
       description: Returns a list of all models for an integration connection.
@@ -4326,6 +4465,7 @@ paths:
       summary: List integration connection models
       tags:
       - integrations
+      x-stainless-ignore: true
   /integrations/connections/{connectionName}/models/{modelId}:
     get:
       description: Returns a model for an integration connection by ID.
@@ -4353,6 +4493,7 @@ paths:
       summary: Get integration connection model
       tags:
       - integrations
+      x-stainless-ignore: true
   /jobs:
     get:
       description: Returns all batch job definitions in the workspace. Each job can
@@ -4536,6 +4677,7 @@ paths:
         required: true
         schema:
           type: string
+        x-stainless-param: pathJobId
       requestBody:
         content:
           application/json:
@@ -4685,6 +4827,7 @@ paths:
       summary: List deployment regions
       tags:
       - locations
+      x-stainless-ignore: true
   /mcp/hub:
     get:
       description: Returns all pre-built MCP server definitions available in the Blaxel
@@ -4707,6 +4850,7 @@ paths:
       summary: List MCP Hub servers
       tags:
       - mcphub
+      x-stainless-ignore: true
   /models:
     get:
       description: Returns all model gateway endpoints configured in the workspace.
@@ -5670,6 +5814,7 @@ paths:
       summary: List service accounts
       tags:
       - service_accounts
+      x-stainless-ignore: true
     post:
       description: Creates a new service account for machine-to-machine authentication.
         Returns client ID and secret (secret is only shown once at creation). Use
@@ -5723,6 +5868,7 @@ paths:
       summary: Create service account
       tags:
       - service_accounts
+      x-stainless-ignore: true
   /service_accounts/{clientId}:
     delete:
       description: Permanently deletes a service account and invalidates all its credentials.
@@ -5765,6 +5911,7 @@ paths:
       summary: Delete service account
       tags:
       - service_accounts
+      x-stainless-ignore: true
     put:
       description: Updates a service account's name or description. Credentials (client
         ID/secret) cannot be changed.
@@ -5819,6 +5966,7 @@ paths:
       summary: Update service account
       tags:
       - service_accounts
+      x-stainless-ignore: true
   /service_accounts/{clientId}/api_keys:
     get:
       description: Returns all long-lived API keys created for a service account.
@@ -5840,6 +5988,7 @@ paths:
       summary: List service account API keys
       tags:
       - service_accounts
+      x-stainless-ignore: true
     parameters:
     - description: Service account client ID
       in: path
@@ -5881,6 +6030,7 @@ paths:
       summary: Create service account API key
       tags:
       - service_accounts
+      x-stainless-ignore: true
   /service_accounts/{clientId}/api_keys/{apiKeyId}:
     delete:
       description: Revokes an API key for a service account. The key becomes invalid
@@ -5896,6 +6046,7 @@ paths:
       summary: Revoke service account API key
       tags:
       - service_accounts
+      x-stainless-ignore: true
     parameters:
     - description: Service account client ID
       in: path
@@ -5975,6 +6126,7 @@ paths:
       summary: List workspace team members
       tags:
       - workspaces
+      x-stainless-ignore: true
     post:
       description: Invites a new team member to the workspace by email. The invitee
         will receive an email to accept the invitation before gaining access to workspace
@@ -6009,6 +6161,7 @@ paths:
       summary: Invite user to workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /users/{subOrEmail}:
     delete:
       description: Removes a user from the workspace (or revokes an invitation if
@@ -6033,6 +6186,7 @@ paths:
       summary: Remove user from workspace or revoke invitation
       tags:
       - workspaces
+      x-stainless-ignore: true
     put:
       description: Updates the role of a user in the workspace.
       operationId: UpdateWorkspaceUserRole
@@ -6073,6 +6227,7 @@ paths:
       summary: Update user role in workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /volume_templates:
     get:
       description: Returns all volume templates in the workspace. Volume templates
@@ -6836,6 +6991,7 @@ paths:
       summary: Create workspace tenant
       tags:
       - workspaces
+      x-stainless-ignore: true
   /workspaces/{workspaceName}:
     delete:
       description: Permanently deletes a workspace and ALL its resources (agents,
@@ -6887,6 +7043,7 @@ paths:
       summary: Delete workspace tenant
       tags:
       - workspaces
+      x-stainless-ignore: true
     get:
       description: Returns detailed information about a workspace including its display
         name, account ID, status, and runtime configuration.
@@ -6997,6 +7154,7 @@ paths:
       summary: Update workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /workspaces/{workspaceName}/decline:
     post:
       description: Declines an invitation to a workspace.
@@ -7022,6 +7180,7 @@ paths:
       summary: Decline invitation to workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /workspaces/{workspaceName}/join:
     post:
       description: Accepts an invitation to a workspace.
@@ -7049,6 +7208,7 @@ paths:
       summary: Accept invitation to workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /workspaces/{workspaceName}/leave:
     delete:
       description: Leaves a workspace.
@@ -7076,6 +7236,7 @@ paths:
       summary: Leave workspace
       tags:
       - workspaces
+      x-stainless-ignore: true
   /workspaces/availability:
     post:
       description: Check if a workspace is available.
@@ -7101,6 +7262,7 @@ paths:
       summary: Check workspace availability
       tags:
       - workspaces
+      x-stainless-ignore: true
 security:
 - OAuth2:
   - admin
