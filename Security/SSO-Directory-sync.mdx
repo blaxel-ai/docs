@@ -1,0 +1,119 @@
+---
+title: "SSO & Directory Sync"
+description: "Configure SAML Single Sign-On and automated user provisioning via Directory Sync (SCIM) for your organization."
+tag: "preview"
+---
+
+## Overview
+
+Blaxel supports enterprise-grade identity management through two features:
+
+- **SAML SSO**: Let your employees sign in through your existing identity provider (Okta, Azure AD, Google Workspace, OneLogin, etc.)
+- **Directory Sync (SCIM)**: Automatically provision and deprovision workspace memberships based on your identity provider's directory groups
+
+<Note>
+  Both features require the **SAML** feature flag on your account. [Contact us](https://blaxel.ai/contact) or email [support@blaxel.ai](mailto:support@blaxel.ai) to get access.
+</Note>
+
+## Prerequisites
+
+- Account administrator role
+- The `saml` feature flag enabled on your account
+- At least one **verified domain**: complete [Domain Capture](/Security/Domain-capture) first
+
+---
+
+## SAML SSO
+
+### How it works
+
+Once configured, users from your verified domain are redirected to your identity provider's login page instead of seeing the default Blaxel login options. After authenticating with your IdP, they are signed in to Blaxel automatically.
+
+When SAML is active, it becomes the **only** allowed authentication method for your domain. Other methods (Google, email, etc.) are locked out.
+
+### Set up SAML SSO
+
+<Steps>
+  <Step title="Open Identity & Access settings">
+    Go to **Account Settings** → **Identity & Access**.
+  </Step>
+  <Step title="Verify a domain">
+    If you haven't already, add and verify your company domain. See [Domain Capture](/Security/Domain-capture).
+  </Step>
+  <Step title="Open the SSO configuration portal">
+    Scroll to **SAML Identity Provider** and click **Configure SAML Provider**.
+
+    ![SAML Identity Provider section](/images/identity-access/saml-provider.png)
+
+    This opens the SSO Admin Portal in a new tab.
+  </Step>
+  <Step title="Configure your identity provider">
+    In the SSO portal, follow the step-by-step instructions for your IdP. We provide setup guides for all major providers including Okta, Azure AD, Google Workspace, and OneLogin.
+  </Step>
+  <Step title="Confirm the connection is active">
+    Return to **Account Settings** → **Identity & Access**. The **SAML Identity Provider** section shows **Active** with the provider name and connection name once setup is complete.
+  </Step>
+</Steps>
+
+### Single Logout (SLO)
+
+When a SAML user signs out of Blaxel, they are also signed out of your identity provider if your IdP supports Single Logout. No additional configuration is required on the Blaxel side.
+
+---
+
+## Directory Sync (SCIM)
+
+### How it works
+
+Directory Sync connects your identity provider's directory to Blaxel. When you add or remove users from groups in your IdP, Blaxel automatically adds or removes them from the corresponding workspaces.
+
+### Set up Directory Sync
+
+<Steps>
+  <Step title="Open Identity & Access settings">
+    Go to **Account Settings** → **Identity & Access**.
+  </Step>
+  <Step title="Open the Directory Sync portal">
+    Scroll to **Directory Sync (SCIM)** and click **Configure Directory Sync**.
+
+    ![Directory Sync section](/images/identity-access/directory-sync.png)
+
+    This opens the Admin Portal in a new tab.
+  </Step>
+  <Step title="Connect your directory">
+    In the portal, select your directory provider and follow the setup instructions.
+  </Step>
+  <Step title="Map groups to workspaces">
+    After connecting, configure group-to-workspace mappings so that members of each group are automatically provisioned into the right workspaces with the right roles.
+  </Step>
+</Steps>
+
+Once active, the **Directory Sync (SCIM)** section shows **Active** with the provider type and directory name.
+
+### Viewing membership source in the team table
+
+The **Workspace Settings → Team** table includes a **Source** column that shows how each member joined the workspace.
+
+![Team members table with Source column](/images/identity-access/team-source-column.png)
+
+| Source | Meaning |
+|--------|---------|
+| **Directory Sync** | Provisioned automatically by Directory Sync |
+| **Invitation** | Joined via an email invitation |
+| **Domain Capture** | Auto-joined because their email domain matched a domain policy |
+| **Local** | Added directly within Blaxel |
+
+### Deprovisioning
+
+When a user is removed from a synced group in your IdP, Blaxel automatically removes their workspace membership on the next sync event. Their Blaxel account is not deleted; only the workspace membership is removed.
+
+<Warning>
+  Avoid manually removing members who were provisioned by Directory Sync, as they will be re-added on the next sync. Manage membership through your identity provider instead.
+</Warning>
+
+---
+
+## Related
+
+- [Domain Capture](/Security/Domain-capture)
+- [Workspace Access Control](/Security/Workspace-access-control)

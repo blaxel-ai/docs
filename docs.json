@@ -185,6 +185,13 @@
                 ]
               },
               "Security/Access-tokens",
+              {
+                "group": "Identity & Access",
+                "pages": [
+                  "Security/Domain-capture",
+                  "Security/SSO-Directory-sync"
+                ]
+              },
               "Security/Quotas",
               "Model-Governance/Policies",
               {
