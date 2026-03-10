@@ -70,7 +70,7 @@ Your sandbox will now be ready to use with the Agent Drive preview.
 
 ## Create a drive
 
-Create a standalone drive by specifying a unique `name` and `region`. You can also optionally specify the size, display name and labels for the drive.
+Create a standalone drive by specifying a unique `name` and `region`. You can also optionally specify the display name and labels for the drive.
 
 <CodeGroup>
 
@@ -80,7 +80,6 @@ import { DriveInstance } from "@blaxel/core";
 const drive = await DriveInstance.create({
   name: "my-drive",
   region: "us-was-1",
-  size: "10", // optional; defaults to 10GB
   displayName: "My Project Drive", // optional; defaults to `name`
   labels: { env: "dev", project: "my-project" }, // optional; labels
 });
@@ -92,7 +91,6 @@ drive = await DriveInstance.create(
     {
         "name": "my-drive",
         "region": "us-was-1",
-        "size": 10,  # optional; defaults to 10GB
         "display_name": "My Project Drive", # optional; defaults to `name`
         "labels": {"env": "dev", "project": "my-project"},  # optional; labels
     }
@@ -109,7 +107,6 @@ You can also use `createIfNotExists()` to retrieve an existing drive or create a
 const drive = await DriveInstance.createIfNotExists({
   name: "my-drive",
   region: "us-was-1",
-  size: "10", // optional; defaults to 10GB
   displayName: "My Project Drive", // optional; defaults to `name`
   labels: { env: "dev", project: "my-project" }, // optional; labels
 });
@@ -121,7 +118,6 @@ drive = await DriveInstance.create_if_not_exists(
     {
         "name": "my-drive",
         "region": "us-was-1",
-        "size": 10,  # optional; defaults to 10GB
         "display_name": "My Project Drive", # optional; defaults to `name`
         "labels": {"env": "dev", "project": "my-project"},  # optional; labels
     }
@@ -290,7 +286,6 @@ import { SandboxInstance, DriveInstance } from "@blaxel/core";
 // 1. Create a drive
 const drive = await DriveInstance.createIfNotExists({
   name: "agent-storage",
-  size: "20",
   region: "us-was-1",
 });
 
@@ -332,7 +327,6 @@ async def main():
     drive = await DriveInstance.create_if_not_exists(
         {
             "name": "agent-storage",
-            "size": 20,
             "region": "us-was-1",
         }
     )
