@@ -1,0 +1,53 @@
+---
+title: 'Agent skills'
+description: 'Give coding agents sandbox management and migration skills.'
+---
+
+[Agent Skills](https://agentskills.io/specification) are instruction sets to extend coding agents with additional knowledge and tools. An agent can load these instructions into its context and use them to complete the tasks assigned to it.
+
+Blaxel offers open source Agent Skills to help coding agents autonomously spin up and manage sandboxes on Blaxel and migrate sandbox code from other providers to Blaxel.
+
+## Blaxel Skill
+
+The open source [Blaxel Skill](https://github.com/blaxel-ai/agent-skills) lets agents:
+
+- create perpetual sandboxes to run code and execute commands
+- start servers and generate URLs for real-time application previews
+- create and deploy AI agents
+- create and deploy MCP servers
+- deploy and run batch jobs
+
+Add the Blaxel Skill to your coding agent with the command below:
+
+```shell
+npx skills add blaxel-ai/agent-skills
+```
+
+You'll be prompted to select your coding agent and installation location.
+
+<Note>
+  The Blaxel Skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+</Note>
+
+<Tip>
+  See [examples of using the Blaxel Skill](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
+</Tip>
+
+## Blaxel Migration Skill
+
+The open source [Blaxel Migration Skill](https://github.com/blaxel-ai/agent-migration-skills) gives agents the knowledge they need to migrate sandbox code from other providers to Blaxel. It is currently able to migrate sandbox code from Daytona, E2B and Modal.
+
+Add the Blaxel Migration Skill to your coding agent with the command below, depending on which sandbox provider you wish to migrate from:
+
+```shell
+# migrate from Daytona
+npx skills add blaxel-ai/agent-migration-skills/daytona
+
+# migrate from E2B
+npx skills add blaxel-ai/agent-migration-skills/e2b
+
+# migrate from Modal
+npx skills add blaxel-ai/agent-migration-skills/modal
+```
+
+You'll be prompted to select your coding agent and installation location.
