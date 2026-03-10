@@ -93,6 +93,10 @@ You can automatically add new users to one or more workspaces the first time the
 Under **Auto-join**, toggle on any workspace to enable automatic membership for users from that domain.
 
 <Warning>
+  Users who are already logged in when domain capture is toggled on will not be automatically added to the workspace until they log out and log back in.
+</Warning>
+
+<Warning>
   If Directory Sync is also active, workspace membership may be managed by two systems simultaneously. Prefer using Directory Sync group mappings to control workspace membership when Directory Sync is configured.
 </Warning>
 
