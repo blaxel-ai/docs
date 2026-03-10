@@ -178,6 +178,13 @@
             "group": "Administration & security",
             "pages": [
               {
+                "group": "Identity & Access",
+                "pages": [
+                  "Security/Domain-policies",
+                  "Security/SSO-Directory-sync"
+                ]
+              },
+              {
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",

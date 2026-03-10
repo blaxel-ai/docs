@@ -1,0 +1,110 @@
+---
+title: "Domain Policies"
+description: "Verify your company's email domain and control which login methods your team can use."
+---
+
+## Overview
+
+Domain policies let you claim ownership of your organization's email domain (e.g. `acme.com`) and then decide exactly how users from that domain can sign in. You can restrict logins to specific methods — Google, SSO (SAML), or email passwordless — and automatically add new users to your workspaces when they first sign in.
+
+This feature is available to all account administrators at no extra cost.
+
+<Note>
+  SAML SSO and Directory Sync are enterprise features built on top of domain verification. See [SSO & Directory Sync](/Security/SSO-Directory-sync) if you need those.
+</Note>
+
+## Prerequisites
+
+- You must be an account administrator.
+- You must have access to your domain's DNS settings to add a TXT record.
+
+## Step 1: Add a domain
+
+<Steps>
+  <Step title="Open Identity & Access settings">
+    Go to **Account Settings** → **Identity & Access**.
+
+    ![Identity & Access settings page](/images/identity-access/identity-access-page.png)
+  </Step>
+  <Step title="Enter your domain">
+    Type your company's email domain (e.g. `acme.com`) in the input field and click **Add domain**.
+  </Step>
+</Steps>
+
+The domain appears in the list with a **Pending** status. It will remain inactive until you complete DNS verification.
+
+## Step 2: Verify via DNS TXT record
+
+To prove you own the domain, add a DNS TXT record provided by Blaxel.
+
+<Steps>
+  <Step title="Reveal the DNS record">
+    Click **Show DNS** on the pending domain row.
+
+    ![DNS TXT record panel](/images/identity-access/dns-verification.png)
+  </Step>
+  <Step title="Copy the record values">
+    You'll see two values:
+    - **Name** — the hostname to add the record to (e.g. `_blaxel-sso-verification.yourdomain.com`)
+    - **Value** — the verification string starting with `blaxel-sso-verify=...`
+
+    Click the copy icon next to each value.
+  </Step>
+  <Step title="Add the TXT record in your DNS provider">
+    Log in to your DNS provider (Cloudflare, Route 53, GoDaddy, etc.) and add a new TXT record with the name and value you copied.
+
+    DNS propagation typically takes a few minutes, but can take up to 48 hours in rare cases.
+  </Step>
+  <Step title="Trigger verification">
+    Return to **Account Settings** → **Identity & Access** and click **Verify** on the domain row.
+  </Step>
+</Steps>
+
+Once verified, the domain status changes to **Verified** (green checkmark) and additional options appear below it.
+
+<Warning>
+  If verification fails, double-check that the TXT record name and value are entered exactly as shown. Some DNS providers automatically append the root domain — confirm the full record name in your DNS provider's interface.
+</Warning>
+
+## Step 3: Set allowed auth methods
+
+After your domain is verified, you can restrict which login methods users from that domain can use.
+
+![Verified domain with allowed auth methods and auto-join](/images/identity-access/domain-verified.png)
+
+Click a method badge to toggle it on or off:
+
+| Method | Description |
+|--------|-------------|
+| **Google** | Sign in with a Google account |
+| **SSO (SAML)** | Sign in through your SAML identity provider (requires SSO setup) |
+| **Email (passwordless)** | Sign in via email magic link or OTP |
+
+If no methods are selected, there is no restriction — users can sign in with any available method.
+
+<Note>
+  If SAML SSO is configured and active on your account, **SSO (SAML)** becomes the only allowed method automatically and the other toggles are locked. See [SSO & Directory Sync](/Security/SSO-Directory-sync).
+</Note>
+
+## Step 4: Configure auto-join workspaces
+
+You can automatically add new users to one or more workspaces the first time they sign in with your verified domain.
+
+Under **Auto-join**, toggle on any workspace to enable automatic membership for users from that domain.
+
+<Warning>
+  If Directory Sync is also active, workspace membership may be managed by two systems simultaneously. Prefer using Directory Sync group mappings to control workspace membership when Directory Sync is configured.
+</Warning>
+
+## Removing a domain
+
+Click the trash icon on any domain row to remove it. You'll be asked to confirm before deletion.
+
+<Note>
+  A domain that is actively linked to a SAML SSO connection cannot be deleted until the SSO connection is removed first.
+</Note>
+
+## Related
+
+- [SSO & Directory Sync](/Security/SSO-Directory-sync)
+- [Workspace Access Control](/Security/Workspace-access-control)
