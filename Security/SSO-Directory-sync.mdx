@@ -1,14 +1,15 @@
 ---
 title: "SSO & Directory Sync"
 description: "Configure SAML Single Sign-On and automated user provisioning via Directory Sync (SCIM) for your organization."
+tag: "preview"
 ---
 
 ## Overview
 
 Blaxel supports enterprise-grade identity management through two features:
 
-- **SAML SSO** — Let your employees sign in through your existing identity provider (Okta, Azure AD, Google Workspace, OneLogin, etc.)
-- **Directory Sync (SCIM)** — Automatically provision and deprovision workspace memberships based on your identity provider's directory groups
+- **SAML SSO**: Let your employees sign in through your existing identity provider (Okta, Azure AD, Google Workspace, OneLogin, etc.)
+- **Directory Sync (SCIM)**: Automatically provision and deprovision workspace memberships based on your identity provider's directory groups
 
 <Note>
   Both features require the **SAML** feature flag on your account. Contact [support@blaxel.ai](mailto:support@blaxel.ai) to enable it.
@@ -18,7 +19,7 @@ Blaxel supports enterprise-grade identity management through two features:
 
 - Account administrator role
 - The `saml` feature flag enabled on your account
-- At least one **verified domain** — complete [Domain Policies](/Security/Domain-policies) first
+- At least one **verified domain**: complete [Domain Capture](/Security/Domain-capture) first
 
 ---
 
@@ -28,7 +29,7 @@ Blaxel supports enterprise-grade identity management through two features:
 
 Once configured, users from your verified domain are redirected to your identity provider's login page instead of seeing the default Blaxel login options. After authenticating with your IdP, they are signed in to Blaxel automatically.
 
-When SAML is active, it becomes the **only** allowed authentication method for your domain — other methods (Google, email, etc.) are locked out.
+When SAML is active, it becomes the **only** allowed authentication method for your domain. Other methods (Google, email, etc.) are locked out.
 
 ### Set up SAML SSO
 
@@ -37,22 +38,17 @@ When SAML is active, it becomes the **only** allowed authentication method for y
     Go to **Account Settings** → **Identity & Access**.
   </Step>
   <Step title="Verify a domain">
-    If you haven't already, add and verify your company domain. See [Domain Policies](/Security/Domain-policies).
+    If you haven't already, add and verify your company domain. See [Domain Capture](/Security/Domain-capture).
   </Step>
   <Step title="Open the SSO configuration portal">
     Scroll to **SAML Identity Provider** and click **Configure SAML Provider**.
 
     ![SAML Identity Provider section](/images/identity-access/saml-provider.png)
 
-    This opens the WorkOS Admin Portal in a new tab.
+    This opens the SSO Admin Portal in a new tab.
   </Step>
   <Step title="Configure your identity provider">
-    In the WorkOS portal, follow the step-by-step instructions for your IdP. WorkOS provides setup guides for all major providers including Okta, Azure AD, Google Workspace, and OneLogin.
-
-    You'll need to:
-    1. Create a new SAML application in your IdP
-    2. Copy the **ACS URL** and **Entity ID** from WorkOS into your IdP
-    3. Copy the **IdP SSO URL** and **X.509 certificate** from your IdP back into WorkOS
+    In the SSO portal, follow the step-by-step instructions for your IdP. We provide setup guides for all major providers including Okta, Azure AD, Google Workspace, and OneLogin.
   </Step>
   <Step title="Confirm the connection is active">
     Return to **Account Settings** → **Identity & Access**. The **SAML Identity Provider** section shows **Active** with the provider name and connection name once setup is complete.
@@ -82,10 +78,10 @@ Directory Sync connects your identity provider's directory to Blaxel. When you a
 
     ![Directory Sync section](/images/identity-access/directory-sync.png)
 
-    This opens the WorkOS Admin Portal in a new tab.
+    This opens the Admin Portal in a new tab.
   </Step>
   <Step title="Connect your directory">
-    In the WorkOS portal, select your directory provider and follow the setup instructions. WorkOS supports Okta SCIM, Azure AD SCIM, Google Directory, and more.
+    In the portal, select your directory provider and follow the setup instructions.
   </Step>
   <Step title="Map groups to workspaces">
     After connecting, configure group-to-workspace mappings so that members of each group are automatically provisioned into the right workspaces with the right roles.
@@ -109,15 +105,15 @@ The **Workspace Settings → Team** table includes a **Source** column that show
 
 ### Deprovisioning
 
-When a user is removed from a synced group in your IdP, Blaxel automatically removes their workspace membership on the next sync event. Their Blaxel account is not deleted — only the workspace membership is removed.
+When a user is removed from a synced group in your IdP, Blaxel automatically removes their workspace membership on the next sync event. Their Blaxel account is not deleted; only the workspace membership is removed.
 
 <Warning>
-  Avoid manually removing members who were provisioned by Directory Sync — they will be re-added on the next sync. Manage membership through your identity provider instead.
+  Avoid manually removing members who were provisioned by Directory Sync, as they will be re-added on the next sync. Manage membership through your identity provider instead.
 </Warning>
 
 ---
 
 ## Related
 
-- [Domain Policies](/Security/Domain-policies)
+- [Domain Capture](/Security/Domain-capture)
 - [Workspace Access Control](/Security/Workspace-access-control)

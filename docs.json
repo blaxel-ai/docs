@@ -178,13 +178,6 @@
             "group": "Administration & security",
             "pages": [
               {
-                "group": "Identity & Access",
-                "pages": [
-                  "Security/Domain-policies",
-                  "Security/SSO-Directory-sync"
-                ]
-              },
-              {
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",
@@ -192,6 +185,13 @@
                 ]
               },
               "Security/Access-tokens",
+              {
+                "group": "Identity & Access",
+                "pages": [
+                  "Security/Domain-capture",
+                  "Security/SSO-Directory-sync"
+                ]
+              },
               "Security/Quotas",
               "Model-Governance/Policies",
               {
