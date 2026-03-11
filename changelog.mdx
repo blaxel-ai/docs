@@ -5,6 +5,17 @@ title: 'Changelog'
 description: 'Keep track of changes and updates on Blaxel.'
 
 ---
+<Update label="2026-03-11">
+
+### SDK no longer supports calling MCP over WebSocket
+
+The latest SDK versions no longer support calling MCP servers over WebSocket transport. Use [HTTP Stream](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) when calling MCP servers from your application.
+
+- **TypeScript SDK**: WebSocket support removed in 0.2.73
+- **Python SDK**: WebSocket support removed in 0.2.45
+
+</Update>
+
 <Update label="2026-03-09">
 
 ### New Blaxel Migration Skills
