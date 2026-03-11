@@ -2229,8 +2229,8 @@ components:
         terminatedRetention:
           type: string
           description: Duration to keep the sandbox record after termination for log
-            access (e.g., '1h', '24h', '7d'). Defaults to 5m. Subject to maximum
-            quota limits.
+            access (e.g., '1h', '24h', '7d'). Defaults to 5m. Subject to maximum quota
+            limits.
           example: 24h
     SandboxNetwork:
       type: object
@@ -2757,7 +2757,7 @@ components:
           type: string
           description: Workspace user role
         source:
-          type: enum
+          type: string
           description: Source of the user provisioning
           enum:
           - directory_sync
