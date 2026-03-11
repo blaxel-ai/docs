@@ -16,6 +16,10 @@ The format of Blaxel's configuration file is described below.
 # defaults to the directory name
 # name = "my-resource"
 
+# deployment region (optional, for resource type="agent" and resource type="function")
+# see Infrastructure > Regions for available region codes
+# region = "us-pdx-1"
+
 # public access to resource (only for resource type="agent")
 # possible values: [true, false]
 # defaults to false
@@ -38,8 +42,11 @@ The format of Blaxel's configuration file is described below.
 
 # environment variables (optional)
 # [env]
-# key-value paris
+# key-value pairs
 # MY_VAR = "my-value"
+# supports variable interpolation and default values (see below)
+# MY_VAR = "${MY_VAR:default-value}"
+# MY_SECRET = "${secrets.MY_SECRET:fallback}"
 
 # runtime configuration (optional)
 # [runtime]
@@ -97,3 +104,40 @@ The format of Blaxel's configuration file is described below.
 # callback URL (only for trigger type="http-async")
 # callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
 ```
+
+## Variable interpolation
+
+You can reference environment variables and secrets directly in `blaxel.toml` values using variable interpolation syntax. This works in both the `[env]` section and in top-level configuration fields such as `name`, `region`, `workspace`, `type`, `protocol`, and `directory`.
+
+### Syntax
+
+| Pattern | Description |
+|---------|-------------|
+| `$KEY` | Resolves to the value of environment variable `KEY` |
+| `${KEY}` | Same as above, with braces |
+| `${KEY:default}` | Resolves to `KEY` if set, otherwise uses `default` |
+| `$secrets.KEY` | Resolves from environment, then from loaded secrets |
+| `${secrets.KEY}` | Same as above, with braces |
+| `${secrets.KEY:default}` | Resolves from environment or secrets, falls back to `default` |
+
+### Examples
+
+```toml blaxel.toml
+# Use a default region, overridable via environment variable
+region = "${BL_REGION:us-pdx-1}"
+
+# Reference a secret with a fallback
+[env]
+API_URL = "${secrets.API_URL:https://api.example.com}"
+DB_HOST = "${DB_HOST:localhost}"
+```
+
+The resolution order is:
+
+1. **Environment variables** (from your shell or `.env` file) are checked first.
+2. **Loaded secrets** (for `$secrets.*` patterns) are checked next.
+3. **Default value** (the part after `:`) is used if neither source provides a value.
+
+If no default is provided and the variable is not found, Blaxel prints a warning and keeps the original reference string unchanged.
+
+<Tip>This is useful for sharing a single `blaxel.toml` across environments (dev, staging, production) by setting different values through environment variables or `.env` files.</Tip>

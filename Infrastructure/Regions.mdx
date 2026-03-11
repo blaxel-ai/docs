@@ -39,7 +39,19 @@ This is the case of:
 
 **When deploying**
 
-For these types of resources, you don't specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
+For these types of resources, you can optionally specify a preferred deployment region by setting the `region` field in your `blaxel.toml`:
+
+```toml blaxel.toml
+region = "us-pdx-1"
+```
+
+You can also use variable interpolation to make the region configurable per environment:
+
+```toml blaxel.toml
+region = "${BL_REGION:us-pdx-1}"
+```
+
+If no region is specified, the resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
 
 **When requesting**
 
