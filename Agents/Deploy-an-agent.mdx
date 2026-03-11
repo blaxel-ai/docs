@@ -171,10 +171,54 @@ memory = 1024
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
+- `region` field pins the agent to a specific [deployment region](../Infrastructure/Regions). This is required when attaching volumes (see below).
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: timeout (in s) or memory (in MB) to allocate.
+- `[[volumes]]` section attaches persistent [volumes](../Sandboxes/Volumes) to the agent. See [Attach volumes to an agent](#attach-volumes-to-an-agent) below.
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+
+### Pin an agent to a region
+
+By default, agents are globally distributed across all regions allowed by your [deployment policies](../Model-Governance/Policies). You can pin an agent to a specific region by adding the `region` field to your `blaxel.toml`:
+
+```toml blaxel.toml
+name = "my-agent"
+type = "agent"
+region = "us-pdx-1"
+```
+
+See [Regions](../Infrastructure/Regions) for the list of available region codes.
+
+<Warning>Pinning an agent to a region means it will only run in that region. Requests will not be routed to other regions, even if the selected region experiences higher latency for the caller.</Warning>
+
+### Attach volumes to an agent
+
+You can attach persistent [volumes](../Sandboxes/Volumes) to an agent so it can read and write files that persist across executions. This is useful for caching data, storing model artifacts, or sharing files between runs.
+
+<Warning>To attach a volume to an agent, the agent **must be pinned to the same region** as the volume. Volumes are regional resources, and an agent must run in the same region to access them.</Warning>
+
+Add a `region` and `[[volumes]]` section to your `blaxel.toml`:
+
+```toml blaxel.toml
+name = "my-agent"
+type = "agent"
+region = "us-pdx-1"
+
+[[volumes]]
+name = "my-volume"
+mountPath = "/data"
+```
+
+Each volume entry requires:
+
+| Field | Description |
+|-------|-------------|
+| `name` | The name of an existing volume in your workspace |
+| `mountPath` | The directory path inside the agent where the volume will be mounted |
+
+The volume must already exist before deploying. You can create one with the SDK or CLI (see [Volumes](../Sandboxes/Volumes)).
+
 
 ### Deployment manifests (advanced usage)
 

@@ -39,7 +39,13 @@ This is the case of:
 
 **When deploying**
 
-For these types of resources, you don't specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
+For these types of resources, you don't need to specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
+
+However, you can optionally **pin an agent or MCP server to a specific region** by setting the `region` field in your [`blaxel.toml`](/deployment-reference). This is required when you want to [attach volumes to an agent](../Agents/Deploy-an-agent#attach-volumes-to-an-agent), since volumes are regional resources and the agent must run in the same region.
+
+```toml blaxel.toml
+region = "us-pdx-1"
+```
 
 **When requesting**
 
