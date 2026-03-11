@@ -46,10 +46,20 @@ Blaxel's agent template uses autoscaling to keep at least one OpenClaw instance 
 1. Update the `.env` file with the following configuration values:
 
     - `OPENCLAW_GATEWAY_TOKEN`: Set the token to authenticate with the OpenClaw Gateway. Use a random hard-to-guess value.
-    - `OPENCLAW_MODEL`: Set the model to use, such as `anthropic/claude-opus-4-6`.
-    - `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` or `OPENAI_API_KEY`: Set the model API key.
+    - `OPENCLAW_MODEL` (optional): Set the model to use in `provider/model` format. Defaults to `anthropic/claude-opus-4-6` if not set.
+    - `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` or `OPENAI_API_KEY`: Set the model API key matching your chosen model provider.
 
     You can add other variables that your OpenClaw agent may need. These variables will be automatically stored in Blaxel's secret manager on deployment.
+
+    <Tip>
+      You can also set `BL_REGION` to choose the deployment region (defaults to `us-pdx-1`). This controls where both the agent and its persistent storage volume are provisioned.
+    </Tip>
+
+### Persistent storage
+
+The template includes a 2 GB persistent volume mounted at `/root/.openclaw`. This volume preserves OpenClaw's data (conversation history, configuration, and agent state) across restarts and redeployments.
+
+The volume is automatically provisioned in the same region as the agent when you run `bl deploy`. No additional configuration is required.
 
 ### Deploy the agent
 
