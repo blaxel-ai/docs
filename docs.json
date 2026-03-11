@@ -64,6 +64,12 @@
             ]
           },
           {
+            "group": "Agent Drive",
+            "pages": [
+              "Agent-drive/Overview"
+            ]
+          },
+          {
             "group": "Batch Jobs",
             "pages": [
               "Jobs/Overview",
