@@ -57,7 +57,7 @@ Blaxel's agent template uses autoscaling to keep at least one OpenClaw instance 
 
 ### Persistent storage
 
-The template includes a 4 GB persistent volume mounted at `/root/.openclaw`. This volume preserves OpenClaw's data (conversation history, configuration, and agent state) across restarts and redeployments.
+The template includes a 2 GB persistent volume mounted at `/root/.openclaw`. This volume preserves OpenClaw's data (conversation history, configuration, and agent state) across restarts and redeployments.
 
 The volume is automatically provisioned in the same region as the agent when you run `bl deploy`. No additional configuration is required.
 

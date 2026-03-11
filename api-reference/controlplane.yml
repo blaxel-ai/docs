@@ -74,6 +74,11 @@ components:
             Only available for mk3 generation.
           example: false
           default: false
+        region:
+          type: string
+          description: Region where the agent should be deployed (e.g. us-pdx-1, eu-lon-1).
+            Required when volumes are attached.
+          example: us-pdx-1
         repository:
           $ref: '#/components/schemas/Repository'
         revision:
@@ -82,6 +87,8 @@ components:
           $ref: '#/components/schemas/AgentRuntime'
         triggers:
           $ref: '#/components/schemas/Triggers'
+        volumes:
+          $ref: '#/components/schemas/VolumeAttachments'
     ApiKey:
       type: object
       description: Long-lived API key for accessing Blaxel
@@ -707,6 +714,12 @@ components:
             Only available for mk3 generation.
           example: false
           default: false
+        region:
+          type: string
+          description: Region where the function should be deployed (e.g. us-pdx-1,
+            eu-lon-1). If not specified, the function is deployed based on policy
+            locations.
+          example: us-pdx-1
         revision:
           $ref: '#/components/schemas/RevisionConfiguration'
         runtime:
@@ -2213,6 +2226,12 @@ components:
             whichever condition is met first triggers the action.
           items:
             $ref: '#/components/schemas/ExpirationPolicy'
+        terminatedRetention:
+          type: string
+          description: Duration to keep the sandbox record after termination for log
+            access (e.g., '1h', '24h', '7d'). Defaults to 5m. Subject to maximum
+            quota limits.
+          example: 24h
     SandboxNetwork:
       type: object
       description: Network configuration for a sandbox including egress IP binding.
