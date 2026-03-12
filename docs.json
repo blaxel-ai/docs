@@ -41,7 +41,6 @@
               "Sandboxes/Filesystem",
               "Sandboxes/MCP",
               "Sandboxes/Codegen-tools",
-              "Sandboxes/Skills",
               "Sandboxes/Log-streaming",
               {
                 "group": "Ports, previews & sessions",
