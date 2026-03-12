@@ -21,6 +21,11 @@ The format of Blaxel's configuration file is described below.
 # defaults to false
 # public = false
 
+# deployment region (optional, for resource type="agent" or resource type="function")
+# pins the resource to a specific region instead of global distribution
+# required when attaching volumes to an agent
+# region = "us-pdx-1"
+
 # build configuration (optional)
 # [build]
 # automatic image slimming
@@ -55,7 +60,9 @@ The format of Blaxel's configuration file is described below.
 # maximum number of retries
 # maxRetries=0
 
-# volumes for sandboxes (optional)
+# volumes (optional, for resource type="agent" and resource type="sandbox")
+# attaches persistent storage to the resource
+# the resource must be pinned to the same region as the volume
 # [[volumes]]
 # volume name
 # name = "my-volume"
@@ -63,10 +70,10 @@ The format of Blaxel's configuration file is described below.
 # volume mount path
 # mountPath = "/data"
 
-# volume templates directory
+# volume templates directory (only for resource type="volume-template")
 # directory = "."
 
-# volume default size (MB)
+# volume default size in MB (only for resource type="volume-template")
 # defaultSize = 1024
 
 # job trigger (optional)

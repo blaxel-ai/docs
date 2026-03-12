@@ -63,6 +63,12 @@
             ]
           },
           {
+            "group": "Agent Drive",
+            "pages": [
+              "Agent-drive/Overview"
+            ]
+          },
+          {
             "group": "Batch Jobs",
             "pages": [
               "Jobs/Overview",
@@ -185,6 +191,13 @@
                 ]
               },
               "Security/Access-tokens",
+              {
+                "group": "Identity & Access",
+                "pages": [
+                  "Security/Domain-capture",
+                  "Security/SSO-Directory-sync"
+                ]
+              },
               "Security/Quotas",
               "Model-Governance/Policies",
               {
