@@ -36,7 +36,7 @@ import { VolumeInstance } from "@blaxel/core";
 const volume = await VolumeInstance.create({
   name: "my-volume",
   size: 2048,          // in MB
-  region: "us-pdx-1",   // if not specified, Blaxel will choose a default region
+  region: "us-pdx-1",
 });
 ```
 
@@ -46,7 +46,7 @@ from blaxel.core import VolumeInstance
 volume = await VolumeInstance.create({
   "name": "my-volume",
   "size": 2048,          # in MB
-  "region": "us-pdx-1",   # if not specified, Blaxel will choose a default region
+  "region": "us-pdx-1",
 })
 ```
 </CodeGroup>
@@ -57,14 +57,16 @@ You can create a volume from a [template](Volumes-templates) to automatically pr
 ```typescript TypeScript
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
-  template: "mytemplate:1"  // Use template-name:revision or template-name:latest
+  template: "mytemplate:1",  // Use template-name:revision or template-name:latest
+  region: "us-pdx-1",
 });
 ```
 
 ```python Python
 volume = await VolumeInstance.create_if_not_exists({
   "name": "myvolume",
-  "template": "mytemplate:1"  # Use template-name:revision or template-name:latest
+  "template": "mytemplate:1",  # Use template-name:revision or template-name:latest
+  "region": "us-pdx-1",
 })
 ```
 </CodeGroup>

@@ -24,7 +24,7 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/nextjs:latest",
   memory: 4096,
-  region: "us-pdx-1",     // Must be the same region as the created volume
+  region: "us-pdx-1",
   volumes: [{
     name: "my-volume",     // Must match the name of the created volume
     mountPath: "/app",     // Directory inside the sandbox
@@ -41,7 +41,7 @@ sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
   "image": "blaxel/nextjs:latest",
   "memory": 4096,
-  "region": "us-pdx-1",     # Must be the same region as the created volume
+  "region": "us-pdx-1",
   "volumes": [{
     "name": "my-volume",     # Must match the name of the created volume
     "mount_path": "/app",    # Directory inside the sandbox
@@ -68,7 +68,8 @@ import { VolumeInstance } from "@blaxel/core";
 
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
-  template: "mytemplate:latest"
+  template: "mytemplate:latest",
+  region: "us-pdx-1",
 });
 ```
 
@@ -77,7 +78,8 @@ from blaxel.core import VolumeInstance
 
 volume = await VolumeInstance.create_if_not_exists({
   "name": "myvolume",
-  "template": "mytemplate:latest"
+  "template": "mytemplate:latest",
+  "region": "us-pdx-1",
 })
 ```
 </CodeGroup>
@@ -91,7 +93,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/nextjs:latest",
-  region: "us-pdx-1",     // Must match the volume's region
+  region: "us-pdx-1",
   volumes: [{
     name: "myvolume",
     mountPath: "/app"
@@ -105,7 +107,7 @@ from blaxel.core import SandboxInstance
 sandbox = await SandboxInstance.create({
   "name": "my-sandbox",
   "image": "blaxel/nextjs:latest",
-  "region": "us-pdx-1",     # Must match the volume's region
+  "region": "us-pdx-1",
   "volumes": [{
     "name": "myvolume",
     "mount_path": "/app"
