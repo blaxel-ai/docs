@@ -1,0 +1,93 @@
+---
+
+title: 'Volumes'
+
+description: 'Attach persistent storage to your agents.'
+
+---
+
+Blaxel Volumes provide persistent storage that persists across agent redeployments. For full documentation on creating, deleting, resizing, and listing volumes, see the [Volumes overview](/Volumes/Overview).
+
+## Attach a volume to an agent
+
+First, create a volume:
+
+```bash
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+
+To use a volume with an agent, add a `[[volumes]]` entry to your `blaxel.toml` and pin the agent to a specific region matching the volume's region.
+
+```toml
+# blaxel.toml
+
+type = "agent"
+name = "my-agent"
+
+# Required when attaching volumes — the agent must be in the same region as the volume
+region = "us-pdx-1"
+
+[[volumes]]
+name = "my-volume"      # Must match the name of the created volume
+mountPath = "/data"     # Directory inside the agent container
+```
+
+Then deploy (or redeploy) your agent:
+
+```bash
+bl deploy
+```
+
+The volume will be mounted at the specified path inside your agent's container. Any files written there will persist across redeployments.
+
+## Use volume templates with agents
+
+Volume templates let you create pre-populated volumes to attach to your agents. For more information on creating and managing volume templates, see the [Volume templates documentation](/Volumes/Volumes-templates).
+
+First, create a volume from your template:
+
+<CodeGroup>
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  region: "us-pdx-1"    // Must match the agent's region
+});
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "region": "us-pdx-1"    # Must match the agent's region
+})
+```
+</CodeGroup>
+
+Then reference the volume in your `blaxel.toml` and deploy:
+
+```toml
+# blaxel.toml
+
+type = "agent"
+region = "us-pdx-1"    # Must match the volume's region
+
+[[volumes]]
+name = "myvolume"
+mountPath = "/data"
+```
+
+```bash
+bl deploy
+```

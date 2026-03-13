@@ -6,7 +6,7 @@ description: 'Pre-populate volumes with files for faster environment setup.'
 
 ---
 
-Volume templates let you create **pre-populated [volumes](Volumes) with files and directories**, improving copy performance by up to 90% compared to `cp -r`. Use them to build development environments with pre-installed dependencies, datasets, or application code.
+Volume templates let you create **pre-populated [volumes](Overview) with files and directories**, improving copy performance by up to 90% compared to `cp -r`. Use them to build development environments with pre-installed dependencies, datasets, or application code.
 
 ## Create a volume template
 
@@ -26,7 +26,7 @@ directory = "."          # Root of your volume - everything at and below this le
 defaultSize = 2048       # Default size in MB for volumes created from this template
 ```
 
-The `directory` field specifies which folder’s contents will be included in the template:
+The `directory` field specifies which folder's contents will be included in the template:
 - `"."` (default) - Includes everything in the template folder
 - `"app"` - Includes only files inside the `app` subdirectory
 - `"src/data"` - Includes only files inside the `src/data` subdirectory
@@ -79,7 +79,6 @@ Override the default volume size if needed:
 
 <CodeGroup>
 ```typescript TypeScript
-// Example with a custom size
 const volume = await VolumeInstance.createIfNotExists({
   name: "myvolume",
   template: "mytemplate:latest",
@@ -88,7 +87,6 @@ const volume = await VolumeInstance.createIfNotExists({
 ```
 
 ```python Python
-# Example with a custom size
 volume = await VolumeInstance.create_if_not_exists({
   "name": "myvolume",
   "template": "mytemplate:latest",
@@ -117,7 +115,7 @@ bl get volumetemplate mytemplate
 
 Volumes must be provisioned with sufficient space for the template content. If a volume is smaller than the template data, creation will fail with an error.
 
-Always add a delta (extra space) to your volume size beyond the template content size. This ensures you can add files to the volume after it’s attached to a sandbox. We recommend provisioning at least 20-30% extra space.
+Always add a delta (extra space) to your volume size beyond the template content size. This ensures you can add files to the volume after it's attached. We recommend provisioning at least 20-30% extra space.
 
 To check your template directory size before deployment:
 
@@ -155,10 +153,21 @@ To delete a volume template and all its associated revisions:
 bl delete volumetemplate mytemplate
 ```
 
-Deleting a template does not affect existing volumes created from that template. However, you won’t be able to create new volumes from deleted templates.
+Deleting a template does not affect existing volumes created from that template. However, you won't be able to create new volumes from deleted templates.
 
-## **Limitations**
+## Limitations
 
 Volume templates **do not handle symlinks or hardlinks**, which may cause unexpected behavior. In addition, symlinks pointing outside the template (for example, `symlink -> /etc/hosts`) are explicitly forbidden. In these cases, use a copy instead.
 
 As a result, using package managers like `pnpm` or `uv` may also behave unexpectedly if dependencies are vendored within the template.
+
+## Use volume templates with sandboxes and agents
+
+<CardGroup cols={2}>
+  <Card title="Volume templates with sandboxes" icon="box" href="/Sandboxes/Volumes#use-volume-templates-with-sandboxes">
+    Create and attach pre-populated volumes to sandboxes.
+  </Card>
+  <Card title="Volume templates with agents" icon="robot" href="/Agents/Volumes#use-volume-templates-with-agents">
+    Create and attach pre-populated volumes to agents.
+  </Card>
+</CardGroup>
