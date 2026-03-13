@@ -51,13 +51,7 @@
                   "Sandboxes/Standby-control"
                 ]
               },
-              {
-                "group": "Volumes",
-                "pages": [
-                  "Sandboxes/Volumes",
-                  "Sandboxes/Volumes-templates"
-                ]
-              },
+              "Sandboxes/Volumes",
               "Sandboxes/Templates",
               "Sandboxes/best-practices"
             ]
@@ -124,13 +118,7 @@
               "Agents/Variables-and-secrets",
               "Agents/Asynchronous-triggers",
               "Agents/Integrate-in-apps",
-              {
-                "group": "Volumes",
-                "pages": [
-                  "Agents/Volumes",
-                  "Agents/Volumes-templates"
-                ]
-              }
+              "Agents/Volumes"
             ]
           },
           {

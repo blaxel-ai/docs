@@ -34,6 +34,47 @@ bl deploy
 
 The volume will be mounted at the specified path inside your agent's container. Any files written there will persist across redeployments.
 
-<Card title="Use volume templates with agents" icon="database" href="/Agents/Volumes-templates">
-  Pre-populate volumes with files before attaching them to an agent.
-</Card>
+## Use volume templates with agents
+
+Volume templates let you create pre-populated volumes to attach to your agents. For more information on creating and managing volume templates, see the [Volume templates documentation](/Volumes/Volumes-templates).
+
+First, create a volume from your template:
+
+<CodeGroup>
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  region: "us-pdx-1"    // Must match the agent's region
+});
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "region": "us-pdx-1"    # Must match the agent's region
+})
+```
+</CodeGroup>
+
+Then reference the volume in your `blaxel.toml` and deploy:
+
+```toml
+# blaxel.toml
+
+type = "agent"
+region = "us-pdx-1"    # Must match the volume's region
+
+[[volumes]]
+name = "myvolume"
+mountPath = "/data"
+```
+
+```bash
+bl deploy
+```
