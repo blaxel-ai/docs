@@ -69,6 +69,13 @@
             ]
           },
           {
+            "group": "Volumes",
+            "pages": [
+              "Volumes/Overview",
+              "Volumes/Volumes-templates"
+            ]
+          },
+          {
             "group": "Batch Jobs",
             "pages": [
               "Jobs/Overview",
@@ -116,7 +123,14 @@
               "Agents/Query-agents",
               "Agents/Variables-and-secrets",
               "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps"
+              "Agents/Integrate-in-apps",
+              {
+                "group": "Volumes",
+                "pages": [
+                  "Agents/Volumes",
+                  "Agents/Volumes-templates"
+                ]
+              }
             ]
           },
           {
