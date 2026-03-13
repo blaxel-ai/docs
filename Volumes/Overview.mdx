@@ -48,6 +48,16 @@ volume = await VolumeInstance.create({
   "size": 2048,          # in MB
   "region": "us-pdx-1",
 })
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
 ```
 </CodeGroup>
 
@@ -68,6 +78,17 @@ volume = await VolumeInstance.create_if_not_exists({
   "template": "mytemplate:1",  # Use template-name:revision or template-name:latest
   "region": "us-pdx-1",
 })
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: myvolume
+spec:
+  region: us-pdx-1
+  template: "mytemplate:1"
+EOF
 ```
 </CodeGroup>
 
@@ -90,6 +111,20 @@ volume = await VolumeInstance.create({
   "region": "us-pdx-1",
   "labels": {"env": "test", "project": "12345"},
 })
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+  labels:
+    env: test
+    project: 12345
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
 ```
 </CodeGroup>
 
