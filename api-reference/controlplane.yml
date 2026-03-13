@@ -341,8 +341,7 @@ components:
     Drive:
       type: object
       description: Drive providing persistent storage that can be attached to agents,
-        functions, and sandboxes. Drives are backed by SeaweedFS buckets and can be
-        mounted at runtime via the sbx API.
+        functions, and sandboxes. Drives can be mounted at runtime via the sbx API.
       properties:
         events:
           $ref: '#/components/schemas/CoreEvents'
@@ -3394,8 +3393,8 @@ paths:
       tags:
       - drives
     post:
-      description: Creates a new drive in the workspace. Drives are backed by SeaweedFS
-        buckets and can be mounted at runtime to sandboxes.
+      description: Creates a new drive in the workspace. Drives can be buckets and
+        can be mounted at runtime to sandboxes.
       operationId: CreateDrive
       requestBody:
         content:
@@ -3521,7 +3520,7 @@ paths:
     post:
       description: Issues a short-lived JWT access token scoped to a specific drive.
         The token can be used as Bearer authentication for direct S3 operations against
-        the drive's SeaweedFS bucket.
+        the drive's bucket.
       operationId: CreateDriveAccessToken
       parameters:
       - in: path
@@ -3560,8 +3559,8 @@ paths:
   /drives/jwks.json:
     get:
       description: Returns the JSON Web Key Set containing the Ed25519 public key
-        used to verify drive access tokens. SeaweedFS or other S3-compatible storage
-        can use this endpoint to validate Bearer tokens.
+        used to verify drive access tokens. Other S3-compatible storage can use this
+        endpoint to validate Bearer tokens.
       operationId: GetDriveJWKS
       responses:
         "200":
