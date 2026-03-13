@@ -10,6 +10,19 @@ Blaxel Volumes provide persistent storage that persists across agent redeploymen
 
 ## Attach a volume to an agent
 
+First, create a volume:
+
+```bash
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+
 To use a volume with an agent, add a `[[volumes]]` entry to your `blaxel.toml` and pin the agent to a specific region matching the volume's region.
 
 ```toml
