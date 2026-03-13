@@ -1,0 +1,39 @@
+---
+
+title: 'Volumes'
+
+description: 'Attach persistent storage to your agents.'
+
+---
+
+Blaxel Volumes provide persistent storage that persists across agent redeployments. For full documentation on creating, deleting, resizing, and listing volumes, see the [Volumes overview](/Volumes/Overview).
+
+## Attach a volume to an agent
+
+To use a volume with an agent, add a `[[volumes]]` entry to your `blaxel.toml` and pin the agent to a specific region matching the volume's region.
+
+```toml
+# blaxel.toml
+
+type = "agent"
+name = "my-agent"
+
+# Required when attaching volumes — the agent must be in the same region as the volume
+region = "us-pdx-1"
+
+[[volumes]]
+name = "my-volume"      # Must match the name of the created volume
+mountPath = "/data"     # Directory inside the agent container
+```
+
+Then deploy (or redeploy) your agent:
+
+```bash
+bl deploy
+```
+
+The volume will be mounted at the specified path inside your agent's container. Any files written there will persist across redeployments.
+
+<Card title="Use volume templates with agents" icon="database" href="/Agents/Volumes-templates">
+  Pre-populate volumes with files before attaching them to an agent.
+</Card>

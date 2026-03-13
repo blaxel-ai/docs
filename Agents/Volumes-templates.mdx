@@ -1,0 +1,52 @@
+---
+
+title: 'Volume templates'
+
+description: 'Pre-populate volumes with files before attaching them to agents.'
+
+---
+
+Volume templates let you create pre-populated volumes to attach to your agents. For full documentation on creating and managing volume templates, see the [Volume templates overview](/Volumes/Volumes-templates).
+
+## Use volume templates with agents
+
+First, create a volume from your template:
+
+<CodeGroup>
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  region: "us-pdx-1"    // Must match the agent's region
+});
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "region": "us-pdx-1"    # Must match the agent's region
+})
+```
+</CodeGroup>
+
+Then reference the volume in your `blaxel.toml` and deploy:
+
+```toml
+# blaxel.toml
+
+type = "agent"
+region = "us-pdx-1"    # Must match the volume's region
+
+[[volumes]]
+name = "myvolume"
+mountPath = "/data"
+```
+
+```bash
+bl deploy
+```
