@@ -214,7 +214,7 @@
                 "pages": [
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
-                  "Infrastructure/Dedicated-egress-IPs 🆕",
+                  "Infrastructure/Dedicated-egress-gateways 🆕",
                   "Infrastructure/Custom-domains"
                 ]
               }
