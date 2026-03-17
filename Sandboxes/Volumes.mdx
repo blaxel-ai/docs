@@ -6,7 +6,11 @@ description: 'Attach persistent storage to your sandboxes.'
 
 ---
 
-Blaxel Volumes provide persistent storage that survives sandbox destruction and recreation. For full documentation on creating, deleting, resizing, and listing volumes, see the [Volumes overview](/Volumes/Overview).
+Blaxel Volumes provide persistent storage that survives sandbox destruction and recreation.
+
+<Tip>
+  For full documentation on creating, deleting, resizing, and listing volumes, see the [Volumes overview](/Volumes/Overview).
+</Tip>
 
 ## Attach a volume to a sandbox
 
@@ -115,3 +119,12 @@ sandbox = await SandboxInstance.create({
 })
 ```
 </CodeGroup>
+
+<CardGroup cols={2}>
+  <Card title="Learn more about volumes" icon="box" href="/Volumes/Overview">
+    Learn how to create and manage volumes.
+  </Card>
+  <Card title="Learn more about volume templates" icon="box" href="/Volumes/Volumes-templates">
+    Pre-populate volumes with files for faster environment setup.
+  </Card>
+</CardGroup>
