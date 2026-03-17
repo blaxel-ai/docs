@@ -1,18 +1,21 @@
 ---
-
 title: 'Dedicated egress gateways'
-
-description: 'Attach dedicated egress gateways to your workloads.'
-
+description: 'Attach dedicated egress IP address to your workloads.'
+tag: 'private preview'
 ---
 
 <Note>
-  This feature is currently in private alpha preview. It is currently only available for sandboxes in the `us-was-1` region. During this phase, IP address assignment is only possible at sandbox creation time, and removal is only possible by deleting the corresponding sandbox. For more information, [contact us on Discord](https://discord.com/channels/1333316050330058895/1333319876831612928) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20dedicated%20egress%20IPs%20for%20the%20following%20use%20case%3A ).
+  This feature is currently in private preview with the following limitations
+  - It is only available in the `us-was-1` region.
+  - It is only available for sandboxes.
+  - Egress gateway assignment is only possible at sandbox creation time.
+  - Egress gateway removal is only possible by deleting the corresponding sandbox.
+  For more information, [contact us on Discord](https://discord.com/channels/1333316050330058895/1333319876831612928) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20dedicated%20egress%20IPs%20for%20the%20following%20use%20case%3A ).
 </Note>
 
 Dedicated egress gateways enable customers to exclusively attach IP addresses to sandboxes within their workspace. This makes it possible to whitelist outbound traffic from Blaxel's systems for use in downstream providers and eliminates the need for workarounds such as self-hosted proxy servers or VPNs.
 
-A single egress gateway supports up to 32,000 sandboxes. It is also possible to group IP addresses into pools to automatically load-balance outbound traffic for high-demand workloads.
+A single egress IP address supports up to 32,000 sandboxes. It is also possible to group IP addresses into pools to automatically load-balance outbound traffic for high-demand workloads.
 
 Sandboxes that do not have a dedicated egress gateway will use the shared [public IP addresses](./Regions#public-ip-addresses) instead.
 
@@ -20,24 +23,20 @@ Sandboxes that do not have a dedicated egress gateway will use the shared [publi
 
 Egress gateway configuration takes place from the [Blaxel Console](https://app.blaxel.ai).
 
-- Navigate to **Network** > **Egress IPs**.
+- Navigate to **Network** > **Egress gateways**.
 - Click the **Order IP** button in the top right corner.
 
     ![List IPs](/images/infrastructure/list-egress-ip.png)
 
-- Select the quantity, existing IP address pool (if any) and egress gateway region.
+- Select the quantity and egress gateway region.
 
     ![Order IPs](/images/infrastructure/order-egress-ip.png)
 
-Provisioning is automated and typically completes within a few minutes. In case the IP address is not already assigned to a dedicated pool, a new pool will be created.
+Provisioning is automated and typically completes within a few minutes.
 
 ## Assign an egress gateway to a sandbox
 
-Once provisioning is complete, you can attach the assigned IP addresses when creating one or more sandboxes. All outbound traffic from the attached sandboxes will then originate from this unique address.
-
-<Note>
-   In the private alpha preview phase, egress gateway assignment is only possible when creating a new sandbox. Similarly, in this phase, removing an egress gateway from a sandbox requires deleting the sandbox. To attach or detach egress gateways outside these scenarios, [contact us on Discord](https://discord.com/channels/1333316050330058895/1333319876831612928).
-</Note>
+Once provisioning is complete, you can attach the assigned egress gateway when creating one or more sandboxes. All outbound traffic from the attached sandboxes will then originate from this unique address.
 
 You can assign an egress gateway to a sandbox at creation time via the Blaxel Console or via the Blaxel SDK.
 
@@ -49,7 +48,7 @@ When creating a new sandbox via the Blaxel Console, use the **Egress IP** drop-d
 
 ### Blaxel SDK
 
-When creating a new sandbox via the Blaxel SDK, you can bind it to a VPC with a dedicated egress gateway by passing a `network` option when creating the sandbox. Here is an example when creating a sandbox:
+When creating a new sandbox via the Blaxel SDK, you can assign it to a dedicated egress gateway by passing a `network` option when creating the sandbox. Here is an example when creating a sandbox:
 
 <CodeGroup>
 
