@@ -60,66 +60,6 @@ Any files written to the `/app` directory within this sandbox will be stored on 
 
 At this time, you cannot detach a volume from a sandbox.
 
-## Use volume templates with sandboxes
-
-Volume templates let you create pre-populated volumes to attach to your sandboxes. For more information on creating and managing volume templates, see the [Volume templates documentation](/Volumes/Volumes-templates).
-
-First, create a volume from your template:
-
-<CodeGroup>
-```typescript TypeScript
-import { VolumeInstance } from "@blaxel/core";
-
-const volume = await VolumeInstance.createIfNotExists({
-  name: "myvolume",
-  template: "mytemplate:latest",
-  region: "us-pdx-1",
-});
-```
-
-```python Python
-from blaxel.core import VolumeInstance
-
-volume = await VolumeInstance.create_if_not_exists({
-  "name": "myvolume",
-  "template": "mytemplate:latest",
-  "region": "us-pdx-1",
-})
-```
-</CodeGroup>
-
-Then attach it to your sandbox at creation time:
-
-<CodeGroup>
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-const sandbox = await SandboxInstance.create({
-  name: "my-sandbox",
-  image: "blaxel/nextjs:latest",
-  region: "us-pdx-1",
-  volumes: [{
-    name: "myvolume",
-    mountPath: "/app"
-  }],
-});
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-sandbox = await SandboxInstance.create({
-  "name": "my-sandbox",
-  "image": "blaxel/nextjs:latest",
-  "region": "us-pdx-1",
-  "volumes": [{
-    "name": "myvolume",
-    "mount_path": "/app"
-  }],
-})
-```
-</CodeGroup>
-
 <CardGroup cols={2}>
   <Card title="Learn more about volumes" icon="box" href="/Volumes/Overview">
     Learn how to create and manage volumes.
