@@ -51,13 +51,7 @@
                   "Sandboxes/Standby-control"
                 ]
               },
-              {
-                "group": "Volumes",
-                "pages": [
-                  "Sandboxes/Volumes",
-                  "Sandboxes/Volumes-templates"
-                ]
-              },
+              "Sandboxes/Volumes",
               "Sandboxes/Templates",
               "Sandboxes/best-practices"
             ]
@@ -66,6 +60,13 @@
             "group": "Agent Drive",
             "pages": [
               "Agent-drive/Overview"
+            ]
+          },
+          {
+            "group": "Volumes",
+            "pages": [
+              "Volumes/Overview",
+              "Volumes/Volumes-templates"
             ]
           },
           {
@@ -116,7 +117,8 @@
               "Agents/Query-agents",
               "Agents/Variables-and-secrets",
               "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps"
+              "Agents/Integrate-in-apps",
+              "Agents/Volumes"
             ]
           },
           {

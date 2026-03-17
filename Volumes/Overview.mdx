@@ -1,0 +1,242 @@
+---
+
+title: 'Overview'
+
+description: 'Persist files long-term by attaching volumes to your resources.'
+
+---
+
+Blaxel Volumes provide **persistent storage that survives resource destruction and recreation**, enabling stateful environments and data retention across lifecycle events.
+
+While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](Volumes-templates) to start from a pre-populated filesystem.
+
+## Create a volume
+
+To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any resource it may later be attached to.
+
+<Accordion title="Set up authentication to Blaxel">
+
+The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+3. environment variables from your machine
+4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+
+</Accordion>
+
+<CodeGroup>
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.create({
+  name: "my-volume",
+  size: 2048,          // in MB
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,          # in MB
+  "region": "us-pdx-1",
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+</CodeGroup>
+
+You can create a volume from a [template](Volumes-templates) to automatically pre-populate it with files.
+
+<CodeGroup>
+```typescript TypeScript
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:1",  // Use template-name:revision or template-name:latest
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:1",  # Use template-name:revision or template-name:latest
+  "region": "us-pdx-1",
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: myvolume
+spec:
+  region: us-pdx-1
+  template: "mytemplate:1"
+EOF
+```
+</CodeGroup>
+
+Labels are specified as key-value pairs during volume creation.
+
+<CodeGroup>
+```typescript TypeScript
+const volume = await VolumeInstance.create({
+  name: "my-volume",
+  size: 2048,
+  region: "us-pdx-1",
+  labels: { env: "test", project: "12345" },
+});
+```
+
+```python Python
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,
+  "region": "us-pdx-1",
+  "labels": {"env": "test", "project": "12345"},
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+  labels:
+    env: test
+    project: 12345
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+</CodeGroup>
+
+## Delete a volume
+
+Delete a volume by calling:
+
+- the class-level `delete()` method with the volume `name` as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    await VolumeInstance.delete("my-volume");
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    await VolumeInstance.delete("my-volume")
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `delete()` method:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    const volume = await VolumeInstance.get("my-volume");
+    await volume.delete()
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    volume = await VolumeInstance.get("my-volume")
+    await volume.delete()
+    ```
+    </CodeGroup>
+
+## Resize a volume
+
+<Note>Currently, it is only possible to increase the volume size (not decrease it).</Note>
+
+Resize a volume by calling:
+
+- the class-level `update()` method with the volume `name` and new size as argument, or
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    const updatedVolume = await VolumeInstance.update("my-volume", { size: 1024 });
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    updated_volume = await VolumeInstance.update("my-volume", { "size": 1024 })
+    ```
+    </CodeGroup>
+
+- by calling the instance-level `update()` method with the new size as argument:
+
+    <CodeGroup>
+    ```typescript TypeScript
+    import { VolumeInstance } from "@blaxel/core";
+
+    const volume = await VolumeInstance.get("my-volume");
+    const updatedVolume = await volume.update({ size: 1024 });
+    ```
+
+    ```python Python
+    from blaxel.core import VolumeInstance
+
+    volume = await VolumeInstance.get("my-volume")
+    updated_volume = await volume.update({ "size": 1024 })
+    ```
+    </CodeGroup>
+
+## List volumes
+
+<CodeGroup>
+```typescript TypeScript
+const volumes = await VolumeInstance.list()
+```
+
+```python Python
+volumes = await VolumeInstance.list()
+```
+
+```shell Blaxel CLI
+bl get volumes
+```
+</CodeGroup>
+
+You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
+
+```shell
+# Get volumes with specific label (e.g., env=test)
+bl get volumes -o json | jq -r '.[] | select(.metadata.labels.env == "test") | .metadata.name'
+```
+
+## Use volumes with sandboxes and agents
+
+<CardGroup cols={2}>
+  <Card title="Use volumes with sandboxes" icon="box" href="/Sandboxes/Volumes">
+    Attach persistent storage to a sandbox at creation time.
+  </Card>
+  <Card title="Use volumes with agents" icon="robot" href="/Agents/Volumes">
+    Attach persistent storage to a deployed agent via `blaxel.toml`.
+  </Card>
+</CardGroup>
