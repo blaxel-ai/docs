@@ -1,8 +1,8 @@
 ---
 
-title: 'Connect your AI to this documentation'
+title: 'Connect your AI'
 
-sidebarTitle: "Connect your AI to this doc"
+sidebarTitle: "Connect your AI"
 
 icon: 'book'
 
@@ -11,19 +11,21 @@ description: 'Make your coding assistant access this documentation.'
 ---
 
 Blaxel provides LLM-accessible tools that you can plug locally in your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
-- **Agent skill** which provides your coding assistant with additional context and capabilities.
-- **A remote MCP server** that can directly query this documentation, ensuring your coding assistant receives real-time information about available commands and features.
-- **An llms-full.txt** text file with the entire documentation compiled and formatted for LLMs
 
-Alternatively you can also use the native AI assistant built into this documentation portal.
+1. The **[Blaxel Agent Skill](/MCP-server)** lets your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP server on Blaxel using simple prompts.
+2. The Blaxel **MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
+3. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
+4. A **native AI assistant** built into this documentation portal.
 
 ## Option 1: Connect Blaxel skills
 
-Install the Blaxel agent skill which provides your coding assistant with additional context and capabilities:
+<Card title="Blaxel Agent Skill" icon="robot" href="/MCP-server">
+  Install the Blaxel Skill to give your coding agent native platform access — create sandboxes, deploy agents, run batch jobs, and more from natural language.
 
-```bash
-npx skills add blaxel-ai/agent-skills
-```
+  ```bash
+  npx skills add blaxel-ai/agent-skills
+  ```
+</Card>
 
 ## Option 2: Install the MCP server
 
@@ -64,5 +66,3 @@ Copy the following content and paste it in the prompt for your coding assistant:
 ## Option 4: Use the documentation's built-in assistant
 
 This documentation portal has a built-in AI assistant. Simply click "✨**Ask AI**" at the top of any page to use it.
-
-![Screenshot 2025-06-02 at 7.49.25 PM.png](MCP-docs/Screenshot_2025-06-02_at_7.49.25_PM.png)
