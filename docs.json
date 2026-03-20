@@ -14,7 +14,12 @@
         {
           "anchor": "Changelog",
           "icon": "calendar",
-          "href": "https://docs.blaxel.ai/changelog"
+          "href": "/changelog"
+        },
+        {
+          "anchor": "Agent Skill",
+          "icon": "robot",
+          "href": "/MCP-server"
         }
       ]
     },
@@ -27,8 +32,8 @@
             "pages": [
               "Overview",
               "Get-started",
-              "MCP-docs",
-              "MCP-server"
+              "MCP-server",
+              "MCP-docs"
             ]
           },
           {
@@ -379,7 +384,11 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "https://docs.blaxel.ai/changelog"
+        "href": "/changelog"
+      },
+      {
+        "label": "Agent Skill",
+        "href": "/MCP-server"
       }
     ],
     "primary": {
