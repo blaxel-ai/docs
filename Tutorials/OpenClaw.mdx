@@ -1,125 +1,13 @@
 ---
 title: 'Run OpenClaw on Blaxel'
-description: 'Run OpenClaw on Blaxel using an agent template'
+description: 'Run OpenClaw on Blaxel using a sandbox'
 ---
 
-This tutorial explains how to deploy and run [OpenClaw](https://openclaw.ai) on Blaxel. There are two approaches you can follow, depending on your Blaxel account tier.
+This tutorial explains how to deploy and run [OpenClaw](https://openclaw.ai) on Blaxel.
 
-## Blaxel Tier 2+
+OpenClaw can be manually installed and configured to run inside a Blaxel sandbox.
 
-For users on Tier 2 or higher, Blaxel provides an agent template that packages the [OpenClaw agent](https://openclaw.ai) for near-instant deployment on Blaxel's infrastructure.
-
-<Note>
-  A key benefit of using this template is that it comes with built-in skills to work with Blaxel sandboxes, including starting and stopping them, writing and running code in them, and creating preview URLs. This makes it easy to explore OpenClaw's capabilities safely, as all operations (such as arbitrary code generation and execution) can be performed in a secure, isolated Blaxel sandbox with zero additional configuration.
-</Note>
-
-### Prerequisites
-
-Before starting, ensure you have:
-
-- a [Blaxel account](https://blaxel.ai) at [Tier 2 or higher](https://app.blaxel.ai/account/quotas)
-- an API key from any of the [supported model providers](https://docs.openclaw.ai/concepts/model-providers)
-
-Blaxel's agent template uses autoscaling to keep at least one OpenClaw instance running at all times. Autoscaling is only available on Tier 2 and higher plans.
-
-### Configure the OpenClaw agent template
-
-1. [Download and install the Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction#install) and log in to your Blaxel account:
-
-    ```shell
-    bl login
-    ```
-
-1. Clone the agent template:
-
-    ```shell
-    bl new agent -t template-openclaw my-openclaw
-    cd my-openclaw
-    ```
-
-1. Copy the `.env.example` file to `.env`:
-
-    ```shell
-    cp .env.example .env
-    ```
-
-1. Update the `.env` file with the following configuration values:
-
-    - `OPENCLAW_GATEWAY_TOKEN`: Set the token to authenticate with the OpenClaw Gateway. Use a random hard-to-guess value.
-    - `OPENCLAW_MODEL` (optional): Set the model to use in `provider/model` format. Defaults to `anthropic/claude-opus-4-6` if not set.
-    - `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` or `OPENAI_API_KEY`: Set the model API key matching your chosen model provider.
-
-    You can add other variables that your OpenClaw agent may need. These variables will be automatically stored in Blaxel's secret manager on deployment.
-
-    <Tip>
-      You can also set `BL_REGION` to choose the deployment region (defaults to `us-pdx-1`). This controls where both the agent and its persistent storage volume are provisioned.
-    </Tip>
-
-### Persistent storage
-
-The template includes a 2 GB persistent volume mounted at `/root/.openclaw`. This volume preserves OpenClaw's data (conversation history, configuration, and agent state) across restarts and redeployments.
-
-The volume is automatically provisioned in the same region as the agent when you run `bl deploy`. No additional configuration is required.
-
-### Deploy the agent
-
-<Note>
-  The template exposes the OpenClaw Gateway at a publicly accessible endpoint with no authentication or access controls enabled by default. If you require restricted access, you must deploy the agent behind an authentication/authorization layer (for example, API gateway, reverse proxy, or custom authentication middleware) before exposing the URL.
-
-  Although the OpenClaw Gateway endpoint is publicly accessible by default, agent access still requires the correct OpenClaw Gateway token. You can configure the token after accessing the OpenClaw Gateway, using the value set in the `.env` file in the previous step.
-
-  For additional protection, you may [configure the OpenClaw Gateway as private](/Agents/Deploy-an-agent/#agent-deployment-reference) in the agent's deployment manifest. However, if you do this, you will not be able to access the user interface directly. In this case, you have two options:
-
-  - Use a browser extension to automatically attach the required authentication headers to your requests when accessing OpenClaw on Blaxel's domain.
-  - Configure your own domain to proxy requests to Blaxel's domain and inject the required authentication header at the proxy layer, eliminating the need for a browser extension.
-</Note>
-
-1. Deploy the agent:
-
-    ```shell
-    bl deploy
-    ```
-
-1. Browse to the "Curl" URL shown at the end of the deployment output.
-
-    ![overview](/img/tutorials/openclaw/deployment.png)
-
-    This displays the OpenClaw Control UI.
-
-1. Navigate to the **Overview** page of the OpenClaw Control UI. Enter the dashboard token configured earlier in the **Gateway Token** field. Click **Connect**.
-
-    ![overview](/img/tutorials/openclaw/overview.png)
-
-The Control UI should now be fully functional and ready to accept requests, verified by the health check in the top right corner.
-
-    ![paired](/img/tutorials/openclaw/paired.png)
-
-### Test OpenClaw
-
-Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm that the OpenClaw agent is working. You will be asked a few setup questions to provision the agent.
-
-![chat](/img/tutorials/openclaw/chat.png)
-
-Use the built-in Blaxel skills to give the agent tasks to perform in a sandboxed environment, as with the example below:
-
-![chat](/img/tutorials/openclaw/chat2.png)
-
-With the Blaxel skill, OpenClaw will create a new sandbox, generate the required code, and return a URL which you can use to preview the result. The agent's actions will take place within the boundaries of the Blaxel sandbox, ensuring complete isolation of the agent-generated code and commands.
-
-### Configure OpenClaw channels
-
-OpenClaw supports multiple channels. To enable them, set the relevant environment variable and redeploy. For example, for Telegram:
-
-- Add the token to the `.env` file: `TELEGRAM_BOT_TOKEN=123456:ABC-DEF...`
-- Redeploy: `bl deploy`
-
-For other channels, configure them through the Control UI after connecting, or add them to the `openclaw.json` config in `entrypoint.sh`.
-
-## Blaxel Tier 0-1
-
-For users on Tiers 0 or 1, OpenClaw can be manually installed and configured to run inside a Blaxel sandbox.
-
-### Prerequisites
+## Prerequisites
 
 Before starting, ensure you have:
 
@@ -127,7 +15,7 @@ Before starting, ensure you have:
 - an API key from any of the [supported model providers](https://docs.openclaw.ai/concepts/model-providers)
 - a Python development environment
 
-### Create a sandbox
+## Create a sandbox
 
 1. [Download and install the Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction#install) and log in to your Blaxel account:
 
@@ -207,7 +95,7 @@ Before starting, ensure you have:
 
     Once complete, the script displays the generated preview URL (for example, `https://b186....preview.bl.run`) and preview URL access token (for example, `cbba622560db78e...`). Note these values, as you will require them in subsequent steps.
 
-### Install and configure OpenClaw
+## Install and configure OpenClaw
 
 1. Connect to the Blaxel sandbox terminal:
 
@@ -240,7 +128,7 @@ Before starting, ensure you have:
 
     ![token](/img/tutorials/openclaw/token.png)
 
-### Configure OpenClaw Gateway access
+## Configure OpenClaw Gateway access
 
 1. Edit the OpenClaw configuration file at `/blaxel/.openclaw/openclaw.json` and add the preview URL to the list of allowed origins:
 
@@ -312,13 +200,13 @@ Before starting, ensure you have:
 
     ![paired](/img/tutorials/openclaw/paired.png)
 
-### Test OpenClaw
+## Test OpenClaw
 
 Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm that the OpenClaw agent is working:
 
 ![chat](/img/tutorials/openclaw/chat.png)
 
-### Configure OpenClaw channels
+## Configure OpenClaw channels
 
 OpenClaw supports multiple channels. To enable them, configure them through the Control UI after connecting, or add them to the `openclaw.json` file.
 
