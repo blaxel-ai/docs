@@ -6,7 +6,7 @@ description: 'Manage workspaces, control access, and understand account-level sh
 
 ---
 
-All resources on Blaxel are logically regrouped in a **workspace**, which is the highest possible level of tenancy. An account can have **multiple workspaces** — a common pattern when dealing with multiple environments (e.g. development vs. production), business units, or end-clients.
+All resources on Blaxel are logically regrouped in an **account**, which is the highest possible level of tenancy. An account can have **multiple workspaces** — a common pattern when dealing with multiple environments (e.g. development vs. production), business units, or end-clients.
 
 Users can be either [team members](/Security/Workspace-access-control), or [service accounts](/Security/Service-accounts) that represent external systems that can operate Blaxel. They are added to a workspace with certain permissions on the workspace resources inherited from their role.
 
@@ -45,7 +45,7 @@ They have read-only access on the following resources:
 
 A Blaxel account is the top-level entity that owns one or more workspaces. The following are managed at the account level and are **shared across all workspaces** in an account:
 
-- Subscription tier and quota limits
+- Quota tier and limits
 - Credits
 - SSO/SAML configuration
 - Usage analytics
