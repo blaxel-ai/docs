@@ -1,30 +1,28 @@
 ---
 
-title: 'Overview'
+title: 'Go SDK'
 
-sidebarTitle: "Overview"
-
-description: 'Manage Blaxel resources programmatically using our SDKs.'
+description: 'Manage Blaxel resources programmatically using our Go SDK.'
 
 ---
 
-Blaxel features SDKs in three languages: **Python**, **TypeScript**, and **Go**. Check out down below the installation instructions, as well as documentation on **how the SDK** **authenticates** to Blaxel.
+Blaxel features a SDK in **Go**. To install, follow the instructions below.
 
 ## Install
 
-<CardGroup cols={3}>
-<Card title="TypeScript SDK" icon="js" href="./sdk-ts">
-Install the TypeScript SDK.
-</Card>
-<Card title="Python SDK" icon="python" href="./sdk-python">
-Install the Python SDK.
-</Card>
-<Card title="Go SDK" icon="golang" href="./sdk-go">
-Install the Go SDK.
-</Card>
-</CardGroup>
+```go
+import (
+	"github.com/blaxel-ai/sdk-go" // imported as blaxel
+)
+```
 
-## How authentication works
+Or to use a specific version:
+
+```shell Go
+go get -u 'github.com/blaxel-ai/sdk-go@v0.15.0'
+```
+
+## Authentication
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
@@ -39,16 +37,8 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 ## Complete SDK reference
 
-Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
 
-<CardGroup cols={3}>
-<Card title="TypeScript SDK" icon="js" href="https://github.com/blaxel-ai/sdk-typescript">
-Open the GitHub repository for Blaxel SDK in TypeScript.
-</Card>
-<Card title="Python SDK" icon="python" href="https://github.com/blaxel-ai/sdk-python">
-Open the GitHub repository for Blaxel SDK in Python.
-</Card>
 <Card title="Go SDK" icon="golang" href="https://github.com/blaxel-ai/sdk-go">
 Open the GitHub repository for Blaxel SDK in Go.
 </Card>
-</CardGroup>
