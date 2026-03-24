@@ -26,48 +26,6 @@ Some examples of use cases are:
 - Sharing common datasets across agents
 - Creating a shared filesystem cache of package dependencies to speed up future agent/sandbox deployments
 
-## Prerequisites
-
-<Note>
-  These steps are only required during the private preview stage.
-</Note>
-
-For the Agent Drive preview, a [custom sandbox template](/Sandboxes/Templates#create-a-sandbox-template) is required. Run:
-
-```bash
-bl login
-bl new sandbox my-sandbox
-```
-
-This will create a new folder containing a `Dockerfile` and additional configuration files.
-
-To ensure compatibility with the Agent Drive preview, update the following line in the `Dockerfile`.
-
-Replace:
-
-```docker
-COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
-```
-
-With:
-
-```docker
-COPY --from=ghcr.io/blaxel-ai/sandbox:develop-e6a4ef8 /sandbox-api /usr/local/bin/sandbox-api
-```
-
-From inside the newly created folder, run:
-
-```bash
-bl deploy
-```
-
-Obtain the sandbox template's image ID:
-
-```bash
-bl get sandboxes my-sandbox -ojson | jq -r '.[0].spec.runtime.image'
-```
-
-Your sandbox will now be ready to use with the Agent Drive preview.
 
 ## Create a drive
 
