@@ -1209,6 +1209,11 @@ components:
       description: Runtime configuration defining how batch job tasks are executed
         with parallelism and retry settings
       properties:
+        diskPercent:
+          type: integer
+          description: Percentage of VM RAM allocated for disk storage (tmpfs overlay).
+            Valid range 10-95, default 50. Only applies to mk3.1 (microVM) generation.
+          example: 80
         envs:
           type: array
           description: Environment variables injected into job tasks. Supports Kubernetes
