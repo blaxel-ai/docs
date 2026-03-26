@@ -32,12 +32,12 @@ Error tracking is controlled by the `tracking` parameter, which reads its value 
 1. `DO_NOT_TRACK` environment variable
 2. `tracking:` field in `~/.blaxel/config.yaml`
 3. Pre-set default value
-    - `false` starting from SDK v0.2.76 (Python), v0.2.60 (TypeScript) and v0.161 (Go)
+    - `false` starting from SDK v0.2.46 (Python), v0.2.76 (TypeScript) and v0.16.1 (Go)
     - `true` in all earlier versions
 
 #### `DO_NOT_TRACK` environment variable
 
-The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To disable tracking, use the command below in your shell environment:
+The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To explicitly disable tracking, use the command below in your shell environment:
 
 ```bash
 export DO_NOT_TRACK=1    # Disable tracking
@@ -71,7 +71,11 @@ Blaxel only collects and saves traces for a sampled 10% of all your executions.
 
 ### Opt out
 
-This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. It defaults to `"false"` and must be explicitly set to `"true"`.
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. This environment variable defaults to `false`, except for deployed agents where the platform sets it to `true`. To explicitly disable it, use the command below in your shell environment:
+
+```bash
+export BL_ENABLE_OPENTELEMETRY=false
+```
 
 ```bash
 export BL_ENABLE_OPENTELEMETRY=false    # Disable OpenTelemetry logging

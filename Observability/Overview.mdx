@@ -55,7 +55,17 @@ Blaxel uses the OpenTelemetry standard for all the logging and tracing. We can e
 
 ## Opt out
 
-This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. It defaults to `"false"` and must be explicitly set to `"true"`.
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable.
+
+When you deploy an agent to Blaxel, the platform automatically injects `BL_ENABLE_OPENTELEMETRY=true` into the environment.
+
+When developing locally, this environment variable is not set and therefore defaults to `false`.
+
+To explicitly disable telemetry:
+
+```bash
+export BL_ENABLE_OPENTELEMETRY=false
+```
 
 <Warning>
   Setting `DO_NOT_TRACK=1` has no effect on OpenTelemetry.
