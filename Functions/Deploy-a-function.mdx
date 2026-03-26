@@ -159,7 +159,7 @@ Deploy multiple agents & MCP servers with shared context from a single repositor
 
 As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the last 5 revisions for each object.
 
-![image.png](Deploy-a-function/image.png)
+![image.webp](Deploy-a-function/image.webp)
 
 Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
 
@@ -171,7 +171,7 @@ Important: Revisions are not the same as versions. You cannot use revisions to r
 
 Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
 
-![image.png](../Agents/Deploy-an-agent/image%201.png)
+![image.webp](../Agents/Deploy-an-agent/image%201.webp)
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
@@ -251,7 +251,7 @@ The remaining fields in *package.json* follow standard JavaScript/TypeScript pro
 
 When `bl deploy` runs, it generates a YAML configuration manifest automatically and deploys it to Blaxel's hosting infrastructure. You can also create custom manifest files in the `.blaxel` folder and deploy them using the following command:
 
-```
+```bash
 bl apply -f ./my-deployment.yaml
 ```
 

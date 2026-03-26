@@ -234,11 +234,11 @@ Read a binary file from the sandbox filesystem:
 <CodeGroup>
 
 ```typescript TypeScript
-const binaryData = await sandbox.fs.readBinary("/tmp/image.png");
+const binaryData = await sandbox.fs.readBinary("/tmp/image.webp");
 ```
 
 ```python Python
-binary_data = await sandbox.fs.read_binary("/tmp/image.png")
+binary_data = await sandbox.fs.read_binary("/tmp/image.webp")
 ```
 
 </CodeGroup>
@@ -252,14 +252,14 @@ Write binary content to a file in the sandbox filesystem:
 <CodeGroup>
 
 ```typescript TypeScript
-const binaryData = fs.readFileSync("./image.png");
-await sandbox.fs.writeBinary("/blaxel/app/assets/image.png", binaryData);
+const binaryData = fs.readFileSync("./image.webp");
+await sandbox.fs.writeBinary("/blaxel/app/assets/image.webp", binaryData);
 ```
 
 ```python Python
-with open("image.png", "rb") as f:
+with open("image.webp", "rb") as f:
     binary_data = f.read()
-    await sandbox.fs.write_binary("/blaxel/app/assets/image.png", binary_data)
+    await sandbox.fs.write_binary("/blaxel/app/assets/image.webp", binary_data)
 ```
 
 </CodeGroup>

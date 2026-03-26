@@ -112,7 +112,7 @@ The remaining fields in `package.json` follow standard JavaScript/TypeScript pro
 <Tab title="Python">
 You can define an optional `[entrypoint]` section to specify how Blaxel will start your agent.
 
-```
+```toml
 [entrypoint]
 prod = ".venv/bin/python3 src/agent.py"
 dev = "npx nodemon --exec uv run python src/agent.py"
@@ -160,7 +160,7 @@ By default, agents deployed on Blaxel are not public. All agent requests must be
 
 Make a POST request to the inference endpoint for your agent deployment:
 
-```
+```bash
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT' \
   -H 'Content-Type: application/json' \
   -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \

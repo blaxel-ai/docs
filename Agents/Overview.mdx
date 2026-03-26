@@ -4,7 +4,7 @@ title: 'Agents Hosting'
 
 sidebarTitle: "Overview"
 
-description: 'Deploy your agents as serverless auto-scalable endpoints.'
+description: 'Host custom AI agents built with any Python or TypeScript framework as serverless auto-scalable endpoints on Blaxel, with built-in observability and SDK integrations.'
 
 ---
 
@@ -26,7 +26,7 @@ Some features of running workloads on Agents Hosting:
 
 - a default invocation endpoint for synchronous requests
 - an asynchronous invocation endpoint, for agent workloads lasting from dozens of seconds to 10 minutes
-- full logging, telemetry and tracing — out-of-the-box
+- full [logging, telemetry and tracing](/Observability/Overview) — out-of-the-box
 - revisions manage your agents’ lifecycle across iterations. You can ship as a new revision and rollback instantly
 - an SDK to connect to other Blaxel resources (like [models](../Models/Overview) and [tools](../Functions/Overview)) with adapters to most popular [agent frameworks](../Tutorials/Agents-Overview)
 
@@ -84,7 +84,29 @@ Learn how to run inference requests on your agent.
 </Card>
 
 <Card title="Integrate in apps" icon="display" href="/Agents/Integrate-in-apps">
-Learn how to integrate and use your Blaxel agents in your downstream applications .
+Learn how to integrate and use your Blaxel agents in your downstream applications.
+</Card>
+
+</CardGroup>
+
+## Operational features
+
+<CardGroup cols={2}>
+
+<Card title="Variables and secrets" icon="key" href="/Agents/Variables-and-secrets">
+Manage environment variables and secrets for your agents.
+</Card>
+
+<Card title="Persistent storage" icon="hard-drive" href="/Agents/Volumes">
+Attach Blaxel Volumes or Agent Drive for persistent storage.
+</Card>
+
+<Card title="Asynchronous triggers" icon="clock" href="/Agents/Asynchronous-triggers">
+Run long-running tasks asynchronously with optional callbacks.
+</Card>
+
+<Card title="Deploy from GitHub" icon="github" href="/Agents/Github-integration">
+Set up automatic deployments from your GitHub repository.
 </Card>
 
 </CardGroup>

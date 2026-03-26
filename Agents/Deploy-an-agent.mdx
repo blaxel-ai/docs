@@ -104,7 +104,7 @@ Deploying an agent will create the associated agent deployment. At this time:
 
 As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the last 5 revisions for each object.
 
-![image.png](Deploy-an-agent/image.png)
+![image.webp](Deploy-an-agent/image.webp)
 
 Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
 
@@ -116,7 +116,7 @@ Important: Revisions are not the same as versions. You cannot use revisions to r
 
 Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
 
-![image.png](Deploy-an-agent/image%201.png)
+![image.webp](Deploy-an-agent/image%201.webp)
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
@@ -223,7 +223,7 @@ The volume must already exist before deploying. You can create one with the SDK 
 
 When `bl deploy` runs, it generates a YAML configuration manifest automatically and deploys it to Blaxel's hosting infrastructure. You can also create custom manifest files in the `.blaxel` folder and deploy them using the following command:
 
-```
+```bash
 bl apply -f ./my-deployment.yaml
 ```
 

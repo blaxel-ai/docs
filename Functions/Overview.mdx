@@ -8,11 +8,11 @@ description: 'Deploy MCP servers as serverless APIs to equip your agents with to
 
 ---
 
-MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to **equip agents with tools** to interact with the world.
+MCP servers (called `functions` in Blaxel API) are lightweight programs that expose specific capabilities (accessing databases, APIs, local files, etc.) through the standardized [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP). They are designed to equip [agents](/Agents/Overview) with tools to interact with the world.
 
 ## Essentials
 
-MCP Server Hosting is a **serverless computing service that allows you to host remote MCP servers** without having to manage infrastructure. It gives you full observability and tracing out of the box.
+MCP Server Hosting is a **serverless computing service that allows you to host remote MCP servers** without having to manage infrastructure. It gives you full [observability and tracing](/Observability/Overview) out of the box.
 
 You only provide the MCP server code, and Blaxel automates its hosting, execution and scaling - providing you with one single global endpoint to access the MCP server. The deployed server uses streamable HTTP as the transport layer.
 
@@ -32,17 +32,35 @@ Blaxel uses **streamable HTTP** as its MCP transport mechanism. MCP servers depl
 
 There are two routes you can take when hosting MCPs on Blaxel:
 
-- Use one of the pre-built MCP servers from the Blaxel Store
-- Deploy a custom MCP server from your code
+- Use one of the pre-built MCP servers from the Blaxel Store (e.g. [Google Maps](/Integrations/Google-Maps), [Gmail](/Integrations/Gmail))
+- Deploy a custom MCP server from your code, or [adapt an existing stdio-based server](/Functions/Adapt-Existing-MCP-server) for Blaxel
 
-<Card title="Developing an MCP server" icon="code" href="/Functions/Create-MCP-server">
-Read our guide for developing a custom MCP server with Blaxel.
+<CardGroup cols={2}>
+<Card title="Adapt an existing MCP server" icon="wrench" href="/Functions/Adapt-Existing-MCP-server">
+Convert a stdio MCP server to streamable HTTP and deploy it.
 </Card>
 
-<Card title="Host an MCP server on Blaxel" icon="rocket" href="/Functions/Deploy-a-function">
-Read our guide for deploying your custom MCP server to Blaxel.
+<Card title="Develop a custom MCP server" icon="code" href="/Functions/Create-MCP-server">
+Build a new MCP server from scratch with Blaxel SDK.
+</Card>
+
+<Card title="Deploy an MCP server" icon="rocket" href="/Functions/Deploy-a-function">
+Host your MCP server on Blaxel as a serverless endpoint.
 </Card>
 
 <Card title="Connect to an MCP server" icon="bolt" href="/Functions/Invoke-functions">
-Learn how to run tool calls through your MCP server.
+Run tool calls through your deployed MCP server.
 </Card>
+
+<Card title="Code mode" icon="terminal" href="/Functions/Code-mode">
+Turn any OpenAPI spec into a code mode MCP server.
+</Card>
+
+<Card title="Variables and secrets" icon="key" href="/Functions/Variables-and-secrets">
+Manage environment variables and secrets for MCP servers.
+</Card>
+</CardGroup>
+
+## Related products
+
+MCP servers integrate with other Blaxel products. [Agents](/Agents/Overview) use MCP servers as tools, [sandboxes](/Sandboxes/Overview) include a [built-in MCP server](/Sandboxes/MCP) for agent-driven operations, and [model APIs](/Models/Overview) provide the LLM backbone for agent reasoning. See the [SDK reference](/sdk-reference/introduction) for programmatic access.

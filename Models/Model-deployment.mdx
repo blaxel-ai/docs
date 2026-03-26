@@ -28,7 +28,7 @@ Blaxel model deployment works using two conceptual entities: **models** and **de
 
 A model can be uploaded into Blaxel from a variety of [origins](#model-origins). At this moment, it can be either: **just** **created** (a *model deployment* exists but it is deactivated), or **created and deployed** (as a *model deployment*). At any time, you can [deactivate a model deployment](Model-deployment), and [update it with a new version](Model-deployment).
 
-![models2.png](Model-deployment/models2.png)
+![models2.webp](Model-deployment/models2.webp)
 
 ## Deployment life-cycle
 
@@ -41,17 +41,17 @@ Deploying a model will create the associated [model deployment](Model-deployment
 - its deployment/inference policies are governed by the associated [environment](../Model-Governance/Environments)
 - its status can be monitored either on the console or using the CLI/APIs
 
-![model-policy.png](Model-deployment/model-policy.png)
+![model-policy.webp](Model-deployment/model-policy.webp)
 
 Deploy a model by running the following [CLI](https://docs.blaxel.ai/cli-reference/bl_apply) command:
 
-```
+```bash
 bl apply -f ./my-model-deployment.yaml
 ```
 
 Read our [reference for model deployments](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment). Models can also be deployed using the Blaxel console, and the Blaxel Kubernetes controller. 
 
-![create-model.png](Model-deployment/create-model.png)
+![create-model.webp](Model-deployment/create-model.webp)
 
 ### Updating a model version
 
@@ -69,11 +69,11 @@ Model deployments are updated following a **blue-green** paradigm. The Global In
 
 When using the Blaxel console, you can update all model configurations (model file, runtime, etc.) except policies by selecting ***Deploy a new version***.
 
-![update-version.png](Model-deployment/update-version.png)
+![update-version.webp](Model-deployment/update-version.webp)
 
 To update the policies of a model deployment using the Blaxel console, go the the ***Policies*** page and edit them here.
 
-![policies-update.png](Model-deployment/policies-update.png)
+![policies-update.webp](Model-deployment/policies-update.webp)
 
 Model deployments can also be updated via the Blaxel [APIs](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
 
@@ -83,7 +83,7 @@ Any model deployment can be deactivated at any time. When deactivated, it will *
 
 Models can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
 
-![deactivate-deployment.png](Model-deployment/deactivate-deployment.png)
+![deactivate-deployment.webp](Model-deployment/deactivate-deployment.webp)
 
 ## Deployment reference
 
@@ -129,20 +129,10 @@ For one model deployment, the selected flavors can either be several CPU types, 
 
 <Note>You can only select flavors allowed by the policies set in the environment or the deployment.</Note>
 
-## Deploy a replica of a on-prem model
+## Deploy a replica of an on-prem model
 
-Minimal-footprint deployments can be setup using Cloud Burst Network, by referencing a model deployed on your own private infrastructure (on-prem or cloud) and make it overflow on Blaxel only in case of unexpected burst traffic or infrastructure failure.
+Minimal-footprint deployments can be set up by referencing a model deployed on your own private infrastructure (on-prem or cloud) and making it overflow on Blaxel only in case of unexpected burst traffic or infrastructure failure.
 
-<Card title="Deploy a replica for your own model" icon="book" href="/Models/Cloud-Burst-Network/Model-overflow">
-Read our documentation for offloading your own model on a Blaxel replica.
-</Card>
-
-## Examples
-
-<Card title="Deploy a custom model" icon="book-open" href="/Examples/Deploy-a-custom-model-from-HuggingFace" horizontal="true">
-Read our tutorial for deploying a custom fine-tuned model from HuggingFace.
-</Card>
-
-<Card title="Offload requests from a self-hosted model" icon="book-open" href="/Examples/Offload-burst-inferences-from-a-self-hosted-model" horizontal="true">
-Read our tutorial for offloading burst inferences from a self hosted model.
+<Card title="Deploy custom models from HuggingFace" icon="book-open" href="/Integrations/HuggingFace">
+Learn how to deploy public or private AI models from HuggingFace on Blaxel.
 </Card>

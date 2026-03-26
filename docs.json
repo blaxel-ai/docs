@@ -7,7 +7,7 @@
     "light": "#FD7B35",
     "dark": "#C75617"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/favicon.webp",
   "navigation": {
     "global": {
       "anchors": [
@@ -378,7 +378,7 @@
   },
   "logo": {
     "light": "/images/logo-light.svg",
-    "dark": "/images/logo-dark.png"
+    "dark": "/images/logo-dark.webp"
   },
   "navbar": {
     "links": [
@@ -396,6 +396,20 @@
       "label": "Blaxel Console",
       "href": "https://app.blaxel.ai"
     }
+  },
+  "description": "Blaxel documentation: cloud sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway for building and deploying AI-powered applications.",
+  "seo": {
+    "indexing": "navigable",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Blaxel Documentation"
+    }
+  },
+  "search": {
+    "prompt": "Search Blaxel docs..."
+  },
+  "metadata": {
+    "timestamp": true
   },
   "integrations": {
     "posthog": {

@@ -2,7 +2,7 @@
 
 title: 'Overview'
 
-description: 'Interact with Blaxel through APIs.'
+description: 'Authenticate and interact with all Blaxel resources using REST APIs, with support for API key and OAuth 2.0 authentication methods.'
 
 ---
 
@@ -16,7 +16,7 @@ Authentication to the Blaxel APIs can either be done using [API keys](../Securit
 
 For example, to list models:
 
-```
+```bash
 curl 'https://api.blaxel.ai/v0/models' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY'

@@ -2,7 +2,7 @@
 
 title: 'Orchestrate agents with n8n on Blaxel'
 
-description: 'Orchestrate Blaxel agents using n8n workflows.'
+description: 'Build n8n workflows that forward chat messages to Blaxel-hosted AI agents via HTTP requests, with step-by-step setup and configuration.'
 
 ---
 
@@ -10,7 +10,7 @@ This tutorial will walk you through how to integrate your AI agents —deployed 
 
 ## What You’ll Build
 
-![image.png](/img/tutorials/n8n/image.png)
+![image.webp](/img/tutorials/n8n/image.webp)
 
 This is a simple n8n workflow that:
 
@@ -102,7 +102,7 @@ Here's a minimal JSON snippet that demonstrates the workflow:
 
 Before running your workflow, **update the URL field** in the HTTP Request node to match your [agent’s URL](../Agents/Query-agents). Replace `https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}` with your actual workspace and agent identifiers.
 
-![image.png](/img/tutorials/n8n/image1.png)
+![image.webp](/img/tutorials/n8n/image1.webp)
 
 ## Step 2: Configure Header Authentication
 
@@ -112,7 +112,7 @@ To secure your API calls, you must set up header authentication. Follow these tw
 
     Ensure that your HTTP Request node is set in ***Header Auth*** type.
 
-    ![image.png](/img/tutorials/n8n/image2.png)
+    ![image.webp](/img/tutorials/n8n/image2.webp)
 
 2. **Create Credentials:**
 
@@ -121,7 +121,7 @@ To secure your API calls, you must set up header authentication. Follow these tw
     - **Name:** `Authorization`
     - **Value:** `Bearer <YOUR_API_KEY>`
 
-    ![image.png](/img/tutorials/n8n/image3.png)
+    ![image.webp](/img/tutorials/n8n/image3.webp)
 
 
 Your n8n workflow is ready to launch!

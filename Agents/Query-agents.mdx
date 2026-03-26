@@ -1,6 +1,6 @@
 ---
 title: "Query an agent"
-description: "Make inference requests on your agents."
+description: "Call deployed agents via synchronous or asynchronous inference endpoints on the Global Agentics Network, with streaming support and configurable timeouts."
 ---
 
 Agent [deployments](Overview) on Blaxel have a default **inference endpoint** which can be used by external consumers to request an inference execution. This inference endpoint is synchronous so the connection remains open until the end of your request is entirely processed by the agent. You can also query an asynchronous endpoint for agents, allowing to send requests that last for longer times without keeping connections open.
@@ -29,7 +29,7 @@ Connection limit:
 
 In addition to the default synchronous endpoint, Blaxel provides the ability to create **asynchronous endpoints** for handling longer-running agent requests.
 
-![Screenshot 2025-05-18 at 8.53.14 PM.png](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.png)
+![Screenshot 2025-05-18 at 8.53.14 PM.webp](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.webp)
 
 This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations. Blaxel handles queuing and execution behind the scene.
 
@@ -124,7 +124,7 @@ path = "/<PATH>" # This will be translated to https://run.blaxel.ai/<YOUR_WORKSP
 
 Make a **POST** request to the default inference endpoint for the agent deployment you are requesting, making sure to fill in the authentication token:
 
-```
+```bash
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/agents/YOUR-AGENT?environment=YOUR-ENVIRONMENT' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'X-Blaxel-Authorization: Bearer YOUR-TOKEN' \

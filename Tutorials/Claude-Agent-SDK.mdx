@@ -296,7 +296,7 @@ The Blaxel CLI will prompt for the type of resource you are deploying. It will t
 
 Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
 
-![image](../Agents/Query-agents/endpoint.png)
+![image](../Agents/Query-agents/endpoint.webp)
 
 ## 8. Test the agent on Blaxel
 
@@ -304,7 +304,7 @@ By default, agents deployed on Blaxel are not public. All agent requests must be
 
 Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `prompt` as desired):
 
-```
+```bash
 curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-agent/query  \
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \

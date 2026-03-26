@@ -16,7 +16,7 @@ The `Dockerfile` defines how your deployment context is built and as such is req
 
 This enables such mono-repo structure with shared libraries:
 
-```
+```text
 myrepo
 |- myjob
     |- src
@@ -42,7 +42,7 @@ No changes are required to your `blaxel.toml`. However, in your `Dockerfile`, pa
 
 This allows you to reference shared resources:
 
-```
+```dockerfile
 COPY myagent/src src
 COPY shared shared
 ```

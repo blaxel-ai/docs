@@ -2,7 +2,7 @@
 
 title: 'Query a model API'
 
-description: 'Make inference requests on your model APIs.'
+description: 'Make inference requests to model APIs via their global endpoints on the Global Agentics Network, with ChatCompletions and custom sub-endpoint support.'
 
 ---
 
@@ -41,7 +41,7 @@ It is necessary to authenticate all inference requests, via a [bearer token](../
 
 Make a **POST** request to the [inference endpoint](Query-a-model) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
 
-```
+```bash
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/models/YOUR-MODEL' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-Blaxel-authorization: Bearer YOUR-TOKEN' \
@@ -71,4 +71,4 @@ Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-refe
 
 Inference requests can be made from the Blaxel console from the model API’s **Playground** page.
 
-![workbench.png](Query-a-model/workbench.png)
+![workbench.webp](Query-a-model/workbench.webp)

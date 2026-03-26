@@ -55,7 +55,7 @@ Scopes are used to request sufficient access on the user’s account. In this ex
 
 The integration follows this redirect pattern:
 
-```
+```text
 UI → Your Backend → Google → Your Backend → UI
 ```
 
@@ -79,7 +79,7 @@ Your backend should redirect to Google's OAuth URL with these parameters:
 
 **OAuth URL:**
 
-```
+```text
 https://accounts.google.com/o/oauth2/auth?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fgmail.send+openid+profile&response_type=code&access_type=offline
 ```
 

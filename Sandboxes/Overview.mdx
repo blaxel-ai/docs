@@ -10,17 +10,17 @@ They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/f
 
 ## Sandbox lifecycle
 
-Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes.
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
 
 <img
   className="block dark:hidden"
-  src="/img/general/sbx-lifecycle-light.png"
+  src="/img/general/sbx-lifecycle-light.webp"
   alt="Lifecycle of Blaxel Sandboxes"
 />
 
 <img
   className="hidden dark:block"
-  src="/img/general/sbx-lifecycle-dark.png"
+  src="/img/general/sbx-lifecycle-dark.webp"
   alt="Lifecycle of Blaxel Sandboxes"
 />
 
@@ -417,14 +417,14 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
 
 - From the Blaxel Console, by visiting the detail page for your sandbox in your web browser and selecting the **Terminal** tab:
 
-  ![image.png](Overview/connect-web-terminal.png)
+  ![image.webp](Overview/connect-web-terminal.webp)
 - From your local host, by running:
 
   ```bash
   bl connect sandbox your-sandbox-name
   ```
 
-  ![image.png](Overview/connect-terminal.png)
+  ![image.webp](Overview/connect-terminal.webp)
 
 
 <CardGroup>
@@ -461,7 +461,12 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
   <Card title="Templates" icon="box" href="/Sandboxes/Templates">
     Create custom sandbox templates.
   </Card>
+  <Card title="Best practices" icon="check" href="/Sandboxes/best-practices">
+    Recommended practices for using Blaxel sandboxes.
+  </Card>
 </CardGroup>
+
+Sandboxes work alongside [Agents Hosting](/Agents/Overview), [MCP Servers](/Functions/Overview), and [Batch Jobs](/Jobs/Overview) to form a complete agentic architecture. See [observability](/Observability/Overview) for monitoring sandbox activity.
 
 See tutorials and examples:
 
