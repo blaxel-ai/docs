@@ -10,7 +10,7 @@ Deploying and running agents on Blaxel gives you **total observability by design
 
 ## Monitor from the Blaxel console
 
-There are three ways you can observe and monitor your running agents:
+There are three ways you can observe and monitor your running workloads:
 
 - Metrics
 - Logs
@@ -18,7 +18,7 @@ There are three ways you can observe and monitor your running agents:
 
 ### Metrics
 
-Metrics are aggregated data about your agents’ executions. They include:
+Metrics are aggregated data about workload executions. They include:
 
 - Number and rate of requests
 - End-to-end latency: average, p50, p90, p99
@@ -49,6 +49,16 @@ Blaxel collects and saves the traces of a **sampled 10%** of all your executions
 
 ![traces.webp](/Observability/Overview/traces.webp)
 
-### Connect to third-party tools
+## Connect to third-party tools
 
 Blaxel uses the OpenTelemetry standard for all the logging and tracing. We can export metrics easily to any compatible third-party platform, such as Datadog, Langfuse or others. Exporting metrics outside of Blaxel requires being in the Enterprise plan.
+
+## Opt out
+
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. It defaults to `"false"` and must be explicitly set to `"true"`.
+
+<Warning>
+  Setting `DO_NOT_TRACK=1` has no effect on OpenTelemetry.
+</Warning>
+
+[Read more about SDK and CLI data collection and privacy](/Security/Data-collection-and-privacy).

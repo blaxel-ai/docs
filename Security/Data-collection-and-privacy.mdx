@@ -1,0 +1,82 @@
+---
+
+title: 'Data collection and privacy'
+description: 'Understand what usage data Blaxel CLI and SDKs collect, and how to opt out.'
+---
+
+The Blaxel SDKs and Blaxel CLI have two separate data collection systems.
+
+## Error tracking
+
+When enabled, the SDKs captures errors and exceptions that originate from the SDK itself - not from application code. Each SDK has a lightweight, custom Sentry client that collects and tracks the following error-related metadata:
+
+| Field | Description |
+|-------|-------------|
+| `event_id` | Random UUID |
+| `timestamp` | When the error occurred |
+| `platform` | `"python"` or `"javascript"` |
+| `level` | `"error"` |
+| `environment` | `"dev"` or `"prod"` |
+| `release` | SDK version |
+| `tags.blaxel.workspace` | Workspace name |
+| `tags.blaxel.version` | SDK version |
+| `tags.blaxel.commit` | SDK build commit hash |
+| `exception` | Error type, message, and stack trace |
+
+No request data, API keys, file contents, IP addresses or other user or application data is collected.
+
+### Opt out
+
+Error tracking is controlled by the `tracking` parameter, which reads its value from the following locations (in priority order):
+
+1. `DO_NOT_TRACK` environment variable
+2. `tracking:` field in `~/.blaxel/config.yaml`
+3. Pre-set default value
+    - `false` starting from SDK v0.2.76 (Python), v0.2.60 (TypeScript) and v0.161 (Go)
+    - `true` in all earlier versions
+
+#### `DO_NOT_TRACK` environment variable
+
+The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To disable tracking, use the command below in your shell environment:
+
+```bash
+export DO_NOT_TRACK=1    # Disable tracking
+```
+
+#### Blaxel configuration file
+
+You can also disable tracking by adding the following parameter to your `~/.blaxel/config.yaml` global configuration file:
+
+```yaml
+tracking: false
+```
+
+<Warning>
+  Setting `BL_ENABLE_OPENTELEMETRY=0` has no effect on error tracking.
+</Warning>
+
+## OpenTelemetry tracing and logging
+
+When you deploy from the Blaxel Console, Blaxel CLI or by using the Blaxel SDK to wrap your code for deployment, Blaxel will automatically implement logging and tracing on your requests.
+
+The data collected consists of:
+
+- Metrics: Aggregated data about workload executions
+- Logs: Timestamped logs for workloads
+- Traces: Data on inputs, outputs and execution steps
+
+Blaxel only collects and saves traces for a sampled 10% of all your executions.
+
+[Read more about observability](/Observability/Overview).
+
+### Opt out
+
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. It defaults to `"false"` and must be explicitly set to `"true"`.
+
+```bash
+export BL_ENABLE_OPENTELEMETRY=false    # Disable OpenTelemetry logging
+```
+
+<Warning>
+  Setting `DO_NOT_TRACK=1` has no effect on OpenTelemetry.
+</Warning>
