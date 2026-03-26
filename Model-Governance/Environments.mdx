@@ -21,7 +21,7 @@ Currently, Blaxel provides all workspaces with two different environments: **pro
 
 You can attach [deployment policies](/Model-Governance/Policies) to any environment in order to enforce them across all workloads in that environment that are in the scope of the [target](/Model-Governance/Policies) of the policy.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](/Infrastructure/Global-Inference-Network)’s default optimizations.
 
 Read our [complete reference for environments](https://docs.blaxel.ai/api-reference/environments/create-or-update-environment).
 
@@ -53,8 +53,8 @@ Deployments can be **released** to a new environment. This replaces the deployme
 
 For example, for Agent XYZ:
 
-1. Let’s say you have version A of the agent running on the *production* environment (this is the  production deployment), and version B of the agent running on the *development* environment (this is the development deployment). Each version can be called through the [respective agent deployment endpoint](../Agents/Query-agents) allowing to test version B while version A still runs.
-2. Once version B is tested and ready, you [release](../Models/Model-deployment) the *development deployment* on the *production* environment.
+1. Let’s say you have version A of the agent running on the *production* environment (this is the  production deployment), and version B of the agent running on the *development* environment (this is the development deployment). Each version can be called through the [respective agent deployment endpoint](/Agents/Query-agents) allowing to test version B while version A still runs.
+2. Once version B is tested and ready, you [release](/Models/Model-deployment) the *development deployment* on the *production* environment.
 3. Now: version B runs on the *production* environment, and version B also runs on the *development* environment. Version A can no longer be called.
-4. You [replace](../Models/Model-deployment) the *development* deployment with version C of the agent. 
+4. You [replace](/Models/Model-deployment) the *development* deployment with version C of the agent. 
 5. Now: version B runs on the *production* environment, and version C runs on the *development* environment.

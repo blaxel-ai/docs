@@ -5,7 +5,7 @@ description: "Call deployed agents via synchronous or asynchronous inference end
 
 Agent [deployments](Overview) on Blaxel have a default **inference endpoint** which can be used by external consumers to request an inference execution. This inference endpoint is synchronous so the connection remains open until the end of your request is entirely processed by the agent. You can also query an asynchronous endpoint for agents, allowing to send requests that last for longer times without keeping connections open.
 
-All inference requests are routed on the [Global Agentics Network](../Infrastructure/Global-Inference-Network) based on the [deployment policies](../Model-Governance/Policies) associated with your agent deployment.
+All inference requests are routed on the [Global Agentics Network](/Infrastructure/Global-Inference-Network) based on the [deployment policies](/Model-Governance/Policies) associated with your agent deployment.
 
 ## Inference endpoints
 
@@ -23,7 +23,7 @@ POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
 Connection limit:
 
 - The synchronous endpoint closes the connection after **100 seconds** if no data flows through the API. If your agent streams back responses, the connection resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will close.
-- If your request processing is expected to take longer than 100 seconds without streaming data, you should use the asynchronous endpoint or [batch jobs](../Jobs/Overview) instead.
+- If your request processing is expected to take longer than 100 seconds without streaming data, you should use the asynchronous endpoint or [batch jobs](/Jobs/Overview) instead.
 
 ### Asynchronous endpoint
 
@@ -37,7 +37,7 @@ This endpoint allows you to initiate requests without maintaining an open connec
   You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
 </Note>
 
-This endpoint supports requests up to 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](../Jobs/Overview) instead.
+This endpoint supports requests up to 15 minutes. If your request processing is expected to take longer than this, you should use [batch jobs](/Jobs/Overview) instead.
 
 The asynchronous endpoint looks like this:
 
@@ -45,7 +45,7 @@ The asynchronous endpoint looks like this:
 POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}?async=true
 ```
 
-You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file. For more information, read the [documentation on asynchronous triggers](./Asynchronous-triggers).
+You can create async endpoints either from the Blaxel Console, or from your code in the `blaxel.toml` file. For more information, read the [documentation on asynchronous triggers](/Agents/Asynchronous-triggers).
 
 <Accordion title="blaxel.toml reference">
   The agent deployment can be configured via the `blaxel.toml` file in your agent directory. This file is not mandatory; if the file is not found or a required option is not set, you will be prompted for the information during deployment.
@@ -91,9 +91,9 @@ You can create async endpoints either from the Blaxel Console, or from your code
 
 ### Endpoint authentication
 
-By default, agents deployed on Blaxel **aren’t public**. It is necessary to authenticate all inference requests, via a [bearer token](../Security/Access-tokens).
+By default, agents deployed on Blaxel **aren’t public**. It is necessary to authenticate all inference requests, via a [bearer token](/Security/Access-tokens).
 
-The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
+The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](/Security/Workspace-access-control).
 
 <Tip>
   See how to remove authentication on a deployed agent down below.

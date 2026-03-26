@@ -6,7 +6,7 @@ description: 'Available deployment regions for Blaxel infrastructure including O
 
 ---
 
-Blaxel is available in many regions across the globe. Some types of resources can be deployed ‘globally’ over multiple regions (for example: [agents](../Agents/Overview)), while some other types are deployed only in one specific region (for example: [sandboxes](../Sandboxes/Overview)).
+Blaxel is available in many regions across the globe. Some types of resources can be deployed ‘globally’ over multiple regions (for example: [agents](/Agents/Overview)), while some other types are deployed only in one specific region (for example: [sandboxes](/Sandboxes/Overview)).
 
 This guide details the available regions for [Mark 3 infrastructure generation](/Infrastructure/Gens).
 
@@ -27,21 +27,21 @@ All regions are not necessarily available in self-service by default. Please [co
 
 When deploying a resource on Blaxel, you sometimes have the option to choose the deployment region. This depends on the type of resource, as explained below.
 
-For all resource types, the deployment region **is always subject to the** [deployment policies](../Model-Governance/Policies) applied to the resource or workspace. A resource will never be deployed in a region that is prohibited by an existing deployment policy.
+For all resource types, the deployment region **is always subject to the** [deployment policies](/Model-Governance/Policies) applied to the resource or workspace. A resource will never be deployed in a region that is prohibited by an existing deployment policy.
 
 ### Resources which are globally distributed over multiple regions
 
 This is the case of:
 
-- [agents](../Agents/Overview)
-- [MCP servers](../Functions/Overview)
-- [batch jobs](../Jobs/Overview)
+- [agents](/Agents/Overview)
+- [MCP servers](/Functions/Overview)
+- [batch jobs](/Jobs/Overview)
 
 **When deploying**
 
-For these types of resources, you don't need to specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](../Model-Governance/Policies).
+For these types of resources, you don't need to specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](/Model-Governance/Policies).
 
-However, you can optionally **pin an agent or MCP server to a specific region** by setting the `region` field in your [`blaxel.toml`](/deployment-reference). This is required when you want to [attach volumes to an agent](../Agents/Deploy-an-agent#attach-volumes-to-an-agent), since volumes are regional resources and the agent must run in the same region.
+However, you can optionally **pin an agent or MCP server to a specific region** by setting the `region` field in your [`blaxel.toml`](/deployment-reference). This is required when you want to [attach volumes to an agent](/Agents/Deploy-an-agent#attach-volumes-to-an-agent), since volumes are regional resources and the agent must run in the same region.
 
 ```toml blaxel.toml
 region = "us-pdx-1"
@@ -53,11 +53,11 @@ For these types of resources, you receive a global query endpoint that automatic
 
 ### Resources which are deployed in one specific region
 
-- [sandboxes](../Sandboxes/Overview) (and their [preview URLs](../Sandboxes/Preview-url))
+- [sandboxes](/Sandboxes/Overview) (and their [preview URLs](/Sandboxes/Preview-url))
 
 **When deploying**
 
-For these types of resources, you can **optionally specify** a region during deployment, provided it is allowed by applicable [deployment policies](../Model-Governance/Policies). If you do not specify a region, Blaxel will deploy the resource automatically on a default region determined to be optimal.
+For these types of resources, you can **optionally specify** a region during deployment, provided it is allowed by applicable [deployment policies](/Model-Governance/Policies). If you do not specify a region, Blaxel will deploy the resource automatically on a default region determined to be optimal.
 
 **When requesting**
 

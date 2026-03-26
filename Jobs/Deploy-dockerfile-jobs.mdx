@@ -6,7 +6,7 @@ description: 'Ship your AI batch job on Blaxel using a custom Dockerfile.'
 
 ---
 
-Blaxel allows you to customize your deployments ([agents](../Agents/Overview), [MCP servers](../Functions/Overview), and [batch jobs](Overview)) using a Dockerfile at the root level of your project.
+Blaxel allows you to customize your deployments ([agents](/Agents/Overview), [MCP servers](/Functions/Overview), and [batch jobs](Overview)) using a Dockerfile at the root level of your project.
 
 ## Overview
 
@@ -19,7 +19,7 @@ By default, Blaxel builds and deploys your application using predefined containe
 
 A Dockerfile at the root of your project gives you full control over the container image that will run your workload on Blaxel's infrastructure.
 
-1. Navigate to the root directory of your Blaxel project ([agent](../Agents/Overview), [MCP server](../Functions/Overview), or [batch job](Overview))
+1. Navigate to the root directory of your Blaxel project ([agent](/Agents/Overview), [MCP server](/Functions/Overview), or [batch job](Overview))
 2. Create a file named `Dockerfile` (case-sensitive)
 
 ## Dockerfile Structure
@@ -80,7 +80,7 @@ The entrypoint must run a function that terminates - if it runs infinitely, your
 
 ### Environment variables
 
-[Environment variables](../Agents/Variables-and-secrets) configured in the Blaxel platform will be automatically injected into your container at runtime. You do not need to specify them in your Dockerfile.
+[Environment variables](/Agents/Variables-and-secrets) configured in the Blaxel platform will be automatically injected into your container at runtime. You do not need to specify them in your Dockerfile.
 
 ## Test locally
 

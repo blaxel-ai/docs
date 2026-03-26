@@ -66,7 +66,7 @@ bl serve --hotreload
 
 ### Deploy on production
 
-You can deploy the MCP server in order to make the entrypoint function (by default: `server.ts` / `server.py`) **available on a global hosted endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the MCP server in order to make the entrypoint function (by default: `server.ts` / `server.py`) **available on a global hosted endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](/Model-Governance/Policies).
 
 Run the following command to build and deploy the MCP server on Blaxel:
 
@@ -143,7 +143,7 @@ Deploy resources using a custom Dockerfile.
 
 ### Deploy multiple resources at once
 
-Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](../Agents/Deploy-multiple) with shared dependencies.
+Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](/Agents/Deploy-multiple) with shared dependencies.
 
 <Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
 Deploy multiple agents & MCP servers with shared context from a single repository.
@@ -200,7 +200,7 @@ DEFAULT_CITY = "San Francisco"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the MCP servers. You can also make them either private (default) or public (`authenticationType = "public"`).
 
 <AccordionGroup>

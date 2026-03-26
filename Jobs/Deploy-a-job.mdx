@@ -5,15 +5,15 @@ description: "Deploy your batch jobs on Blaxel as serverless autoscalable endpoi
 
 This guide assumes you have developed a job locally.
 
-The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when jobs are deployed.
+The [Blaxel SDK](/sdk-reference/introduction) allows you to connect to and orchestrate other resources (such as model APIs, tool servers, multi-agents) during development, and ensures telemetry, secure connections to third-party systems or private networks, smart global placement of workflows, and much more when jobs are deployed.
 
 <Accordion title="Set up authentication to Blaxel">
   The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
   1. when running on Blaxel, authentication is handled automatically
-  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](/Agents/Variables-and-secrets) for other authentication options).
   3. environment variables from your machine
-  4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+  4. configuration file created locally when you log in through [Blaxel CLI](/cli-reference/introduction) (or deploy on Blaxel)
 
   When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
@@ -22,7 +22,7 @@ The [Blaxel SDK](../sdk-reference/introduction) allows you to connect to and orc
 
 ## Deploy on production
 
-You can deploy the job in order to make the entrypoint function (by default: `index.ts` / `server.py`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](../Model-Governance/Policies).
+You can deploy the job in order to make the entrypoint function (by default: `index.ts` / `server.py`) **callable on a global endpoint**. When deploying to Blaxel, you get a dedicated endpoint that enforces your [deployment policies](/Model-Governance/Policies).
 
 Run the following command to build and deploy a local job on Blaxel:
 
@@ -99,7 +99,7 @@ exec_job()
 
 ### **API**
 
-Start batch job execution by [calling the inference API for your deployed batch job](../api-reference/inference).
+Start batch job execution by [calling the inference API for your deployed batch job](/api-reference/inference).
 
 Here is an example using `curl`:
 
@@ -329,7 +329,7 @@ tasks = [
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `policies` fields is also optional. It allow you to specify a Blaxel [policy](../Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
+- `policies` fields is also optional. It allow you to specify a Blaxel [policy](/Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
 - `[env]` section defines environment variables that the job can access via the SDK. Note that these are NOT secrets.
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
 - `[tasks]` sections allows to specify

@@ -22,9 +22,9 @@ https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
 
 ### Endpoint authentication
 
-By default, MCP servers deployed on Blaxel aren’t public. It is necessary to authenticate all connections, via a [bearer token](../Security/Access-tokens).
+By default, MCP servers deployed on Blaxel aren’t public. It is necessary to authenticate all connections, via a [bearer token](/Security/Access-tokens).
 
-The evaluation of authentication/authorization for messages is managed by the Global Agentics Network based on the [access given in your workspace](../Security/Workspace-access-control).
+The evaluation of authentication/authorization for messages is managed by the Global Agentics Network based on the [access given in your workspace](/Security/Workspace-access-control).
 
 You can make an MCP server **public**, meaning it will bypass Blaxel authentication and you will have to implement your own authentication inside the server. This can be done through the `blaxel.toml` configuration file.
 
@@ -49,7 +49,7 @@ DEFAULT_CITY = "San Francisco"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the MCP servers. You can also make them either private (default) or public (`authenticationType = "public"`).
 
 </Accordion>
@@ -119,7 +119,7 @@ tools = await bl_tools(['blaxel-search'])
 Add the MCP server to MCP-aware applications and tools. This section has instructions for some popular applications.
 
 <Note>
-You must provide your [Blaxel API key](../Security) in the `Authorization` header. If you have access to multiple workspaces, include the workspace header as well.
+You must provide your [Blaxel API key](/Security) in the `Authorization` header. If you have access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
@@ -197,7 +197,7 @@ You must provide your [Blaxel API key](../Security) in the `Authorization` heade
 
 Below are snippets of code to connect to an MCP server that is deployed on Blaxel. You will need the following information:
 
-- `BL_API_KEY`: an [API key](../Security/Access-tokens) to connect to your Blaxel workspace
+- `BL_API_KEY`: an [API key](/Security/Access-tokens) to connect to your Blaxel workspace
 - `BL_WORKSPACE`: the slug ID for your workspace
 - `MCP_SERVER_NAME`: the slug name for your MCP server
 

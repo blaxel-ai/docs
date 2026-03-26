@@ -8,7 +8,7 @@ description: 'Develop custom MCP servers in TypeScript or Python using Blaxel SD
 
 MCP servers ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple tools—individual capabilities for accessing specific APIs or databases. These servers can be interacted with using HTTP on the server’s global endpoint.
 
-You can develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript or Python and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](../cli-reference/introduction), GitHub action, etc.).
+You can develop custom [MCP servers](https://modelcontextprotocol.io/introduction) in TypeScript or Python and deploy them on Blaxel by integrating a few lines of the Blaxel SDK and leveraging our other developer tools ([Blaxel CLI](/cli-reference/introduction), GitHub action, etc.).
 
 ## Quickstart
 
@@ -173,7 +173,7 @@ DEFAULT_CITY = "San Francisco"
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](../Agents/Variables-and-secrets).
+- `[env]` section defines environment variables that the MCP server can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the MCP servers. You can also make them either private (default) or public (`authenticationType = "public"`).
 
 <AccordionGroup>

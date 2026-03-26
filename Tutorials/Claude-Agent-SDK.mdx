@@ -12,9 +12,9 @@ description: "Deploy a Claude Agent SDK agent to Blaxel as a serverless auto-sca
 
 ## 1. Install the Blaxel CLI and log in to Blaxel
 
-The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](/Agents/Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
+The main way to deploy an agent on Blaxel is with the [Blaxel CLI](/cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](/Agents/Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
 
-[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
+[Install the Blaxel CLI](/cli-reference/introduction) and log in to Blaxel using this command:
 
 ```bash
 bl login
@@ -300,7 +300,7 @@ Once the deployment process is complete, log in to the [Blaxel Console](https://
 
 ## 8. Test the agent on Blaxel
 
-By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens). Requests can be made either via the Blaxel API or the Blaxel CLI.
+By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](/Security/Access-tokens). Requests can be made either via the Blaxel API or the Blaxel CLI.
 
 Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `prompt` as desired):
 

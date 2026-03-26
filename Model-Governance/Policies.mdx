@@ -6,9 +6,9 @@ description: 'Define policies to control where and how workloads execute on the 
 
 ---
 
-Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Agentics Network](../Infrastructure/Global-Inference-Network).
+Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Agentics Network](/Infrastructure/Global-Inference-Network).
 
-Policies apply to the entities they are attached to: [model APIs](../Models/Overview), [functions](../Functions/Overview) and [agent](../Agents/Overview) deployments. 
+Policies apply to the entities they are attached to: [model APIs](/Models/Overview), [functions](/Functions/Overview) and [agent](/Agents/Overview) deployments. 
 
 ## Policies overview
 
@@ -20,7 +20,7 @@ Example:
 
 - Policy `Country: US` means that attached workloads will only be able to run in locations that are in the United States.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](/Infrastructure/Global-Inference-Network)’s default optimizations.
 
 ### Policy types
 
@@ -53,7 +53,7 @@ They come in two different formats:
 
 ### Token usage policies
 
-Token usage policies control the maximum number of tokens your [**model APIs**](../Models/Overview) can handle within a specific time period. You can control the maximum number of input tokens, output tokens, **and/or** total tokens. When a model reaches its maximum token limit, subsequent requests are rejected with a 429 error.
+Token usage policies control the maximum number of tokens your [**model APIs**](/Models/Overview) can handle within a specific time period. You can control the maximum number of input tokens, output tokens, **and/or** total tokens. When a model reaches its maximum token limit, subsequent requests are rejected with a 429 error.
 
 <Info>The policy only drops complete requests AFTER the maximum limit is reached. The first request that exceeds the threshold will still be processed. However, all subsequent requests within the enforced time period will be dropped.</Info>
 
@@ -67,7 +67,7 @@ Read [our complete reference on policies](https://docs.blaxel.ai/api-reference/p
 
 Attaching a policy to a workload enforces it on the workload.
 
-When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](../Infrastructure/Global-Inference-Network)’s default optimizations.
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](/Infrastructure/Global-Inference-Network)’s default optimizations.
 
 ### Attaching multiple policies
 

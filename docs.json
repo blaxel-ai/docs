@@ -30,159 +30,159 @@
           {
             "group": "Get Started",
             "pages": [
-              "Overview",
-              "Get-started",
-              "MCP-server",
-              "MCP-docs"
+              "/Overview",
+              "/Get-started",
+              "/MCP-server",
+              "/MCP-docs"
             ]
           },
           {
             "group": "Sandboxes",
             "pages": [
-              "Sandboxes/Overview",
-              "Tutorials/Claude-Agent-SDK-MCP",
-              "Sandboxes/Expiration",
-              "Sandboxes/Processes",
-              "Sandboxes/Filesystem",
-              "Sandboxes/MCP",
-              "Sandboxes/Codegen-tools",
-              "Sandboxes/Log-streaming",
+              "/Sandboxes/Overview",
+              "/Tutorials/Claude-Agent-SDK-MCP",
+              "/Sandboxes/Expiration",
+              "/Sandboxes/Processes",
+              "/Sandboxes/Filesystem",
+              "/Sandboxes/MCP",
+              "/Sandboxes/Codegen-tools",
+              "/Sandboxes/Log-streaming",
               {
                 "group": "Ports, previews & sessions",
                 "pages": [
-                  "Sandboxes/Ports",
-                  "Sandboxes/Preview-url",
-                  "Sandboxes/Sessions",
-                  "Sandboxes/Standby-control"
+                  "/Sandboxes/Ports",
+                  "/Sandboxes/Preview-url",
+                  "/Sandboxes/Sessions",
+                  "/Sandboxes/Standby-control"
                 ]
               },
-              "Sandboxes/Volumes",
-              "Sandboxes/Templates",
-              "Sandboxes/best-practices"
+              "/Sandboxes/Volumes",
+              "/Sandboxes/Templates",
+              "/Sandboxes/best-practices"
             ]
           },
           {
             "group": "Agent Drive",
             "pages": [
-              "Agent-drive/Overview"
+              "/Agent-drive/Overview"
             ]
           },
           {
             "group": "Volumes",
             "pages": [
-              "Volumes/Overview",
-              "Volumes/Volumes-templates"
+              "/Volumes/Overview",
+              "/Volumes/Volumes-templates"
             ]
           },
           {
             "group": "Batch Jobs",
             "pages": [
-              "Jobs/Overview",
-              "Jobs/Develop-a-job",
+              "/Jobs/Overview",
+              "/Jobs/Develop-a-job",
               {
                 "group": "Deploy a job",
                 "pages": [
-                  "Jobs/Deploy-a-job",
-                  "Jobs/Deploy-dockerfile-jobs",
-                  "Jobs/Deploy-multiple-jobs"
+                  "/Jobs/Deploy-a-job",
+                  "/Jobs/Deploy-dockerfile-jobs",
+                  "/Jobs/Deploy-multiple-jobs"
                 ]
               },
               {
                 "group": "Manage job execution",
                 "pages": [
-                  "Jobs/Manage-job-execution-ts",
-                  "Jobs/Manage-job-execution-py"
+                  "/Jobs/Manage-job-execution-ts",
+                  "/Jobs/Manage-job-execution-py"
                 ]
               },
-              "Jobs/Variables-and-secrets-jobs"
+              "/Jobs/Variables-and-secrets-jobs"
             ]
           },
           {
             "group": "Agents Hosting",
             "pages": [
-              "Agents/Overview",
-              "Agents/Quickstart-agent",
+              "/Agents/Overview",
+              "/Agents/Quickstart-agent",
               {
                 "group": "Development guide",
                 "pages": [
-                  "Agents/Develop-an-agent",
-                  "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py"
+                  "/Agents/Develop-an-agent",
+                  "/Agents/Develop-an-agent-ts",
+                  "/Agents/Develop-an-agent-py"
                 ]
               },
               {
                 "group": "Deploy an agent",
                 "pages": [
-                  "Agents/Deploy-an-agent",
-                  "Agents/Deploy-dockerfile",
-                  "Agents/Deploy-multiple"
+                  "/Agents/Deploy-an-agent",
+                  "/Agents/Deploy-dockerfile",
+                  "/Agents/Deploy-multiple"
                 ]
               },
-              "Agents/Github-integration",
-              "Agents/Query-agents",
-              "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps",
-              "Agents/Volumes"
+              "/Agents/Github-integration",
+              "/Agents/Query-agents",
+              "/Agents/Variables-and-secrets",
+              "/Agents/Asynchronous-triggers",
+              "/Agents/Integrate-in-apps",
+              "/Agents/Volumes"
             ]
           },
           {
             "group": "MCP Servers Hosting",
             "pages": [
-              "Functions/Overview",
-              "Functions/Adapt-Existing-MCP-server",
-              "Functions/Create-MCP-server",
-              "Functions/Deploy-a-function",
-              "Functions/Invoke-functions",
-              "Functions/Code-mode",
-              "Functions/Variables-and-secrets",
-              "Functions/oauth-flow-mcp"
+              "/Functions/Overview",
+              "/Functions/Adapt-Existing-MCP-server",
+              "/Functions/Create-MCP-server",
+              "/Functions/Deploy-a-function",
+              "/Functions/Invoke-functions",
+              "/Functions/Code-mode",
+              "/Functions/Variables-and-secrets",
+              "/Functions/oauth-flow-mcp"
             ]
           },
           {
             "group": "Model Gateway",
             "pages": [
-              "Models/Overview",
-              "Models/External-model-apis",
-              "Models/Query-a-model"
+              "/Models/Overview",
+              "/Models/External-model-apis",
+              "/Models/Query-a-model"
             ]
           },
           {
             "group": "Observability",
             "pages": [
-              "Observability/Overview"
+              "/Observability/Overview"
             ]
           },
           {
             "group": "Integrations",
             "pages": [
-              "Integrations",
-              "Integrations/oauth-flow",
+              "/Integrations",
+              "/Integrations/oauth-flow",
               {
                 "group": "Model providers integrations",
                 "pages": [
-                  "Integrations/OpenAI",
-                  "Integrations/Anthropic",
-                  "Integrations/MistralAI",
-                  "Integrations/Cohere",
-                  "Integrations/xAI",
-                  "Integrations/DeepSeek",
-                  "Integrations/HuggingFace",
-                  "Integrations/Azure-AI-Foundry"
+                  "/Integrations/OpenAI",
+                  "/Integrations/Anthropic",
+                  "/Integrations/MistralAI",
+                  "/Integrations/Cohere",
+                  "/Integrations/xAI",
+                  "/Integrations/DeepSeek",
+                  "/Integrations/HuggingFace",
+                  "/Integrations/Azure-AI-Foundry"
                 ]
               },
               {
                 "group": "MCP server integrations",
                 "pages": [
-                  "Integrations/Google-Maps",
-                  "Integrations/Gmail"
+                  "/Integrations/Google-Maps",
+                  "/Integrations/Gmail"
                 ]
               },
               {
                 "group": "Agent frameworks and tools",
                 "pages": [
-                  "Integrations/AgentMail",
-                  "Integrations/Rippletide"
+                  "/Integrations/AgentMail",
+                  "/Integrations/Rippletide"
                 ]
               }
             ]
@@ -193,26 +193,26 @@
               {
                 "group": "Workspaces and permissions",
                 "pages": [
-                  "Security/Workspace-access-control",
-                  "Security/Service-accounts"
+                  "/Security/Workspace-access-control",
+                  "/Security/Service-accounts"
                 ]
               },
-              "Security/Access-tokens",
+              "/Security/Access-tokens",
               {
                 "group": "Identity & Access",
                 "pages": [
-                  "Security/Domain-capture",
-                  "Security/SSO-Directory-sync"
+                  "/Security/Domain-capture",
+                  "/Security/SSO-Directory-sync"
                 ]
               },
-              "Security/Quotas",
-              "Model-Governance/Policies",
+              "/Security/Quotas",
+              "/Model-Governance/Policies",
               {
                 "group": "Infrastructure",
                 "pages": [
-                  "Infrastructure/Regions",
-                  "Infrastructure/Gens",
-                  "Infrastructure/Custom-domains"
+                  "/Infrastructure/Regions",
+                  "/Infrastructure/Gens",
+                  "/Infrastructure/Custom-domains"
                 ]
               }
             ]
@@ -220,7 +220,7 @@
           {
             "group": "Troubleshooting",
             "pages": [
-              "troubleshooting"
+              "/troubleshooting"
             ]
           }
         ]
@@ -231,37 +231,37 @@
           {
             "group": "Example Applications",
             "pages": [
-              "Examples/Overview"
+              "/Examples/Overview"
             ]
           },
           {
             "group": "Sandboxes",
             "expanded": true,
             "pages": [
-              "Tutorials/Sandboxes-Overview",
-              "Tutorials/Astro",
-              "Tutorials/Expo",
-              "Tutorials/Nextjs"
+              "/Tutorials/Sandboxes-Overview",
+              "/Tutorials/Astro",
+              "/Tutorials/Expo",
+              "/Tutorials/Nextjs"
             ]
           },
           {
             "group": "Agents",
             "expanded": true,
             "pages": [
-              "Tutorials/Agents-Overview",
-              "Tutorials/OpenClaw",
-              "Tutorials/Claude-Agent-SDK-Index",
-              "Tutorials/Claude-Code",
-              "Tutorials/CrewAI",
-              "Tutorials/ADK",
-              "Tutorials/LangChain",
-              "Tutorials/LlamaIndex",
-              "Tutorials/Mastra",
-              "Tutorials/n8n",
-              "Tutorials/OpenAI-Agents",
-              "Tutorials/PydanticAI",
-              "Tutorials/Vercel-AI",
-              "Tutorials/Custom-Agents"
+              "/Tutorials/Agents-Overview",
+              "/Tutorials/OpenClaw",
+              "/Tutorials/Claude-Agent-SDK-Index",
+              "/Tutorials/Claude-Code",
+              "/Tutorials/CrewAI",
+              "/Tutorials/ADK",
+              "/Tutorials/LangChain",
+              "/Tutorials/LlamaIndex",
+              "/Tutorials/Mastra",
+              "/Tutorials/n8n",
+              "/Tutorials/OpenAI-Agents",
+              "/Tutorials/PydanticAI",
+              "/Tutorials/Vercel-AI",
+              "/Tutorials/Custom-Agents"
             ]
           }
         ]
@@ -276,13 +276,13 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "/api-reference/introduction"
             ]
           },
           {
             "group": "Inference API",
             "pages": [
-              "api-reference/inference"
+              "/api-reference/inference"
             ]
           }
         ]
@@ -297,10 +297,10 @@
           {
             "group": "Get started",
             "pages": [
-              "sdk-reference/introduction",
-              "sdk-reference/sdk-ts",
-              "sdk-reference/sdk-python",
-              "sdk-reference/sdk-go"
+              "/sdk-reference/introduction",
+              "/sdk-reference/sdk-ts",
+              "/sdk-reference/sdk-python",
+              "/sdk-reference/sdk-go"
             ]
           }
         ]
@@ -315,48 +315,48 @@
               {
                 "group": "Commands",
                 "pages": [
-                  "cli-reference/commands/bl_apply",
-                  "cli-reference/commands/bl_chat",
-                  "cli-reference/commands/bl_completion",
-                  "cli-reference/commands/bl_completion_bash",
-                  "cli-reference/commands/bl_completion_fish",
-                  "cli-reference/commands/bl_completion_powershell",
-                  "cli-reference/commands/bl_completion_zsh",
-                  "cli-reference/commands/bl_connect",
-                  "cli-reference/commands/bl_connect_sandbox",
-                  "cli-reference/commands/bl_delete",
-                  "cli-reference/commands/bl_delete_agent",
-                  "cli-reference/commands/bl_delete_function",
-                  "cli-reference/commands/bl_delete_image",
-                  "cli-reference/commands/bl_delete_integrationconnection",
-                  "cli-reference/commands/bl_delete_job",
-                  "cli-reference/commands/bl_delete_model",
-                  "cli-reference/commands/bl_delete_policy",
-                  "cli-reference/commands/bl_delete_sandbox",
-                  "cli-reference/commands/bl_delete_volume",
-                  "cli-reference/commands/bl_delete_volumetemplate",
-                  "cli-reference/commands/bl_deploy",
-                  "cli-reference/commands/bl_get",
-                  "cli-reference/commands/bl_get_agents",
-                  "cli-reference/commands/bl_get_functions",
-                  "cli-reference/commands/bl_get_image",
-                  "cli-reference/commands/bl_get_integrationconnections",
-                  "cli-reference/commands/bl_get_jobs",
-                  "cli-reference/commands/bl_get_models",
-                  "cli-reference/commands/bl_get_policies",
-                  "cli-reference/commands/bl_get_sandboxes",
-                  "cli-reference/commands/bl_get_volumes",
-                  "cli-reference/commands/bl_get_volumetemplates",
-                  "cli-reference/commands/bl_login",
-                  "cli-reference/commands/bl_logout",
-                  "cli-reference/commands/bl_logs",
-                  "cli-reference/commands/bl_new",
-                  "cli-reference/commands/bl_run",
-                  "cli-reference/commands/bl_serve",
-                  "cli-reference/commands/bl_token",
-                  "cli-reference/commands/bl_upgrade",
-                  "cli-reference/commands/bl_version",
-                  "cli-reference/commands/bl_workspaces"
+                  "/cli-reference/commands/bl_apply",
+                  "/cli-reference/commands/bl_chat",
+                  "/cli-reference/commands/bl_completion",
+                  "/cli-reference/commands/bl_completion_bash",
+                  "/cli-reference/commands/bl_completion_fish",
+                  "/cli-reference/commands/bl_completion_powershell",
+                  "/cli-reference/commands/bl_completion_zsh",
+                  "/cli-reference/commands/bl_connect",
+                  "/cli-reference/commands/bl_connect_sandbox",
+                  "/cli-reference/commands/bl_delete",
+                  "/cli-reference/commands/bl_delete_agent",
+                  "/cli-reference/commands/bl_delete_function",
+                  "/cli-reference/commands/bl_delete_image",
+                  "/cli-reference/commands/bl_delete_integrationconnection",
+                  "/cli-reference/commands/bl_delete_job",
+                  "/cli-reference/commands/bl_delete_model",
+                  "/cli-reference/commands/bl_delete_policy",
+                  "/cli-reference/commands/bl_delete_sandbox",
+                  "/cli-reference/commands/bl_delete_volume",
+                  "/cli-reference/commands/bl_delete_volumetemplate",
+                  "/cli-reference/commands/bl_deploy",
+                  "/cli-reference/commands/bl_get",
+                  "/cli-reference/commands/bl_get_agents",
+                  "/cli-reference/commands/bl_get_functions",
+                  "/cli-reference/commands/bl_get_image",
+                  "/cli-reference/commands/bl_get_integrationconnections",
+                  "/cli-reference/commands/bl_get_jobs",
+                  "/cli-reference/commands/bl_get_models",
+                  "/cli-reference/commands/bl_get_policies",
+                  "/cli-reference/commands/bl_get_sandboxes",
+                  "/cli-reference/commands/bl_get_volumes",
+                  "/cli-reference/commands/bl_get_volumetemplates",
+                  "/cli-reference/commands/bl_login",
+                  "/cli-reference/commands/bl_logout",
+                  "/cli-reference/commands/bl_logs",
+                  "/cli-reference/commands/bl_new",
+                  "/cli-reference/commands/bl_run",
+                  "/cli-reference/commands/bl_serve",
+                  "/cli-reference/commands/bl_token",
+                  "/cli-reference/commands/bl_upgrade",
+                  "/cli-reference/commands/bl_version",
+                  "/cli-reference/commands/bl_workspaces"
                 ]
               }
             ]
@@ -369,7 +369,7 @@
           {
             "group": "Overview",
             "pages": [
-              "deployment-reference"
+              "/deployment-reference"
             ]
           }
         ]

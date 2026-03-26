@@ -15,10 +15,10 @@ https://<SANDBOX_BASE_URL>/mcp
 
 The base URL of a sandbox can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) via the management API of sandboxes under `metadata.url`.
 
-Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) though the endpoint shown above. Instructions for some popular applications are provided below.
+Connect to this MCP server [like any other MCP server](/Functions/Invoke-functions) though the endpoint shown above. Instructions for some popular applications are provided below.
 
 <Note>
-  You must provide your [Blaxel API key](../Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+  You must provide your [Blaxel API key](/Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
   - Required: `Authorization: Bearer <APIKEY>`
   - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
@@ -52,7 +52,7 @@ claude mcp add --transport http blaxel https://<SANDBOX_BASE_URL>/mcp \\
   --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
 
-[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](../Tutorials/Claude-Agent-SDK-MCP).
+[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](/Tutorials/Claude-Agent-SDK-MCP).
 
 ### Add to Windsurf
 
@@ -155,7 +155,7 @@ tools = await bl_tools([f"sandbox/{sandbox_name}"])
 
 </CodeGroup>
 
-[Read more documentation](../Functions/Invoke-functions) on connecting to the MCP server directly from your code.
+[Read more documentation](/Functions/Invoke-functions) on connecting to the MCP server directly from your code.
 
 ## Example: Connect to a sandbox from Claude Agent SDK
 

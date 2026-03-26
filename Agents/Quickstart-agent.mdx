@@ -46,7 +46,7 @@ port = int(os.getenv("PORT", "80"))
 
 ## 3. Authenticate via the CLI
 
-[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
+[Install the Blaxel CLI](/cli-reference/introduction) and log in to Blaxel using this command:
 
 ```bash
 bl login
@@ -154,7 +154,7 @@ bl serve --hotreload
 
 ## 7. Test your agent
 
-By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](../Security/Access-tokens). Requests are made to the agent's [inference endpoint](./Query-agents) via the Blaxel API or Blaxel CLI.
+By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](/Security/Access-tokens). Requests are made to the agent's [inference endpoint](/Agents/Query-agents) via the Blaxel API or Blaxel CLI.
 
 ### Blaxel API
 
@@ -177,7 +177,7 @@ bl run agent YOUR-AGENT --data '{"inputs":"Enter your input here."}'
 ```
 
 <Tip>
-Althought deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
+Althought deployed agents are private by default, it is possible to [make an agent publicly available](/Agents/Query-agents#make-an-agent-public).
 </Tip>
 
 That’s it! You’re ready to start integrating Blaxel features using the Blaxel SDK.

@@ -6,7 +6,7 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in TypeScript
 
 ---
 
-You can bring your **custom agents developed in TypeScript** and deploy them to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), [GitHub app](/Agents/Github-integration), GitHub action, etc.). You can develop agents using frameworks like LangChain, AI SDK, Mastra; or your own custom code.
+You can bring your **custom agents developed in TypeScript** and deploy them to Blaxel with our developer tools ([Blaxel CLI](/cli-reference/introduction), [GitHub app](/Agents/Github-integration), GitHub action, etc.). You can develop agents using frameworks like LangChain, AI SDK, Mastra; or your own custom code.
 
 ## Quickstart
 
@@ -35,11 +35,11 @@ Agents Hosting have few requirements or limitations:
 
 ## Accessing resources with Blaxel SDK
 
-[Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
+[Blaxel SDK](/sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](/Models/Overview), [tool servers](/Functions/Overview), [sandboxes](/Sandboxes/Overview), [batch jobs](/Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
 
 ### Connect to a model API
 
-Blaxel SDK provides a helper to connect to a [model API](../Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
+Blaxel SDK provides a helper to connect to a [model API](/Models/Overview) defined on Blaxel from your code. This allows you to avoid managing a connection with the model API by yourself. Credentials remain stored securely on Blaxel.
 
 ```tsx
 /// Optional: enable automatic telemetry
@@ -69,7 +69,7 @@ const model = await blModel("my-model");
 
 ### Connect to tools
 
-Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](../Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following method retrieves all the tools discoverable in the tool server.
+Blaxel SDK provides a helper to connect to [pre-built or custom tool servers (MCP servers)](/Functions/Overview) hosted on Blaxel from your code. This allows you to avoid managing a connection with the server by yourself. Credentials remain stored securely on Blaxel. The following method retrieves all the tools discoverable in the tool server.
 
 ```tsx
 import { blTools } from "@blaxel/{FRAMEWORK_NAME}";
@@ -81,7 +81,7 @@ Like for a model, the retrieved tools are automatically converted to the format 
 
 You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
-1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](../Functions/Create-MCP-server))
+1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](/Functions/Create-MCP-server))
 2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")
 
 <CodeGroup>

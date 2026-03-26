@@ -6,9 +6,9 @@ description: 'Deploy public or private AI models from HuggingFace.'
 
 ---
 
-The [HuggingFace](https://huggingface.co/) integration enables Blaxel users to **connect to [serverless endpoints](https://huggingface.co/docs/api-inference/en/index) from HuggingFace**—whether public, gated, or private—directly through their agents on Blaxel. The integration is bidirectional, letting you create new [deployments](https://huggingface.co/docs/inference-endpoints/index) on HuggingFace from the Blaxel console to use as [model APIs](../Models/External-model-apis).
+The [HuggingFace](https://huggingface.co/) integration enables Blaxel users to **connect to [serverless endpoints](https://huggingface.co/docs/api-inference/en/index) from HuggingFace**—whether public, gated, or private—directly through their agents on Blaxel. The integration is bidirectional, letting you create new [deployments](https://huggingface.co/docs/inference-endpoints/index) on HuggingFace from the Blaxel console to use as [model APIs](/Models/External-model-apis).
 
-The integration must be set up by an [admin](../Security/Workspace-access-control) in the Integrations section in the [workspace settings](../Security/Workspace-access-control).
+The integration must be set up by an [admin](/Security/Workspace-access-control) in the Integrations section in the [workspace settings](/Security/Workspace-access-control).
 
 ## Set up the integration
 
@@ -22,11 +22,11 @@ On Blaxel, in the workspace settings, in the *HuggingFace* integration, paste th
 
 ## Connect to a HuggingFace model
 
-Once you’ve set up the integration in the workspace, any workspace member can use it to reference a HuggingFace model as an [external model API](../Models/External-model-apis).
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a HuggingFace model as an [external model API](/Models/External-model-apis).
 
 ### Public and private models
 
-When [creating a model API](../Models/Overview) on Blaxel, select “HuggingFace”. You can search for:
+When [creating a model API](/Models/Overview) on Blaxel, select “HuggingFace”. You can search for:
 
 - any **public model** from [Inference API (serverless)](https://huggingface.co/docs/api-inference/index)
 - any **private model** from [Inference Endpoints (dedicated)](https://huggingface.co/docs/inference-endpoints/index) in the organizations & repositories allowed by the integration’s token.
@@ -43,7 +43,7 @@ When the model gets deployed, Blaxel will check if the **integration token is al
 
 ## Create a HuggingFace Inference Endpoint
 
-You can deploy a model in HuggingFace’s [Inference Endpoints](https://huggingface.co/docs/inference-endpoints/index) directly from the Blaxel console when creating a new [external model API](../Models/External-model-apis).
+You can deploy a model in HuggingFace’s [Inference Endpoints](https://huggingface.co/docs/inference-endpoints/index) directly from the Blaxel console when creating a new [external model API](/Models/External-model-apis).
 
 ![image.webp](/Integrations/HuggingFace/image1.webp)
 

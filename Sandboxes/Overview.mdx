@@ -6,7 +6,7 @@ description: "Lightweight virtual machines where your agents can run AI code wit
 
 Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
 
-They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](./MCP) that makes these capabilities available as tool calls.
+They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](/Sandboxes/MCP) that makes these capabilities available as tool calls.
 
 ## Sandbox lifecycle
 
@@ -47,12 +47,12 @@ Reconnecting to the sandbox transitions it back to active mode. Any running proc
 You are not charged for memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
 
 <Note>
-  To prevent a sandbox from going into standby, you can use WebSocket ping/pong keepalive messages or [other techniques](./Standby-control) to prevent the timeout.
+  To prevent a sandbox from going into standby, you can use WebSocket ping/pong keepalive messages or [other techniques](/Sandboxes/Standby-control) to prevent the timeout.
 </Note>
 
 ### Deletion
 
-In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](/Sandboxes/Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
 
 <Note>
   Automatic deletion differs from automatic standby (_scale-to-zero_). Deleted sandboxes cannot be recovered, while sandboxes in standby mode can be resumed instantly.
@@ -87,15 +87,15 @@ Some examples of use cases include:
 
 ### Using the SDKs
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
+Create a new sandbox using the [Blaxel SDK](/sdk-reference/introduction) by specifying a name, image to use, [deployment region](/Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Set up authentication to Blaxel">
   The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
   1. when running on Blaxel, authentication is handled automatically
-  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
+  2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](/Agents/Variables-and-secrets) for other authentication options).
   3. environment variables from your machine
-  4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+  4. configuration file created locally when you log in through [Blaxel CLI](/cli-reference/introduction) (or deploy on Blaxel)
 
   When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
@@ -251,7 +251,7 @@ You can expose specific non-reserved ports [**when creating a new sandbox**](Ove
 
 ### Regions
 
-Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. This parameter is required.
+Select the [region](/Infrastructure/Regions) where you want to deploy your sandbox. This parameter is required.
 
 ### Labels
 
@@ -293,7 +293,7 @@ bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | 
 
 ### Expiration
 
-Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions.
+Blaxel supports [automatic sandbox deletion](/Sandboxes/Expiration) based on specific conditions.
 
 ## Retrieve an existing sandbox
 
@@ -378,7 +378,7 @@ Delete a sandbox by calling:
 
 ## Upgrade a sandbox's API
 
-Every Blaxel sandbox includes a [custom API binary](./Templates#how-sandbox-templates-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
+Every Blaxel sandbox includes a [custom API binary](/Sandboxes/Templates#how-sandbox-templates-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
 
 <Note>
   This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.
