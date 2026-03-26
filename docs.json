@@ -222,7 +222,7 @@
             "group": "Troubleshooting",
             "pages": [
               "troubleshooting",
-              { "label": "Knowledge base", "href": "https://support.blaxel.ai" }
+              "troubleshooting/knowledge-base"
             ]
           }
         ]
