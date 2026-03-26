@@ -8,20 +8,18 @@ The Blaxel SDKs and Blaxel CLI have two separate data collection systems.
 
 ## Error tracking
 
-When enabled, the SDKs captures errors and exceptions that originate from the SDK itself - not from application code. Each SDK has a lightweight, custom Sentry client that collects and tracks the following error-related metadata:
+When enabled, the SDKs and CLI capture errors and exceptions that originate from the SDK/CLI itself - not from application code. Each SDK/CLI has a lightweight, custom Sentry client that collects and tracks the following error-related metadata:
 
-| Field | Description |
-|-------|-------------|
-| `event_id` | Random UUID |
-| `timestamp` | When the error occurred |
-| `platform` | `"python"` or `"javascript"` |
-| `level` | `"error"` |
-| `environment` | `"dev"` or `"prod"` |
-| `release` | SDK version |
-| `tags.blaxel.workspace` | Workspace name |
-| `tags.blaxel.version` | SDK version |
-| `tags.blaxel.commit` | SDK build commit hash |
-| `exception` | Error type, message, and stack trace |
+- Error type and message
+- Stack trace
+- Environment
+- Release/version
+- Workspace
+- Version
+- Commit hash
+- OS/runtime context
+- Breadcrumbs
+- Goroutine info
 
 No request data, API keys, file contents, IP addresses or other user or application data is collected.
 
@@ -32,8 +30,10 @@ Error tracking is controlled by the `tracking` parameter, which reads its value 
 1. `DO_NOT_TRACK` environment variable
 2. `tracking:` field in `~/.blaxel/config.yaml`
 3. Pre-set default value
-    - `false` starting from SDK v0.2.46 (Python), v0.2.76 (TypeScript) and v0.16.1 (Go)
+    - `false` starting from SDK v0.2.46 (Python), v0.2.76 (TypeScript), and v0.16.1 (Go)
     - `true` in all earlier versions
+
+The Blaxel CLI prompts the user for tracking consent on first interactive use and during installation. The response is recorded in `~/.blaxel/config.yaml` and affects error tracking in the SDKs and the CLI.
 
 #### `DO_NOT_TRACK` environment variable
 
