@@ -221,7 +221,8 @@
           {
             "group": "Troubleshooting",
             "pages": [
-              "troubleshooting"
+              "troubleshooting",
+              { "label": "Knowledge base", "href": "https://support.blaxel.ai" }
             ]
           }
         ]
