@@ -1,166 +1,147 @@
 ---
-
-title: 'Overview'
-
+title: "Overview"
 sidebarTitle: "Overview"
-
-description: 'Interact with Blaxel through a command line interface.'
-
+description: "Interact with Blaxel through a command line interface."
 ---
 
-Blaxel CLI is a command line tool to interact with the Blaxel APIs.
+Blaxel CLI (`bl`) is a command line tool to interact with the Blaxel APIs.
 
 ## Install
 
 <AccordionGroup>
+  <Accordion title="Install on Mac" icon="apple">
+    <Warning>
+      To install Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.
+    </Warning>
 
-<Accordion title="Install on Mac" icon="apple">
+    Install Blaxel CLI by running the two following commands successively in a terminal:
 
-<Warning>To install Blaxel CLI, you must use [Homebrew](https://brew.sh/): make sure it is installed on your machine. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.</Warning>
+    ```shell
 
-Install Blaxel CLI by running the two following commands successively in a terminal:
+    brew tap blaxel-ai/blaxel
+    
+    ```
 
-```shell
+    ```shell
 
-brew tap blaxel-ai/blaxel
+    brew install blaxel
+    
+    ```
+  </Accordion>
 
-```
+  <Accordion title="Install on Linux" icon="linux">
+    Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
-```shell
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | BINDIR=/usr/local/bin sudo -E sh
+    ```
 
-brew install blaxel
+    If you need a non-sudo alternative (**it will ask you questions to configure**):
 
-```
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | sh
+    ```
 
-</Accordion>
+    If you need to install a specific version (e.g. v0.1.21):
 
-<Accordion title="Install on Linux" icon="linux">
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | VERSION=v0.1.21 sh
+    ```
+  </Accordion>
 
-Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
+  <Accordion title="Install with cURL" icon="code">
+    Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
 
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| BINDIR=/usr/local/bin sudo -E sh
-```
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | BINDIR=/usr/local/bin sudo -E sh
+    ```
 
-If you need a non-sudo alternative (**it will ask you questions to configure**):
+    If you need a non-sudo alternative (**it will ask you questions to configure**):
 
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| sh
-```
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | sh
+    ```
 
-If you need to install a specific version (e.g. v0.1.21):
+    If you need to install a specific version (e.g. v0.1.21):
 
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 sh
-```
+    ```shell
+    curl -fsSL \
+    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
+    | VERSION=v0.1.21 sh
+    ```
+  </Accordion>
 
-</Accordion>
+  <Accordion title="Install on Windows" icon="windows">
+    For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
 
-<Accordion title="Install with cURL" icon="code">
+    First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
 
-Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| BINDIR=/usr/local/bin sudo -E sh
-```
-
-If you need a non-sudo alternative (**it will ask you questions to configure**):
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| sh
-```
-
-If you need to install a specific version (e.g. v0.1.21):
-
-```shell
-curl -fsSL \
-https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-| VERSION=v0.1.21 sh
-```
-
-</Accordion>
-
-<Accordion title="Install on Windows" icon="windows">
-
-For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
-
-First install WSL (Windows Subsystem for Linux) if not already installed. This can be done by:
-
-- Opening PowerShell as Administrator
-- Running: `wsl --install -d Ubuntu-20.04`
-- Restarting the computer
-- From the Microsoft Store, install the Ubuntu app
-- Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
-
-</Accordion>
-
+    - Opening PowerShell as Administrator
+    - Running: `wsl --install -d Ubuntu-20.04`
+    - Restarting the computer
+    - From the Microsoft Store, install the Ubuntu app
+    - Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
+  </Accordion>
 </AccordionGroup>
 
 ## Update
 
 <AccordionGroup>
-<Accordion title="Update on Mac" icon="apple">
+  <Accordion title="Update on Mac" icon="apple">
+    Update Blaxel CLI by running the following command in a terminal:
 
-Update Blaxel CLI by running the following command in a terminal:
+    ```shell
+    bl upgrade
+    ```
 
-```shell
-bl upgrade
-```
+    If you need to update to a specific version (e.g. v0.1.21):
 
-If you need to update to a specific version (e.g. v0.1.21):
+    ```shell
+    bl upgrade --version 0.1.21
+    ```
 
-```shell
-bl upgrade --version 0.1.21
-```
+    You can also upgrade using Homebrew:
 
-You can also upgrade using Homebrew:
+    ```shell
+    brew upgrade blaxel
+    ```
+  </Accordion>
 
-```shell
-brew upgrade blaxel
-```
+  <Accordion title="Update on Linux" icon="linux">
+    Update Blaxel CLI by running the following command in a terminal:
 
-</Accordion>
+    ```shell
+    bl upgrade
+    ```
 
-<Accordion title="Update on Linux" icon="linux">
+    If you need to update to a specific version (e.g. v0.1.21):
 
-Update Blaxel CLI by running the following command in a terminal:
+    ```shell
+    bl upgrade --version 0.1.21
+    ```
+  </Accordion>
 
-```shell
-bl upgrade
-```
+  <Accordion title="Update on Windows" icon="windows">
+    For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
 
-If you need to update to a specific version (e.g. v0.1.21):
+    First make sure WSL (Windows Subsystem for Linux) is installed if not already. This can be done by:
 
-```shell
-bl upgrade --version 0.1.21
-```
-
-</Accordion>
-
-<Accordion title="Update on Windows" icon="windows">
-
-For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
-
-First make sure WSL (Windows Subsystem for Linux) is installed if not already. This can be done by:
-
-- Opening PowerShell as Administrator
-- Running: `wsl --install -d Ubuntu-20.04`
-- Restarting the computer
-- From the Microsoft Store, install the Ubuntu app
-- Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
-
-</Accordion>
-
+    - Opening PowerShell as Administrator
+    - Running: `wsl --install -d Ubuntu-20.04`
+    - Restarting the computer
+    - From the Microsoft Store, install the Ubuntu app
+    - Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
+  </Accordion>
 </AccordionGroup>
 
 ## Shell autocompletion
@@ -192,7 +173,7 @@ Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | I
 
 ## Get started
 
-To get started with Blaxel CLI, your must first create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel using this command:
+First, create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, login to Blaxel:
 
 ```bash
 bl login
@@ -200,7 +181,7 @@ bl login
 
 If you have multiple workspaces, the one you last logged into will be used automatically in every subsequent command you run. You can login to as many workspaces as you want.
 
-To set your context to a  different workspace you already logged in to, use the following command:
+To set your context to a different workspace you already logged in to, use the following command:
 
 ```bash
 bl workspaces your-workspace
@@ -209,9 +190,20 @@ bl workspaces your-workspace
 bl workspaces
 ```
 
-You can now run any command to interact with Blaxel resources in your workspace. For example, to list sandboxes:
+Basic commands to scaffold, develop, and deploy your resources:
 
-```bash
+| Command | Purpose |
+| --- | --- |
+| `bl new` | Scaffold a new local project (code \+ `blaxel.toml`) |
+| `bl deploy` | Build image \+ push image \+ create/update resource \+ watch logs |
+| `bl apply` | Declarative resource creation/update using YAML files, similar to `kubectl apply` |
+| `bl serve` | Local execution _(not available for sandboxes)_ |
+
+`bl deploy` is an all-in-one command that packages local files into an image, pushes it as a template, and deploys it as a resource on Blaxel. Use the `--skip-build` flag to skip image rebuilding.
+
+Interact with existing resources in your workspace:
+
+```shellscript
 bl get sandboxes
 ```
 
