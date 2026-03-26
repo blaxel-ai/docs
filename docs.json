@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Documentation",
   "colors": {
-    "primary": "#FD7B35",
+    "primary": "#BF5810",
     "light": "#FD7B35",
-    "dark": "#C75617"
+    "dark": "#BF5810"
   },
   "favicon": "/favicon.webp",
   "navigation": {
