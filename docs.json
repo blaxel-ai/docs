@@ -23,6 +23,9 @@
         }
       ]
     },
+    "pages": [
+      "index"
+    ],
     "tabs": [
       {
         "tab": "Documentation",
