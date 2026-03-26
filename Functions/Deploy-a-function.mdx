@@ -10,7 +10,7 @@ Blaxel provides a serverless infrastructure to instantly deploy MCP servers. You
 
 ## Deploy an MCP server with Blaxel CLI
 
-This section assumes you have developed the MCP server locally, as explained [in this documentation](Create-MCP-server), and are ready to deploy it.
+This section assumes you have developed the MCP server locally, as explained [in this documentation](/Functions/Create-MCP-server), and are ready to deploy it.
 
 ### Serve locally
 
@@ -38,7 +38,7 @@ BL_DEBUG=true uv run mcp dev src/server.py
 
 </CodeGroup>
 
-The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply [serve the server](Deploy-a-function) locally by running `bl serve --hotreload`.
+The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply [serve the server](/Functions/Deploy-a-function) locally by running `bl serve --hotreload`.
 
 </Accordion>
 
@@ -74,7 +74,7 @@ Run the following command to build and deploy the MCP server on Blaxel:
 bl deploy
 ```
 
-You can now [connect to the MCP server](Invoke-functions) either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports HTTP.
+You can now [connect to the MCP server](/Functions/Invoke-functions) either from an agent on Blaxel (using the Blaxel SDK), or from an external client that supports HTTP.
 
 <Accordion title="Example of tool calling via Blaxel SDK" icon="bolt">
 
@@ -159,7 +159,7 @@ Deploy multiple agents & MCP servers with shared context from a single repositor
 
 As you iterate on your software development, you will need to update the version of a function that is currently deployed and used by your consumers. Every time you build a new version of your function, this creates a **revision**. Blaxel stores the last 5 revisions for each object.
 
-![image.webp](Deploy-a-function/image.webp)
+![image.webp](/Functions/Deploy-a-function/image.webp)
 
 Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
 
@@ -171,13 +171,13 @@ Important: Revisions are not the same as versions. You cannot use revisions to r
 
 Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
 
-![image.webp](../Agents/Deploy-an-agent/image%201.webp)
+![image.webp](/Agents/Deploy-an-agent/image%201.webp)
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
 ### Code mode
 
-Blaxel supports ["code mode"](Code-mode) natively, enabling a more efficient way to execute tool calls over MCP.
+Blaxel supports ["code mode"](/Functions/Code-mode) natively, enabling a more efficient way to execute tool calls over MCP.
 
 ## Deployment reference
 

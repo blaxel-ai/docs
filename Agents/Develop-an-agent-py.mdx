@@ -6,7 +6,7 @@ description: 'Use the Blaxel SDK to develop and run a custom agent in Python.'
 
 ---
 
-You can bring your **custom agents developed in Python** and deploy them to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), [GitHub app](Github-integration), GitHub action, etc.). You can develop agents using frameworks like LangChain, Google ADK, OpenAI Agents SDK; or your own custom code.
+You can bring your **custom agents developed in Python** and deploy them to Blaxel with our developer tools ([Blaxel CLI](../cli-reference/introduction), [GitHub app](/Agents/Github-integration), GitHub action, etc.). You can develop agents using frameworks like LangChain, Google ADK, OpenAI Agents SDK; or your own custom code.
 
 ## Quickstart
 
@@ -409,9 +409,9 @@ memory = 1024
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
-- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 Additionally, you can define an `[entrypoint]` section to specify how Blaxel is going to start your server:
 

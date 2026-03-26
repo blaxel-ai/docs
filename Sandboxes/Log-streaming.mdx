@@ -29,7 +29,7 @@ When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recom
 
 ### Retrieve from the execution object
 
-Logs for a [process](Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
+Logs for a [process](/Sandboxes/Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
 
 Both standard output (stdout) and standard error (stderr) are surfaced:
 
@@ -65,7 +65,7 @@ print(process.logs)
 
 ### Retrieve from a completed process name or ID
 
-Retrieve logs for a specific [process](Processes) (using either its name or process ID) after it has completed execution. By default, this retrieves standard output (**stdout**) only:
+Retrieve logs for a specific [process](/Sandboxes/Processes) (using either its name or process ID) after it has completed execution. By default, this retrieves standard output (**stdout**) only:
 
 <CodeGroup>
 
@@ -156,7 +156,7 @@ await sandbox.process.exec({
 
 ### Retrieve from a process name or ID
 
-Stream logs for a specific [process](Processes) (using either its name or process ID):
+Stream logs for a specific [process](/Sandboxes/Processes) (using either its name or process ID):
 
 <CodeGroup>
 

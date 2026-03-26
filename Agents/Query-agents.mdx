@@ -29,7 +29,7 @@ Connection limit:
 
 In addition to the default synchronous endpoint, Blaxel provides the ability to create **asynchronous endpoints** for handling longer-running agent requests.
 
-![Screenshot 2025-05-18 at 8.53.14 PM.webp](Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.webp)
+![Screenshot 2025-05-18 at 8.53.14 PM.webp](/Agents/Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.webp)
 
 This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations. Blaxel handles queuing and execution behind the scene.
 
@@ -84,9 +84,9 @@ You can create async endpoints either from the Blaxel Console, or from your code
   - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
   - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
   - `public` field specifies if the agent is publicly accessible (defaults to `false`).
-  - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+  - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
   - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
-  - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+  - `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 </Accordion>
 
 ### Endpoint authentication

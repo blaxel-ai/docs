@@ -24,24 +24,24 @@ Blaxel model deployment works using two conceptual entities: **models** and **de
 
 - **Models** are the base logical entity labeling an AI model throughout it’s life-cycle. A model can be instantiated into multiple deployments over different environments. This effectively allows to run multiple versions of the model at the same time, each on a different environment.
 - **Deployments** (a.k.a model deployments) are the instantiation of one model version over one specific [environment](../Model-Governance/Environments). For example, you can have a *deployment* XYZ of *model* ABC on the *production environment*.
-- **Executions** (a.k.a inference executions) are ephemeral invocations of model deployments by a [consumer](Query-a-model). Because Blaxel is serverless, a model deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Environments).
+- **Executions** (a.k.a inference executions) are ephemeral invocations of model deployments by a [consumer](/Models/Query-a-model). Because Blaxel is serverless, a model deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Inference Network, as defined by your [environment policies](../Model-Governance/Environments).
 
-A model can be uploaded into Blaxel from a variety of [origins](#model-origins). At this moment, it can be either: **just** **created** (a *model deployment* exists but it is deactivated), or **created and deployed** (as a *model deployment*). At any time, you can [deactivate a model deployment](Model-deployment), and [update it with a new version](Model-deployment).
+A model can be uploaded into Blaxel from a variety of [origins](#model-origins). At this moment, it can be either: **just** **created** (a *model deployment* exists but it is deactivated), or **created and deployed** (as a *model deployment*). At any time, you can [deactivate a model deployment](/Models/Model-deployment), and [update it with a new version](/Models/Model-deployment).
 
-![models2.webp](Model-deployment/models2.webp)
+![models2.webp](/Models/Model-deployment/models2.webp)
 
 ## Deployment life-cycle
 
 ### Deploying a model
 
-Deploying a model will create the associated [model deployment](Model-deployment). At this time: 
+Deploying a model will create the associated [model deployment](/Models/Model-deployment). At this time: 
 
-- it is [reachable](Query-a-model) through a specific endpoint
-- it does not consume resources [until it is actively being invoked and processing inferences](Query-a-model)
+- it is [reachable](/Models/Query-a-model) through a specific endpoint
+- it does not consume resources [until it is actively being invoked and processing inferences](/Models/Query-a-model)
 - its deployment/inference policies are governed by the associated [environment](../Model-Governance/Environments)
 - its status can be monitored either on the console or using the CLI/APIs
 
-![model-policy.webp](Model-deployment/model-policy.webp)
+![model-policy.webp](/Models/Model-deployment/model-policy.webp)
 
 Deploy a model by running the following [CLI](https://docs.blaxel.ai/cli-reference/bl_apply) command:
 
@@ -51,13 +51,13 @@ bl apply -f ./my-model-deployment.yaml
 
 Read our [reference for model deployments](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment). Models can also be deployed using the Blaxel console, and the Blaxel Kubernetes controller. 
 
-![create-model.webp](Model-deployment/create-model.webp)
+![create-model.webp](/Models/Model-deployment/create-model.webp)
 
 ### Updating a model version
 
 As you iterate on software development, you will need to update the version of a model that is currently deployed and used by your consumers.
 
-One way to manage this is through multiple [environments](../Model-Governance/Environments), and [releasing](Model-deployment) the model version that is on one environment (e.g. development) to another environment (e.g. production). Another more straightforward way is to directly update a model deployment on an environment.
+One way to manage this is through multiple [environments](../Model-Governance/Environments), and [releasing](/Models/Model-deployment) the model version that is on one environment (e.g. development) to another environment (e.g. production). Another more straightforward way is to directly update a model deployment on an environment.
 
 When updating a model deployment, you can:
 
@@ -69,11 +69,11 @@ Model deployments are updated following a **blue-green** paradigm. The Global In
 
 When using the Blaxel console, you can update all model configurations (model file, runtime, etc.) except policies by selecting ***Deploy a new version***.
 
-![update-version.webp](Model-deployment/update-version.webp)
+![update-version.webp](/Models/Model-deployment/update-version.webp)
 
 To update the policies of a model deployment using the Blaxel console, go the the ***Policies*** page and edit them here.
 
-![policies-update.webp](Model-deployment/policies-update.webp)
+![policies-update.webp](/Models/Model-deployment/policies-update.webp)
 
 Model deployments can also be updated via the Blaxel [APIs](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
 
@@ -83,7 +83,7 @@ Any model deployment can be deactivated at any time. When deactivated, it will *
 
 Models can be deactivated and activated at any time from the Blaxel console, or via [API](https://docs.blaxel.ai/api-reference/models/create-or-update-model-deployment) or [CLI](https://docs.blaxel.ai/cli-reference/bl_apply).
 
-![deactivate-deployment.webp](Model-deployment/deactivate-deployment.webp)
+![deactivate-deployment.webp](/Models/Model-deployment/deactivate-deployment.webp)
 
 ## Deployment reference
 
@@ -117,7 +117,7 @@ You must choose an [environment](../Model-Governance/Environments) when deployin
 
 Additional [policies](../Model-Governance/Policies) can be optionally attached to a model deployment directly. If there already are policies set in the environment, policies of the **same policy type** (e.g. location-based, flavor-based, etc.) will collide. In this case, the result will be [as described here](../Model-Governance/Policies).
 
-<Tip>To force execution of the model on a certain type of GPU, it is best to configure it in the model deployment [resources](Model-deployment) directly.</Tip>
+<Tip>To force execution of the model on a certain type of GPU, it is best to configure it in the model deployment [resources](/Models/Model-deployment) directly.</Tip>
 
 ### Resources
 

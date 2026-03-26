@@ -8,17 +8,17 @@ description: 'Host your custom AI agents on Blaxel as serverless autoscalable en
 
 Blaxel Agents Hosting lets you bring your agent code **and deploys it as a serverless auto-scalable endpoint** — no matter your development framework.
 
-The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This method is detailed down below on the page. Alternatively you can [**connect a GitHub repository**](Github-integration): any push to the *main* branch will automatically update the deployment on Blaxel — or deploy from a variety of **pre-built templates** on the Blaxel Console.
+The main way to deploy an agent on Blaxel is by **using Blaxel CLI.** This method is detailed down below on the page. Alternatively you can [**connect a GitHub repository**](/Agents/Github-integration): any push to the *main* branch will automatically update the deployment on Blaxel — or deploy from a variety of **pre-built templates** on the Blaxel Console.
 
 ## Deploy an agent with Blaxel CLI
 
-This section assumes you have developed an agent locally, as presented [in this documentation](Develop-an-agent), and are ready to deploy it.
+This section assumes you have developed an agent locally, as presented [in this documentation](/Agents/Develop-an-agent), and are ready to deploy it.
 
 [Blaxel SDK](../sdk-reference/introduction) provides methods to programmatically access and integrate various resources hosted on Blaxel into your agent's code, such as: [model APIs](../Models/Overview), [tool servers](../Functions/Overview), [sandboxes](../Sandboxes/Overview), [batch jobs](../Jobs/Overview), or [other agents](Overview). The SDK handles authentication, secure connection management and telemetry automatically.
 
 This packaging makes Blaxel **fully agnostic of the framework** used to develop your agent and doesn’t prevent you from deploying your software on another platform.
 
-<Info>Read [this guide first](Develop-an-agent) on how to leverage the Blaxel SDK when developing a custom agent to deploy.</Info>
+<Info>Read [this guide first](/Agents/Develop-an-agent) on how to leverage the Blaxel SDK when developing a custom agent to deploy.</Info>
 
 ### Serve locally
 
@@ -54,7 +54,7 @@ Specify which sub-directory to deploy with the `--directory` (`-d`) option:
 bl deploy -d myfolder/mysubfolder
 ```
 
-This allows for [deploying multiple agents/servers/jobs from the same repository](Deploy-multiple) with shared dependencies.
+This allows for [deploying multiple agents/servers/jobs from the same repository](/Agents/Deploy-multiple) with shared dependencies.
 
 ### Customize an agent deployment
 
@@ -80,7 +80,7 @@ Learn how to synchronize your GitHub repository to automatically deploy updates.
 
 ### Deploy multiple resources at once
 
-Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](Deploy-multiple) with shared dependencies.
+Using a custom Dockerfile allows for [deploying multiple agents & MCPs from the same repository](/Agents/Deploy-multiple) with shared dependencies.
 
 <Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Agents/Deploy-multiple">
 Deploy multiple agents & MCP servers with shared context from a single repository.
@@ -92,8 +92,8 @@ Deploy multiple agents & MCP servers with shared context from a single repositor
 
 Deploying an agent will create the associated agent deployment. At this time:
 
-- it is [reachable](Query-agents) through a specific endpoint
-- it does not consume resources [until it is actively being invoked and processing inferences](Query-agents)
+- it is [reachable](/Agents/Query-agents) through a specific endpoint
+- it does not consume resources [until it is actively being invoked and processing inferences](/Agents/Query-agents)
 - its status can be monitored either on the console or using the CLI/APIs
 
 ### Maximum runtime
@@ -104,7 +104,7 @@ Deploying an agent will create the associated agent deployment. At this time:
 
 As you iterate on software development, you will need to update the version of an agent that is currently deployed and used by your consumers. Every time you build a new version of your agent, this creates a **revision**. Blaxel stores the last 5 revisions for each object.
 
-![image.webp](Deploy-an-agent/image.webp)
+![image.webp](/Agents/Deploy-an-agent/image.webp)
 
 Revisions are atomic builds of your deployment that can be either deployed (accessible via the inference endpoint) or not. This system enables you to:
 
@@ -116,15 +116,15 @@ Important: Revisions are not the same as versions. You cannot use revisions to r
 
 Deployment revisions are updated following a **blue-green** paradigm. The Global Inference Network will wait for the new revision to be completely up and ready before routing requests to the new deployment. You can also set up a **canary deployment** to split traffic between two revisions (maximum of two).
 
-![image.webp](Deploy-an-agent/image%201.webp)
+![image.webp](/Agents/Deploy-an-agent/image%201.webp)
 
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
 ### Executions and inference requests
 
-**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](Query-agents). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Agentics Network, as defined by your [environment policies](../Model-Governance/Policies).
+**Executions** (a.k.a inference executions) are ephemeral invocations of agent deployments by a [consumer](/Agents/Query-agents). Because Blaxel is serverless, an agent deployment is only materialized onto one of the execution locations when it actively receives and processes requests. Workload placement and request routing is fully managed by the Global Agentics Network, as defined by your [environment policies](../Model-Governance/Policies).
 
-Read more about [querying agents in this documentation](Query-agents).
+Read more about [querying agents in this documentation](/Agents/Query-agents).
 
 ### Deactivating an agent deployment
 
@@ -171,10 +171,10 @@ memory = 1024
 - `agents`, `functions`, and `models` fields are also optional. They specify which resources to deploy with the agent. These resources are preloaded during build, eliminating runtime dependencies on the Blaxel control plane and dramatically improving performance.
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
 - `region` field pins the agent to a specific [deployment region](../Infrastructure/Regions). This is required when attaching volumes (see below).
-- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](Variables-and-secrets).
+- `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
 - `[[volumes]]` section attaches persistent [volumes](../Sandboxes/Volumes) to the agent. See [Attach volumes to an agent](#attach-volumes-to-an-agent) below.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
+- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 ### Pin an agent to a region
