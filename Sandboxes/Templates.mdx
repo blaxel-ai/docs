@@ -1,6 +1,6 @@
 ---
 title: "Templates"
-description: "Create sandboxes from customized templates"
+description: "Create reusable sandbox templates with pre-configured tools, languages, and frameworks using Dockerfiles. Deploy new sandboxes from templates in seconds."
 ---
 
 Sandbox templates allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
@@ -45,7 +45,7 @@ bl new sandbox mytemplate
 
 This creates a new directory with the essential template files:
 
-```
+```text
 mytemplate/
 ├── blaxel.toml        # Template configuration
 ├── Makefile           # Build commands
@@ -208,7 +208,7 @@ Create a directory with the following project contents:
 
 Here is an example of the expected project structure:
 
-```
+```text
 mytemplate/
 ├── Dockerfile             # Required - defines your image
 └── entrypoint.sh          # Optional - for custom initialization
@@ -229,7 +229,7 @@ Once the files are ready, create a ZIP archive containing the files:
 
 Set your Blaxel API key and workspace as environment variables:
 
-```
+```bash
 export BL_API_KEY=YOUR_API_KEY
 export BL_WORKSPACE=YOUR_WORKSPACE_NAME
 ```
@@ -262,7 +262,7 @@ The Blaxel API returns a JSON response. The response contains an `x-blaxel-uploa
 
 Example response:
 
-```
+```http
 HTTP/2 200
 x-blaxel-upload-url: https://controlplane-prod-build-sources...
 ```
@@ -799,7 +799,7 @@ The script accepts a source directory path containing the Dockerfile and related
 
 To use this script, first export your API key and credentials as below:
 
-```
+```bash
 export BL_API_KEY=YOUR-API-KEY
 export BL_WORKSPACE=YOUR-WORKSPACE-NAME
 ```

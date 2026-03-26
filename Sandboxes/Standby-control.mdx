@@ -1,6 +1,6 @@
 ---
 title: "Standby control"
-description: "Approaches to manage sandbox standby"
+description: "Control when sandboxes remain active by managing WebSocket connections, tab visibility, auto-disconnect behavior, and activity-based timeouts."
 ---
 
 Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.

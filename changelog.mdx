@@ -2,7 +2,7 @@
 
 title: 'Changelog'
 
-description: 'Keep track of changes and updates on Blaxel.'
+description: 'Chronological list of all platform updates, new features, deprecations, and infrastructure changes on Blaxel.'
 
 ---
 
@@ -21,7 +21,7 @@ Removed OpenClaw agent template. OpenClaw can still be [manually installed](http
 Overhauled the Blaxel Console sidebar for a better navigation experience.
 
 <Frame>
-<img src="/images/changelog/2026/console-sidebar.png" />
+<img src="/images/changelog/2026/console-sidebar.webp" alt="New Console sidebar navigation" />
 </Frame>
 </Update>
 
@@ -264,7 +264,7 @@ Added [browser-based terminal](/Sandboxes/Overview) for interactive sandbox acce
 
 ### New Jobs API endpoints and SDK methods
 
-Added new Jobs API endpoints and corresponding [TypeScript](/Jobs/Develop-a-job-ts) and [Python](/Jobs/Develop-a-job-py) SDK support to programmatically manage long-running job executions with multiple tasks.
+Added new Jobs API endpoints and corresponding [TypeScript](/Jobs/Manage-job-execution-ts) and [Python](/Jobs/Manage-job-execution-py) SDK support to programmatically manage long-running job executions with multiple tasks.
 
 </Update>
 
@@ -289,7 +289,7 @@ Transitioned to conventional `HOST` and `PORT` environment variables to specify 
 ### Manual validation for CLI login
 
 <Frame>
-<img src="/images/changelog/2025/cli-login.png" />
+<img src="/images/changelog/2025/cli-login.webp" alt="CLI login manual validation flow" />
 </Frame>
 
 `bl login` now enforces a manual authorization step in the console. Note: This works on all versions, but we recommend upgrading to the latest (0.1.61) where the timeout window has been extended from 9s to 60s for a smoother experience.
@@ -309,7 +309,7 @@ Transitioned to conventional `HOST` and `PORT` environment variables to specify 
 ### New Console sidebar
 
 <Frame>
-<img src="/images/changelog/2025/new-sidebar.png" />
+<img src="/images/changelog/2025/new-sidebar.webp" alt="New Console sidebar design" />
 </Frame>
 
 Reworked sidebar in the Blaxel Console for a better navigation experience.
@@ -390,7 +390,7 @@ Sandbox volume templates are available in private preview. Pre-populate sandbox 
 ### Blaxel Blog
 
 <Frame>
-<img src="/images/changelog/2025/blaxel-blog.png" />
+<img src="/images/changelog/2025/blaxel-blog.webp" alt="Blaxel Blog" />
 </Frame>
 
 Rolled out new version of [Blaxel Blog](https://blaxel.ai/blog): a technical blog to share engineering deep-dives, Blaxel updates, and general guides on agentics.
@@ -447,7 +447,7 @@ Set time-to-live & expiration policies on a sandbox to **automatically** **delet
 ### Billing Explorer
 
 <Frame>
-<img src="/images/changelog/2025/billing-explorer-chart.png" />
+<img src="/images/changelog/2025/billing-explorer-chart.webp" alt="Billing Explorer chart" />
 </Frame>
 
 Added new Billing Explorer: monitor your consumption of Blaxel services in real-time.
@@ -467,7 +467,7 @@ Added new MCP server: [Linkup](https://www.linkup.so/)
 ### Custom domains
 
 <Frame>
-<img src="/images/changelog/2025/custom-domains.png" />
+<img src="/images/changelog/2025/custom-domains.webp" alt="Custom domains configuration" />
 </Frame>
 
 - Added possibility to register a custom domain in your workspace and verify it from Blaxel
@@ -504,7 +504,7 @@ Optimized creation flow of new sandboxes to bring it down to 2-3 seconds (+ netw
 ### Usage-based pricing model
 
 <Frame>
-<img src="/images/changelog/2025/usage-based-pricing.png" />
+<img src="/images/changelog/2025/usage-based-pricing.webp" alt="Usage-based pricing model" />
 </Frame>
 
 Launched our new [usage-based pricing model](https://blaxel.ai/pricing)
@@ -516,7 +516,7 @@ Launched our new [usage-based pricing model](https://blaxel.ai/pricing)
 ### New MCP servers: AgentMail, Context7
 
 <Frame>
-<img src="/images/changelog/2025/mcp-agentmail.png" />
+<img src="/images/changelog/2025/mcp-agentmail.webp" alt="AgentMail and Context7 MCP server integrations" />
 </Frame>
 
 - Added new MCP server: AgentMail
@@ -530,7 +530,7 @@ Launched our new [usage-based pricing model](https://blaxel.ai/pricing)
 ### Cron jobs
 
 <Frame>
-<img src="/images/changelog/2025/cron.png" />
+<img src="/images/changelog/2025/cron.webp" alt="Cron jobs scheduling interface" />
 </Frame>
 
 Added support for cron-based triggers for Batch Jobs.
@@ -559,7 +559,7 @@ Added possibility to deploy agent, MCP server and job from a Dockerfile
 ### New MCP server: Airweave
 
 <Frame>
-<img src="/images/changelog/2025/airweave.png" />
+<img src="/images/changelog/2025/airweave.webp" alt="Airweave MCP server integration" />
 </Frame>
 
 Added new MCP server: Airweave
@@ -580,7 +580,7 @@ Added new MCP server: Airweave
 ### New MCP server: Supabase
 
 <Frame>
-<img src="/images/changelog/2025/supabase.png" />
+<img src="/images/changelog/2025/supabase.webp" alt="Supabase MCP server integration" />
 </Frame>
 
 Added new MCP server: Supabase
@@ -592,7 +592,7 @@ Added new MCP server: Supabase
 ### New Logs console
 
 <Frame>
-<img src="/images/changelog/2025/logs.png" />
+<img src="/images/changelog/2025/logs.webp" alt="New Logs console interface" />
 </Frame>
 
 - Reworked interface of Logs console
@@ -617,7 +617,7 @@ Added new MCP server: Supabase
 ### OneGrep Integration
 
 <Frame>
-<img src="/images/changelog/2025/onegrep.png" />
+<img src="/images/changelog/2025/onegrep.webp" alt="OneGrep integration" />
 </Frame>
 
 Added an agent template that uses [OneGrep](https://www.onegrep.dev/) for semantic tool searching and selection
@@ -662,7 +662,7 @@ Added endpoint to send asynchronous requests to an agent
 ### Sandboxes
 
 <Frame>
-<img src="/images/changelog/2025/sbx-cold-start.png" />
+<img src="/images/changelog/2025/sbx-cold-start.webp" alt="Sandbox cold start performance improvements" />
 </Frame>
 
 Our biggest release since we launched: Sandboxes, running on our new Mark 3 Infrastructure!
@@ -686,7 +686,7 @@ Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Conta
 ### New MCP: Tavily
 
 <Frame>
-<img src="/images/changelog/2025/tavily.png" />
+<img src="/images/changelog/2025/tavily.webp" alt="Tavily MCP server integration" />
 </Frame>
 
 Added new MCP server: Tavily. Enable your agents to search the web with Tavily’s API.
@@ -698,7 +698,7 @@ Added new MCP server: Tavily. Enable your agents to search the web with Tavily�
 ### New Blaxel Console
 
 <Frame>
-<img src="/images/changelog/2025/newui.png" />
+<img src="/images/changelog/2025/newui.webp" alt="New Blaxel Console interface" />
 </Frame>
 
 We reworked the UI of Blaxel Console! Now more geeky with loads of new metrics and visibility on your infrastructure — and an integrated changelog.
@@ -710,7 +710,7 @@ We reworked the UI of Blaxel Console! Now more geeky with loads of new metrics a
 ### New framework supported: Google ADK
 
 <Frame>
-<img src="/images/changelog/2025/adk.png" />
+<img src="/images/changelog/2025/adk.webp" alt="Google ADK framework support" />
 </Frame>
 
 Added support for Google ADK (Agent Development Kit) framework
@@ -730,7 +730,7 @@ Added support for PydanticAI framework
 ### SDK v0.1.0
 
 <Frame>
-<img src="/images/changelog/2025/sdk010.png" />
+<img src="/images/changelog/2025/sdk010.webp" alt="SDK v0.1.0 release" />
 </Frame>
 
 - Released a new [major version of our SDK](Agents/Develop-an-agent) to give you access to lower-level features:
@@ -747,7 +747,7 @@ Added support for PydanticAI framework
 ### Functions are now MCP servers
 
 <Frame>
-<img src="/images/changelog/2025/mcp-servers-functions.png" />
+<img src="/images/changelog/2025/mcp-servers-functions.webp" alt="Functions migrated to MCP servers" />
 </Frame>
 
 - All functions on Blaxel are now exposed as MCP servers, even custom functions.
@@ -760,7 +760,7 @@ Added support for PydanticAI framework
 ### Templates of agents
 
 <Frame>
-<img src="/images/changelog/2025/templates-ui.png" />
+<img src="/images/changelog/2025/templates-ui.webp" alt="Agent templates interface" />
 </Frame>
 
 - Added 6 templates of agents
@@ -792,7 +792,7 @@ We've added a new low-latency voice agent template that enables real-time speech
 ### Revisions & canary deployments
 
 <Frame>
-<img src="/images/changelog/2025/revisions.png" />
+<img src="/images/changelog/2025/revisions.webp" alt="Revisions and canary deployments interface" />
 </Frame>
 
 Added revisions for agents, model APIs and functions:
@@ -809,7 +809,7 @@ Added revisions for agents, model APIs and functions:
 ### Beamlit is now Blaxel!
 
 <Frame>
-<img src="/images/changelog/2025/blaxel.png" />
+<img src="/images/changelog/2025/blaxel.webp" alt="Blaxel rebranding announcement" />
 </Frame>
 
 We're excited to announce our official name change from Beamlit to Blaxel!
@@ -829,7 +829,7 @@ We are discontinuing Beamlit environments. Stay tuned for an upcoming major upda
 ### New pricing plans
 
 <Frame>
-<img src="/images/changelog/2025/pricing.png" />
+<img src="/images/changelog/2025/pricing.webp" alt="New pricing plans overview" />
 </Frame>
 
 Beamlit officially launched new pricing plans. Learn more about the pricing plans on [our website](https://blaxel.ai/), or login to the [Beamlit console](https://app.blaxel.ai/main/global-agentic-network) to start your free tier or upgrade.
@@ -841,7 +841,7 @@ Beamlit officially launched new pricing plans. Learn more about the pricing plan
 ### DeepSeek integration
 
 <Frame>
-<img src="/images/changelog/2025/deepseek-integration.png" />
+<img src="/images/changelog/2025/deepseek-integration.webp" alt="DeepSeek integration setup" />
 </Frame>
 
 Connect to DeepSeek models from Beamlit
@@ -853,7 +853,7 @@ Connect to DeepSeek models from Beamlit
 ### HuggingFace integration
 
 <Frame>
-<img src="/images/changelog/2025/hf-integration.png" />
+<img src="/images/changelog/2025/hf-integration.webp" alt="HuggingFace integration setup" />
 </Frame>
 
 - Connect to public or private models from HuggingFace [Inference API (serverless)](https://huggingface.co/docs/api-inference/index) and [Inference Endpoints (dedicated)](https://huggingface.co/docs/inference-endpoints/index)
@@ -866,7 +866,7 @@ Connect to DeepSeek models from Beamlit
 ### Azure AI Foundry integration
 
 <Frame>
-<img src="/images/changelog/2025/azure-ai-foundry.png" />
+<img src="/images/changelog/2025/azure-ai-foundry.webp" alt="Azure AI Foundry integration setup" />
 </Frame>
 
 - New [integration](Integrations/Azure-AI-Foundry): **Azure AI Services** (for OpenAI models and others)
@@ -879,7 +879,7 @@ Connect to DeepSeek models from Beamlit
 ### 9 new pre-built toolkits
 
 <Frame>
-<img src="/images/changelog/2025/mcp-functions.png" />
+<img src="/images/changelog/2025/mcp-functions.webp" alt="Pre-built MCP server toolkits" />
 </Frame>
 
 Added 9 new prebuilt templates of [functions](Functions/Overview):
@@ -901,7 +901,7 @@ Added 9 new prebuilt templates of [functions](Functions/Overview):
 ### Policies on token usage for cost control
 
 <Frame>
-<img src="/images/changelog/2025/chart-token.png" />
+<img src="/images/changelog/2025/chart-token.webp" alt="Token usage cost control chart" />
 </Frame>
 
 New [policy](Model-Governance/Policies) type: maximum token usage
@@ -913,7 +913,7 @@ New [policy](Model-Governance/Policies) type: maximum token usage
 ### 🚀 We launched Beamlit beta!
 
 <Frame>
-<img src="/images/changelog/2025/overview-with-map.png"/>
+<img src="/images/changelog/2025/overview-with-map.webp" alt="Blaxel platform overview with global map" />
 </Frame>
 
 Beamlit Beta is available publicly! Coming with the following new features:
@@ -929,7 +929,7 @@ Beamlit Beta is available publicly! Coming with the following new features:
 ### Agentic traces
 
 <Frame>
-<img src="/images/changelog/2025/trace-jan29.png" />
+<img src="/images/changelog/2025/trace-jan29.webp" alt="Agentic trace visualization" />
 </Frame>
 
 - Added Agent Observability suite, with traces of agents’ requests.
@@ -944,7 +944,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 ### Latency metric tracking
 
 <Frame>
-<img src="/images/changelog/2025/chart-latencies.png" />
+<img src="/images/changelog/2025/chart-latencies.webp" alt="Latency metrics chart" />
 </Frame>
 
 Added a new set of metrics is available for your agents, functions and models: **end-to-end latencies (average, p50, p90, p99)**.
@@ -958,7 +958,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 ### Beamlit extension for VScode
 
 <Frame>
-<img src="/images/changelog/2025/vscodeextension.png" />
+<img src="/images/changelog/2025/vscodeextension.webp" alt="Blaxel VS Code extension" />
 </Frame>
 
 [Click here to download](https://marketplace.visualstudio.com/items?itemName=Beamlit.vscode-beamlit-tools) the Beamlit extension for Visual Studio Code.
@@ -974,7 +974,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 ### New Beamlit console
 
 <Frame>
-<img src="/images/changelog/2025/newconsole.png" />
+<img src="/images/changelog/2025/newconsole.webp" alt="New Blaxel console interface" />
 </Frame>
 
 - Beamlit console has been completely reworked, in order to center the experience around agents and their deployments.
@@ -991,7 +991,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 ### Visual aspect of charts is improved
 
 <Frame>
-<img src="/images/changelog/2024/metric.png" />
+<img src="/images/changelog/2024/metric.webp" alt="Improved chart metrics visualization" />
 </Frame>
 
 - Improved visual aspect of charts and options to change time window of screens

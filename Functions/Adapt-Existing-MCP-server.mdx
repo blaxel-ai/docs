@@ -2,7 +2,7 @@
 
 title: 'Quickstart: Adapt an existing MCP server for Blaxel'
 
-description: 'Modify and deploy your existing stdio MCP server.'
+description: 'Step-by-step guide to convert an existing stdio-based MCP server to streamable HTTP transport and deploy it on Blaxel.'
 
 ---
 
@@ -245,7 +245,7 @@ Create a new `Dockerfile` with the following content:
 <Tabs>
 <Tab title="TypeScript">
 
-```
+```dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
@@ -267,7 +267,7 @@ CMD [ "node", "build/index.js" ]
 </Tab>
 <Tab title="Python">
 
-```
+```dockerfile
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \\
@@ -301,8 +301,8 @@ bl deploy
 
 Blaxel will handle the build and deployment, producing an HTTPS endpoint on Global Agentics Network. The server endpoint looks like this:
 
-```
+```text
 <https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp>
 ```
 
-You can now [connect to this endpoint from any MCP-aware client](Invoke-functions).
+You can now [connect to this endpoint from any MCP-aware client](/Functions/Invoke-functions).

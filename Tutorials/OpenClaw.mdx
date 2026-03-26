@@ -1,6 +1,6 @@
 ---
 title: 'Run OpenClaw on Blaxel'
-description: 'Run OpenClaw on Blaxel using a sandbox'
+description: 'Deploy and run OpenClaw, an open-source coding agent, inside a Blaxel sandbox with persistent storage and live previews.'
 ---
 
 This tutorial explains how to deploy and run [OpenClaw](https://openclaw.ai) on Blaxel.
@@ -126,7 +126,7 @@ Before starting, ensure you have:
 
 1. The status output also displays a tokenized dashboard link. Note the dashboard token (for example, `e782efff66...`), as it will be required in the next step.
 
-    ![token](/img/tutorials/openclaw/token.png)
+    ![token](/img/tutorials/openclaw/token.webp)
 
 ## Configure OpenClaw Gateway access
 
@@ -168,11 +168,11 @@ Before starting, ensure you have:
 
 1. Navigate to the **Overview** page and enter the dashboard token in the **Gateway Token** field.
 
-    ![overview](/img/tutorials/openclaw/overview.png)
+    ![overview](/img/tutorials/openclaw/overview.webp)
 
 1. The Control UI also displays the error `pairing required`. This is because the OpenClaw Gateway requires a [one-time pairing approval](https://docs.openclaw.ai/web/control-ui#device-pairing-first-connection) for connections from a new browser/device.
 
-    ![unpaired](/img/tutorials/openclaw/unpaired.png)
+    ![unpaired](/img/tutorials/openclaw/unpaired.webp)
 
 1. Connect to the sandbox terminal **in a separate terminal window** (to not kill the gateway process running):
 
@@ -198,13 +198,13 @@ Before starting, ensure you have:
 
 1. Browse to the sandbox preview URL again. The Control UI should now be fully functional and ready to accept requests, verified by the health check in the top right corner.
 
-    ![paired](/img/tutorials/openclaw/paired.png)
+    ![paired](/img/tutorials/openclaw/paired.webp)
 
 ## Test OpenClaw
 
 Navigate to the **Chat** page, enter a prompt, and wait for a reply to confirm that the OpenClaw agent is working:
 
-![chat](/img/tutorials/openclaw/chat.png)
+![chat](/img/tutorials/openclaw/chat.webp)
 
 ## Configure OpenClaw channels
 

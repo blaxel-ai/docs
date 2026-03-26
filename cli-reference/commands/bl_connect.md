@@ -28,6 +28,6 @@ Connect into your sandbox resources with interactive interfaces
 
 ### SEE ALSO
 
-* [bl](bl.md)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
-* [bl connect sandbox](bl_connect_sandbox.md)	 - Connect to a sandbox environment
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl connect sandbox](/cli-reference/commands/bl_connect_sandbox)	 - Connect to a sandbox environment
 

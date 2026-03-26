@@ -1,6 +1,6 @@
 ---
 title: 'Asynchronous triggers'
-description: 'Use asynchronous triggers for long-running agent tasks'
+description: 'Run agent requests asynchronously with optional callbacks for tasks up to 15 minutes, without keeping HTTP connections open.'
 ---
 
 Asynchronous triggers allow you to run an agent request asynchronously. The agent responds immediately while it continues processing the task in the background. You can optionally receive the result through a callback. This lets tasks run for up to 15 minutes without keeping an HTTP connection open.
@@ -9,7 +9,7 @@ Asynchronous triggers allow you to run an agent request asynchronously. The agen
 
 To create an asynchronous request, call your agent URL as shown below:
 
-```
+```http
 POST https://run.blaxel.ai/{your-workspace}/agents/{your-agent}?async=true
 ```
 
@@ -48,7 +48,7 @@ You can inspect and verify callbacks by using [https://webhook.site](https://web
 
 If you set a callback URL, Blaxel automatically generates a callback secret and uses it to sign the request. This is included in the response payload headers:
 
-```
+```http
 X-Blaxel-Signature: sha256=<hex>
 X-Blaxel-Timestamp: <unix timestamp>
 ```
@@ -124,11 +124,11 @@ Asynchronous triggers are configured in two ways: via the Blaxel Console or in t
 
 In the Blaxel Console, you can configure asynchronous triggers by clicking the **Triggers** tab on the agent detail page. This page lets you list, add, edit, or delete triggers for your agent.
 
-![Triggers List](/images/agents/triggers.png)
+![Triggers List](/images/agents/triggers.webp)
 
 To add a new asynchronous trigger, click **Add Trigger**. You can also optionally configure a callback URL for the trigger.
 
-![Trigger Configuration](/images/agents/configuration.png)
+![Trigger Configuration](/images/agents/configuration.webp)
 
 <Note>
 If no callback URL is set, the request will still be processed asynchronously but the callback URL will not be triggered.
@@ -136,7 +136,7 @@ If no callback URL is set, the request will still be processed asynchronously bu
 
 When you create a trigger with a callback URL, Blaxel automatically generates a callback secret. You can use this secret to verify incoming requests to the callback URL using the Blaxel SDK.
 
-![Callback Secret](/images/agents/secret.png)
+![Callback Secret](/images/agents/secret.webp)
 
 <Warning>
 The callback secret is only shown once, so you should save it securely.

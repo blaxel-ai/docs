@@ -2,7 +2,7 @@
 
 title: 'Query a model API'
 
-description: 'Make inference requests on your model APIs.'
+description: 'Make inference requests to model APIs via their global endpoints on the Global Agentics Network, with ChatCompletions and custom sub-endpoint support.'
 
 ---
 
@@ -39,9 +39,9 @@ It is necessary to authenticate all inference requests, via a [bearer token](../
 
 ### Blaxel API
 
-Make a **POST** request to the [inference endpoint](Query-a-model) for the model API you are requesting, making sure to fill in the [authentication token](Query-a-model):
+Make a **POST** request to the [inference endpoint](/Models/Query-a-model) for the model API you are requesting, making sure to fill in the [authentication token](/Models/Query-a-model):
 
-```
+```bash
 curl 'https://run.blaxel.ai/YOUR-WORKSPACE/models/YOUR-MODEL' \
   -H 'accept: application/json, text/plain, */*' \
   -H 'x-Blaxel-authorization: Bearer YOUR-TOKEN' \
@@ -59,7 +59,7 @@ The following command will make a default POST request to the model API.
 bl run model your-model --data '{"inputs":"Enter your input here."}'
 ```
 
-You can call [specific API endpoints](Query-a-model) that your model implements with the option `--path` :
+You can call [specific API endpoints](/Models/Query-a-model) that your model implements with the option `--path` :
 
 ```bash
 bl run model your-model --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
@@ -71,4 +71,4 @@ Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-refe
 
 Inference requests can be made from the Blaxel console from the model API’s **Playground** page.
 
-![workbench.png](Query-a-model/workbench.png)
+![workbench.webp](/Models/Query-a-model/workbench.webp)

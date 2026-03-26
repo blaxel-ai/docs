@@ -12,7 +12,7 @@ description: "Deploy a Claude Agent SDK agent to Blaxel as a serverless auto-sca
 
 ## 1. Install the Blaxel CLI and log in to Blaxel
 
-The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](./Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
+The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](/Agents/Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
 
 [Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
 
@@ -296,7 +296,7 @@ The Blaxel CLI will prompt for the type of resource you are deploying. It will t
 
 Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
 
-![image](../Agents/Query-agents/endpoint.png)
+![image](../Agents/Query-agents/endpoint.webp)
 
 ## 8. Test the agent on Blaxel
 
@@ -304,7 +304,7 @@ By default, agents deployed on Blaxel are not public. All agent requests must be
 
 Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `prompt` as desired):
 
-```
+```bash
 curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-agent/query  \
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \
@@ -321,7 +321,7 @@ bl run agent assistant-agent/query --data '{"prompt":"what is your name?"}'
 ```
 
 <Tip>
-  Although deployed agents are private by default, it is possible to [make an agent publicly available](./Query-agents#make-an-agent-public).
+  Although deployed agents are private by default, it is possible to [make an agent publicly available](/Agents/Query-agents#make-an-agent-public).
 </Tip>
 
 That's it! You're ready to start building and deploying agents with Claude Agent SDK on Blaxel.

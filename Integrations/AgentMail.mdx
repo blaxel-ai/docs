@@ -17,11 +17,11 @@ To use this example, you'll need:
 
 From your AgentMail dashboard, create a new inbox, providing a unique username (by default, the domain is set to `agentmail.to`):
 
-![inbox.png](AgentMail/inbox.png)
+![inbox.webp](/Integrations/AgentMail/inbox.webp)
 
 From the same dashboard, obtain an API key:
 
-![api.png](AgentMail/api.png)
+![api.webp](/Integrations/AgentMail/api.webp)
 
 ## Configure the project
 
@@ -29,7 +29,7 @@ Clone the [example repository](https://github.com/blaxel-templates/template-agen
 
 Note that you must configure the following environment variables for your deployment:
 
-```
+```bash
 INBOX_USERNAME=      # a unique username for your inbox
 AGENTMAIL_API_KEY=   # your AgentMail API key
 
@@ -41,10 +41,10 @@ Create a `.env` file in the project root with these variables, or set them in yo
 
 [Deploy the agent](../Agents/Deploy-an-agent) on Blaxel. Once the agent is deployed, retrieve its [inference endpoint](../Agents/Query-agents).
 
-![deployment.png](AgentMail/deployment.png)
+![deployment.webp](/Integrations/AgentMail/deployment.webp)
 
 You will need an API key to query the agent externally. Follow [this guide to create a service account in your workspace and generate an API key](../Security/Service-accounts).
 
-<Card title="AgentMail Documentation" icon="book" href="[https://docs.agentmail.to/](https://docs.agentmail.to/welcome)">
+<Card title="AgentMail Documentation" icon="book" href="https://docs.agentmail.to/welcome">
 Complete documentation for using AgentMail.
 </Card>

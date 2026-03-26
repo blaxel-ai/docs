@@ -9,7 +9,7 @@ Every sandbox is exposed via an MCP server that allows agents to **operate it us
 
 The MCP server operates through streamable HTTP at the sandbox's base URL:
 
-```
+```text
 https://<SANDBOX_BASE_URL>/mcp
 ```
 
@@ -52,7 +52,7 @@ claude mcp add --transport http blaxel https://<SANDBOX_BASE_URL>/mcp \\
   --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
 
-[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](../Examples/Claude-Agent-SDK-MCP).
+[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](../Tutorials/Claude-Agent-SDK-MCP).
 
 ### Add to Windsurf
 
@@ -132,7 +132,7 @@ extensions:
 
 | Tool                   | Description                                        |
 |------------------------|----------------------------------------------------|
-| `codegenEditFile`      | Propose and apply a [targeted edit to a file](Codegen-tools) (⚠️ requires Morph or Relace API key)       |
+| `codegenEditFile`      | Propose and apply a [targeted edit to a file](/Sandboxes/Codegen-tools) (⚠️ requires Morph or Relace API key)       |
 | `codegenParallelApply` | Plan parallel edits across multiple file locations |
 | `codegenReapply`       | Use smarter model to retry a failed edit           |
 

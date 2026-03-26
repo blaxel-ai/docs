@@ -19,21 +19,21 @@ Blaxel CLI is a command line tool to interact with Blaxel APIs.
 
 ### SEE ALSO
 
-* [bl apply](bl_apply.md)	 - Apply a configuration to a resource by file
-* [bl chat](bl_chat.md)	 - Chat with an agent
-* [bl completion](bl_completion.md)	 - Generate shell completion scripts
-* [bl connect](bl_connect.md)	 - Connect into your sandbox resources
-* [bl delete](bl_delete.md)	 - Delete a resource
-* [bl deploy](bl_deploy.md)	 - Deploy on blaxel
-* [bl get](bl_get.md)	 - Get a resource
-* [bl login](bl_login.md)	 - Login to Blaxel
-* [bl logout](bl_logout.md)	 - Logout from Blaxel
-* [bl logs](bl_logs.md)	 - View logs for a resource
-* [bl new](bl_new.md)	 - Create a new blaxel resource (agent, mcp, sandbox, job, volume-template)
-* [bl run](bl_run.md)	 - Run a resource on blaxel
-* [bl serve](bl_serve.md)	 - Serve a blaxel project
-* [bl token](bl_token.md)	 - Retrieve authentication token for a workspace
-* [bl upgrade](bl_upgrade.md)	 - Upgrade the Blaxel CLI to the latest version
-* [bl version](bl_version.md)	 - Print the version number
-* [bl workspaces](bl_workspaces.md)	 - List all workspaces with the current workspace highlighted, set optionally a new current workspace
+* [bl apply](/cli-reference/commands/bl_apply)	 - Apply a configuration to a resource by file
+* [bl chat](/cli-reference/commands/bl_chat)	 - Chat with an agent
+* [bl completion](/cli-reference/commands/bl_completion)	 - Generate shell completion scripts
+* [bl connect](/cli-reference/commands/bl_connect)	 - Connect into your sandbox resources
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl deploy](/cli-reference/commands/bl_deploy)	 - Deploy on blaxel
+* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl login](/cli-reference/commands/bl_login)	 - Login to Blaxel
+* [bl logout](/cli-reference/commands/bl_logout)	 - Logout from Blaxel
+* [bl logs](/cli-reference/commands/bl_logs)	 - View logs for a resource
+* [bl new](/cli-reference/commands/bl_new)	 - Create a new blaxel resource (agent, mcp, sandbox, job, volume-template)
+* [bl run](/cli-reference/commands/bl_run)	 - Run a resource on blaxel
+* [bl serve](/cli-reference/commands/bl_serve)	 - Serve a blaxel project
+* [bl token](/cli-reference/commands/bl_token)	 - Retrieve authentication token for a workspace
+* [bl upgrade](/cli-reference/commands/bl_upgrade)	 - Upgrade the Blaxel CLI to the latest version
+* [bl version](/cli-reference/commands/bl_version)	 - Print the version number
+* [bl workspaces](/cli-reference/commands/bl_workspaces)	 - List all workspaces with the current workspace highlighted, set optionally a new current workspace
 

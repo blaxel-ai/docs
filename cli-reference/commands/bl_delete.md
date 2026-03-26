@@ -97,15 +97,15 @@ bl delete [flags]
 
 ### SEE ALSO
 
-* [bl](bl.md)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
-* [bl delete agent](bl_delete_agent.md)	 - Delete agent
-* [bl delete function](bl_delete_function.md)	 - Delete function
-* [bl delete image](bl_delete_image.md)	 - Delete images or image tags
-* [bl delete integrationconnection](bl_delete_integrationconnection.md)	 - Delete integrationconnection
-* [bl delete job](bl_delete_job.md)	 - Delete job
-* [bl delete model](bl_delete_model.md)	 - Delete model
-* [bl delete policy](bl_delete_policy.md)	 - Delete policy
-* [bl delete sandbox](bl_delete_sandbox.md)	 - Delete sandbox
-* [bl delete volume](bl_delete_volume.md)	 - Delete volume
-* [bl delete volumetemplate](bl_delete_volumetemplate.md)	 - Delete volumetemplate
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl delete agent](/cli-reference/commands/bl_delete_agent)	 - Delete agent
+* [bl delete function](/cli-reference/commands/bl_delete_function)	 - Delete function
+* [bl delete image](/cli-reference/commands/bl_delete_image)	 - Delete images or image tags
+* [bl delete integrationconnection](/cli-reference/commands/bl_delete_integrationconnection)	 - Delete integrationconnection
+* [bl delete job](/cli-reference/commands/bl_delete_job)	 - Delete job
+* [bl delete model](/cli-reference/commands/bl_delete_model)	 - Delete model
+* [bl delete policy](/cli-reference/commands/bl_delete_policy)	 - Delete policy
+* [bl delete sandbox](/cli-reference/commands/bl_delete_sandbox)	 - Delete sandbox
+* [bl delete volume](/cli-reference/commands/bl_delete_volume)	 - Delete volume
+* [bl delete volumetemplate](/cli-reference/commands/bl_delete_volumetemplate)	 - Delete volumetemplate
 

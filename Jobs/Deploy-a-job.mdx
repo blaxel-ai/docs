@@ -224,7 +224,7 @@ You can set a maximum number of **retries per task** in the job definition. Chec
 
 The **Blaxel Console** \> **Dashboard** displays detailed job metrics, including the number of active jobs, failures, and requests (both count and requests per second (RPS)) across all deployments.
 
-![image](./Overview/job-metrics.png)
+![image](./Overview/job-metrics.webp)
 
 ## Deploy with a Dockerfile
 
@@ -236,7 +236,7 @@ While Blaxel uses predefined, optimized container images to build and deploy you
 
 ## Deploy multiple jobs at once
 
-Using a custom Dockerfile allows for [deploying multiple jobs from the same repository](Deploy-multiple-jobs) with shared dependencies.
+Using a custom Dockerfile allows for [deploying multiple jobs from the same repository](/Jobs/Deploy-multiple-jobs) with shared dependencies.
 
 <Card title="Deploy multiple resources with shared files" icon="folder-tree" href="/Jobs/Deploy-multiple-jobs">
   Deploy multiple jobs with shared context from a single repository.
@@ -246,7 +246,7 @@ Using a custom Dockerfile allows for [deploying multiple jobs from the same repo
 
 ### Overview
 
-```
+```text
 package.json            # Mandatory. This file is the standard package.json file, it defines the entrypoint of the project and dependencies.
 blaxel.toml             # This file lists configurations dedicated to Blaxel to customize the deployment.
 tsconfig.json           # This file is the standard tsconfig.json file, only needed if you use TypeScript.
