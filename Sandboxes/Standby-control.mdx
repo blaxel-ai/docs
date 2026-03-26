@@ -5,6 +5,10 @@ description: "Control when sandboxes remain active by managing WebSocket connect
 
 Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
 
+<Note>
+  You can also use [process keep-alive](./Processes#sandbox-keep-alive) to keep the sandbox running when you launch a process, even if there isn't an active connection to it.
+</Note>
+
 There are no built-in stop or start functions available in the SDKs to manage standby mode. This means you'll need to rely on other approaches to better control when sandboxes remain active:
 
 1. Hide iframe when tab is inactive
