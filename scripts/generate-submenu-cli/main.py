@@ -24,18 +24,8 @@ def collect_generated_pages(generated_dir: str) -> list[str]:
 
 
 def rewrite_internal_links(generated_dir: str) -> int:
-    """Rewrite bare .md links in generated files to root-relative paths.
-
-    Cobra/docgen emits links like [bl apply](bl_apply.md).  Mintlify cannot
-    resolve these; they must become /cli-reference/commands/bl_apply.
-
-    Returns the number of files that were modified.
-    """
     import re
 
-    # Match markdown links whose target is a bare filename ending in .md
-    # (no leading slash, no directory separator) so we don't touch external
-    # or already-absolute URLs.
     pattern = re.compile(r'\[([^\]]+)\]\(([^/)\s]+)\.md\)')
 
     modified = 0
