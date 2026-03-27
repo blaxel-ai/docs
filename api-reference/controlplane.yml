@@ -386,6 +386,25 @@ components:
           description: S3-compatible endpoint URL for accessing drive contents
           readOnly: true
       readOnly: true
+    EgressConfig:
+      type: object
+      description: Egress configuration for routing sandbox outbound traffic through
+        a dedicated IP gateway
+      properties:
+        gateway:
+          type: string
+          description: Name of the egress gateway to route traffic through. The gateway
+            must exist in the default VPC.
+          example: egress-ip-gw-1
+        mode:
+          type: string
+          description: Egress mode. Use 'dedicated' for a dedicated egress IP.
+          example: dedicated
+        policies:
+          type: array
+          description: Per-destination egress policies (not yet supported)
+          items:
+            $ref: '#/components/schemas/EgressPolicy'
     EgressGateway:
       type: object
       description: An egress gateway that manages outbound traffic routing within
@@ -514,6 +533,25 @@ components:
           readOnly: true
       required:
       - ipFamily
+    EgressPolicy:
+      type: object
+      description: Egress policy routing specific destinations through dedicated or
+        shared gateways (not yet supported)
+      properties:
+        destinations:
+          type: array
+          description: Destination domains or IPs this policy applies to
+          items:
+            type: string
+          example: '["api.stripe.com"]'
+        mode:
+          type: string
+          description: Egress mode for these destinations (dedicated or shared)
+          example: dedicated
+        name:
+          type: string
+          description: Name of this egress policy
+          example: payment-apis
     Entrypoint:
       type: object
       description: Entrypoint of the artifact
@@ -1498,6 +1536,18 @@ components:
           description: When true, uses sandbox/test credentials from the integration
             connection
           example: false
+    NetworkFirewall:
+      description: Firewall configuration restricting which external domains the sandbox
+        can access
+      properties:
+        allowedDomains:
+          description: List of allowed external domains. Supports wildcards (e.g.
+            *.s3.amazonaws.com).
+          example: '["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"]'
+          items:
+            type: string
+          type: array
+      type: object
     OAuth:
       type: object
       description: OAuth of the artifact
@@ -1884,6 +1934,62 @@ components:
           type: string
           description: Location name
       x-stainless-ignore: true
+    ProxyConfig:
+      type: object
+      description: Proxy configuration for routing sandbox HTTP traffic through the
+        platform proxy with MITM inspection and per-destination header/body injection
+      properties:
+        bypass:
+          type: array
+          description: Domains that bypass the proxy entirely via the NO_PROXY directive.
+            Traffic to these destinations goes direct, not through the CONNECT tunnel.
+            Supports wildcards. Note that localhost, private ranges (10.0.0.0/8, 172.16.0.0/12,
+            192.168.0.0/16), 169.254.169.254, .local and .internal are always bypassed
+            by default.
+          items:
+            type: string
+          example: '["*.s3.amazonaws.com"]'
+        routing:
+          type: array
+          description: Per-destination routing rules with header/body injection and
+            secrets. Use destinations ["*"] for global rules that apply to all destinations.
+          items:
+            $ref: '#/components/schemas/ProxyTarget'
+    ProxyTarget:
+      type: object
+      description: Routing rule that injects headers and body fields into requests
+        matching the given destinations. Use destinations ["*"] for a global rule
+        that applies to all proxied traffic.
+      properties:
+        body:
+          type: object
+          description: Body fields to inject into matching requests. Values may contain
+            {{SECRET:name}} references resolved from this rule's secrets.
+          additionalProperties:
+            type: string
+          example: '{"api_key": "{{SECRET:stripe-key}}"}'
+        destinations:
+          type: array
+          description: Destination domains this rule applies to. Use ["*"] for a global
+            rule that matches all destinations.
+          items:
+            type: string
+          example: '["api.stripe.com"]'
+        headers:
+          type: object
+          description: Headers to inject into matching requests. Values may contain
+            {{SECRET:name}} references resolved from this rule's secrets.
+          additionalProperties:
+            type: string
+          example: '{"Authorization": "Bearer {{SECRET:stripe-key}}"}'
+        secrets:
+          type: object
+          description: 'Named secret values for this routing rule, referenced in headers/body
+            via {{SECRET:name}}. Stored encrypted at rest. Write-only: never returned
+            in API responses.'
+          additionalProperties:
+            type: string
+          example: '{"stripe-key": "sk-live-abc123..."}'
     PublicIp:
       type: object
       properties:
@@ -1938,6 +2044,10 @@ components:
         name:
           type: string
           description: Region name
+        proxyAvailable:
+          type: boolean
+          description: Proxy availability status - indicates if the proxy plane is
+            configured for the region
       x-stainless-ignore: true
     Repository:
       type: object
@@ -2238,23 +2348,29 @@ components:
           example: 24h
     SandboxNetwork:
       type: object
-      description: Network configuration for a sandbox including egress IP binding.
-        All fields (vpcName, egressGatewayName) must be specified together to assign
-        a dedicated IP.
+      description: Network configuration for a sandbox including domain filtering,
+        egress IP binding, and proxy settings
       properties:
-        egressGatewayName:
-          type: string
-          description: Name of the egress gateway in the VPC. Must be specified together
-            with vpcName.
-          example: my-egress-gateway
-        vpcName:
-          type: string
-          description: Name of the VPC where the egress gateway is provisioned. Must
-            be specified together with egressGatewayName.
-          example: my-vpc
-      required:
-      - vpcName
-      - egressGatewayName
+        allowedDomains:
+          type: array
+          description: List of allowed external domains (allowlist). When set, only
+            these domains are reachable. Supports wildcards (e.g. *.s3.amazonaws.com).
+          items:
+            type: string
+          example: '["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"]'
+        egress:
+          $ref: '#/components/schemas/EgressConfig'
+        forbiddenDomains:
+          type: array
+          description: List of forbidden external domains (denylist). When set, all
+            domains except these are reachable. Supports wildcards (e.g. *.malware.com).
+            If both allowedDomains and forbiddenDomains are set, allowedDomains takes
+            precedence.
+          items:
+            type: string
+          example: '["*.malware.com", "evil.example.org"]'
+        proxy:
+          $ref: '#/components/schemas/ProxyConfig'
     SandboxRuntime:
       type: object
       description: Runtime configuration defining how the sandbox VM is provisioned
