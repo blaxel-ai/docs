@@ -772,7 +772,7 @@ When proxy is enabled, the following tools work transparently inside the sandbox
 | `pip` / `pip3` | HTTPS | Automatic |
 | `npm` / `npx` | HTTPS | Automatic |
 | Python `requests` | HTTPS | Automatic via env vars |
-| Node.js `https` | HTTPS | Needs manual CONNECT through proxy |
+| Node.js `https` | HTTPS | Automatic via `HTTPS_PROXY` + `NODE_EXTRA_CA_CERTS` env vars |
 
 ## Behavior details
 
