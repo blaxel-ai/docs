@@ -29,5 +29,5 @@ bl get functions [flags]
 
 ### SEE ALSO
 
-* [bl get](bl_get.md)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
 
