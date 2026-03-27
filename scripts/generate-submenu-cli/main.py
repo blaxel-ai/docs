@@ -23,6 +23,33 @@ def collect_generated_pages(generated_dir: str) -> list[str]:
     return pages
 
 
+def rewrite_internal_links(generated_dir: str) -> int:
+    import re
+
+    pattern = re.compile(r'\[([^\]]+)\]\(([^/)\s]+)\.md\)')
+
+    modified = 0
+    for filename in sorted(os.listdir(generated_dir)):
+        if not filename.endswith(".md"):
+            continue
+
+        filepath = os.path.join(generated_dir, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
+            original = f.read()
+
+        def _replace(m: re.Match) -> str:
+            label, stem = m.group(1), m.group(2)
+            return f"[{label}]({PAGES_PREFIX}/{stem})"
+
+        updated = pattern.sub(_replace, original)
+        if updated != original:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(updated)
+            modified += 1
+
+    return modified
+
+
 def update_docs_json(docs_json_path: str, generated_pages: list[str]) -> None:
     with open(docs_json_path, "r") as f:
         data = json.load(f)
@@ -87,8 +114,11 @@ def main() -> None:
     args = parser.parse_args()
 
     generated_pages = collect_generated_pages(args.generated_dir)
+    modified = rewrite_internal_links(args.generated_dir)
+    print(
+        f"Rewrote internal links in {modified} file(s)."
+    )
     update_docs_json(args.docs_json, generated_pages)
-
     print(
         f"Updated {args.docs_json} with {len(generated_pages)} pages under "
         f"'CLI Reference' -> 'Overview' -> 'Commands'."
