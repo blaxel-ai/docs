@@ -169,7 +169,7 @@ sandbox = await SandboxInstance.create({
 await SandboxInstance.create({
   name: "api-sandbox",
   image: "blaxel/base-image:latest",
-  region: "us-pdx-1",
+  region: "us-was-1",
   network: {
     proxy: {
       routing: [
@@ -193,7 +193,7 @@ await SandboxInstance.create({
 await SandboxInstance.create({
     "name": "api-sandbox",
     "image": "blaxel/base-image:latest",
-    "region": "us-pdx-1",
+    "region": "us-was-1",
     "network": {
         "proxy": {
             "routing": [
@@ -417,7 +417,7 @@ Only the listed domains are reachable:
 await SandboxInstance.create({
   name: "restricted-sandbox",
   image: "blaxel/base-image:latest",
-  region: "us-pdx-1",
+  region: "us-was-1",
   network: {
     allowedDomains: ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
     proxy: { routing: [] },
@@ -429,7 +429,7 @@ await SandboxInstance.create({
 await SandboxInstance.create({
     "name": "restricted-sandbox",
     "image": "blaxel/base-image:latest",
-    "region": "us-pdx-1",
+    "region": "us-was-1",
     "network": {
         "allowedDomains": ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
         "proxy": {"routing": []},
@@ -449,7 +449,7 @@ All domains except the listed ones are reachable:
 await SandboxInstance.create({
   name: "denylist-sandbox",
   image: "blaxel/base-image:latest",
-  region: "us-pdx-1",
+  region: "us-was-1",
   network: {
     forbiddenDomains: ["*.malware.com", "evil.example.org"],
     proxy: { routing: [] },
@@ -461,7 +461,7 @@ await SandboxInstance.create({
 await SandboxInstance.create({
     "name": "denylist-sandbox",
     "image": "blaxel/base-image:latest",
-    "region": "us-pdx-1",
+    "region": "us-was-1",
     "network": {
         "forbiddenDomains": ["*.malware.com", "evil.example.org"],
         "proxy": {"routing": []},
@@ -594,7 +594,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.create({
   name: "agent-workspace",
   image: "blaxel/base-image:latest",
-  region: "us-pdx-1",
+  region: "us-was-1",
   labels: { team: "ml", env: "staging" },
   network: {
     allowedDomains: [
@@ -652,7 +652,7 @@ from blaxel.core.sandbox import SandboxInstance
 sandbox = await SandboxInstance.create({
     "name": "agent-workspace",
     "image": "blaxel/base-image:latest",
-    "region": "us-pdx-1",
+    "region": "us-was-1",
     "labels": {"team": "ml", "env": "staging"},
     "network": {
         "allowedDomains": [
