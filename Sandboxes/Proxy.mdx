@@ -1,0 +1,766 @@
+---
+title: "Proxy & network"
+description: "Route outbound sandbox traffic through Blaxel's platform proxy with MITM header/body injection and secrets, and configure domain firewalls."
+tag: "public preview"
+---
+
+<Note>
+  This feature is currently in public preview. During the preview, the proxy and network features are only available in the `us-was-1` region.
+</Note>
+
+The Blaxel SDK supports two network features when creating sandboxes: **proxy routing** (MITM header/body injection with secrets) and **domain filtering** (allowlist/denylist firewalls).
+
+## Quick start
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+            "Stripe-Version": "2024-12-18.acacia",
+          },
+          secrets: {
+            "stripe-key": "sk_live_...",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                        "Stripe-Version": "2024-12-18.acacia",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk_live_...",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+Code inside the sandbox calls `api.stripe.com` normally — the proxy intercepts the request, injects the `Authorization` and `Stripe-Version` headers with the resolved secret, and forwards it. The sandbox never sees the raw API key.
+
+## How it works
+
+When a sandbox is created with a proxy config, Blaxel:
+
+1. Sets `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables inside the sandbox
+2. Installs a CA certificate and sets `NODE_EXTRA_CA_CERTS` and `SSL_CERT_FILE` so TLS clients trust the proxy
+3. Performs MITM on outbound HTTPS via CONNECT tunneling
+4. Matches each request against routing rules by destination domain
+5. Injects configured headers and body fields, resolving `{{SECRET:name}}` placeholders server-side
+6. Adds an `X-Blaxel-Request-Id` header to every proxied request for tracing
+
+Standard HTTP clients work transparently: `curl`, `wget`, `git`, `pip`, `npm`, Node.js `https`, Python `requests`, etc.
+
+<Note>
+Localhost (`127.0.0.1`), private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), `169.254.169.254`, `.local`, and `.internal` are always bypassed automatically.
+</Note>
+
+## Configuration reference
+
+All network settings are passed via the `network` key in the sandbox creation options:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    // Domain filtering (firewall)
+    allowedDomains: [...],
+    forbiddenDomains: [...],
+    // Proxy with header/body injection
+    proxy: {
+      routing: [...],
+      bypass: [...],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        # Domain filtering (firewall)
+        "allowedDomains": [...],
+        "forbiddenDomains": [...],
+        # Proxy with header/body injection
+        "proxy": {
+            "routing": [...],
+            "bypass": [...],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+### `SandboxNetwork`
+
+| Field | Type | Description |
+|---|---|---|
+| `allowedDomains` | `string[]` / `list[str]` | Allowlist — only these domains are reachable. Supports wildcards (`*.s3.amazonaws.com`). |
+| `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `allowedDomains` takes precedence. |
+| `proxy` | `ProxyConfig` | Proxy routing and bypass configuration. |
+
+### `ProxyConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `routing` | `ProxyTarget[]` / `list[ProxyTarget]` | Per-destination routing rules with header/body injection. |
+| `bypass` | `string[]` / `list[str]` | Domains added to `NO_PROXY` that skip the proxy entirely. Supports wildcards. |
+
+### `ProxyTarget`
+
+| Field | Type | Description |
+|---|---|---|
+| `destinations` | `string[]` / `list[str]` | Domain patterns this rule applies to. Use `["*"]` for a global catch-all rule. Supports wildcards (`*.example.com` matches `sub.example.com` but not `example.com`). |
+| `headers` | `Record<string, string>` / `dict` | Headers injected into matching requests. Values may contain `{{SECRET:name}}` references. |
+| `body` | `Record<string, string>` / `dict` | JSON body fields injected into matching requests. Values may contain `{{SECRET:name}}` references. |
+| `secrets` | `Record<string, string>` / `dict` | Named secret values for this rule. Referenced via `{{SECRET:name}}` in headers and body. Write-only — never returned in API responses. Stored encrypted at rest. |
+
+## Proxy routing
+
+### Header injection with secrets
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "api-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.openai.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:openai-key}}",
+            "OpenAI-Organization": "org-abc123",
+          },
+          secrets: {
+            "openai-key": "sk-proj-...",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "api-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:openai-key}}",
+                        "OpenAI-Organization": "org-abc123",
+                    },
+                    "secrets": {
+                        "openai-key": "sk-proj-...",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+### Body injection (POST requests)
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "body-injection",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+          },
+          body: {
+            "api_key": "{{SECRET:stripe-key}}",
+          },
+          secrets: {
+            "stripe-key": "sk_live_...",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "body-injection",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                    },
+                    "body": {
+                        "api_key": "{{SECRET:stripe-key}}",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk_live_...",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+The proxy merges body fields into outbound POST/PUT/PATCH JSON payloads. User-sent fields are preserved; injected fields are added alongside them.
+
+### Multiple routing rules
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "multi-route",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_..." },
+        },
+        {
+          destinations: ["api.openai.com"],
+          headers: { "Authorization": "Bearer {{SECRET:openai-key}}" },
+          secrets: { "openai-key": "sk-proj-..." },
+        },
+      ],
+      bypass: ["*.s3.amazonaws.com"],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "multi-route",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_..."},
+                },
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:openai-key}}"},
+                    "secrets": {"openai-key": "sk-proj-..."},
+                },
+            ],
+            "bypass": ["*.s3.amazonaws.com"],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+Secrets are scoped per rule — the Stripe key is never injected into OpenAI requests and vice versa.
+
+### Global catch-all rule
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "global-auth",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["*"],
+          headers: {
+            "X-Global-Auth": "Bearer {{SECRET:global-key}}",
+          },
+          secrets: {
+            "global-key": "token-xyz",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "global-auth",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["*"],
+                    "headers": {"X-Global-Auth": "Bearer {{SECRET:global-key}}"},
+                    "secrets": {"global-key": "token-xyz"},
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+The `["*"]` destination matches all proxied traffic.
+
+### Proxy bypass
+
+Domains listed in `bypass` skip the proxy tunnel entirely (direct connection):
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "bypass-only",
+  network: {
+    proxy: {
+      bypass: ["*.s3.amazonaws.com", "169.254.169.254"],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "bypass-only",
+    "network": {
+        "proxy": {
+            "bypass": ["*.s3.amazonaws.com", "169.254.169.254"],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+S3 and metadata endpoint traffic goes direct, everything else routes through the proxy.
+
+## Domain filtering (firewall)
+
+Restrict which external domains the sandbox can reach, independent of proxy routing.
+
+### Allowlist
+
+Only the listed domains are reachable:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "restricted-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "restricted-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+### Denylist
+
+All domains except the listed ones are reachable:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "denylist-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    forbiddenDomains: ["*.malware.com", "evil.example.org"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "denylist-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "forbiddenDomains": ["*.malware.com", "evil.example.org"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+<Note>
+When both `allowedDomains` and `forbiddenDomains` are set, `allowedDomains` takes precedence.
+</Note>
+
+### Firewall + proxy combined
+
+Firewall rules and proxy routing compose naturally:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "locked-down",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com"],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_..." },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "locked-down",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com"],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_..."},
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+Only `api.stripe.com` and `api.openai.com` are reachable. The proxy injects credentials for Stripe requests; OpenAI requests go through unmodified.
+
+## Secret interpolation
+
+Secrets are referenced in headers and body values using the `{{SECRET:name}}` syntax:
+
+```text
+"Authorization": "Bearer {{SECRET:api-token}}"          → "Bearer tok_live_abc123"
+"X-Multi":       "{{SECRET:part-a}}-{{SECRET:part-b}}"  → "ALPHA-BETA"
+"X-Plain":       "no-secret-here"                        → "no-secret-here" (unchanged)
+```
+
+- Multiple `{{SECRET:...}}` placeholders can appear in a single value
+- Secrets are resolved server-side by the proxy — the sandbox runtime never sees raw secret values
+- Secrets are write-only: the `secrets` field is stripped from API responses
+- Secrets are scoped per routing rule: a secret defined on route A cannot be resolved by route B
+- User code inside the sandbox can also send `{{SECRET:name}}` in its own request headers or body — the proxy will resolve them if the secret exists on the matching route
+
+## Reading proxy config from an existing sandbox
+
+After creation or retrieval, network config is available as typed model attributes:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const network = sandbox.spec.network;
+
+if (network?.proxy?.routing) {
+  for (const route of network.proxy.routing) {
+    console.log(route.destinations);
+    console.log(route.headers["Authorization"]);
+  }
+  if (network.proxy.bypass) {
+    console.log(network.proxy.bypass);
+  }
+}
+
+if (network?.allowedDomains) {
+  console.log(network.allowedDomains);
+}
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+from blaxel.core.client.types import Unset
+
+sandbox = await SandboxInstance.get("my-sandbox")
+network = sandbox.spec.network  # SandboxNetwork (or Unset)
+
+if not isinstance(network, Unset) and not isinstance(network.proxy, Unset):
+    for route in network.proxy.routing:
+        print(route.destinations)
+        print(route.headers["Authorization"])
+    if not isinstance(network.proxy.bypass, Unset):
+        print(network.proxy.bypass)
+
+if not isinstance(network, Unset) and not isinstance(network.allowed_domains, Unset):
+    print(network.allowed_domains)
+```
+
+</CodeGroup>
+
+## Full example: agent sandbox with proxy + firewall
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "agent-workspace",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  labels: { team: "ml", env: "staging" },
+  network: {
+    allowedDomains: [
+      "api.stripe.com",
+      "api.openai.com",
+      "httpbin.org",
+      "*.s3.amazonaws.com",
+    ],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+            "Stripe-Version": "2024-12-18.acacia",
+          },
+          body: {
+            "api_key": "{{SECRET:stripe-key}}",
+          },
+          secrets: {
+            "stripe-key": "sk-live-abc123...",
+          },
+        },
+        {
+          destinations: ["api.openai.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:openai-key}}",
+            "OpenAI-Organization": "org-abc123",
+          },
+          secrets: {
+            "openai-key": "sk-proj-xyz789...",
+          },
+        },
+      ],
+      bypass: ["*.s3.amazonaws.com"],
+    },
+  },
+});
+
+// curl https://api.stripe.com/...  -> gets auth header + body injected
+// curl https://api.openai.com/...  -> gets auth header injected
+// curl https://httpbin.org/...     -> allowed, no injection
+// curl https://evil.com/...        -> BLOCKED by allowedDomains firewall
+
+const result = await sandbox.process.exec({
+  command: "curl -s https://api.stripe.com/v1/charges",
+  waitForCompletion: true,
+});
+console.log(result.logs);
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "agent-workspace",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "labels": {"team": "ml", "env": "staging"},
+    "network": {
+        "allowedDomains": [
+            "api.stripe.com",
+            "api.openai.com",
+            "httpbin.org",
+            "*.s3.amazonaws.com",
+        ],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                        "Stripe-Version": "2024-12-18.acacia",
+                    },
+                    "body": {
+                        "api_key": "{{SECRET:stripe-key}}",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk-live-abc123...",
+                    },
+                },
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:openai-key}}",
+                        "OpenAI-Organization": "org-abc123",
+                    },
+                    "secrets": {
+                        "openai-key": "sk-proj-xyz789...",
+                    },
+                },
+            ],
+            "bypass": ["*.s3.amazonaws.com"],
+        },
+    },
+})
+
+# curl https://api.stripe.com/...  -> gets auth header + body injected
+# curl https://api.openai.com/...  -> gets auth header injected
+# curl https://httpbin.org/...     -> allowed, no injection
+# curl https://evil.com/...        -> BLOCKED by allowedDomains firewall
+
+result = await sandbox.process.exec({
+    "command": "curl -s https://api.stripe.com/v1/charges",
+    "wait_for_completion": True,
+})
+print(result.logs)
+```
+
+</CodeGroup>
+
+## Region availability
+
+Proxy availability is region-dependent. The `Region` type includes a `proxyAvailable` boolean field. Check region support before relying on proxy features:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { listRegions } from "@blaxel/core";
+
+const { data: regions } = await listRegions({ throwOnError: true });
+for (const r of regions) {
+  console.log(`${r.name}: proxy=${r.proxyAvailable}`);
+}
+```
+
+```python Python
+from blaxel.core import listRegions
+
+result = await listRegions()
+for r in result.data:
+    print(f"{r.name}: proxy={r.proxy_available}")
+```
+
+</CodeGroup>
+
+## Environment variables set inside the sandbox
+
+When proxy is configured, the sandbox automatically has:
+
+| Variable | Purpose |
+|---|---|
+| `HTTP_PROXY` | Proxy URL for HTTP traffic |
+| `HTTPS_PROXY` | Proxy URL for HTTPS traffic |
+| `NO_PROXY` | Comma-separated bypass list (always includes localhost, private ranges) |
+| `NODE_EXTRA_CA_CERTS` | Path to CA cert for Node.js TLS verification |
+| `SSL_CERT_FILE` | Path to CA cert for other TLS clients (`curl`, Python, etc.) |
+
+## CLI tool compatibility
+
+When proxy is enabled, the following tools work transparently inside the sandbox with no extra configuration:
+
+| Tool | Protocol | Notes |
+|---|---|---|
+| `curl` | HTTPS | Automatic via `HTTPS_PROXY` env var |
+| `git` | HTTPS | May need `GIT_SSL_CAINFO=$SSL_CERT_FILE` for some operations |
+| `pip` / `pip3` | HTTPS | Automatic |
+| `npm` / `npx` | HTTPS | Automatic |
+| Python `requests` | HTTPS | Automatic via env vars |
+| Node.js `https` | HTTPS | Automatic via `HTTPS_PROXY` + `NODE_EXTRA_CA_CERTS` env vars |
+
+## Behavior details
+
+- **Wildcard matching**: `*.example.com` matches `sub.example.com` and `a.b.example.com` but not `example.com` itself
+- **No cross-route leakage**: Headers/secrets from one routing rule are never applied to requests matching a different rule
+- **User headers preserved**: The proxy adds injected headers alongside any headers the sandbox code sends — it does not overwrite user-sent headers
+- **Body merge**: Injected body fields are merged into the outbound JSON payload. User-sent fields take precedence if there's a key collision
+- **Tracing**: Every proxied request gets an `X-Blaxel-Request-Id` header for observability
+- **Local traffic**: Requests to `localhost` / `127.0.0.1` are never routed through the proxy
