@@ -43,5 +43,5 @@ bl completion powershell [flags]
 
 ### SEE ALSO
 
-* [bl completion](bl_completion.md)	 - Generate the autocompletion script for the specified shell
+* [bl completion](/cli-reference/commands/bl_completion)	 - Generate the autocompletion script for the specified shell
 

@@ -117,15 +117,15 @@ The command can list all resources of a type or get details for a specific one.
 
 ### SEE ALSO
 
-* [bl](bl.md)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
-* [bl get agents](bl_get_agents.md)	 - Get a Agent
-* [bl get functions](bl_get_functions.md)	 - Get a Function
-* [bl get image](bl_get_image.md)	 - Get image information
-* [bl get integrationconnections](bl_get_integrationconnections.md)	 - Get a IntegrationConnection
-* [bl get jobs](bl_get_jobs.md)	 - Get a Job
-* [bl get models](bl_get_models.md)	 - Get a Model
-* [bl get policies](bl_get_policies.md)	 - Get a Policy
-* [bl get sandboxes](bl_get_sandboxes.md)	 - Get a Sandbox
-* [bl get volumes](bl_get_volumes.md)	 - Get a Volume
-* [bl get volumetemplates](bl_get_volumetemplates.md)	 - Get a VolumeTemplate
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl get agents](/cli-reference/commands/bl_get_agents)	 - Get a Agent
+* [bl get functions](/cli-reference/commands/bl_get_functions)	 - Get a Function
+* [bl get image](/cli-reference/commands/bl_get_image)	 - Get image information
+* [bl get integrationconnections](/cli-reference/commands/bl_get_integrationconnections)	 - Get a IntegrationConnection
+* [bl get jobs](/cli-reference/commands/bl_get_jobs)	 - Get a Job
+* [bl get models](/cli-reference/commands/bl_get_models)	 - Get a Model
+* [bl get policies](/cli-reference/commands/bl_get_policies)	 - Get a Policy
+* [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - Get a Sandbox
+* [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - Get a Volume
+* [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - Get a VolumeTemplate
 
