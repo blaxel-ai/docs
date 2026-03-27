@@ -23,7 +23,7 @@ When enabled, the SDKs and CLI capture errors and exceptions that originate from
 
 No request data, API keys, file contents, IP addresses or other user or application data is collected.
 
-### Opt out
+### Opt in
 
 Error tracking is controlled by the `tracking` parameter, which reads its value from the following locations (in priority order):
 
@@ -35,12 +35,18 @@ Error tracking is controlled by the `tracking` parameter, which reads its value 
 
 The Blaxel CLI prompts the user for tracking consent on first interactive use and during installation. The response is recorded in `~/.blaxel/config.yaml` and affects error tracking in the SDKs and the CLI.
 
+<Note>
+  Consenting when prompted sets `tracking: true` in `~/.blaxel/config.yaml`, which is read by both the CLI and SDKs and results in error tracking becoming enabled for local sessions.
+
+  However, when deploying on Blaxel, the platform automatically injects `DO_NOT_TRACK=1`, which disables error tracking regardless of the value set in `~/.blaxel/config.yaml`. Similarly, in CI environments or in remote environments where the Blaxel CLI is not used, the `tracking:` field is never set to `true` and error tracking is therefore disabled by default.
+</Note>
+
 #### `DO_NOT_TRACK` environment variable
 
-The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To explicitly disable tracking, use the command below in your shell environment:
+The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To explicitly enable tracking, use the command below in your shell environment:
 
 ```bash
-export DO_NOT_TRACK=1    # Disable tracking
+export DO_NOT_TRACK=0    # Enable tracking
 ```
 
 #### Blaxel configuration file
@@ -69,12 +75,12 @@ Blaxel only collects and saves traces for a sampled 10% of all your executions.
 
 [Read more about observability](/Observability/Overview).
 
-### Opt out
+### Opt in
 
-This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. This environment variable defaults to `false`, except for deployed agents where the platform sets it to `true`. To explicitly disable it, use the command below in your shell environment:
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. This environment variable defaults to `false`, except for deployed agents where the platform sets it to `true`. To explicitly enable it, use the command below in your shell environment:
 
 ```bash
-export BL_ENABLE_OPENTELEMETRY=false    # Disable OpenTelemetry logging
+export BL_ENABLE_OPENTELEMETRY=true    # Enable OpenTelemetry logging
 ```
 
 <Warning>
