@@ -56,5 +56,5 @@ bl delete image resourceType/imageName[:tag] [resourceType/imageName[:tag]...] [
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](bl_delete.md)	 - Delete a resource
 

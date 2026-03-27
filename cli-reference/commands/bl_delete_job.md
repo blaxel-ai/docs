@@ -28,5 +28,5 @@ bl delete job name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](bl_delete.md)	 - Delete a resource
 
