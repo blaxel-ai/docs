@@ -1,6 +1,6 @@
 ---
 title: "Proxy & network"
-description: "Route outbound sandbox traffic through Blaxel's platform proxy with MITM header/body injection and secrets, configure domain firewalls, and bind egress IPs."
+description: "Route outbound sandbox traffic through Blaxel's platform proxy with MITM header/body injection and secrets, and configure domain firewalls."
 tag: "private preview"
 ---
 
@@ -8,7 +8,7 @@ tag: "private preview"
   This feature is currently in private preview. During the preview, the proxy and network features are only available in the `us-was-1` region. Both your sandbox and proxy configuration must target this region. [Request access](https://blaxel.fillout.com/t/pbTXmanx3Sus).
 </Note>
 
-The Blaxel SDK supports three network features when creating sandboxes: **proxy routing** (MITM header/body injection with secrets), **domain filtering** (allowlist/denylist firewalls), and **egress IP binding**.
+The Blaxel SDK supports two network features when creating sandboxes: **proxy routing** (MITM header/body injection with secrets) and **domain filtering** (allowlist/denylist firewalls).
 
 ## Quick start
 
@@ -109,11 +109,6 @@ const sandbox = await SandboxInstance.create({
       routing: [...],
       bypass: [...],
     },
-    // Egress IP binding
-    egress: {
-      gateway: "my-egress-gw",
-      mode: "dedicated",
-    },
   },
 });
 ```
@@ -134,11 +129,6 @@ sandbox = await SandboxInstance.create({
             "routing": [...],
             "bypass": [...],
         },
-        # Egress IP binding
-        "egress": {
-            "gateway": "my-egress-gw",
-            "mode": "dedicated",
-        },
     },
 })
 ```
@@ -152,7 +142,6 @@ sandbox = await SandboxInstance.create({
 | `allowedDomains` | `string[]` / `list[str]` | Allowlist — only these domains are reachable. Supports wildcards (`*.s3.amazonaws.com`). |
 | `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `allowedDomains` takes precedence. |
 | `proxy` | `ProxyConfig` | Proxy routing and bypass configuration. |
-| `egress` | `EgressConfig` | Dedicated egress IP gateway binding. |
 
 ### `ProxyConfig`
 
@@ -169,13 +158,6 @@ sandbox = await SandboxInstance.create({
 | `headers` | `Record<string, string>` / `dict` | Headers injected into matching requests. Values may contain `{{SECRET:name}}` references. |
 | `body` | `Record<string, string>` / `dict` | JSON body fields injected into matching requests. Values may contain `{{SECRET:name}}` references. |
 | `secrets` | `Record<string, string>` / `dict` | Named secret values for this rule. Referenced via `{{SECRET:name}}` in headers and body. Write-only — never returned in API responses. Stored encrypted at rest. |
-
-### `EgressConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `gateway` | `string` / `str` | Egress gateway name in the default VPC. |
-| `mode` | `string` / `str` | Egress mode (e.g. `"dedicated"`). |
 
 ## Proxy routing
 
