@@ -5,7 +5,7 @@ import argparse
 
 EXCLUDE_FILENAMES = {"bl.md"}
 
-PAGES_PREFIX = "/cli-reference/commands"
+PAGES_PREFIX = "cli-reference/commands"
 
 
 def collect_generated_pages(generated_dir: str) -> list[str]:
