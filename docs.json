@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Documentation",
   "colors": {
-    "primary": "#BF5810",
+    "primary": "#F0652D",
     "light": "#FD7B35",
-    "dark": "#BF5810"
+    "dark": "#F0652D"
   },
   "favicon": "/favicon.webp",
   "navigation": {
@@ -417,5 +417,16 @@
       "apiKey": "phc_HGJ7t7Qa8cJJilL0CONU5se4vM6jU6nKFCuoCC9LSha",
       "apiHost": "https://events.blaxel.ai"
     }
+  },
+  "background": {
+    "color": {
+      "dark": "#09090B"
+    }
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "fonts": {
+    "family": "Inter"
   }
 }
