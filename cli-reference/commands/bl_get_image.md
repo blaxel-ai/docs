@@ -60,5 +60,5 @@ bl get image [resourceType/imageName[:tag]] [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](bl_get.md)	 - Get a resource
 
