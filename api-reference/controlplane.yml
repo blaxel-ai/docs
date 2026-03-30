@@ -763,6 +763,21 @@ components:
           $ref: '#/components/schemas/FunctionRuntime'
         triggers:
           $ref: '#/components/schemas/Triggers'
+    GithubRunnerConfig:
+      type: object
+      description: Configuration for running GitHub Actions workflow jobs on Blaxel
+        infrastructure. When repositories are configured, the job acts as a self-hosted
+        GitHub Actions runner. Workflow jobs use runs-on with the Blaxel job name
+        to target a specific runner.
+      properties:
+        repositories:
+          type: array
+          description: Repositories in owner/repo format that this runner is associated
+            with. The runner will pick up workflow jobs from any of these repositories.
+            If non-empty, the runner is considered enabled.
+          items:
+            type: string
+          example: '["my-org/repo-a", "my-org/repo-b"]'
     GroupWorkspaceMapping:
       type: object
       description: Mapping between an IdP group and a workspace role for directory
@@ -1302,6 +1317,8 @@ components:
             triggered
           example: true
           default: true
+        githubRunner:
+          $ref: '#/components/schemas/GithubRunnerConfig'
         policies:
           $ref: '#/components/schemas/PoliciesList'
         region:
@@ -1314,6 +1331,45 @@ components:
           $ref: '#/components/schemas/JobRuntime'
         triggers:
           $ref: '#/components/schemas/Triggers'
+        volumes:
+          $ref: '#/components/schemas/JobVolumes'
+    JobVolume:
+      type: object
+      description: Ephemeral volume for a job. Temporary disk-backed storage that
+        is created when the job starts and destroyed when it completes.
+      properties:
+        mountPath:
+          type: string
+          description: Absolute filesystem path where the volume will be mounted inside
+            the container
+          example: /mnt/data
+        name:
+          type: string
+          description: Identifier for the volume, used to reference it internally
+          example: scratch
+        readOnly:
+          type: boolean
+          description: If true, the volume is mounted read-only
+          example: false
+        sizeMb:
+          type: integer
+          description: Storage capacity in megabytes
+          example: 102400
+        type:
+          type: string
+          description: Type of volume. Currently only "ephemeral" is supported.
+          enum:
+          - ephemeral
+          example: ephemeral
+      required:
+      - name
+      - mountPath
+      - type
+      - sizeMb
+    JobVolumes:
+      type: array
+      items:
+        $ref: '#/components/schemas/JobVolume'
     LocationResponse:
       type: object
       description: Location availability for policies
@@ -2642,8 +2698,8 @@ components:
       - spec
     VolumeAttachment:
       type: object
-      description: Configuration for attaching a volume to a sandbox at a specific
-        filesystem path
+      description: Configuration for attaching a persistent volume to a sandbox at
+        a specific filesystem path
       properties:
         mountPath:
           type: string
