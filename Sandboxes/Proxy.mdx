@@ -70,6 +70,10 @@ sandbox = await SandboxInstance.create({
 
 Code inside the sandbox calls `api.stripe.com` normally — the proxy intercepts the request, injects the `Authorization` and `Stripe-Version` headers with the resolved secret, and forwards it. The sandbox never sees the raw API key.
 
+<Warning>
+  Proxy and network configuration is set at sandbox creation time and **cannot be updated after the sandbox has been created**. To change the configuration (e.g. rotate a secret, add a new routing rule, or update the allowlist), you must create a new sandbox. Support for in-place updates is coming soon.
+</Warning>
+
 ## How it works
 
 When a sandbox is created with a proxy config, Blaxel:
@@ -140,7 +144,7 @@ sandbox = await SandboxInstance.create({
 | Field | Type | Description |
 |---|---|---|
 | `allowedDomains` | `string[]` / `list[str]` | Allowlist — only these domains are reachable. Supports wildcards (`*.s3.amazonaws.com`). |
-| `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `allowedDomains` takes precedence. |
+| `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `forbiddenDomains` takes precedence. |
 | `proxy` | `ProxyConfig` | Proxy routing and bypass configuration. |
 
 ### `ProxyConfig`
@@ -405,7 +409,11 @@ S3 and metadata endpoint traffic goes direct, everything else routes through the
 
 ## Domain filtering (firewall)
 
-Restrict which external domains the sandbox can reach, independent of proxy routing.
+Restrict which external domains the sandbox can reach. Domain filtering and proxy routing are **independent configurations** — you do not need to duplicate domains across both. A domain can appear in the allowlist without having a proxy routing rule, and vice versa.
+
+<Warning>
+  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore these variables will not be filtered. Routing-level enforcement is planned for a future release.
+</Warning>
 
 ### Allowlist
 
@@ -472,7 +480,7 @@ await SandboxInstance.create({
 </CodeGroup>
 
 <Note>
-When both `allowedDomains` and `forbiddenDomains` are set, `allowedDomains` takes precedence.
+When both `allowedDomains` and `forbiddenDomains` are set, `forbiddenDomains` takes precedence: a domain that appears in both lists will be blocked.
 </Note>
 
 ### Firewall + proxy combined
