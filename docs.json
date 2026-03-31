@@ -352,6 +352,7 @@
                   "/cli-reference/commands/bl_logout",
                   "/cli-reference/commands/bl_logs",
                   "/cli-reference/commands/bl_new",
+                  "/cli-reference/commands/bl_push",
                   "/cli-reference/commands/bl_run",
                   "/cli-reference/commands/bl_serve",
                   "/cli-reference/commands/bl_token",
