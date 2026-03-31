@@ -814,6 +814,8 @@ components:
         displayName:
           type: string
           description: The display name of the image (registry/workspace/repository).
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         lastDeployedAt:
           type: string
           description: The date and time when the image was last deployed (most recent
@@ -825,6 +827,8 @@ components:
         resourceType:
           type: string
           description: The resource type of the image.
+        status:
+          $ref: '#/components/schemas/Status'
         updatedAt:
           type: string
           description: The date and time when the image was last updated.
@@ -2496,6 +2500,7 @@ components:
       - BUILDING
       - DEPLOYING
       - DEPLOYED
+      - BUILT
       readOnly: true
     Template:
       type: object
@@ -4243,6 +4248,72 @@ paths:
         - images:list
       - ApiKeyAuth: []
       summary: List container images
+      tags:
+      - images
+    post:
+      description: Builds a container image without creating a deployment. Returns
+        a presigned URL for uploading source code. After upload, the image will be
+        built and stored in the registry, but no agent, function, sandbox, or job
+        will be created or updated.
+      operationId: CreateImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                generation:
+                  description: Runtime generation (e.g., mk3). Defaults to mk3 if
+                    not specified.
+                  type: string
+                image:
+                  description: A pre-built Docker image reference (e.g., docker.io/myorg/myimage:latest).
+                    When provided, the build step is skipped and the image is used
+                    directly as the source for the resource runtime.
+                  type: string
+                name:
+                  description: Name of the image to build
+                  type: string
+                resourceType:
+                  description: Resource type (agent, function, sandbox, job)
+                  type: string
+              required:
+              - resourceType
+              - name
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  image:
+                    description: The registered image reference (only present when
+                      image was provided in request)
+                    type: string
+                  message:
+                    description: Status message
+                    type: string
+                  name:
+                    description: Name of the image
+                    type: string
+                  resourceType:
+                    description: Resource type
+                    type: string
+                type: object
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading source code
+              schema:
+                type: string
+        "400":
+          description: invalid request
+      security:
+      - OAuth2:
+        - images:create
+      - ApiKeyAuth: []
+      summary: Build a container image
       tags:
       - images
   /images/{resourceType}/{imageName}:
