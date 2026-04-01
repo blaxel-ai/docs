@@ -17,9 +17,9 @@
           "href": "/changelog"
         },
         {
-          "anchor": "Agent Skill",
+          "anchor": "Connect your AI agent",
           "icon": "robot",
-          "href": "/MCP-server"
+          "href": "/connect-ai"
         }
       ]
     },
@@ -31,9 +31,7 @@
             "group": "Get Started",
             "pages": [
               "Overview",
-              "Get-started",
-              "MCP-server",
-              "MCP-docs"
+              "Get-started"
             ]
           },
           {
@@ -390,7 +388,7 @@
       },
       {
         "label": "Agent Skill",
-        "href": "/MCP-server"
+        "href": "/connect-ai"
       }
     ],
     "primary": {

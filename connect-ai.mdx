@@ -1,18 +1,26 @@
 ---
-title: 'Use Blaxel Skills or MCP'
+title: 'Connect your AI agent'
 icon: 'robot'
-description: 'Use Blaxel Skills or MCP to manage your Blaxel resources from your AI agents.'
+description: 'Configure Cursor, Claude Code, or other AI coding assistants to manage your Blaxel resources or access the Blaxel documentation.'
 ---
+
+Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
+
+1. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP server on Blaxel using simple prompts.
+2. The Blaxel **resource management MCP server** lets your coding agent directly manage your Blaxel resources using natural language.
+3. The Blaxel **documentation MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
+4. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
+5. A **native AI assistant** built into this documentation portal.
 
 ## Agent skills
 
-[Agent Skills](https://agentskills.io/specification) are instruction sets to extend coding agents with additional knowledge and tools. An agent can load these instructions into its context and use them to complete the tasks assigned to it.
+[Agent skills](https://agentskills.io/specification) are instruction sets to extend coding agents with additional knowledge and tools. An agent can load these instructions into its context and use them to complete the tasks assigned to it.
 
-Blaxel offers open source Agent Skills to help coding agents autonomously spin up and manage sandboxes on Blaxel and migrate sandbox code from other providers to Blaxel.
+Blaxel offers open source Agent skills to help coding agents autonomously spin up and manage sandboxes on Blaxel, and migrate sandbox code from other providers to Blaxel.
 
-### Blaxel Skill
+### Blaxel skill
 
-The open source [Blaxel Skill](https://github.com/blaxel-ai/agent-skills) lets agents:
+The open source [Blaxel skill](https://github.com/blaxel-ai/agent-skills) lets agents:
 
 - create perpetual sandboxes on Blaxel to run code and execute commands
 - start applications servers within sandboxes
@@ -21,7 +29,7 @@ The open source [Blaxel Skill](https://github.com/blaxel-ai/agent-skills) lets a
 - create and deploy MCP servers on Blaxel
 - deploy and run batch jobs on Blaxel
 
-Add the Blaxel Skill to your coding agent with the command below:
+Add the Blaxel skill to your coding agent with the command below:
 
 ```shell
 npx skills add blaxel-ai/agent-skills
@@ -29,17 +37,17 @@ npx skills add blaxel-ai/agent-skills
 
 You'll be prompted to select your coding agent and installation location.
 
-The Blaxel Skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+The Blaxel skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
 
 <Tip>
-  See [examples of using the Blaxel Skill](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
+  See [examples of using the Blaxel skill](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
 </Tip>
 
-### Blaxel Migration Skill
+### Blaxel migration skill
 
-The open source [Blaxel Migration Skill](https://github.com/blaxel-ai/agent-migration-skills) gives agents the knowledge they need to migrate sandbox code from other providers to Blaxel. It is currently able to migrate sandbox code from Daytona, E2B and Modal.
+The open source [Blaxel migration skill](https://github.com/blaxel-ai/agent-migration-skills) gives agents the knowledge they need to migrate sandbox code from other providers to Blaxel. It is currently able to migrate sandbox code from Daytona, E2B and Modal.
 
-Add the Blaxel Migration Skill to your coding agent with the command below, depending on which sandbox provider you wish to migrate from:
+Add the Blaxel migration skill to your coding agent with the command below, depending on which sandbox provider you wish to migrate from:
 
 ```shell
 # migrate from Daytona
@@ -54,9 +62,11 @@ npx skills add blaxel-ai/agent-migration-skills/modal
 
 You'll be prompted to select your coding agent and installation location.
 
-The Blaxel Migration Skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-migration-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+The Blaxel migration skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-migration-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
 
-## MCP server
+## MCP servers
+
+### MCP server for resource management
 
 Blaxel's MCP server lets compatible AI apps (Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
 
@@ -66,26 +76,22 @@ Talk with your preferred agent to:
 - Follow what is happening on your infrastructure
 - Manage your users
 
-### How it works
+#### How it works
 
-The MCP server is hosted at:
-
-```text
-https://api.blaxel.ai/v0/mcp
-```
+The MCP server is hosted at `https://api.blaxel.ai/v0/mcp`.
 
 Clients connect over HTTP(S) and stream MCP messages. Authentication is provided via headers.
 
-#### Authentication headers
+##### Authentication headers
 
 Provide your [API key](Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 
-### Installation
+#### Installation
 
-#### Cursor
+##### Cursor
 
 Add the server to `~/.cursor/mcp.json`:
 
@@ -103,7 +109,7 @@ Add the server to `~/.cursor/mcp.json`:
 }
 ```
 
-#### Claude Code
+##### Claude Code
 
 [Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
 
@@ -113,7 +119,7 @@ claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
   --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
 
-#### Windsurf
+##### Windsurf
 
 Add to `~/.codeium/windsurf/mcp_config.json`:
 
@@ -131,7 +137,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 }
 ```
 
-#### Goose
+##### Goose
 
 Add to `~/.config/goose/config.yaml`:
 
@@ -153,8 +159,6 @@ extensions:
     available_tools: []
 ```
 
-### Using the MCP server
-
 #### Selecting a workspace
 
 If your account has multiple workspaces, set the active workspace by including the `X-Blaxel-Workspace` header. If omitted, your AI app may prompt you to specify one when a tool is invoked.
@@ -175,13 +179,55 @@ You can list, create and remove services (Sandboxes, Agents, MCP Servers, Jobs, 
 
 See the [open-source definitions](https://github.com/blaxel-ai/blaxel-mcp-server) for the latest list and schemas.
 
-### Running locally
+#### Running locally
 
 Prefer using the hosted server at `https://api.blaxel.ai/v0/mcp`. If you must run locally or customize behavior, clone the repository and follow its instructions.
 
-### Limitations
+#### Limitations
 
 - The server requires a valid API key.
 - When using multiple workspaces, `X-Blaxel-Workspace` must be provided to disambiguate.
 
 Check out Blaxel MCP server's [source here](https://github.com/blaxel-ai/blaxel-mcp-server).
+
+### MCP server for documentation
+
+You can also give your coding assistant real-time access to this documentation.
+
+Connect your coding assistant directly to the Blaxel documentation via MCP at `https://docs.blaxel.ai/mcp`.
+
+#### Cursor
+
+1. Open **Cursor Settings**
+2. Go to **MCP & Integrations**
+3. Click **"+ Add a custom MCP server"**
+4. Add this configuration:
+
+```json
+{
+  "mcpServers": {
+    ... // Your other MCP servers
+    "blaxel-docs": {
+      "url": "https://docs.blaxel.ai/mcp"
+    }
+  }
+}
+```
+
+#### Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
+```
+
+## llms-full.txt
+
+A compiled text document of the entire documentation, formatted for LLMs. Copy and paste it directly into your coding assistant's prompt:
+
+[https://docs.blaxel.ai/llms-full.txt](https://docs.blaxel.ai/llms-full.txt)
+
+## Built-in documentation agent
+
+This documentation portal has a built-in AI assistant. Click "✨**Ask AI**" at the top of any page to use it.
