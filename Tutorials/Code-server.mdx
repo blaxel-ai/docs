@@ -1,0 +1,269 @@
+---
+title: 'Run code-server in a sandbox'
+description: 'Configure code-server to run in a Blaxel sandbox'
+---
+
+This tutorial explains how to run code-server inside a Blaxel sandbox and expose it securely using sandbox preview URLs.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- [Blaxel CLI](../cli-reference/introduction) installed and authenticated (`bl login`)
+
+## Create a base sandbox image
+
+### Dockerfile
+
+```dockerfile
+FROM node:23-slim
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    procps \
+    jq \
+    sed \
+    grep \
+    nano \
+    vim \
+    git \
+    sudo \
+    python3 \
+    zip \
+    tree \
+    unzip \
+    ca-certificates \
+    gcc \
+    libc6-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN update-ca-certificates
+RUN npm i -g typescript ts-node @types/node dotenv webpack webpack-cli
+
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
+
+# Create /blaxel directory and Next.js app for testing
+RUN mkdir -p /blaxel && \
+    npx create-next-app@latest /blaxel/app --use-npm --typescript --eslint --tailwind --src-dir --app --import-alias "@/*" --no-git --yes --no-turbopack
+
+# Copy sandbox-api
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Copy entrypoint script
+COPY entrypoint.sh /home/user/entrypoint.sh
+RUN chmod +x /home/user/entrypoint.sh
+
+ENTRYPOINT ["/home/user/entrypoint.sh"]
+```
+
+### entrypoint.sh
+
+The critical step is configuring code-server to bind on the correct address and trust all origins. This is required because sandbox preview traffic is proxied through Blaxel's infrastructure.
+
+Create an entrypoint script that creates the configuration file and starts the sandbox API and code-server:
+
+```bash
+#!/bin/bash
+
+# Start sandbox-api in the background
+echo "Starting sandbox-api on port 8080..."
+/usr/local/bin/sandbox-api &
+
+# Wait for sandbox-api to be ready
+while ! curl -s http://127.0.0.1:8080/health > /dev/null 2>&1; do
+    sleep 0.1
+done
+echo "Sandbox API ready"
+
+# Write code-server config to bind on port 8081 (CLI args don't override the config file)
+mkdir -p /root/.config/code-server
+cat > /root/.config/code-server/config.yaml << 'CONF'
+bind-addr: 0.0.0.0:8081
+auth: none
+cert: false
+trusted-origins:
+  - "*"
+CONF
+
+# Start code-server via the sandbox API
+echo "Starting code-server on port 8081 via sandbox API..."
+curl -s http://127.0.0.1:8080/process -X POST \
+    -H "Content-Type: application/json" \
+    -d '{"name":"code-server","command":"code-server --disable-telemetry --config /root/.config/code-server/config.yaml","workingDir":"/home/user","waitForCompletion":false, "env": {"PORT": "8081"}}'
+
+echo "code-server started via sandbox API"
+
+# Keep the entrypoint alive
+wait
+```
+
+The key configuration settings here are:
+
+- `bind-addr: 0.0.0.0:8081` - listens on all interfaces on port 8081, the port exposed via the sandbox preview
+- `auth: none` - disables password auth (access is already gated by Blaxel's auth layer)
+- `cert: false` - disables TLS termination (handled upstream by Blaxel)
+- `trusted-origins: ["*"]` required to allow requests coming from the sandbox proxy origin; without this, code-server will reject WebSocket connections
+
+### blaxel.toml
+
+Create a `blaxel.toml` file in the same directory as your Dockerfile:
+
+```toml
+type = "sandbox"
+name = "code-server-template"
+
+[runtime]
+memory = 8192
+
+[[runtime.ports]]
+name = "code-server"
+target = 8081
+protocol = "tcp"
+
+[[runtime.ports]]
+name = "debug-sandbox"
+target = 8082
+protocol = "tcp"
+
+[[runtime.ports]]
+name = "nextjs"
+target = 3000
+protocol = "tcp"
+```
+
+## Deploy the sandbox image
+
+Deploy the image by running:
+
+```bash
+bl deploy
+```
+
+## Create or reuse a sandbox
+
+Create a sandbox from the base image:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-code-server-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  image: "code-server-template:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 8081, protocol: "HTTP" },
+  ],
+});
+```
+
+## Create the preview URL
+
+code-server runs on port 8081, so we expose that port via a [preview URL](/Sandboxes/Preview-url):
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "code-server-preview" },
+  spec: {
+    public: false,
+    port: 8081,
+  },
+});
+```
+
+## Generate a preview token
+
+To securely access the preview, a token is required:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
+const token = await preview.tokens.create(expiresAt);
+```
+
+## Start the server
+
+If not using the entrypoint script, you can start code-server programmatically:
+
+```typescript
+async function startCodeServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "code-server",
+    command: "code-server --disable-telemetry --config /root/.config/code-server/config.yaml",
+    workingDir: "/home/user",
+    waitForPorts: [8081],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+## Access the application
+
+Once everything is running, code-server will be available at `https://<PREVIEW-URL>?bl_preview_token=<TOKEN>`
+
+## Complete example
+
+Here is a full example combining all the steps:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-code-server-sandbox";
+
+async function startCodeServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "code-server",
+    command: "code-server --disable-telemetry --config /root/.config/code-server/config.yaml",
+    workingDir: "/home/user",
+    waitForPorts: [8081],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function main() {
+  try {
+    // Create or reuse the sandbox
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      image: "code-server-template:latest",
+      memory: 4096,
+      region: "us-was-1",
+      ports: [
+        { name: "preview", target: 8081, protocol: "HTTP" },
+      ],
+    });
+
+    // Create preview
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "code-server-preview" },
+      spec: {
+        public: false,
+        port: 8081,
+      },
+    });
+
+    // Generate preview token
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    // Start dev server if not already running
+    const processes = await sandbox.process.list();
+    if (!processes.find((p) => p.name === "code-server")) {
+      await startCodeServer(sandbox);
+    }
+
+    // Print access URL
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    console.log(`code-server preview URL: ${webUrl}`);
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+main();
+```
