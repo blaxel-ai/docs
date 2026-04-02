@@ -158,6 +158,10 @@ await sandbox.drives.mount(
 
 </CodeGroup>
 
+<Warning>
+  `drivePath` / `drive_path` is a mount point convenience, not a security boundary. Once a drive is mounted at any location in a sandbox, the sandbox has sufficient credentials to mount any other path on the same drive.
+</Warning>
+
 ## List mounted drives
 
 List all drives currently mounted to a sandbox:
