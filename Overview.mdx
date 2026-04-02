@@ -91,7 +91,7 @@ When building your agentic system, you'll need to make architecture design choic
 
 | **Product** | **Typical use** | **Typical workload duration** | **Boot time** | **Input type** |
 | --- | --- | --- | --- | --- |
-| Sandboxes | Giving an agent its own compute runtime | seconds to hours (**maximum 24 h**) | ~25ms (from standby) | Fully custom |
+| Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms (from standby) | Fully custom |
 | Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~25ms | Custom API endpoints |
 | Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~25ms | Custom API endpoints |
 | Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific input parameters |
