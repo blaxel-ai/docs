@@ -29,7 +29,7 @@ Agents Hosting have few requirements or limitations:
 - The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `HOST` (for the host) and `PORT` (for the port). **These two environment variables are required for the host+port combo.**
     - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
 
-- Deployed agents have a maximum runtime of 15 minutes.
+- Agents deployed on Blaxel Agents Hosting have a maximum runtime of 15 minutes. This limit does not apply to [Sandboxes](../Sandboxes/Overview) or [Batch Jobs](../Jobs/Overview), which have their own runtime limits.
 
 - The synchronous endpoint closes the connection after **100 seconds** if no data flows through the API. If your agent streams back responses, the connection resets with each chunk streamed. For example, if your agent processes a request for 5 minutes while streaming data, the connection stays open. However, if it goes 100 seconds without sending any data — even while calling external APIs — the connection will close.
 
