@@ -34,9 +34,9 @@ RUN apt-get update && apt-get install -y \
     tree \
     unzip \
     ca-certificates \
-    gcc \
-    libc6-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /home/user
 
 RUN update-ca-certificates
 RUN npm i -g typescript ts-node @types/node dotenv webpack webpack-cli
@@ -115,7 +115,7 @@ type = "sandbox"
 name = "code-server-template"
 
 [runtime]
-memory = 8192
+memory = 4096
 
 [[runtime.ports]]
 name = "code-server"
@@ -154,6 +154,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
   name: sandboxName,
   image: "code-server-template:latest",
   memory: 4096,
+  region: "us-was-1",
   ports: [
     { name: "preview", target: 8081, protocol: "HTTP" },
   ],
@@ -185,7 +186,7 @@ const token = await preview.tokens.create(expiresAt);
 
 ## Start the server
 
-If not using the entrypoint script, you can start code-server programmatically:
+The entrypoint starts code-server automatically. The following function can be used as a fallback to restart it if the process is not running:
 
 ```typescript
 async function startCodeServer(sandbox: SandboxInstance) {
