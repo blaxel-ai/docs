@@ -207,6 +207,7 @@
                 ]
               },
               "Security/Quotas",
+              "Security/Data-collection-and-privacy",
               "Model-Governance/Policies",
               {
                 "group": "Infrastructure",
