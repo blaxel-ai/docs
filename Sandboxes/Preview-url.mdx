@@ -309,3 +309,29 @@ preview = await sandbox.previews.create({
 <Note>
 When you register a custom domain, you also enable the use of wildcard subdomains for that domain. For example, if you register `mycompany.com`, you can configure preview URLs to use any `*.mycompany.com` subdomain.
 </Note>
+
+## Previews and sandbox state
+
+### Standby mode
+
+When a sandbox transitions to [standby mode](/Sandboxes/Overview#standby-mode), none of its associated preview URLs are accessible.
+
+### Sandbox deletion
+
+When a sandbox is deleted, whether manually or automatically due to a TTL or expiration policy, all of its associated preview URLs are automatically cleaned up as part of that deletion.
+
+If you need to remove a preview URL before a sandbox is deleted, you can do so explicitly using the SDKs.
+
+<CodeGroup>
+```typescript TypeScript
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.previews.delete("app-preview");
+```
+
+```python Python
+sandbox = await SandboxInstance.get("my-sandbox")
+
+await sandbox.previews.delete("app-preview")
+```
+</CodeGroup>
