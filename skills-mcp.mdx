@@ -1,5 +1,5 @@
 ---
-title: 'Connect your AI agent'
+title: 'Blaxel Skills & MCP'
 icon: 'robot'
 description: 'Configure Cursor, Claude Code, or other AI coding assistants to manage your Blaxel resources or access the Blaxel documentation.'
 ---
@@ -91,6 +91,16 @@ Provide your [API key](Security/Access-tokens) in the `Authorization` header. If
 
 #### Installation
 
+##### Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
+  --header "Authorization: Bearer <APIKEY>" \
+  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
+```
+
 ##### Cursor
 
 Add the server to `~/.cursor/mcp.json`:
@@ -107,16 +117,6 @@ Add the server to `~/.cursor/mcp.json`:
     }
   }
 }
-```
-
-##### Claude Code
-
-[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
-
-```bash
-claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
-  --header "Authorization: Bearer <APIKEY>" \
-  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
 
 ##### Windsurf
@@ -196,6 +196,14 @@ You can also give your coding assistant real-time access to this documentation.
 
 Connect your coding assistant directly to the Blaxel documentation via MCP at `https://docs.blaxel.ai/mcp`.
 
+#### Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
+```
+
 #### Cursor
 
 1. Open **Cursor Settings**
@@ -212,14 +220,6 @@ Connect your coding assistant directly to the Blaxel documentation via MCP at `h
     }
   }
 }
-```
-
-#### Claude Code
-
-[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
-
-```bash
-claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
 ```
 
 ## llms-full.txt

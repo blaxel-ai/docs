@@ -17,9 +17,9 @@
           "href": "/changelog"
         },
         {
-          "anchor": "Connect your AI agent",
+          "anchor": "Blaxel Skills & MCP",
           "icon": "robot",
-          "href": "/connect-ai"
+          "href": "/skills-mcp"
         }
       ]
     },
@@ -31,7 +31,8 @@
             "group": "Get Started",
             "pages": [
               "Overview",
-              "Get-started"
+              "Get-started",
+              "skills-mcp"
             ]
           },
           {
@@ -388,7 +389,7 @@
       },
       {
         "label": "Agent Skill",
-        "href": "/connect-ai"
+        "href": "/skills-mcp"
       }
     ],
     "primary": {
