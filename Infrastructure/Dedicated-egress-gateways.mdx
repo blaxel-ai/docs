@@ -1,6 +1,6 @@
 ---
 title: 'Dedicated egress gateways'
-description: 'Attach dedicated egress IP address to your workloads.'
+description: 'Attach dedicated egress IP addresses to your workloads.'
 tag: 'private preview'
 ---
 
@@ -60,7 +60,10 @@ const sandbox = await SandboxInstance.create({
   image: "blaxel/base-image:latest",
   memory: 4096,
   network: {
-    gateway: "my-egress-gateway",
+    egress: {
+      mode: "dedicated",
+      gateway: "my-egress-gateway"
+    }
   },
 });
 ```
@@ -76,7 +79,10 @@ sandbox = await SandboxInstance.create(
         image="blaxel/base-image:latest",
         memory=4096,
         network=SandboxNetwork(
-            gateway="my-egress-gateway",
+            egress=EgressConfig(
+                mode="dedicated",
+                gateway="my-egress-gateway"
+            ),
         ),
     )
 )
@@ -93,7 +99,10 @@ sandbox = SyncSandboxInstance.create(
         image="blaxel/base-image:latest",
         memory=4096,
         network=SandboxNetwork(
-            gateway="my-egress-gateway",
+            egress=EgressConfig(
+                mode="dedicated",
+                gateway="my-egress-gateway"
+            ),
         ),
     )
 )
