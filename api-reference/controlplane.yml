@@ -1668,6 +1668,8 @@ components:
       type: object
       description: Pending invitation in workspace
       properties:
+        account:
+          $ref: '#/components/schemas/PendingInvitationRenderAccount'
         email:
           type: string
           description: User email
@@ -1682,10 +1684,23 @@ components:
         role:
           type: string
           description: ACL role
+        type:
+          type: string
+          description: 'Invitation type: "workspace" or "account_admin"'
         workspace:
           $ref: '#/components/schemas/PendingInvitationRenderWorkspace'
         workspaceDetails:
           $ref: '#/components/schemas/PendingInvitationWorkspaceDetails'
+    PendingInvitationRenderAccount:
+      type: object
+      description: Account info in pending invitation render (for account_admin type)
+      properties:
+        displayName:
+          type: string
+          description: Account display name or owner email
+        id:
+          type: string
+          description: Account ID
     PendingInvitationRenderInvitedBy:
       type: object
       description: Invited by
