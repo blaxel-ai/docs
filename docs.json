@@ -432,5 +432,39 @@
   },
   "fonts": {
     "family": "Inter"
-  }
+  },
+  "redirects": [
+    {
+      "source": "/Sandbox/Introduction",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/Sandbox/Quickstart",
+      "destination": "/Get-started"
+    },
+    {
+      "source": "/sandbox",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/Sandbox/:slug*",
+      "destination": "/Sandboxes/:slug*"
+    },
+    {
+      "source": "/Sandboxes/Volumes-templates",
+      "destination": "/Volumes/Volumes-templates"
+    },
+    {
+      "source": "/Sandboxes/Drives",
+      "destination": "/Agent-drive/Overview"
+    },
+    {
+      "source": "/Frameworks/:slug*",
+      "destination": "/Overview"
+    },
+    {
+      "source": "/cli-reference/blaxel_apply",
+      "destination": "/cli-reference/commands/bl_apply"
+    }
+  ]
 }
