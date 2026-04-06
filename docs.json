@@ -447,6 +447,14 @@
       "destination": "/Sandboxes/Overview"
     },
     {
+      "source": "/Sandbox",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/sandboxes/:slug*",
+      "destination": "/Sandboxes/:slug*"
+    },
+    {
       "source": "/Sandbox/:slug*",
       "destination": "/Sandboxes/:slug*"
     },
