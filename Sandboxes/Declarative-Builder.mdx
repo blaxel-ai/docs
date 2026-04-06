@@ -1,0 +1,748 @@
+---
+title: "Declarative Image Builder"
+description: "Build custom sandbox images programmatically using the SDK"
+---
+
+The Declarative Image Builder lets you define custom sandbox images directly in your code using a fluent, chainable API. Instead of writing Dockerfiles manually, you describe your image step by step, and the SDK generates the Dockerfile, builds the image, and deploys it as a sandbox.
+
+This approach is ideal for dynamic image definitions, CI/CD pipelines, or when your image configuration depends on runtime logic.
+
+<Note>
+  The Declarative Image Builder is available in the **TypeScript** and **Python** SDKs. The Go SDK does not support this feature.
+</Note>
+
+## Quick start
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ImageInstance } from "@blaxel/core";
+
+const image = ImageInstance.fromRegistry("python:3.11-slim")
+  .aptInstall("git", "curl")
+  .workdir("/app")
+  .pipInstall("requests", "httpx", "pydantic")
+  .env({ PYTHONUNBUFFERED: "1" });
+
+const sandbox = await image.build({
+  name: "my-sandbox",
+  memory: 4096,
+});
+```
+
+```python Python
+from blaxel.core import ImageInstance
+
+image = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .apt_install("git", "curl")
+    .workdir("/app")
+    .pip_install("requests", "httpx", "pydantic")
+    .env(PYTHONUNBUFFERED="1")
+)
+
+sandbox = await image.build(
+    name="my-sandbox",
+    memory=4096,
+)
+```
+
+</CodeGroup>
+
+## How it works
+
+1. **Define**: Use the fluent API to describe your image starting from a base image.
+2. **Chain**: Each method returns a new immutable `ImageInstance`, so you can branch and reuse configurations.
+3. **Build**: Call `build()` to generate a Dockerfile, package it with any local files, upload it to Blaxel, and deploy it as a sandbox.
+
+The SDK automatically injects the Blaxel sandbox API binary and sets the entrypoint, so your image is ready to use as a sandbox without manual configuration.
+
+## Base image
+
+Start by selecting a base image from any Docker registry:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ImageInstance } from "@blaxel/core";
+
+const image = ImageInstance.fromRegistry("ubuntu:22.04");
+```
+
+```python Python
+from blaxel.core import ImageInstance
+
+image = ImageInstance.from_registry("ubuntu:22.04")
+```
+
+</CodeGroup>
+
+## Running commands
+
+Execute shell commands during the image build:
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("ubuntu:22.04")
+  .runCommands(
+    "apt-get update && apt-get install -y curl",
+    "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
+    "apt-get install -y nodejs"
+  );
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("ubuntu:22.04")
+    .run_commands(
+        "apt-get update && apt-get install -y curl",
+        "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
+        "apt-get install -y nodejs",
+    )
+)
+```
+
+</CodeGroup>
+
+## Package managers
+
+The SDK provides convenience methods for common package managers. These generate optimized `RUN` commands with sensible defaults (e.g., cache cleanup for apt).
+
+### Python (pip)
+
+<CodeGroup>
+
+```typescript TypeScript
+// Simple install
+const image = ImageInstance.fromRegistry("python:3.11-slim")
+  .pipInstall("requests", "numpy>=1.20", "pandas");
+
+// With options
+const image = ImageInstance.fromRegistry("python:3.11-slim")
+  .pipInstall(
+    { indexUrl: "https://my-private-index.com/simple", pre: true },
+    "my-package",
+    "another-package"
+  );
+```
+
+```python Python
+# Simple install
+image = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .pip_install("requests", "numpy>=1.20", "pandas")
+)
+
+# With options
+image = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .pip_install(
+        "my-package",
+        "another-package",
+        index_url="https://my-private-index.com/simple",
+        pre=True,
+    )
+)
+```
+
+</CodeGroup>
+
+### Python (uv)
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11-slim")
+  .runCommands("pip install uv")
+  .uvInstall("requests", "httpx");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .run_commands("pip install uv")
+    .uv_install("requests", "httpx")
+)
+```
+
+</CodeGroup>
+
+### Node.js (npm, yarn, pnpm, bun)
+
+<CodeGroup>
+
+```typescript TypeScript
+// Install specific packages with npm (default)
+const image = ImageInstance.fromRegistry("node:20-alpine")
+  .npmInstall("express", "typescript");
+
+// Use a different package manager
+const image = ImageInstance.fromRegistry("node:20-alpine")
+  .npmInstall(
+    { packageManager: "pnpm", globalInstall: true },
+    "turbo"
+  );
+
+// Install from package.json (no packages specified)
+const image = ImageInstance.fromRegistry("node:20-alpine")
+  .workdir("/app")
+  .copy("package.json", "/app/package.json")
+  .npmInstall();
+```
+
+```python Python
+# Install specific packages with npm (default)
+image = (
+    ImageInstance.from_registry("node:20-alpine")
+    .npm_install("express", "typescript")
+)
+
+# Use a different package manager
+image = (
+    ImageInstance.from_registry("node:20-alpine")
+    .npm_install("turbo", package_manager="pnpm", global_install=True)
+)
+
+# Install from package.json (no packages specified)
+image = (
+    ImageInstance.from_registry("node:20-alpine")
+    .workdir("/app")
+    .copy("package.json", "/app/package.json")
+    .npm_install()
+)
+```
+
+</CodeGroup>
+
+### System packages (apt, apk)
+
+<CodeGroup>
+
+```typescript TypeScript
+// Debian/Ubuntu (apt-get)
+const image = ImageInstance.fromRegistry("ubuntu:22.04")
+  .aptInstall("git", "curl", "build-essential");
+
+// Alpine (apk)
+const image = ImageInstance.fromRegistry("node:20-alpine")
+  .apkAdd("git", "curl", "python3");
+```
+
+```python Python
+# Debian/Ubuntu (apt-get)
+image = (
+    ImageInstance.from_registry("ubuntu:22.04")
+    .apt_install("git", "curl", "build-essential")
+)
+
+# Alpine (apk)
+image = (
+    ImageInstance.from_registry("node:20-alpine")
+    .apk_add("git", "curl", "python3")
+)
+```
+
+</CodeGroup>
+
+### Other package managers
+
+<CodeGroup>
+
+```typescript TypeScript
+// Ruby gems
+const image = ImageInstance.fromRegistry("ruby:3.2")
+  .gemInstall("rails", "bundler");
+
+// Rust crates
+const image = ImageInstance.fromRegistry("rust:1.75")
+  .cargoInstall({ locked: true }, "cargo-watch", "cargo-edit");
+
+// Go packages
+const image = ImageInstance.fromRegistry("golang:1.22")
+  .goInstall("github.com/golangci/golangci-lint/cmd/golangci-lint@latest");
+
+// PHP Composer
+const image = ImageInstance.fromRegistry("php:8.3-cli")
+  .composerInstall("laravel/framework", "guzzlehttp/guzzle");
+
+// Python CLI tools (pipx)
+const image = ImageInstance.fromRegistry("python:3.11")
+  .pipxInstall("black", "ruff");
+```
+
+```python Python
+# Ruby gems
+image = (
+    ImageInstance.from_registry("ruby:3.2")
+    .gem_install("rails", "bundler")
+)
+
+# Rust crates
+image = (
+    ImageInstance.from_registry("rust:1.75")
+    .cargo_install("cargo-watch", "cargo-edit", locked=True)
+)
+
+# Go packages
+image = (
+    ImageInstance.from_registry("golang:1.22")
+    .go_install("github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+)
+
+# PHP Composer
+image = (
+    ImageInstance.from_registry("php:8.3-cli")
+    .composer_install("laravel/framework", "guzzlehttp/guzzle")
+)
+
+# Python CLI tools (pipx)
+image = (
+    ImageInstance.from_registry("python:3.11")
+    .pipx_install("black", "ruff")
+)
+```
+
+</CodeGroup>
+
+## Dockerfile instructions
+
+All standard Dockerfile instructions are available as methods.
+
+### Working directory
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("node:20")
+  .workdir("/app");
+```
+
+```python Python
+image = ImageInstance.from_registry("node:20").workdir("/app")
+```
+
+</CodeGroup>
+
+### Environment variables
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11")
+  .env({
+    PYTHONUNBUFFERED: "1",
+    APP_ENV: "production",
+  });
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11")
+    .env(PYTHONUNBUFFERED="1", APP_ENV="production")
+)
+```
+
+</CodeGroup>
+
+### Copy files
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("node:20")
+  .workdir("/app")
+  .copy("package.json", "/app/package.json")
+  .copy("src", "/app/src");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("node:20")
+    .workdir("/app")
+    .copy("package.json", "/app/package.json")
+    .copy("src", "/app/src")
+)
+```
+
+</CodeGroup>
+
+### Expose ports
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("node:20")
+  .expose(3000, 8080);
+```
+
+```python Python
+image = ImageInstance.from_registry("node:20").expose(3000, 8080)
+```
+
+</CodeGroup>
+
+### Entrypoint
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11")
+  .entrypoint("python", "-m", "uvicorn", "main:app");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11")
+    .entrypoint("python", "-m", "uvicorn", "main:app")
+)
+```
+
+</CodeGroup>
+
+### User
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("ubuntu:22.04")
+  .runCommands("useradd -m appuser")
+  .user("appuser");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("ubuntu:22.04")
+    .run_commands("useradd -m appuser")
+    .user("appuser")
+)
+```
+
+</CodeGroup>
+
+### Labels and build arguments
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11")
+  .label({ version: "1.0", maintainer: "team@example.com" })
+  .arg("BUILD_ENV", "production");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11")
+    .label(version="1.0", maintainer="team@example.com")
+    .arg("BUILD_ENV", "production")
+)
+```
+
+</CodeGroup>
+
+## Adding local files
+
+Copy files and directories from your local machine into the image:
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11")
+  .workdir("/app")
+  .addLocalFile("./config.json", "/app/config.json")
+  .addLocalDir("./src", "/app/src");
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11")
+    .workdir("/app")
+    .add_local_file("./config.json", "/app/config.json")
+    .add_local_dir("./src", "/app/src")
+)
+```
+
+</CodeGroup>
+
+Local files are resolved to absolute paths, included in the build context, and `COPY`-ed into the image. You can optionally provide a `contextName` (TypeScript) / `context_name` (Python) parameter to control the filename in the build context.
+
+## Build and deploy
+
+### Basic build
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await image.build({
+  name: "my-sandbox",
+});
+```
+
+```python Python
+sandbox = await image.build(name="my-sandbox")
+```
+
+</CodeGroup>
+
+### Build with all options
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await image.build({
+  name: "my-sandbox",
+  memory: 8192,                // Memory in MB (default: 4096)
+  timeout: 900000,             // Timeout in ms (default: 900000 = 15 min)
+  sandboxVersion: "latest",    // Sandbox API version
+  onStatusChange: (status) => {
+    console.log(`Build status: ${status}`);
+  },
+});
+```
+
+```python Python
+sandbox = await image.build(
+    name="my-sandbox",
+    memory=8192,                          # Memory in MB (default: 4096)
+    timeout=900.0,                        # Timeout in seconds (default: 900)
+    sandbox_version="latest",             # Sandbox API version
+    on_status_change=lambda s: print(f"Build status: {s}"),
+)
+```
+
+</CodeGroup>
+
+The `build()` method automatically:
+- Injects the Blaxel sandbox API binary
+- Sets a default entrypoint if none was specified
+- Packages the Dockerfile and local files into a ZIP archive
+- Uploads and deploys the image as a sandbox
+- Polls until the sandbox reaches `DEPLOYED` or `FAILED` status
+
+### Inspect the generated Dockerfile
+
+You can preview the Dockerfile without building:
+
+<CodeGroup>
+
+```typescript TypeScript
+const image = ImageInstance.fromRegistry("python:3.11-slim")
+  .aptInstall("git")
+  .workdir("/app")
+  .pipInstall("requests");
+
+console.log(image.dockerfile);
+// FROM python:3.11-slim
+// RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+// WORKDIR /app
+// RUN pip install requests
+```
+
+```python Python
+image = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .apt_install("git")
+    .workdir("/app")
+    .pip_install("requests")
+)
+
+print(image.dockerfile)
+# FROM python:3.11-slim
+# RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+# WORKDIR /app
+# RUN pip install requests
+```
+
+</CodeGroup>
+
+### Write to disk
+
+You can also write the image to a folder for manual inspection or use with `bl deploy`:
+
+<CodeGroup>
+
+```typescript TypeScript
+// Write to a specific directory
+const buildDir = image.write("./output", "my-image");
+
+// Write to a temporary directory
+const tempDir = image.writeTemp();
+```
+
+```python Python
+# Write to a specific directory
+build_dir = image.write("./output", "my-image")
+
+# Write to a temporary directory
+temp_dir = image.write_temp()
+```
+
+</CodeGroup>
+
+## Immutability and branching
+
+Each method returns a new `ImageInstance`, leaving the original unchanged. This lets you create base images and branch from them:
+
+<CodeGroup>
+
+```typescript TypeScript
+// Define a shared base
+const base = ImageInstance.fromRegistry("python:3.11-slim")
+  .aptInstall("git", "curl")
+  .workdir("/app");
+
+// Branch for different use cases
+const mlImage = base
+  .pipInstall("torch", "transformers", "datasets")
+  .env({ CUDA_VISIBLE_DEVICES: "0" });
+
+const webImage = base
+  .pipInstall("fastapi", "uvicorn", "sqlalchemy")
+  .expose(8000)
+  .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0");
+
+// Build both independently
+const mlSandbox = await mlImage.build({ name: "ml-sandbox", memory: 16384 });
+const webSandbox = await webImage.build({ name: "web-sandbox", memory: 4096 });
+```
+
+```python Python
+# Define a shared base
+base = (
+    ImageInstance.from_registry("python:3.11-slim")
+    .apt_install("git", "curl")
+    .workdir("/app")
+)
+
+# Branch for different use cases
+ml_image = (
+    base
+    .pip_install("torch", "transformers", "datasets")
+    .env(CUDA_VISIBLE_DEVICES="0")
+)
+
+web_image = (
+    base
+    .pip_install("fastapi", "uvicorn", "sqlalchemy")
+    .expose(8000)
+    .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0")
+)
+
+# Build both independently
+ml_sandbox = await ml_image.build(name="ml-sandbox", memory=16384)
+web_sandbox = await web_image.build(name="web-sandbox", memory=4096)
+```
+
+</CodeGroup>
+
+## Full example
+
+A complete example building a full-stack development sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ImageInstance } from "@blaxel/core";
+
+const sandbox = await ImageInstance.fromRegistry("node:20-bookworm-slim")
+  // System dependencies
+  .aptInstall("git", "curl", "python3", "build-essential")
+  // Working directory
+  .workdir("/app")
+  // Node.js dependencies
+  .npmInstall({ packageManager: "pnpm", globalInstall: true }, "turbo")
+  // Python tools
+  .pipInstall("httpie", "ipython")
+  // Environment
+  .env({
+    NODE_ENV: "development",
+    EDITOR: "code",
+  })
+  // Expose dev server ports
+  .expose(3000, 5173)
+  // Build and deploy
+  .build({
+    name: "fullstack-dev",
+    memory: 8192,
+    onStatusChange: (status) => console.log(`Status: ${status}`),
+  });
+
+console.log("Sandbox deployed:", sandbox.metadata?.name);
+```
+
+```python Python
+import asyncio
+from blaxel.core import ImageInstance
+
+async def main():
+    sandbox = await (
+        ImageInstance.from_registry("node:20-bookworm-slim")
+        # System dependencies
+        .apt_install("git", "curl", "python3", "build-essential")
+        # Working directory
+        .workdir("/app")
+        # Node.js dependencies
+        .npm_install("turbo", package_manager="pnpm", global_install=True)
+        # Python tools
+        .pip_install("httpie", "ipython")
+        # Environment
+        .env(
+            NODE_ENV="development",
+            EDITOR="code",
+        )
+        # Expose dev server ports
+        .expose(3000, 5173)
+        # Build and deploy
+        .build(
+            name="fullstack-dev",
+            memory=8192,
+            on_status_change=lambda s: print(f"Status: {s}"),
+        )
+    )
+
+    print("Sandbox deployed:", sandbox.metadata.name)
+
+asyncio.run(main())
+```
+
+</CodeGroup>
+
+## API reference
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `fromRegistry` / `from_registry` | Create an image from a Docker registry base image |
+| `runCommands` / `run_commands` | Run shell commands (`RUN`) |
+| `workdir` | Set working directory (`WORKDIR`) |
+| `env` | Set environment variables (`ENV`) |
+| `copy` | Copy from build context (`COPY`) |
+| `addLocalFile` / `add_local_file` | Add a local file to build context and image |
+| `addLocalDir` / `add_local_dir` | Add a local directory to build context and image |
+| `expose` | Expose ports (`EXPOSE`) |
+| `entrypoint` | Set container entrypoint (`ENTRYPOINT`) |
+| `user` | Set the user (`USER`) |
+| `label` | Add labels (`LABEL`) |
+| `arg` | Define build arguments (`ARG`) |
+| `pipInstall` / `pip_install` | Install Python packages with pip |
+| `uvInstall` / `uv_install` | Install Python packages with uv |
+| `pipxInstall` / `pipx_install` | Install Python CLI apps with pipx |
+| `aptInstall` / `apt_install` | Install Debian/Ubuntu packages |
+| `apkAdd` / `apk_add` | Install Alpine packages |
+| `npmInstall` / `npm_install` | Install Node.js packages (npm/yarn/pnpm/bun) |
+| `gemInstall` / `gem_install` | Install Ruby gems |
+| `cargoInstall` / `cargo_install` | Install Rust crates |
+| `goInstall` / `go_install` | Install Go packages |
+| `composerInstall` / `composer_install` | Install PHP packages |
+| `build` | Build and deploy as a sandbox |
+| `write` | Write image to a folder |
+| `writeTemp` / `write_temp` | Write image to a temporary folder |
+
+### Properties
+
+| Property | Description |
+|----------|-------------|
+| `dockerfile` | Generated Dockerfile content |
+| `hash` | 12-character SHA256 hash of the image configuration |
+| `baseImage` / `base_image` | Base image tag |
