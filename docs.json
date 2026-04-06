@@ -56,7 +56,14 @@
                   "Sandboxes/Standby-control"
                 ]
               },
-              "Sandboxes/Proxy",
+              {
+                "group": "Proxy",
+                "pages": [
+                  "Sandboxes/Proxy",
+                  "Sandboxes/Proxy-secrets-injection",
+                  "Sandboxes/Proxy-domains"
+                ]
+              },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
               "Sandboxes/best-practices"
