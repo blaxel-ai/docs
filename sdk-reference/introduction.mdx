@@ -24,18 +24,41 @@ Install the Go SDK.
 </Card>
 </CardGroup>
 
+## Prerequisites
+
+To use any Blaxel SDK, you need a [Blaxel account](https://app.blaxel.ai) and the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+Or add them to a `.env` file at the root of your project.
+
 ## How authentication works
 
 The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
-3. environment variables from your machine
-4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+2. `BL_WORKSPACE` and `BL_API_KEY` environment variables or `.env` file (see [this page](../Agents/Variables-and-secrets) for other authentication options)
+3. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
 
-When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+When developing locally, you can also **log in to your workspace with Blaxel CLI:**
 
-When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+```bash
+bl login YOUR-WORKSPACE
+```
+
+This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
 
 ## Data collection and privacy
 
