@@ -68,44 +68,6 @@ const sandbox = await SandboxInstance.create({
 });
 ```
 
-```python Python (async)
-from blaxel.core import SandboxInstance
-from blaxel.core.sandbox.types import SandboxCreateConfiguration
-from blaxel.core.client.models import SandboxNetwork
 
-sandbox = await SandboxInstance.create(
-    SandboxCreateConfiguration(
-        name="my-sandbox",
-        image="blaxel/base-image:latest",
-        memory=4096,
-        network=SandboxNetwork(
-            egress=EgressConfig(
-                mode="dedicated",
-                gateway="my-egress-gateway"
-            ),
-        ),
-    )
-)
-```
-
-```python Python (sync)
-from blaxel.core.sandbox.sync import SyncSandboxInstance
-from blaxel.core.sandbox.types import SandboxCreateConfiguration
-from blaxel.core.client.models import SandboxNetwork
-
-sandbox = SyncSandboxInstance.create(
-    SandboxCreateConfiguration(
-        name="my-sandbox",
-        image="blaxel/base-image:latest",
-        memory=4096,
-        network=SandboxNetwork(
-            egress=EgressConfig(
-                mode="dedicated",
-                gateway="my-egress-gateway"
-            ),
-        ),
-    )
-)
-```
 
 </CodeGroup>
