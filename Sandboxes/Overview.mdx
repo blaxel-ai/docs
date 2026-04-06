@@ -71,7 +71,7 @@ During the deployment process, the possible sandbox statuses are:
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
 
 <Note>
-  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` from a sandbox template folder.
+  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox template folder.
 </Note>
 
 ## Use cases
@@ -199,7 +199,7 @@ It is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console
     The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [`Learn more about the blaxel.toml file`](/deployment-reference).
 
     <Tip>
-      Running `bl deploy` here also saves the image to be reused later as a template.
+      Running `bl deploy` here also saves the image to be reused later as a template. As an alternative, you can use `bl push` to push the image to Blaxel's registry without deploying it.
     </Tip>
   </Tab>
   <Tab title="Console">

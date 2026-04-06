@@ -19,13 +19,13 @@ Blaxel CLI (`bl`) is a command line tool to interact with the Blaxel APIs.
     ```shell
 
     brew tap blaxel-ai/blaxel
-    
+
     ```
 
     ```shell
 
     brew install blaxel
-    
+
     ```
   </Accordion>
 
@@ -196,10 +196,11 @@ Basic commands to scaffold, develop, and deploy your resources:
 | --- | --- |
 | `bl new` | Scaffold a new local project (code \+ `blaxel.toml`) |
 | `bl deploy` | Build image \+ push image \+ create/update resource \+ watch logs |
+| `bl push` | Build image \+ push image to Blaxel registry (no resource created or updated) |
 | `bl apply` | Declarative resource creation/update using YAML files, similar to `kubectl apply` |
 | `bl serve` | Local execution _(not available for sandboxes)_ |
 
-`bl deploy` is an all-in-one command that packages local files into an image, pushes it as a template, and deploys it as a resource on Blaxel. Use the `--skip-build` flag to skip image rebuilding.
+`bl deploy` is an all-in-one command that packages local files into an image, pushes it as a template, and deploys it as a resource on Blaxel. Use the `--skip-build` flag to skip image rebuilding. Use `bl push` instead to only build and push the image.
 
 Interact with existing resources in your workspace:
 
