@@ -13,8 +13,6 @@ The Blaxel SDK supports two network features when creating sandboxes:
 - **[Proxy routing with secrets injection](./Proxy-secrets-injection)** - the Blaxel proxy performs man-in-the-middle (MITM) interception on outbound HTTPS traffic and injects headers, body fields, and secrets server-side.
 - **[Domain filtering](./Proxy-domains)** - the Blaxel proxy controls which external domains the sandbox can reach.
 
-Both features are configured at sandbox creation time via the `network` key and cannot be updated after the sandbox has been created.
-
 <Warning>
   Proxy and network configuration is set at sandbox creation time and **cannot be updated after the sandbox has been created**. To change the configuration (e.g. rotate a secret, add a new routing rule, or update the allowlist), you must create a new sandbox. Support for in-place updates is coming soon.
 </Warning>
