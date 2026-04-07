@@ -17,9 +17,9 @@
           "href": "/changelog"
         },
         {
-          "anchor": "Agent Skill",
+          "anchor": "Blaxel Skills & MCP",
           "icon": "robot",
-          "href": "/MCP-server"
+          "href": "/skills-mcp"
         }
       ]
     },
@@ -32,8 +32,7 @@
             "pages": [
               "Overview",
               "Get-started",
-              "MCP-server",
-              "MCP-docs"
+              "skills-mcp"
             ]
           },
           {
@@ -393,7 +392,7 @@
       },
       {
         "label": "Agent Skill",
-        "href": "/MCP-server"
+        "href": "/skills-mcp"
       }
     ],
     "primary": {
