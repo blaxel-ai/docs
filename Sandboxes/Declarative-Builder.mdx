@@ -633,7 +633,7 @@ web_sandbox = await web_image.build(name="web-sandbox", memory=4096)
 
 ## Full example
 
-A complete example building a full-stack Node.js and Python development sandbox:
+A complete example building a Node.js / Python development sandbox:
 
 <CodeGroup>
 
@@ -642,13 +642,11 @@ import { ImageInstance } from "@blaxel/core";
 
 const sandbox = await ImageInstance.fromRegistry("node:20-bookworm-slim")
   // System dependencies
-  .aptInstall("git", "curl", "python3", "build-essential")
+  .aptInstall("git", "curl", "build-essential")
   // Working directory
   .workdir("/app")
   // Node.js dependencies
   .npmInstall({ packageManager: "npm", globalInstall: true }, "turbo")
-  // Python tools
-  .pipInstall("httpie", "ipython")
   // Environment
   .env({
     NODE_ENV: "development",
@@ -658,7 +656,7 @@ const sandbox = await ImageInstance.fromRegistry("node:20-bookworm-slim")
   .expose(3000, 5173)
   // Build and deploy
   .build({
-    name: "fullstack-dev",
+    name: "node-dev",
     memory: 8192,
     onStatusChange: (status) => console.log(`Status: ${status}`),
   });
@@ -672,25 +670,23 @@ from blaxel.core import ImageInstance
 
 async def main():
     sandbox = await (
-        ImageInstance.from_registry("node:20-bookworm-slim")
+        ImageInstance.from_registry("python:3.12-slim")
         # System dependencies
-        .apt_install("git", "curl", "python3", "build-essential")
+        .apt_install("git", "curl", "build-essential")
         # Working directory
         .workdir("/app")
-        # Node.js dependencies
-        .npm_install("turbo", package_manager="npm", global_install=True)
-        # Python tools
-        .pip_install("httpie", "ipython")
+        # Python dependencies
+        .pip_install("httpie", "ipython", "requests", "fastapi", "uvicorn")
         # Environment
         .env(
-            NODE_ENV="development",
+            PYTHONUNBUFFERED="1",
             EDITOR="code",
         )
-        # Expose dev server ports
-        .expose(3000, 5173)
+        # Expose dev server port
+        .expose(8000)
         # Build and deploy
         .build(
-            name="fullstack-dev",
+            name="python-dev",
             memory=8192,
             on_status_change=lambda s: print(f"Status: {s}"),
         )
