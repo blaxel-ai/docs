@@ -431,5 +431,107 @@
   },
   "fonts": {
     "family": "Inter"
-  }
+  },
+  "redirects": [
+    {
+      "source": "/Sandbox/Introduction",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/Sandbox/Quickstart",
+      "destination": "/Get-started"
+    },
+    {
+      "source": "/sandbox",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/Sandbox",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/sandboxes",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/sandboxes/overview",
+      "destination": "/Sandboxes/Overview"
+    },
+    {
+      "source": "/sandboxes/codegen-tools",
+      "destination": "/Sandboxes/Codegen-tools"
+    },
+    {
+      "source": "/sandboxes/expiration",
+      "destination": "/Sandboxes/Expiration"
+    },
+    {
+      "source": "/sandboxes/filesystem",
+      "destination": "/Sandboxes/Filesystem"
+    },
+    {
+      "source": "/sandboxes/log-streaming",
+      "destination": "/Sandboxes/Log-streaming"
+    },
+    {
+      "source": "/sandboxes/mcp",
+      "destination": "/Sandboxes/MCP"
+    },
+    {
+      "source": "/sandboxes/ports",
+      "destination": "/Sandboxes/Ports"
+    },
+    {
+      "source": "/sandboxes/preview-url",
+      "destination": "/Sandboxes/Preview-url"
+    },
+    {
+      "source": "/sandboxes/processes",
+      "destination": "/Sandboxes/Processes"
+    },
+    {
+      "source": "/sandboxes/proxy",
+      "destination": "/Sandboxes/Proxy"
+    },
+    {
+      "source": "/sandboxes/sessions",
+      "destination": "/Sandboxes/Sessions"
+    },
+    {
+      "source": "/sandboxes/standby-control",
+      "destination": "/Sandboxes/Standby-control"
+    },
+    {
+      "source": "/sandboxes/templates",
+      "destination": "/Sandboxes/Templates"
+    },
+    {
+      "source": "/sandboxes/volumes",
+      "destination": "/Sandboxes/Volumes"
+    },
+    {
+      "source": "/sandboxes/best-practices",
+      "destination": "/Sandboxes/best-practices"
+    },
+    {
+      "source": "/Sandbox/:slug*",
+      "destination": "/Sandboxes/:slug*"
+    },
+    {
+      "source": "/Sandboxes/Volumes-templates",
+      "destination": "/Volumes/Volumes-templates"
+    },
+    {
+      "source": "/Sandboxes/Drives",
+      "destination": "/Agent-drive/Overview"
+    },
+    {
+      "source": "/Frameworks/:slug*",
+      "destination": "/Overview"
+    },
+    {
+      "source": "/cli-reference/blaxel_apply",
+      "destination": "/cli-reference/commands/bl_apply"
+    }
+  ]
 }
