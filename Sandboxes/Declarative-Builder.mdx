@@ -633,7 +633,7 @@ web_sandbox = await web_image.build(name="web-sandbox", memory=4096)
 
 ## Full example
 
-A complete example building a full-stack development sandbox:
+A complete example building a full-stack Node.js and Python development sandbox:
 
 <CodeGroup>
 
@@ -646,7 +646,7 @@ const sandbox = await ImageInstance.fromRegistry("node:20-bookworm-slim")
   // Working directory
   .workdir("/app")
   // Node.js dependencies
-  .npmInstall({ packageManager: "pnpm", globalInstall: true }, "turbo")
+  .npmInstall({ packageManager: "npm", globalInstall: true }, "turbo")
   // Python tools
   .pipInstall("httpie", "ipython")
   // Environment
@@ -678,7 +678,7 @@ async def main():
         # Working directory
         .workdir("/app")
         # Node.js dependencies
-        .npm_install("turbo", package_manager="pnpm", global_install=True)
+        .npm_install("turbo", package_manager="npm", global_install=True)
         # Python tools
         .pip_install("httpie", "ipython")
         # Environment
@@ -696,7 +696,7 @@ async def main():
         )
     )
 
-    print("Sandbox deployed:", sandbox.metadata.name)
+    print("Sandbox deployed:", sandbox.metadata.name if sandbox.metadata else None)
 
 asyncio.run(main())
 ```
