@@ -84,21 +84,17 @@ Execute shell commands during the image build:
 <CodeGroup>
 
 ```typescript TypeScript
-const image = ImageInstance.fromRegistry("ubuntu:22.04")
+const image = ImageInstance.fromRegistry("node:20")
   .runCommands(
-    "apt-get update && apt-get install -y curl",
-    "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
-    "apt-get install -y nodejs"
+    "apt-get update && apt-get install -y python3 make g++"
   );
 ```
 
 ```python Python
 image = (
-    ImageInstance.from_registry("ubuntu:22.04")
+    ImageInstance.from_registry("node:20")
     .run_commands(
-        "apt-get update && apt-get install -y curl",
-        "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
-        "apt-get install -y nodejs",
+        "apt-get update && apt-get install -y python3 make g++",
     )
 )
 ```
