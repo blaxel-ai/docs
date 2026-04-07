@@ -488,7 +488,7 @@ sandbox = await image.build(name="my-sandbox")
 const sandbox = await image.build({
   name: "my-sandbox",
   memory: 8192,                // Memory in MB (default: 4096)
-  timeout: 900000,             // Timeout in ms (default: 900000 = 15 min)
+  timeout: 900000,             // Timeout in ms (default: 900000 = 15 min)  — NOTE: Python SDK uses seconds
   sandboxVersion: "latest",    // Sandbox API version
   onStatusChange: (status) => {
     console.log(`Build status: ${status}`);
@@ -500,7 +500,7 @@ const sandbox = await image.build({
 sandbox = await image.build(
     name="my-sandbox",
     memory=8192,                          # Memory in MB (default: 4096)
-    timeout=900.0,                        # Timeout in seconds (default: 900)
+    timeout=900.0,                        # Timeout in seconds (default: 900)  — NOTE: TypeScript SDK uses ms
     sandbox_version="latest",             # Sandbox API version
     on_status_change=lambda s: print(f"Build status: {s}"),
 )
