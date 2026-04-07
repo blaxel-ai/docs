@@ -37,10 +37,52 @@ Provisioning is automated and typically completes within a few minutes.
 
 Once provisioning is complete, you can attach the assigned egress gateway when creating one or more sandboxes. All outbound traffic from the attached sandboxes will then originate from this unique address.
 
-You can assign an egress gateway to a sandbox at creation time via the Blaxel Console.
+You can assign an egress gateway to a sandbox at creation time via the Blaxel Console or via the Blaxel SDK.
 
 ### Blaxel Console
 
 When creating a new sandbox via the Blaxel Console, use the **Egress IP** drop-down to assign an available egress gateway to that sandbox. Only egress gateways in the same region as the new sandbox are shown for assignment.
 
 ![Assign IP](/images/infrastructure/assign-egress-ip.png)
+
+### Blaxel SDK
+
+When creating a new sandbox via the Blaxel SDK, you can assign it to a dedicated egress gateway by passing a `network` option when creating the sandbox. Here is an example when creating a sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  network: {
+    egress: {
+      mode: "dedicated",
+      gateway: "my-egress-gateway"
+    }
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create(
+    {
+        "name": "my-sandbox",
+        "image": "blaxel/base-image:latest",
+        "memory": 4096,
+        "network": {
+            "egress": {
+                "mode": "dedicated",
+                "gateway": "my-egress-gateway",
+            },
+        },
+    }
+)
+```
+
+</CodeGroup>
