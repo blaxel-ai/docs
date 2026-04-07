@@ -20,7 +20,7 @@ When you create a sandbox from a template, Blaxel provisions a new instance with
 
 ### How sandbox templates work
 
-1. **Initial setup**: Follow this guide to create your sandbox template for the first time. This process also creates your first sandbox instance using this template.
+1. **Initial setup**: Follow this guide to create your sandbox template for the first time. Use `bl push` to push the template to Blaxel, or `bl deploy` to push the template and also create a sandbox from it.
 2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations.
 3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
 4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
@@ -165,28 +165,35 @@ make run
 # Example: curl http://127.0.0.1:8080/process
 ```
 
-#### 6. Deploy the template
+#### 6. Push the template
 
-Once satisfied with your configuration, create the template on Blaxel:
+Once satisfied with your configuration, push the template to Blaxel:
 
 ```bash
-bl deploy
+bl push
 ```
 
 This will:
 
 1. Build your Docker image
-2. Push it to Blaxel’s registry (private to your workspace)
+2. Push it to Blaxel's registry (private to your workspace)
 3. Return an image ID you can use for creating sandboxes
-4. Create a first sandbox with that template. It is completely fine to delete the sandbox afterwards, the template will be kept.
 
-You can monitor the template creation:
+<Tip>
+  Use `bl deploy` instead if you also want Blaxel to automatically create a first sandbox from the template, so you can test it:
 
-```bash
-bl get sandbox mytemplate --watch
-```
+  ```bash
+  bl deploy
+  ```
 
-A first sandbox with that template is automatically created on Blaxel upon bl deploy, for you to test in prod-like conditions. You can safely delete the sandbox and keep using the template for new sandboxes.
+  You can monitor the sandbox deployment with:
+
+  ```bash
+  bl get sandbox mytemplate --watch
+  ```
+
+  You can safely delete the sandbox afterwards, and keep using the template for new sandboxes.
+</Tip>
 
 ### Blaxel API
 
@@ -875,10 +882,10 @@ To update an existing template:
 
 1. Modify your Dockerfile or configuration
 2. Rebuild locally to test changes
-3. Deploy the new version:
+3. Push the new version:
 
 ```bash
-bl deploy
+bl push
 ```
 
 The new revision becomes available while the old one remains accessible.

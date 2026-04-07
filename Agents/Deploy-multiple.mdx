@@ -10,7 +10,7 @@ You can use a **shared context from a same single repository** to deploy multipl
 
 ## Deploying multiple resources
 
-With the `--directory` (`-d`) parameter in `bl deploy`, you can specify a subfolder containing your `blaxel.toml` and `Dockerfile`. 
+With the `--directory` (`-d`) parameter in `bl deploy` and `bl push`, you can specify a subfolder containing your `blaxel.toml` and `Dockerfile`.
 
 The `Dockerfile` defines how your deployment context is built and as such is required if you want to ensure proper mounting of shared dependencies between your different services.
 
@@ -56,6 +56,15 @@ bl deploy -d myjob
 bl deploy -d myagent
 bl deploy -d myotheragent
 bl deploy -d mymcpserver
+```
+
+To push without deploying, run these commands from the root folder:
+
+```bash
+bl push -d myjob
+bl push -d myagent
+bl push -d myotheragent
+bl push -d mymcpserver
 ```
 
 For a complete example, see our [sample repository](https://github.com/drappier-charles/multiagent).

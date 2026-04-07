@@ -46,6 +46,8 @@ Run the following command to build and deploy a local agent on Blaxel:
 bl deploy
 ```
 
+You can alternatively use `bl push` to build and push the agent container image to the Blaxel registry without creating or updating the agent deployment. This is useful for preparing images in advance.
+
 <Note>When making a deployment using Blaxel CLI (`bl deploy`), the new traffic routing depends on the `--traffic` option. Without this option specified, Blaxel will automatically deploy the new revision with full traffic (100%) if the previous deployment was the latest revision. Otherwise, it will create the revision without deploying it (0% traffic).</Note>
 
 Specify which sub-directory to deploy with the `--directory` (`-d`) option:
