@@ -135,12 +135,12 @@ bl login
 
 <Accordion title="Learn more about authentication on Blaxel">
 
-The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+The Blaxel SDK requires two environment variables to authenticate:
 
-1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](/Agents/Variables-and-secrets) for other authentication options).
-3. environment variables from your machine
-4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
 
 You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
 
