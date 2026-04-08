@@ -31,7 +31,9 @@ You can toggle between usage and cost metrics using the switch in the top right 
 
 ### Quota tiers
 
-Blaxel utilizes a tiered quota system to govern infrastructure limits across your workspaces. Your tier determines your maximum platform capabilities, including the number of concurrently running sandboxes, total retained sandboxes, total volume storage capacity, and access to additional features such as higher numbers of concurrent jobs, larger sandbox and volume sizes, longer sandbox TTLs, custom domains, and more.
+Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses.
+
+Higher tiers have access to higher limits such as more standby/concurrent sandboxes, more concurrent jobs, higher sandbox and volume sizes, longer sandbox TTLs. They also have access to gated features such as custom domains, dedicated IPs and more.
 
 You can see the [limits and features of each tier](https://app.blaxel.ai/account/quotas) in the **Quotas** tab.
 
@@ -43,7 +45,7 @@ You can see the [limits and features of each tier](https://app.blaxel.ai/account
 
 #### How tiers are calculated
 
-Your current tier is evaluated continuously based on your **30-day top-up volume**. This is the total amount of USD funds added to your Blaxel wallet via manual or automated top-ups over the trailing 30 days.
+Your current tier is evaluated continuously based on your **30-day top-up volume**. This is the total amount of real funds added to your Blaxel wallet via manual or automated top-ups over the trailing 30 days.
 
 **Top-ups are not flat fees**: Funds added to meet a tier requirement are deposited directly into your account balance. These funds are subsequently used to pay for your standard compute and storage consumption.
 
@@ -51,19 +53,9 @@ Your current tier is evaluated continuously based on your **30-day top-up volume
 
 #### Maintaining your tier
 
-Because tier eligibility relies on a rolling 30-day window, your tier will automatically adjust if your top-up volume decreases. If your 30-day top-up volume falls below your current tier's threshold, your workspace will be downgraded, which may result in blocked sandbox creation if you exceed the lower tier's limits.
+Because tier eligibility relies on a rolling 30-day window, your tier will automatically adjust if your top-up volume decreases. If your 30-day top-up volume falls below your current tier's threshold, your workspace will be downgraded, which may result in blocked resource creation if you exceed the lower tier's limits.
 
 To prevent service disruptions and maintain your quotas without manual intervention, you can configure **Auto top-up** in the Billing section of your Console.
-
-#### Infrastructure quotas by tier
-
-Below is an overview of standard higher-tier limits. Custom configurations are available for enterprise workloads; contact support for limits exceeding Tier 7.
-
-| Tier | 30-Day Top-up Requirement | Max Created Sandboxes | Max Concurrent Sandboxes | Max Volume Storage |
-|------|---------------------------|----------------------|-------------------------|-------------------|
-| Tier 5 | Standard usage | Default | Default | 10 TB |
-| Tier 6 | $4,000 | 10,000 | 2,000 | 25 TB |
-| Tier 7 | $14,000 | 25,000 | 4,000 | 100 TB |
 
 ### Quota usage
 
