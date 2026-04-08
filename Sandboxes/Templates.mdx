@@ -839,11 +839,13 @@ python main.py
 
 ## Use a template
 
-Once your template is created, spawn new sandboxes instantly by using the image ID:
+Once a template is successfully pushed, you can spawn new sandboxes instantly by using its image ID.
+
+Use the following command to retrieve the image ID of the most recently pushed template:
 
 ```docker
 # Retrieve your IMAGE_ID
-bl get sandboxes mytemplate -ojson | jq -r '.[0].spec.runtime.image'
+bl get image sandbox/mytemplate -ojson | jq -r '.[0] | "sandbox/\(.metadata.name):\(.spec.tags | sort_by(.createdAt) | last | .name)"'
 ```
 
 <CodeGroup>
