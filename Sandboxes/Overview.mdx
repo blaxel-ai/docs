@@ -251,7 +251,13 @@ You can expose specific non-reserved ports [**when creating a new sandbox**](Ove
 
 ### Regions
 
-Select the [region](../Infrastructure/Regions) where you want to deploy your sandbox. This parameter is required.
+Select the region where you want to deploy your sandbox. The `region` parameter is optional but recommended, and can reference any of the [supported region codes](/Infrastructure/Regions).
+
+It is also possible to set a default region using the `BL_REGION` environment variable (e.g. in your `.env` file) to avoid repeating it in every SDK call.
+
+<Warning>
+  The `region` parameter is currently optional but will become mandatory in future versions of the Blaxel SDK. To ensure compatibility, it is highly recommended to always specify a deployment region, either using the `region` parameter in your SDK call or via the `BL_REGION` environment variable.
+</Warning>
 
 ### Labels
 
