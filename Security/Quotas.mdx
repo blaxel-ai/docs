@@ -102,3 +102,13 @@ In some cases, you may see an **Upgrade** button instead of a pencil icon. Click
 <Note>
   Accounts on the free plan are not eligible for quota upgrades and will not see the option to request a quota increase in the Blaxel Console.
 </Note>
+
+## Best practices for quota management
+
+### Configure sandbox TTL
+
+Keeping inactive sandboxes in standby consumes snapshot storage and counts against your quota limits. To optimize costs and quota usage, we recommend setting a Time-To-Live (TTL) of 7 to 60 days (depending on your re-activation patterns) to automatically prune dormant sandboxes.
+
+### Monitor usage alerts
+
+Blaxel automatically dispatches an email notification to workspace administrators when your infrastructure usage reaches 90% of your current tier's quota.
