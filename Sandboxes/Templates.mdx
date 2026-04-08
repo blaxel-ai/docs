@@ -29,13 +29,47 @@ When you create a sandbox from a template, Blaxel provisions a new instance with
   You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom template images for your sandboxes using Dockerfiles and ensure that each template image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
 </Note>
 
-## Create a sandbox template
+## Pre-built templates
 
-You can create a sandbox template using the Blaxel CLI or REST API.
+Blaxel provides a library of pre-built templates for common needs.
 
-### Blaxel CLI
+| Image | Description |
+|-------|-------------|
+| [`blaxel/base-image:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/base-image) | Minimal environment with Node.js 22 (Alpine) |
+| [`blaxel/py-app:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/py-app) | Python 3.12 development environment |
+| [`blaxel/ts-app:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/ts-app) | TypeScript development environment with Node.js 22 (slim) |
+| [`blaxel/node:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/node) | Node.js development environment with Node.js 23 (Alpine) |
+| [`blaxel/nextjs:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/nextjs) | Next.js development environment with Node.js 22 (Alpine) |
+| [`blaxel/vite:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vite) | Vite + React + TS development environment with Node.js 22 (Alpine) |
+| [`blaxel/astro:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/astro) | Astro development environment with Node.js 22 (Alpine) |
+| [`blaxel/expo:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/expo) | React Native (Expo) development with Node.js 22 (Alpine) |
+| [`blaxel/chromium:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/chromium) | Headless Chromium environment with Chrome 124 (Alpine) |
+| [`blaxel/lightpanda:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/lightpanda) | Lightweight headless browser |
+| [`blaxel/playwright-chromium:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/playwright-chromium) | Playwright + Chromium browser automation environment with Node.js 20 |
+| [`blaxel/playwright-firefox:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/playwright-firefox) | Playwright + Firefox browser automation environment with Node.js 20 |
+| [`blaxel/docker-in-sandbox:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/docker-in-sandbox) | Docker-in-Docker environment |
+| [`blaxel/xfce-vnc:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/xfce-vnc) | XFCE desktop environment with VNC |
+| [`blaxel/cua-xfce:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/cua-xfce) | XFCE desktop environment with CUA |
+| [`blaxel/jupyter-notebook:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/jupyter-notebook) | Jupyter Notebook with Python 3.12 |
+| [`blaxel/jupyter-server:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/jupyter-server) | Jupyter Server with Python 3.12 |
+| [`blaxel/benchmark:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/benchmark) | Sandbox benchmarking environment  |
+| [`blaxel/vibekit-claude:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vibekit-claude) | VibeKit coding agent framework for Claude |
+| [`blaxel/vibekit-codex:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vibekit-codex) | VibeKit coding agent framework for OpenAI Codex |
+| [`blaxel/vibekit-gemini:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vibekit-gemini) | VibeKit coding agent framework for Google Gemini |
+| [`blaxel/vibekit-grok:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vibekit-grok) | VibeKit coding agent framework for xAI Grok |
+| [`blaxel/vibekit-opencode:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/vibekit-opencode) | VibeKit coding agent framework for OpenCode |
 
-#### 1. Initialize a template
+## Custom templates
+
+You can also customize a template for specific needs.
+
+### Create a sandbox template
+
+You can create a customized sandbox template using the Blaxel CLI or REST API.
+
+#### Blaxel CLI
+
+##### 1. Initialize a template
 
 Start by creating a new sandbox template using the Blaxel CLI:
 
@@ -53,7 +87,7 @@ mytemplate/
 └── entrypoint.sh      # Initialization script
 ```
 
-#### 2. Customize the Dockerfile
+##### 2. Customize the Dockerfile
 
 The Dockerfile is the heart of your template. It defines what will be available in your sandbox environment.
 
@@ -81,7 +115,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 **Always include** the _sandbox-api_ binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
 
-#### 3. Configure template settings
+##### 3. Configure template settings
 
 The `blaxel.toml` file defines your template’s runtime configuration:
 
@@ -114,7 +148,7 @@ PYTHON_ENV = "development"
   Currently, it is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs.
 </Note>
 
-#### 4. Define initialization
+##### 4. Define initialization
 
 The `entrypoint.sh` script runs when a sandbox is created from your template:
 
@@ -149,7 +183,7 @@ fi
 wait
 ```
 
-#### 5. Build and test locally
+##### 5. Build and test locally
 
 Before creating the template on Blaxel, test it locally:
 
@@ -165,7 +199,7 @@ make run
 # Example: curl http://127.0.0.1:8080/process
 ```
 
-#### 6. Push the template
+##### 6. Push the template
 
 Once satisfied with your configuration, push the template to Blaxel:
 
@@ -195,7 +229,7 @@ This will:
   You can safely delete the sandbox afterwards, and keep using the template for new sandboxes.
 </Tip>
 
-### Blaxel API
+#### Blaxel API
 
 Although less common, it is also possible to create a sandbox template and sandbox by directly interacting with the Blaxel API.
 
@@ -204,7 +238,7 @@ Ensure that you have the following:
 - A [Blaxel API key](https://app.blaxel.ai/profile/security)
 - The workspace name, found at the bottom left corner of the [Blaxel Console](https://app.blaxel.ai/) or via `bl workspaces`
 
-#### 1. Create a ZIP archive
+##### 1. Create a ZIP archive
 
 Create a directory with the following project contents:
 
@@ -232,7 +266,7 @@ Once the files are ready, create a ZIP archive containing the files:
 (cd mytemplate && zip -r ../mytemplate.zip .)
 ```
 
-#### 2. Create a sandbox resource
+##### 2. Create a sandbox resource
 
 Set your Blaxel API key and workspace as environment variables:
 
@@ -276,7 +310,7 @@ x-blaxel-upload-url: https://controlplane-prod-build-sources...
 
 Refer to the documentation on [sandbox configuration parameters](#understand-sandbox-configuration) for more information on the body of the POST request.
 
-#### 3. Upload ZIP archive
+##### 3. Upload ZIP archive
 
 Use an HTTP PUT request to upload the ZIP file to the upload URL. Replace the placeholder URL in the command below with the value of the `x-blaxel-upload-url` response header received earlier.
 
@@ -289,7 +323,7 @@ curl -X PUT "$UPLOAD_URL" \
 
 The upload is successful when you receive a `200 OK` status code.
 
-#### 4. Monitor deployment status
+##### 4. Monitor deployment status
 
 After uploading, poll the sandbox status endpoint to track the build and deployment progress.
 
@@ -314,7 +348,7 @@ Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILE
 
 A first sandbox with that template is automatically created on Blaxel once deployment succeeds. You can safely delete the sandbox and keep using the template for new sandboxes.
 
-#### Example script
+##### Example script
 
 Here's a complete example script that performs all the steps above:
 
@@ -837,9 +871,9 @@ python main.py
 </CodeGroup>
 
 
-## Use a template
+### Use a custom template
 
-Once your template is created, spawn new sandboxes instantly by using the image ID:
+Once your custom template is created, spawn new sandboxes instantly by using the image ID:
 
 ```docker
 # Retrieve your IMAGE_ID
@@ -876,9 +910,9 @@ sandbox = await SandboxInstance.create({
 
 </CodeGroup>
 
-## Update a template
+### Update a custom template
 
-To update an existing template:
+To update an existing custom template:
 
 1. Modify your Dockerfile or configuration
 2. Rebuild locally to test changes
