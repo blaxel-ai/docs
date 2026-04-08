@@ -29,18 +29,25 @@ Some examples of use cases are:
 
 ## Create a drive
 
-<Accordion title="Set up authentication to Blaxel">
+<Accordion title="Learn more about authentication on Blaxel">
 
-The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+The Blaxel SDK requires two environment variables to authenticate:
 
-1. when running on Blaxel, authentication is handled automatically
-2. variables in your `.env` file (`BL_WORKSPACE` and `BL_API_KEY`, or see [this page](../Agents/Variables-and-secrets) for other authentication options).
-3. environment variables from your machine
-4. configuration file created locally when you log in through [Blaxel CLI](../cli-reference/introduction) (or deploy on Blaxel)
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
 
-When developing locally, the recommended method is to just **log in to your workspace with Blaxel CLI.** This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
 
-When running Blaxel SDK from a remote server that is not Blaxel-hosted, we recommend using environment variables as described in the third option above.
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically — no environment variables needed.
 
 </Accordion>
 
