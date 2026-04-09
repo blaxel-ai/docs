@@ -85,6 +85,13 @@ Generally speaking:
 
 ### Via SDK
 
+<Tabs>
+<Tab title="sandbox.fetch() (recommended)">
+
+<Note>
+  Available in `@blaxel/core` >= 0.2.79 (Node.js) and `blaxel` >= 0.2.49 (Python).
+</Note>
+
 The SDK provides a built-in `fetch` method that handles authentication and proxies requests through the sandbox's `/port/{port}` endpoint.
 
 <CodeGroup>
@@ -119,7 +126,49 @@ print(api_response.json())
 # Fetch with a custom HTTP method
 post_response = await sandbox.fetch(3000, "/api/data", method="POST", json={"key": "value"})
 ```
+
 </CodeGroup>
+
+</Tab>
+<Tab title="Manual URL (older SDKs)">
+
+For older SDK versions, you can construct the port URL manually. This requires your request to be [authenticated](../Security/Access-tokens).
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+// Get URL for port access
+const url = `${sandbox.metadata.url}/port/3000`
+
+// Use the URL with authenticated requests
+const response = await fetch(url, {
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' }
+})
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+import requests
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Get URL for port access
+url = f"{sandbox.metadata.url}/port/3000"
+
+# Use the URL with authenticated requests
+response = requests.get(url, headers={ "Authorization": f"Bearer YOUR_TOKEN" })
+```
+
+</CodeGroup>
+
+</Tab>
+</Tabs>
 
 <Card title="Create preview URLs" icon="eye" href="/Sandboxes/Preview-url">
 Expose applications running within the sandbox via a direct preview URL.
