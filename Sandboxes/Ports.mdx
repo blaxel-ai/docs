@@ -125,6 +125,7 @@ print(api_response.json())
 
 # Fetch with a custom HTTP method
 post_response = await sandbox.fetch(3000, "/api/data", method="POST", json={"key": "value"})
+print(post_response.json())
 ```
 
 </CodeGroup>
