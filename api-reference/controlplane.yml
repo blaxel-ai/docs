@@ -2300,6 +2300,13 @@ components:
           $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/SandboxSpec'
+        state:
+          type: string
+          description: Current state of the sandbox (read-only, managed by the system)
+          enum:
+          - RUNNING
+          - STANDBY
+          readOnly: true
         status:
           $ref: '#/components/schemas/Status'
       required:
