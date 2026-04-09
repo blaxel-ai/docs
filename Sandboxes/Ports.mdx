@@ -85,41 +85,39 @@ Generally speaking:
 
 ### Via SDK
 
-This option requires your request to be [authenticated](../Security/Access-tokens).
+The SDK provides a built-in `fetch` method that handles authentication and proxies requests through the sandbox's `/port/{port}` endpoint.
 
 <CodeGroup>
 
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-// Connect to existing sandbox
-const sandbox = await SandboxInstance.get("my-sandbox")
+const sandbox = await SandboxInstance.get("my-sandbox");
 
-// Assume port 3000
-const portNumber = 3000;
+// Fetch a resource on port 3000
+const response = await sandbox.fetch(3000);
+console.log(await response.text());
 
-// Get URL for port access
-const url = `${sandbox.metadata.url}/port/${portNumber}`
-
-// Use the URL with authenticated requests
-// Example: const response = await fetch(url, { headers: { 'Authorization': 'Bearer YOUR_TOKEN' } })
+// Fetch with a specific path
+const apiResponse = await sandbox.fetch(3000, "/api/health");
+console.log(await apiResponse.json());
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
-import requests
 
-# Connect to existing sandbox
 sandbox = await SandboxInstance.get("my-sandbox")
 
-# Assume port 3000
-port_number = 3000;
+# Fetch a resource on port 3000
+response = await sandbox.fetch(3000)
+print(response.text)
 
-# Get URL for port access
-url = f"{sandbox.metadata.url}/port/{port_number}"
+# Fetch with a specific path
+api_response = await sandbox.fetch(3000, "/api/health")
+print(api_response.json())
 
-# Use the URL with authenticated requests
-# Example: response = requests.get(url, headers={ "Authorization": f"Bearer YOUR_TOKEN" })
+# Fetch with a custom HTTP method
+post_response = await sandbox.fetch(3000, "/api/data", method="POST", json={"key": "value"})
 ```
 </CodeGroup>
 
