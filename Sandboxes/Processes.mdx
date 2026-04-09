@@ -186,7 +186,7 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-When waiting for completion, the process execution object will contain a `.logs` object which [surfaces both *stdout* and *stderr*](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
+When waiting for completion, the process execution object will contain a `.logs` field with the [combined `stdout` and `stderr` output as a string](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
 
 <Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
 
