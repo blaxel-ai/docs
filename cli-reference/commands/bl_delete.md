@@ -48,6 +48,12 @@ bl delete [flags]
   bl delete volume vol1 vol2 vol3
   bl delete agent agent1 agent2
 
+  # Delete a sandbox preview
+  bl delete sandbox my-sandbox preview my-preview
+
+  # Delete a sandbox preview token
+  bl delete sandbox my-sandbox preview my-preview token my-token
+
   # Delete from YAML file
   bl delete -f my-resource.yaml
 
@@ -99,12 +105,15 @@ bl delete [flags]
 
 * [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
 * [bl delete agent](/cli-reference/commands/bl_delete_agent)	 - Delete agent
+* [bl delete drive](/cli-reference/commands/bl_delete_drive)	 - Delete drive
 * [bl delete function](/cli-reference/commands/bl_delete_function)	 - Delete function
 * [bl delete image](/cli-reference/commands/bl_delete_image)	 - Delete images or image tags
 * [bl delete integrationconnection](/cli-reference/commands/bl_delete_integrationconnection)	 - Delete integrationconnection
 * [bl delete job](/cli-reference/commands/bl_delete_job)	 - Delete job
 * [bl delete model](/cli-reference/commands/bl_delete_model)	 - Delete model
 * [bl delete policy](/cli-reference/commands/bl_delete_policy)	 - Delete policy
+* [bl delete preview](/cli-reference/commands/bl_delete_preview)	 - Delete preview
+* [bl delete previewtoken](/cli-reference/commands/bl_delete_previewtoken)	 - Delete previewtoken
 * [bl delete sandbox](/cli-reference/commands/bl_delete_sandbox)	 - Delete sandbox
 * [bl delete volume](/cli-reference/commands/bl_delete_volume)	 - Delete volume
 * [bl delete volumetemplate](/cli-reference/commands/bl_delete_volumetemplate)	 - Delete volumetemplate
