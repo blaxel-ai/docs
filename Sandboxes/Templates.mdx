@@ -251,7 +251,7 @@ The three steps to use the image builder are:
 
 The SDK automatically injects the Blaxel sandbox API binary and sets the entrypoint, so your image is ready to use as a sandbox without manual configuration.
 
-#### Base image
+#### Select a base image
 
 Start by selecting a base image from any Docker registry:
 
@@ -271,7 +271,7 @@ image = ImageInstance.from_registry("ubuntu:22.04")
 
 </CodeGroup>
 
-#### Command execution
+#### Execute build commands
 
 Execute shell commands during the image build:
 
@@ -295,7 +295,7 @@ image = (
 
 </CodeGroup>
 
-#### Package managers
+#### Use package managers
 
 The SDK provides convenience methods for common package managers. These generate optimized `RUN` commands with sensible defaults (e.g., cache cleanup for apt).
 
@@ -405,7 +405,7 @@ image = (
 
 </CodeGroup>
 
-##### System packages (apt, apk)
+##### Install system packages (apt, apk)
 
 <CodeGroup>
 
@@ -435,7 +435,7 @@ image = (
 
 </CodeGroup>
 
-##### Other package managers
+##### Use other package managers
 
 <CodeGroup>
 
@@ -495,11 +495,11 @@ image = (
 
 </CodeGroup>
 
-#### Dockerfile instructions
+#### Add Dockerfile instructions
 
 All standard Dockerfile instructions are available as methods.
 
-##### Working directory
+##### Specify the working directory
 
 <CodeGroup>
 
@@ -514,7 +514,7 @@ image = ImageInstance.from_registry("node:20").workdir("/app")
 
 </CodeGroup>
 
-##### Environment variables
+##### Define environment variables
 
 <CodeGroup>
 
@@ -572,7 +572,7 @@ image = ImageInstance.from_registry("node:20").expose(3000, 8080)
 
 </CodeGroup>
 
-##### Entrypoint
+##### Set an entrypoint
 
 <CodeGroup>
 
@@ -590,7 +590,7 @@ image = (
 
 </CodeGroup>
 
-##### User
+##### Add users
 
 <CodeGroup>
 
@@ -610,7 +610,7 @@ image = (
 
 </CodeGroup>
 
-##### Labels and build arguments
+##### Add labels and build arguments
 
 <CodeGroup>
 
@@ -630,7 +630,7 @@ image = (
 
 </CodeGroup>
 
-#### Adding local files
+#### Add local files
 
 Copy files and directories from your local machine into the image:
 
@@ -769,7 +769,7 @@ temp_dir = image.write_temp()
 
 </CodeGroup>
 
-#### Immutability and branching
+#### Understand immutability and branching
 
 Each method returns a new `ImageInstance`, leaving the original unchanged. This lets you create base images and branch from them:
 
@@ -825,7 +825,7 @@ web_sandbox = await web_image.build(name="web-sandbox", memory=4096)
 
 </CodeGroup>
 
-#### Example
+#### Example script
 
 A complete example building a Node.js / Python development sandbox:
 
