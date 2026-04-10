@@ -65,7 +65,6 @@
               },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
-              "Sandboxes/Declarative-Builder",
               "Sandboxes/best-practices"
             ]
           },
