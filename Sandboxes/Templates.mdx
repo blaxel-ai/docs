@@ -26,12 +26,12 @@ When you create a sandbox from a template, Blaxel provisions a new instance with
 4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
 
 <Note>
-  You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom template images for your sandboxes using Dockerfiles and ensure that each template image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
+  You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom images for your sandboxes using Dockerfiles and ensure that each  image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
 </Note>
 
 ## Pre-built templates
 
-Blaxel provides a library of pre-built templates for common needs.
+Blaxel provides a library of pre-built container images that serve as sandbox templates for common needs.
 
 | Image | Description |
 |-------|-------------|
