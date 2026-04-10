@@ -42,8 +42,6 @@ If a sandbox has an ongoing WebSocket/TCP connection, there is a 15-minute idle 
 
 When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 15 seconds.
 
-When a sandbox transitions to standby mode, none of its associated [preview URLs](/Sandboxes/Preview-url) are accessible.
-
 Reconnecting to the sandbox transitions it back to active mode. Any running processes are included in this snapshot and will be instantly restored when you reconnect to the sandbox.
 
 You are not charged for memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
