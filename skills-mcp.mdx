@@ -6,7 +6,7 @@ description: 'Configure Cursor, Claude Code, or other AI coding assistants to ma
 
 Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
 
-1. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP server on Blaxel using simple prompts.
+1. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP servers on Blaxel using simple prompts, with support for both command-line (CLI) and code-driven (SDK) operations.
 2. The Blaxel **resource management MCP server** lets your coding agent directly manage your Blaxel resources using natural language.
 3. The Blaxel **documentation MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
 4. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
@@ -16,31 +16,40 @@ Blaxel provides LLM-accessible tools that you can connect to your coding assista
 
 [Agent skills](https://agentskills.io/specification) are instruction sets to extend coding agents with additional knowledge and tools. An agent can load these instructions into its context and use them to complete the tasks assigned to it.
 
-Blaxel offers open source Agent skills to help coding agents autonomously spin up and manage sandboxes on Blaxel, and migrate sandbox code from other providers to Blaxel.
+Blaxel offers open source agent skills to help coding agents autonomously spin up and manage sandboxes on Blaxel, and migrate sandbox code from other providers to Blaxel.
 
-### Blaxel skill
+### Blaxel skills
 
-The open source [Blaxel skill](https://github.com/blaxel-ai/agent-skills) lets agents:
+The open source [Blaxel skills](https://github.com/blaxel-ai/agent-skills) let agents:
 
 - create perpetual sandboxes on Blaxel to run code and execute commands
-- start applications servers within sandboxes
+- start application servers within sandboxes
 - generate URLs to preview applications running within sandboxes
+- create Agent Drives (shared filesystems) on Blaxel
 - create and deploy AI agents on Blaxel
 - create and deploy MCP servers on Blaxel
 - deploy and run batch jobs on Blaxel
 
-Add the Blaxel skill to your coding agent with the command below:
+Two skills are currently available:
+- The `blaxel-cli` skill lets coding agents create and manage Blaxel resources from the command line using the `bl` CLI.
+- The `blaxel-sdk` skill lets coding agents write code to create and manage Blaxel resources using the Blaxel SDKs.
+
+<Tip>
+  Use the `blaxel-cli` skill when you're troubleshooting, or bootstrapping a project on Blaxel. Use the `blaxel-sdk` skill when building agents or MCP servers on Blaxel, or when you need to programmatically manage Blaxel resources.
+</Tip>
+
+Add the Blaxel skills to your coding agent with the command below:
 
 ```shell
 npx skills add blaxel-ai/agent-skills
 ```
 
-You'll be prompted to select your coding agent and installation location.
+You'll be prompted to choose skills and select your coding agent and installation location.
 
-The Blaxel skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+The Blaxel skills are also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
 
 <Tip>
-  See [examples of using the Blaxel skill](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
+  See [examples of using the Blaxel skills](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
 </Tip>
 
 ### Blaxel migration skill
