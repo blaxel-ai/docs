@@ -249,7 +249,7 @@ The three steps to use the image builder are:
 2. **Chain**: Each method returns a new immutable `ImageInstance`, so you can branch and reuse configurations.
 3. **Build**: Call `build()` to generate a Dockerfile, package it with any local files, upload it to Blaxel, and deploy it as a sandbox.
 
-The SDK automatically injects the Blaxel sandbox API binary and sets the entrypoint, so your image is ready to use as a sandbox without manual configuration.
+The SDK automatically injects the Blaxel sandbox API binary and sets a default entrypoint (if you haven't specified one), so your image is ready to use as a sandbox without manual configuration.
 
 #### Select a base image
 
