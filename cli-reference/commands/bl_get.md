@@ -77,6 +77,18 @@ The command can list all resources of a type or get details for a specific one.
   # Get specific process in a sandbox
   bl get sandbox my-sandbox process my-process
 
+  # List previews for a sandbox
+  bl get sandbox my-sandbox previews
+
+  # Get a specific preview
+  bl get sandbox my-sandbox preview my-preview
+
+  # List tokens for a sandbox preview
+  bl get sandbox my-sandbox preview my-preview tokens
+
+  # Get a specific token
+  bl get sandbox my-sandbox preview my-preview token my-token
+
   # --- Filtering with jq ---
 
   # Get names of all jobs with status DELETING
@@ -119,12 +131,15 @@ The command can list all resources of a type or get details for a specific one.
 
 * [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
 * [bl get agents](/cli-reference/commands/bl_get_agents)	 - Get a Agent
+* [bl get drives](/cli-reference/commands/bl_get_drives)	 - Get a Drive
 * [bl get functions](/cli-reference/commands/bl_get_functions)	 - Get a Function
 * [bl get image](/cli-reference/commands/bl_get_image)	 - Get image information
 * [bl get integrationconnections](/cli-reference/commands/bl_get_integrationconnections)	 - Get a IntegrationConnection
 * [bl get jobs](/cli-reference/commands/bl_get_jobs)	 - Get a Job
 * [bl get models](/cli-reference/commands/bl_get_models)	 - Get a Model
 * [bl get policies](/cli-reference/commands/bl_get_policies)	 - Get a Policy
+* [bl get previews](/cli-reference/commands/bl_get_previews)	 - Get a Preview
+* [bl get previewtokens](/cli-reference/commands/bl_get_previewtokens)	 - Get a PreviewToken
 * [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - Get a Sandbox
 * [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - Get a Volume
 * [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - Get a VolumeTemplate
