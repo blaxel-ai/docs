@@ -1,0 +1,129 @@
+---
+title: "Domain filtering"
+description: "Restrict which external domains a sandbox can reach using allowlists and denylists."
+tag: "public preview"
+---
+
+<Note>
+  This feature is currently in public preview and is not recommended for production use. During the preview, the proxy and network features are only available in the `us-was-1` region.
+</Note>
+
+Domain filtering lets you control which external domains a sandbox can reach. You can define an allowlist (only listed domains are reachable) or a denylist (all domains except listed ones are reachable). Domain filtering and proxy routing are **independent configurations** — you do not need to duplicate domains across both. A domain can appear in the allowlist without having a proxy routing rule, and vice versa.
+
+<Warning>
+  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore these variables will not be filtered. Routing-level enforcement is planned for a future release.
+</Warning>
+
+## Allowlist
+
+Only the listed domains are reachable:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "restricted-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "restricted-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+## Denylist
+
+All domains except the listed ones are reachable:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "denylist-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    forbiddenDomains: ["*.malware.com", "evil.example.org"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "denylist-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "forbiddenDomains": ["*.malware.com", "evil.example.org"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+<Note>
+  When both `allowedDomains` and `forbiddenDomains` are set, `forbiddenDomains` takes precedence: a domain that appears in both lists will be blocked.
+</Note>
+
+## Firewall + proxy combined
+
+Firewall rules and proxy routing compose naturally:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "locked-down",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com"],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_..." },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "locked-down",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com"],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_..."},
+                },
+            ],
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+Only `api.stripe.com` and `api.openai.com` are reachable. The proxy injects credentials for Stripe requests; OpenAI requests go through unmodified.
