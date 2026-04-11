@@ -4,7 +4,7 @@ slug: bl_delete_preview
 ---
 ## bl delete preview
 
-Delete preview
+Delete one or more previews
 
 ```
 bl delete preview name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete preview name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

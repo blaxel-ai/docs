@@ -4,7 +4,7 @@ slug: bl_delete_model
 ---
 ## bl delete model
 
-Delete model
+Delete one or more models
 
 ```
 bl delete model name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete model name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

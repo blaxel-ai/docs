@@ -4,7 +4,7 @@ slug: bl_delete_agent
 ---
 ## bl delete agent
 
-Delete agent
+Delete one or more agents
 
 ```
 bl delete agent name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete agent name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

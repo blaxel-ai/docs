@@ -4,7 +4,7 @@ slug: bl_get_functions
 ---
 ## bl get functions
 
-Get a Function
+List all functions or get details of a specific one
 
 ```
 bl get functions [flags]
@@ -29,5 +29,5 @@ bl get functions [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

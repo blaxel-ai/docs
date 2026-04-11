@@ -4,7 +4,7 @@ slug: bl_new
 ---
 ## bl new
 
-Create a new blaxel resource (agent, mcp, sandbox, job, volume-template)
+Scaffold a new project from a template (agent, mcp, sandbox, job, volume-template)
 
 ### Synopsis
 
@@ -96,5 +96,5 @@ bl new [type] [directory] [flags]
 
 ### SEE ALSO
 
-* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 

@@ -4,7 +4,7 @@ slug: bl_get_drives
 ---
 ## bl get drives
 
-Get a Drive
+List all drives or get details of a specific one
 
 ```
 bl get drives [flags]
@@ -29,5 +29,5 @@ bl get drives [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

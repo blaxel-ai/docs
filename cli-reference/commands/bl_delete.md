@@ -4,7 +4,7 @@ slug: bl_delete
 ---
 ## bl delete
 
-Delete a resource
+Delete resources from your workspace
 
 ### Synopsis
 
@@ -103,18 +103,18 @@ bl delete [flags]
 
 ### SEE ALSO
 
-* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
-* [bl delete agent](/cli-reference/commands/bl_delete_agent)	 - Delete agent
-* [bl delete drive](/cli-reference/commands/bl_delete_drive)	 - Delete drive
-* [bl delete function](/cli-reference/commands/bl_delete_function)	 - Delete function
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
+* [bl delete agent](/cli-reference/commands/bl_delete_agent)	 - Delete one or more agents
+* [bl delete drive](/cli-reference/commands/bl_delete_drive)	 - Delete one or more drives
+* [bl delete function](/cli-reference/commands/bl_delete_function)	 - Delete one or more functions
 * [bl delete image](/cli-reference/commands/bl_delete_image)	 - Delete images or image tags
-* [bl delete integrationconnection](/cli-reference/commands/bl_delete_integrationconnection)	 - Delete integrationconnection
-* [bl delete job](/cli-reference/commands/bl_delete_job)	 - Delete job
-* [bl delete model](/cli-reference/commands/bl_delete_model)	 - Delete model
-* [bl delete policy](/cli-reference/commands/bl_delete_policy)	 - Delete policy
-* [bl delete preview](/cli-reference/commands/bl_delete_preview)	 - Delete preview
-* [bl delete previewtoken](/cli-reference/commands/bl_delete_previewtoken)	 - Delete previewtoken
-* [bl delete sandbox](/cli-reference/commands/bl_delete_sandbox)	 - Delete sandbox
-* [bl delete volume](/cli-reference/commands/bl_delete_volume)	 - Delete volume
-* [bl delete volumetemplate](/cli-reference/commands/bl_delete_volumetemplate)	 - Delete volumetemplate
+* [bl delete integrationconnection](/cli-reference/commands/bl_delete_integrationconnection)	 - Delete one or more integrationconnections
+* [bl delete job](/cli-reference/commands/bl_delete_job)	 - Delete one or more jobs
+* [bl delete model](/cli-reference/commands/bl_delete_model)	 - Delete one or more models
+* [bl delete policy](/cli-reference/commands/bl_delete_policy)	 - Delete one or more policies
+* [bl delete preview](/cli-reference/commands/bl_delete_preview)	 - Delete one or more previews
+* [bl delete previewtoken](/cli-reference/commands/bl_delete_previewtoken)	 - Delete one or more previewtokens
+* [bl delete sandbox](/cli-reference/commands/bl_delete_sandbox)	 - Delete one or more sandboxes
+* [bl delete volume](/cli-reference/commands/bl_delete_volume)	 - Delete one or more volumes
+* [bl delete volumetemplate](/cli-reference/commands/bl_delete_volumetemplate)	 - Delete one or more volumetemplates
 
