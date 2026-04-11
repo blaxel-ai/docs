@@ -4,7 +4,7 @@ slug: bl_get_volumes
 ---
 ## bl get volumes
 
-Get a Volume
+List all volumes or get details of a specific one
 
 ```
 bl get volumes [flags]
@@ -29,5 +29,5 @@ bl get volumes [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

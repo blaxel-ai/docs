@@ -4,7 +4,7 @@ slug: bl_delete_previewtoken
 ---
 ## bl delete previewtoken
 
-Delete previewtoken
+Delete one or more previewtokens
 
 ```
 bl delete previewtoken name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete previewtoken name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

@@ -42,5 +42,5 @@ bl connect sandbox [sandbox-name] [flags]
 
 ### SEE ALSO
 
-* [bl connect](/cli-reference/commands/bl_connect)	 - Connect into your sandbox resources
+* [bl connect](/cli-reference/commands/bl_connect)	 - Open an interactive terminal session to a sandbox
 

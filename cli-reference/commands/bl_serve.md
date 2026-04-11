@@ -4,7 +4,7 @@ slug: bl_serve
 ---
 ## bl serve
 
-Serve a blaxel project
+Start a local development server for your project
 
 ### Synopsis
 
@@ -87,5 +87,5 @@ bl serve [flags]
 
 ### SEE ALSO
 
-* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 

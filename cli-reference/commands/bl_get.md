@@ -4,7 +4,7 @@ slug: bl_get
 ---
 ## bl get
 
-Get a resource
+List or retrieve Blaxel resources in your workspace
 
 ### Synopsis
 
@@ -129,18 +129,18 @@ The command can list all resources of a type or get details for a specific one.
 
 ### SEE ALSO
 
-* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
-* [bl get agents](/cli-reference/commands/bl_get_agents)	 - Get a Agent
-* [bl get drives](/cli-reference/commands/bl_get_drives)	 - Get a Drive
-* [bl get functions](/cli-reference/commands/bl_get_functions)	 - Get a Function
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
+* [bl get agents](/cli-reference/commands/bl_get_agents)	 - List all agents or get details of a specific one
+* [bl get drives](/cli-reference/commands/bl_get_drives)	 - List all drives or get details of a specific one
+* [bl get functions](/cli-reference/commands/bl_get_functions)	 - List all functions or get details of a specific one
 * [bl get image](/cli-reference/commands/bl_get_image)	 - Get image information
-* [bl get integrationconnections](/cli-reference/commands/bl_get_integrationconnections)	 - Get a IntegrationConnection
-* [bl get jobs](/cli-reference/commands/bl_get_jobs)	 - Get a Job
-* [bl get models](/cli-reference/commands/bl_get_models)	 - Get a Model
-* [bl get policies](/cli-reference/commands/bl_get_policies)	 - Get a Policy
-* [bl get previews](/cli-reference/commands/bl_get_previews)	 - Get a Preview
-* [bl get previewtokens](/cli-reference/commands/bl_get_previewtokens)	 - Get a PreviewToken
-* [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - Get a Sandbox
-* [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - Get a Volume
-* [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - Get a VolumeTemplate
+* [bl get integrationconnections](/cli-reference/commands/bl_get_integrationconnections)	 - List all integrationconnections or get details of a specific one
+* [bl get jobs](/cli-reference/commands/bl_get_jobs)	 - List all jobs or get details of a specific one
+* [bl get models](/cli-reference/commands/bl_get_models)	 - List all models or get details of a specific one
+* [bl get policies](/cli-reference/commands/bl_get_policies)	 - List all policies or get details of a specific one
+* [bl get previews](/cli-reference/commands/bl_get_previews)	 - List all previews or get details of a specific one
+* [bl get previewtokens](/cli-reference/commands/bl_get_previewtokens)	 - List all previewtokens or get details of a specific one
+* [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - List all sandboxes or get details of a specific one
+* [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - List all volumes or get details of a specific one
+* [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - List all volumetemplates or get details of a specific one
 

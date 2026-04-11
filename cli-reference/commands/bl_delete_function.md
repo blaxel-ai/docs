@@ -4,7 +4,7 @@ slug: bl_delete_function
 ---
 ## bl delete function
 
-Delete function
+Delete one or more functions
 
 ```
 bl delete function name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete function name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

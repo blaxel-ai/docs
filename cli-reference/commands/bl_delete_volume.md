@@ -4,7 +4,7 @@ slug: bl_delete_volume
 ---
 ## bl delete volume
 
-Delete volume
+Delete one or more volumes
 
 ```
 bl delete volume name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete volume name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

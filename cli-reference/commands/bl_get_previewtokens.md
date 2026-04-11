@@ -4,7 +4,7 @@ slug: bl_get_previewtokens
 ---
 ## bl get previewtokens
 
-Get a PreviewToken
+List all previewtokens or get details of a specific one
 
 ```
 bl get previewtokens [flags]
@@ -29,5 +29,5 @@ bl get previewtokens [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

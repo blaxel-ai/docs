@@ -69,5 +69,5 @@ bl get image [resourceType/imageName[:tag]] [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

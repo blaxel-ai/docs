@@ -4,7 +4,7 @@ slug: bl_delete_policy
 ---
 ## bl delete policy
 
-Delete policy
+Delete one or more policies
 
 ```
 bl delete policy name [name...] [flags]
@@ -28,5 +28,5 @@ bl delete policy name [name...] [flags]
 
 ### SEE ALSO
 
-* [bl delete](/cli-reference/commands/bl_delete)	 - Delete a resource
+* [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 

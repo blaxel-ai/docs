@@ -4,7 +4,7 @@ slug: bl_get_previews
 ---
 ## bl get previews
 
-Get a Preview
+List all previews or get details of a specific one
 
 ```
 bl get previews [flags]
@@ -29,5 +29,5 @@ bl get previews [flags]
 
 ### SEE ALSO
 
-* [bl get](/cli-reference/commands/bl_get)	 - Get a resource
+* [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 

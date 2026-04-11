@@ -128,5 +128,5 @@ bl apply [flags]
 
 ### SEE ALSO
 
-* [bl](/cli-reference/commands/bl)	 - Blaxel CLI is a command line tool to interact with Blaxel APIs.
+* [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 
