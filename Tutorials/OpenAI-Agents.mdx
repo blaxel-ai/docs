@@ -32,7 +32,7 @@ bl login
 Create a directory for the project:
 
 ```shell
-mkdir sandbox-agent && cd sandbox-agent
+mkdir assistant-agent && cd assistant-agent
 ```
 
 In your project directory, install the [OpenAI Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop:
@@ -174,7 +174,7 @@ One of the most popular uses for agents is to generate code. Sandboxes provide i
 
 Instead of running the agent locally, this example deploys it through [Blaxel Agents Hosting](/Agents/Overview), which uses the same underlying infrastructure as Blaxel sandboxes.
 
-Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [FastAPI]() - install it as below:
+Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [FastAPI](https://fastapi.tiangolo.com) - install it as below:
 
 ```shell
 pip install fastapi
@@ -183,6 +183,59 @@ pip install fastapi
 Update the agent code in `main.py` as below:
 
 ```python
+import uvicorn
+from fastapi import FastAPI, Request
+
+from agents import ModelSettings, Runner
+from agents.run import RunConfig
+from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
+from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
+
+
+app = FastAPI()
+
+@app.post("/generate")
+async def generate(request: Request):
+    body = await request.json()
+    task = body["task"]
+    client = BlaxelSandboxClient()
+    session = await client.create(
+        manifest=Manifest(root="/blaxel"),
+        options=BlaxelSandboxClientOptions(
+            name="agent-sandbox-03",
+            image="blaxel/nextjs:latest",
+            region="us-pdx-1",
+            memory=4096,
+            exposed_port_public=True,
+            pause_on_exit=True,
+        )
+    )
+
+    agent = SandboxAgent(
+        name="Next.js code generation agent",
+        model="gpt-5.4",
+        instructions="You are a Next.js expert with shell access to a sandbox. You can execute commands, manage files, and start servers. The sandbox includes a skeleton Next.js app in /blaxel.",
+        model_settings=ModelSettings(tool_choice="auto"),
+    )
+
+    await Runner.run(
+        agent,
+        task,
+        run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
+        max_turns=50,
+    )
+
+    endpoint = await session.resolve_exposed_port(3000)
+    preview_url = endpoint.url_for("http")
+
+    await session.stop()
+    await session.shutdown()
+    await client.close()
+
+    return {"preview_url": preview_url}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
 
 This creates a Next.js coding agent and an endpoint at `/generate` to accept requests. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application.
@@ -220,7 +273,7 @@ bl serve --hotreload &
 
 This starts the agent locally while handling the core agent logic, function calls and model API calls exactly as they would be when deployed on Blaxel. The `--hotreload` flag monitors and reloads the agent if the source code changes.
 
-Note the host port on which the agent is running.
+Note the host port (port 8000, as configured in the previous code listing) on which the agent is running.
 
 In another terminal, send the agent a request (update the endpoint URL below with the correct port number for your agent):
 
@@ -239,6 +292,10 @@ The agent will start working on the task and once it is complete, you should see
 Open the preview URL in your browser to see the results of the agent's work.
 
 ## 9. Deploy the agent on Blaxel
+
+#######
+TODO - SDK needs to be publicly available for pip install to work
+#######
 
 You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your deployment policies.
 
@@ -273,7 +330,7 @@ As before, the agent will generate the code and respond with a preview URL for t
 You can also send a request through the Blaxel CLI:
 
 ```shell
-bl run agent sandbox-agent/generate --data '{"task": "Create a website about Simone, the cat that does amazing things"}'
+bl run agent assistant-agent/generate --data '{"task": "Create a website about Simone, the cat that does amazing things"}'
 ```
 
 <Tip>
