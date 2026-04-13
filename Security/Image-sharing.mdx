@@ -1,9 +1,9 @@
 ---
 title: 'Cross-workspace image sharing'
-description: 'Share container images between workspaces without duplicating storage, using metadata-only copies.'
+description: 'Share resource images between workspaces without duplicating storage, using metadata-only copies.'
 ---
 
-Blaxel allows workspace admins to share container images across workspaces within the same account. When you share an image, only the metadata record is copied to the target workspace. The underlying storage (S3 data) remains in the source workspace, avoiding duplication and keeping billing simple.
+Blaxel allows workspace admins to share resource images (e.g. sandbox images) across workspaces within the same [account](/Security/Workspace-access-control). When you share an image, only the metadata record is copied to the target workspace. The underlying storage remains in the source workspace, avoiding duplication and keeping billing simple.
 
 This is useful when you operate multiple workspaces (e.g. development, staging, production) and want to reuse the same custom images across them without rebuilding or re-pushing.
 
@@ -32,7 +32,7 @@ Shared images in the consuming workspace display a `sourceWorkspace` field indic
 1. Navigate to the **Images** page in the source workspace.
 2. Click the actions menu (three dots) on the image you want to share.
 3. Select **Share**.
-4. In the modal, select the target workspace from the dropdown (only workspaces in the same account are listed).
+4. In the popin, select the target workspace from the dropdown (only workspaces in the same account are listed).
 5. Click **Share** to confirm.
 
 The shared image will immediately appear in the target workspace's image list.
