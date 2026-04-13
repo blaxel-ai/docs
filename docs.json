@@ -201,6 +201,7 @@
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",
+                  "Security/Image-sharing",
                   "Security/Service-accounts"
                 ]
               },
