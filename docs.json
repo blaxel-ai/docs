@@ -143,7 +143,7 @@
               "Functions/Invoke-functions",
               "Functions/Code-mode",
               "Functions/Variables-and-secrets",
-              "Functions/oauth-flow-mcp"
+              "Functions/oauth-flow"
             ]
           },
           {
@@ -164,7 +164,6 @@
             "group": "Integrations",
             "pages": [
               "Integrations",
-              "Integrations/oauth-flow",
               {
                 "group": "Model providers integrations",
                 "pages": [
