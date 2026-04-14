@@ -20,6 +20,11 @@ A "resource" in Blaxel refers to any deployable or manageable entity:
 - volumes: Persistent storage
 - integrationconnections: External service integrations
 
+Hub Discovery (pre-built resources available in the Blaxel Hub):
+- sandbox-hub: Pre-built sandbox images with pre-installed tools and runtimes
+- mcp-hub: Pre-built MCP servers for tool integrations (GitHub, Slack, etc.)
+- templates: Project scaffolding templates for bl new
+
 Output Formats:
 Use -o flag to control output format:
 - pretty: Human-readable colored output (default)
@@ -66,6 +71,14 @@ The command can list all resources of a type or get details for a specific one.
 
   # Get specific execution for a job
   bl get job my-job execution EXECUTION_ID
+
+  # List pre-built sandbox images from the Hub
+  bl get sandbox-hub
+  bl get sandbox-hub -o json
+
+  # List pre-built MCP servers from the Hub
+  bl get mcp-hub
+  bl get mcp-hub -o json
 
   # Monitor sandbox status
   bl get sandbox my-sandbox --watch
@@ -136,11 +149,14 @@ The command can list all resources of a type or get details for a specific one.
 * [bl get image](/cli-reference/commands/bl_get_image)	 - Get image information
 * [bl get integrationconnections](/cli-reference/commands/bl_get_integrationconnections)	 - List all integrationconnections or get details of a specific one
 * [bl get jobs](/cli-reference/commands/bl_get_jobs)	 - List all jobs or get details of a specific one
+* [bl get mcp-hub](/cli-reference/commands/bl_get_mcp-hub)	 - List pre-built MCP servers available in the Blaxel Hub
 * [bl get models](/cli-reference/commands/bl_get_models)	 - List all models or get details of a specific one
 * [bl get policies](/cli-reference/commands/bl_get_policies)	 - List all policies or get details of a specific one
 * [bl get previews](/cli-reference/commands/bl_get_previews)	 - List all previews or get details of a specific one
 * [bl get previewtokens](/cli-reference/commands/bl_get_previewtokens)	 - List all previewtokens or get details of a specific one
+* [bl get sandbox-hub](/cli-reference/commands/bl_get_sandbox-hub)	 - List pre-built sandbox images available in the Blaxel Hub
 * [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - List all sandboxes or get details of a specific one
+* [bl get templates](/cli-reference/commands/bl_get_templates)	 - List available project templates
 * [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - List all volumes or get details of a specific one
 * [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - List all volumetemplates or get details of a specific one
 
