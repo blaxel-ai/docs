@@ -1,11 +1,11 @@
 ---
-title: "Run OpenAI Agents SDK agents on Blaxel"
-description: "Deploy an OpenAI Agents SDK agent to Blaxel as a serverless auto-scalable API and colocate it close to the sandboxes it works on."
+title: "Use OpenAI Agents SDK with Blaxel Sandboxes"
+description: "Create compute-capable agents backed by Blaxel sandboxes using OpenAI Agents SDK."
 ---
 
-[OpenAI Agents SDK](https://developers.openai.com/api/docs/guides/agents-sdk) is an open source, production-grade library for building agentic applications. One of the most interesting features of this SDK is the ability to create agents that are backed by remote execution environments (sandboxes) in the cloud. This ability allows a model to directly access compute, including executing commands, working with files and directories, writing code, and performing computations.
+The [OpenAI Agents SDK](https://developers.openai.com/api/docs/guides/agents-sdk) is an open source, production-grade library for building agentic applications leveraging the Codex harness. One of the most interesting features of this SDK is the ability to create agents that are backed by remote execution environments (sandboxes) in the cloud. This ability allows the harness to get access to its own computer to execute commands, work with files and directories, write code, and perform computations.
 
-This tutorial explores how you can use the OpenAI Agents SDK with Blaxel to create powerful sandbox-backed agents. You can also deploy your OpenAI Agents SDK projects to Blaxel with minimal code editing (and zero configuration), enabling you to colocate them close to the [sandboxes](/Sandboxes/Overview) the agents work on.
+This tutorial explores how you can use the OpenAI Agents SDK with Blaxel to create powerful sandbox-backed agents.
 
 ## Prerequisites
 
@@ -32,14 +32,14 @@ bl login
 Create a directory for the project:
 
 ```shell
-mkdir assistant-agent && cd assistant-agent
+mkdir sandbox-agent && cd sandbox-agent
 ```
 
-In your project directory, install the [OpenAI Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) for the agent loop:
+In your project directory, install the [OpenAI Agent SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop:
 
 ```shell
 python3 -m venv .venv && source .venv/bin/activate # if new project
-pip install openai-agents openai-agents[blaxel]
+pip install openai-agents[blaxel]
 ```
 
 ## 3. Configure the environment
@@ -168,23 +168,21 @@ In this example, the agent uses Blaxel's `blaxel/py-app` image to create a sandb
 
 The agent then uses sandbox tools to call the remote API, obtains a dataset (mock data), and autonomously installs all the required packages for chart creation. It then prepares and saves a chart of the received data to the workspace at `/workspace/chart.png`. This file is then read from the sandbox session and downloaded to the local host. Once the session is complete, the sandbox is terminated.
 
+Run the agent - once complete, you will have a new `chart.png` file in your project directory containing the generated chart:
+
+```shell
+python main.py
+```
+
 ## 6. Build a coding agent
 
 One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping. Blaxel sandboxes offer a unique advantage here: human operators can preview agent-generated applications in real-time via direct preview URLs for each running sandbox.
 
-Instead of running the agent locally, this example deploys it through [Blaxel Agents Hosting](/Agents/Overview), which uses the same underlying infrastructure as Blaxel sandboxes.
-
-Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [FastAPI](https://fastapi.tiangolo.com) - install it as below:
-
-```shell
-pip install fastapi
-```
-
-Update the agent code in `main.py` as below:
+To see this in practice, update the agent code in `main.py` as below:
 
 ```python
-import uvicorn
-from fastapi import FastAPI, Request
+import asyncio
+import sys
 
 from agents import ModelSettings, Runner
 from agents.run import RunConfig
@@ -192,12 +190,12 @@ from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
 
 
-app = FastAPI()
+async def main():
+    task = " ".join(sys.argv[1:]).strip()
+    if not task:
+        print("Usage: python main.py <task>")
+        sys.exit(1)
 
-@app.post("/generate")
-async def generate(request: Request):
-    body = await request.json()
-    task = body["task"]
     client = BlaxelSandboxClient()
     session = await client.create(
         manifest=Manifest(root="/blaxel"),
@@ -232,110 +230,30 @@ async def generate(request: Request):
     await session.shutdown()
     await client.close()
 
-    return {"preview_url": preview_url}
+    print(f"Preview URL: {preview_url}")
+
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    asyncio.run(main())
 ```
 
 This creates a Next.js coding agent and an endpoint at `/generate` to accept requests. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application.
 
-<Note>
-  The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
+In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a preview URL for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
 
-  In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a preview URL for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
-</Note>
-
-
-## 7. Enable telemetry (optional)
-
-Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
-
-- Add the required package to your project:
-
-  ```shell python
-  pip install "blaxel[telemetry]"
-  ```
-
-- Import the package in your code:
-
-  ```python Python
-  import blaxel.telemetry
-  ```
-
-## 8. Test the agent locally
-
-Test the agent by making the endpoint available locally:
+Test the agent:
 
 ```shell
-bl serve --hotreload &
+python main.py "Create a website about Kitty, the cat that does amazing things"}'
 ```
 
-This starts the agent locally while handling the core agent logic, function calls and model API calls exactly as they would be when deployed on Blaxel. The `--hotreload` flag monitors and reloads the agent if the source code changes.
-
-Note the host port (port 8000, as configured in the previous code listing) on which the agent is running.
-
-In another terminal, send the agent a request (update the endpoint URL below with the correct port number for your agent):
+The agent will start working on the task in a sandbox. Once it is complete, you should see output similar to the following:
 
 ```shell
-curl -X POST http://0.0.0.0:8000/generate \
-  -H "Content-Type: application/json" \
-  -d '{"task": "Create a website about Kitty, the cat that does amazing things"}'
-```
-
-The agent will start working on the task and once it is complete, you should see output similar to the following:
-
-```shell
-{"preview_url":"https://a4455b03....preview.bl.run/"}
+Preview URL: https://a4455b03....preview.bl.run/
 ```
 
 Open the preview URL in your browser to see the results of the agent's work.
-
-## 9. Deploy the agent on Blaxel
-
-#######
-TODO - SDK needs to be publicly available for pip install to work
-#######
-
-You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your deployment policies.
-
-Deploying the agent is as simple as running the following command:
-
-```shell
-bl deploy
-```
-
-The Blaxel CLI will prompt for the type of resource you are deploying ("agent"). It will then auto-detect other details of your project and begin the deployment. The deployment process usually takes a few minutes, and you can watch progress from the Blaxel Console.
-
-Once the deployment process is complete, log in to the [Blaxel Console](https://app.blaxel.ai/) to find the global endpoint for your agent service. Typically, this will be of the form `https://run.blaxel.ai/WORKSPACE/agents/AGENT`.
-
-![image](../Agents/Query-agents/endpoint.webp)
-
-## 10. Test the agent on Blaxel
-
-By default, agents deployed on Blaxel are not public. All agent requests must be authenticated via a [bearer token](/Security/Access-tokens). Requests can be made either via the Blaxel API or the Blaxel CLI.
-
-Test the deployed agent by sending an authenticated request to its global endpoint (update the endpoint URL below with the correct endpoint URL for your agent, and modify the `task` as desired):
-
-```bash
-curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/assistant-agent/query  \
-  -H "X-Blaxel-Workspace: $(bl workspace --current)" \
-  -H "X-Blaxel-Authorization: Bearer $(bl token)" \
-  -H "Content-Type: application/json" \
-  -d '{"task": "Create a website about Simone, the cat that does amazing things"}'
-```
-
-As before, the agent will generate the code and respond with a preview URL for the result.
-
-You can also send a request through the Blaxel CLI:
-
-```shell
-bl run agent assistant-agent/generate --data '{"task": "Create a website about Simone, the cat that does amazing things"}'
-```
-
-<Tip>
-  Although deployed agents are private by default, it is possible to [make an agent publicly available](/Agents/Query-agents#make-an-agent-public).
-</Tip>
 
 That's it! You're ready to start building and deploying Blaxel sandbox-backed agents with OpenAI Agents SDK on Blaxel.
 
@@ -343,12 +261,8 @@ That's it! You're ready to start building and deploying Blaxel sandbox-backed ag
 
 Want more info on developing and deploying agents on Blaxel? Check out the following resources:
 
-<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
-  Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
-</Card>
-
-<Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
-  Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
+<Card title="Run OpenAI Agents SDK agents on Blaxel" icon="star-christmas" href="/Tutorials/OpenAI-Agents-Deployment">
+  Build and deploy agents with OpenAI Agents SDK on Blaxel.
 </Card>
 
 <Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
