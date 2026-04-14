@@ -15,13 +15,31 @@ The most efficient way to manage lifecycle is to let the sandbox suspend automat
   The definition of a session is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for 7-60 days -- see down below.
 </Note>
 
-## Use volumes for data durability
+## Choose the right storage
 
-The sandbox's root filesystem is like your laptop's local SSD. While it's very fast and retains data during suspension, it isn't strictly guaranteed against long-term risks (e.g. if you spill coffee on your computer). [******For data that must survive indefinitely, use Volumes.******](./Volumes)
+Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers three options:
 
-Think of Volumes as redundant external hard drives. They are decoupled from the compute hardware, meaning they exist independently of the sandbox. Blaxel ensures high redundancy on these volumes, making them the correct choice for critical user data, databases, or project files that need to be accessed by multiple different agents.
+- Sandbox filesystem: The sandbox itelf has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
 
-However, relying solely on volumes for state management comes with a trade-off. If you delete a sandbox and rely on re-attaching a volume to a new one, you lose the "instant resume" benefit of the previous section. You will incur a ~400–600ms cold-boot penalty to create the new sandbox and will need to restart your processes. Use volumes for safety, but rely on sandbox suspension for speed.
+- Volumes: [Volumes](/Volumes/Overview) provide longer-term, durable block storage that is decoupled from compute. Data stored on a volume survives even if the associated sandbox is terminated, and newly-created sandboxes can access the data by attaching to the same volume.
+
+    However, relying solely on volumes for state management comes with a trade-off: you lose the "instant resume" benefit of the sandbox filesystem and will incur a cold-boot penalty when creating a new sandbox and attaching an existing volume to it.
+
+- Agent Drives: [Agent Drives](/Agent-drive/Overview) behave like a shared, distributed filesystem that can be mounted to multiple sandboxes or agents at any time. They are highly optimized for small and medium-sized file operations.
+
+  Agent Drives use a fine-grained replication strategy and are also separately backed up. They scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
+
+Here's a table to help you decide:
+
+|   | Sandbox Filesystem |  Volume |  Agent Drive |
+|---|---|---|---|
+| Persistence | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
+| Durability | Low (memory) | High (block storage, replicated) | High (distributed storage, replicated)
+| Access type | Single | Single | Multiple |
+| Hot-attach | N/A | No | Yes |
+| Interface | POSIX | POSIX | POSIX + S3 |
+| Size | ~50% of sandbox memory | User-defined at creation, expandable | No size limit |
+| Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
 
 ## Automate cleanup with TTLs
 
