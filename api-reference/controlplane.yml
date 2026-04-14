@@ -827,6 +827,11 @@ components:
         resourceType:
           type: string
           description: The resource type of the image.
+        sourceWorkspace:
+          type: string
+          description: If this image is shared from another workspace, this field
+            contains the name of the source workspace. Empty for non-shared images.
+          readOnly: true
         status:
           $ref: '#/components/schemas/Status'
         updatedAt:
@@ -4389,6 +4394,117 @@ paths:
     - description: Name of the container image repository
       in: path
       name: imageName
+      required: true
+      schema:
+        type: string
+  /images/{resourceType}/{imageName}/share:
+    get:
+      description: Returns the list of workspaces that a container image is currently
+        shared with.
+      operationId: ListImageShares
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: successful operation
+        "404":
+          description: image not found
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: List image shares
+      tags:
+      - images
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Shares a container image with another workspace by copying the
+        metadata record. The underlying storage (S3) data is not duplicated. The target
+        workspace must belong to the same account.
+      operationId: ShareImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                targetWorkspace:
+                  description: Name of the workspace to share the image with
+                  type: string
+              required:
+              - targetWorkspace
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "400":
+          description: invalid request
+        "404":
+          description: image not found
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Share a container image
+      tags:
+      - images
+  /images/{resourceType}/{imageName}/share/{targetWorkspace}:
+    delete:
+      description: Revokes sharing of a container image with a target workspace. Removes
+        the metadata copy from the target workspace. The source image is not affected.
+      operationId: UnshareImage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        "404":
+          description: image or share not found
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Unshare a container image
+      tags:
+      - images
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    - description: Name of the target workspace to revoke sharing from
+      in: path
+      name: targetWorkspace
       required: true
       schema:
         type: string
