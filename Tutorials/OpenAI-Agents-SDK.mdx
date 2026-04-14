@@ -19,8 +19,6 @@ This tutorial explores how you can use the OpenAI Agents SDK with Blaxel to crea
 
 ## 1. Install the Blaxel CLI and log in to Blaxel
 
-The main way to deploy an agent on Blaxel is with the [Blaxel CLI](../cli-reference/introduction). This method is detailed in this tutorial. Alternatively you can [connect a GitHub repository](/Agents/Github-integration) - any push to the `main` branch of the repository will automatically update the deployment on Blaxel - or deploy from a variety of pre-built templates using the Blaxel Console.
-
 [Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
 
 ```bash
@@ -60,8 +58,8 @@ In your project directory, create a file named `main.py` with the following code
 import asyncio
 from agents import ModelSettings, Runner
 from agents.run import RunConfig
-from agents.sandbox import SandboxAgent, SandboxRunConfig
-from agents.extensions.sandbox import BlaxelSandboxClient,BlaxelSandboxClientOptions
+from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
+from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
 
 async def main():
 
@@ -93,7 +91,8 @@ async def main():
 
     await client.close()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Instructions that you send the agent will be executed in a sandbox named `agent-sandbox-01` that is dynamically created and managed in your workspace on Blaxel's infrastructure.
@@ -161,10 +160,11 @@ async def main():
     await client.close()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-In this example, the agent uses Blaxel's `blaxel/py-app` image to create a sandbox containing a complete Python development environment. When the sandbox is created, the SDK automatically also creates a new workspace directory (defaults to `/workspace` but can be configured to point to another location) for the agent to operate in
+In this example, the agent uses Blaxel's `blaxel/py-app` image to create a sandbox containing a complete Python development environment. When the sandbox is created, the SDK automatically also creates a new workspace directory (defaults to `/workspace` but can be configured to point to another location) for the agent to operate in.
 
 The agent then uses sandbox tools to call the remote API, obtains a dataset (mock data), and autonomously installs all the required packages for chart creation. It then prepares and saves a chart of the received data to the workspace at `/workspace/chart.png`. This file is then read from the sandbox session and downloaded to the local host. Once the session is complete, the sandbox is terminated.
 
@@ -237,14 +237,14 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-This creates a Next.js coding agent and an endpoint at `/generate` to accept requests. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application.
+This creates a Next.js coding agent that accepts requests from the command-line. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application.
 
 In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a preview URL for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
 
 Test the agent:
 
 ```shell
-python main.py "Create a website about Kitty, the cat that does amazing things"}'
+python main.py "Create a website about Kitty, the cat that does amazing things"
 ```
 
 The agent will start working on the task in a sandbox. Once it is complete, you should see output similar to the following:
