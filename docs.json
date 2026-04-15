@@ -39,7 +39,7 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Tutorials/Claude-Agent-SDK-MCP",
+              "Tutorials/OpenAI-Agents-SDK",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
