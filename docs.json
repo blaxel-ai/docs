@@ -39,7 +39,7 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Tutorials/Claude-Agent-SDK-MCP",
+              "Tutorials/OpenAI-Agents-SDK",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
@@ -270,7 +270,7 @@
               "Tutorials/LlamaIndex",
               "Tutorials/Mastra",
               "Tutorials/n8n",
-              "Tutorials/OpenAI-Agents",
+              "Tutorials/OpenAI-Agents-SDK-Index",
               "Tutorials/PydanticAI",
               "Tutorials/Vercel-AI",
               "Tutorials/Custom-Agents"
