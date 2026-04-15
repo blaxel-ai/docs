@@ -42,12 +42,12 @@ pip install openai-agents[blaxel]
 
 ## 3. Configure the environment
 
-Add your OpenAI API key, Blaxel API key and Blaxel workspace name to a `.env` file in the project directory:
+Add your OpenAI API key, Blaxel API key and Blaxel workspace name as environment variables:
 
 ```shell
-echo "OPENAI_API_KEY=your_key_here" > .env
-echo "BL_API_KEY=your_key_here" >> .env
-echo "BL_WORKSPACE=your_workspace_name_here" >> .env
+export OPENAI_API_KEY=your_key_here
+export BL_API_KEY=your_key_here
+export BL_WORKSPACE=your_workspace_name_here
 ```
 
 ## 4. Build a simple agent
@@ -56,7 +56,7 @@ In your project directory, create a file named `main.py` with the following code
 
 ```python
 import asyncio
-from agents import ModelSettings, Runner
+from agents import ModelSettings, Runner, set_tracing_disabled
 from agents.run import RunConfig
 from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
@@ -92,6 +92,7 @@ async def main():
     await client.close()
 
 if __name__ == "__main__":
+    set_tracing_disabled(True)
     asyncio.run(main())
 ```
 
@@ -103,7 +104,24 @@ Run the agent:
 python main.py
 ```
 
-The agent will create and deploy a Blaxel sandbox using the `blaxel/base-image:latest` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox.
+The agent will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
+
+```shell
+Go is installed and ready.
+
+- Installed version: `go1.25.9`
+- Command check: `go version` → `go version go1.25.9 linux/amd64`
+
+**Go Env**
+- `AR='ar'`
+- `CC='cc'`
+- `CGO_CFLAGS='-O2 -g'`
+- `CGO_CPPFLAGS=''`
+- `CGO_CXXFLAGS='-O2 -g'`
+- `CGO_ENABLED='1'`
+- `CGO_FFLAGS='-O2 -g'`
+...
+```
 
 ## 5. Build a data analysis agent
 
@@ -115,11 +133,11 @@ To see this in action, update the simple agent from the previous example to perf
 import asyncio
 from pathlib import Path
 
-from agents import ModelSettings, Runner
+from openai.types.responses import ResponseTextDeltaEvent
+from agents import Runner, set_tracing_disabled
 from agents.run import RunConfig
 from agents.sandbox import SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
-
 
 async def main():
     client = BlaxelSandboxClient()
@@ -139,18 +157,27 @@ async def main():
         instructions="You are a data analyst. You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.",
     )
 
-    result = await Runner.run(
+    stream_result = Runner.run_streamed(
         agent,
-        (
+         (
             "Obtain sample telemetry data using the API https://api.datamock.dev/v1/iot-telemetry?quantity=10&deviceType=wearable_fitness_tracker&exclude=deviceId,ipAddress,macAddress,signalStrength,networkType,location,status,batteryLevel,lastSync,firmwareVersion,alerts."
             "Analyze the received data and create a chart showing memory and CPU usage. Save it as /workspace/chart.png. "
             "Install any packages you need."
-        ),
+         ),
         run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
+        max_turns=50,
     )
-    print(result.final_output)
+    saw_text_delta = False
+    async for event in stream_result.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            if not saw_text_delta:
+                print("assistant> ", end="", flush=True)
+                saw_text_delta = True
+            print(event.data.delta, end="", flush=True)
 
-    # Download the chart from the sandbox to the local host
+    if saw_text_delta:
+        print()
+
     with open("chart.png", "wb") as f:
         f.write((await session.read(Path("/workspace/chart.png"))).read())
     print(f"Saved chart to host as chart.png")
@@ -161,6 +188,7 @@ async def main():
 
 
 if __name__ == "__main__":
+    set_tracing_disabled(True)
     asyncio.run(main())
 ```
 
@@ -174,6 +202,8 @@ Run the agent - once complete, you will have a new `chart.png` file in your proj
 python main.py
 ```
 
+This example also demonstrates the SDK's streaming capabilities - you will see a stream of the agent's reasoning as it works.
+
 ## 6. Build a coding agent
 
 One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping. Blaxel sandboxes offer a unique advantage here: human operators can preview agent-generated applications in real-time via direct preview URLs for each running sandbox.
@@ -184,7 +214,8 @@ To see this in practice, update the agent code in `main.py` as below:
 import asyncio
 import sys
 
-from agents import ModelSettings, Runner
+from openai.types.responses import ResponseTextDeltaEvent
+from agents import ModelSettings, Runner, set_tracing_disabled
 from agents.run import RunConfig
 from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
@@ -206,6 +237,7 @@ async def main():
             memory=4096,
             exposed_port_public=True,
             pause_on_exit=True,
+            ttl="30m"
         )
     )
 
@@ -216,38 +248,49 @@ async def main():
         model_settings=ModelSettings(tool_choice="auto"),
     )
 
-    await Runner.run(
-        agent,
-        task,
-        run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
-        max_turns=50,
-    )
+    try:
+        stream_result = Runner.run_streamed(
+            agent,
+            task,
+            run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
+            max_turns=50,
+        )
+        saw_text_delta = False
+        async for event in stream_result.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                if not saw_text_delta:
+                    print("assistant> ", end="", flush=True)
+                    saw_text_delta = True
+                print(event.data.delta, end="", flush=True)
 
-    endpoint = await session.resolve_exposed_port(3000)
-    preview_url = endpoint.url_for("http")
+        if saw_text_delta:
+            print()
 
-    await session.stop()
-    await session.shutdown()
-    await client.close()
-
-    print(f"Preview URL: {preview_url}")
+        endpoint = await session.resolve_exposed_port(3000)
+        preview_url = endpoint.url_for("http")
+        print(f"Preview URL: {preview_url}")
+    finally:
+        await session.stop()
+        await session.shutdown()
+        await client.close()
 
 
 if __name__ == "__main__":
+    set_tracing_disabled(True)
     asyncio.run(main())
 ```
 
-This creates a Next.js coding agent that accepts requests from the command-line. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application.
+This creates a Next.js coding agent that accepts requests from the command-line. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application. Notice the `ttl` parameter, which sets an [expiration policy](/Sandboxes/Expiration) to automatically delete the sandbox after 30 minutes.
 
-In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a preview URL for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
+In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a [preview URL](/Sandboxes/Preview-url) for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
 
 Test the agent:
 
 ```shell
-python main.py "Create a website about Kitty, the cat that does amazing things"
+python main.py "My cat Kitty does amazing things. Create a website about her."
 ```
 
-The agent will start working on the task in a sandbox. Once it is complete, you should see output similar to the following:
+The agent will start working on the task in a sandbox, streaming its responses as it works. Once it is complete, you should see a preview URL similar to the following:
 
 ```shell
 Preview URL: https://a4455b03....preview.bl.run/
