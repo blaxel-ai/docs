@@ -1294,11 +1294,6 @@ components:
           type: string
           description: Container image built by Blaxel when deploying with 'bl deploy'.
             This field is auto-populated during deployment.
-        maxConcurrentTasks:
-          type: integer
-          description: Maximum number of tasks that can run simultaneously within
-            a single execution
-          example: 10
         maxRetries:
           type: integer
           description: Number of automatic retry attempts for failed tasks before
