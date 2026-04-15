@@ -1,0 +1,318 @@
+---
+title: "Use OpenAI Agents SDK with Blaxel sandboxes"
+description: "Create compute-capable agents backed by Blaxel sandboxes using OpenAI Agents SDK."
+sidebarTitle: "Example: Connect with OpenAI Agents SDK"
+---
+
+The [OpenAI Agents SDK](https://developers.openai.com/api/docs/guides/agents-sdk) is an open source, production-grade library for building agentic applications leveraging the Codex harness. One of the most interesting features of this SDK is the ability to create agents that are backed by remote execution environments (sandboxes) in the cloud. This ability allows the harness to get access to its own computer to execute commands, work with files and directories, write code, and perform computations.
+
+This tutorial explores how you can use the OpenAI Agents SDK with Blaxel to create powerful sandbox-backed agents.
+
+## Prerequisites
+
+- An OpenAI API key. If not, [sign up for an OpenAI account](https://openai.com/) and obtain an API key.
+- A Blaxel account. If not, [sign up for a Blaxel account](https://blaxel.ai).
+- A Blaxel workspace and API key. Learn about [Blaxel workspaces](/Security/Workspace-access-control) and how to [obtain a Blaxel API key](/Security/Access-tokens#api-keys).
+
+<Note>
+  The OpenAI Agents SDK is provider-agnostic and can be used with both OpenAI and non-OpenAI models. This tutorial uses OpenAI models, but you can also read about [integrating other models](https://openai.github.io/openai-agents-python/models/#non-openai-models).
+</Note>
+
+## 1. Install the Blaxel CLI and log in to Blaxel
+
+[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
+
+```bash
+bl login
+```
+
+## 2. Install required dependencies
+
+Create a directory for the project:
+
+```shell
+mkdir sandbox-agent && cd sandbox-agent
+```
+
+In your project directory, install the [OpenAI Agent SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop:
+
+```shell
+python3 -m venv .venv && source .venv/bin/activate # if new project
+pip install openai-agents[blaxel]
+```
+
+## 3. Configure the environment
+
+Add your OpenAI API key, Blaxel API key and Blaxel workspace name as environment variables:
+
+```shell
+export OPENAI_API_KEY=your_key_here
+export BL_API_KEY=your_key_here
+export BL_WORKSPACE=your_workspace_name_here
+```
+
+## 4. Build a simple agent
+
+In your project directory, create a file named `main.py` with the following code.
+
+```python
+import asyncio
+from agents import ModelSettings, Runner, set_tracing_disabled
+from agents.run import RunConfig
+from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
+from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
+
+async def main():
+
+    agent = SandboxAgent(
+        name="Sandboxed agent",
+        model="gpt-5.4",
+        instructions=(
+            "You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox."
+        ),
+        model_settings=ModelSettings(tool_choice="auto"),
+        default_manifest=Manifest(root="/blaxel"),
+    )
+
+    client = BlaxelSandboxClient()
+    run_config = RunConfig(
+        sandbox=SandboxRunConfig(
+            client=client,
+            options=BlaxelSandboxClientOptions(
+                name="agent-sandbox-01",
+                image="blaxel/base-image",
+                region="us-pdx-1",
+                memory=4096,
+            ),
+        )
+    )
+
+    result = await Runner.run(agent, "Install a complete Go development environment. Once done, return the installed Go version number and Go environment variables.", run_config=run_config)
+    print(result.final_output)
+
+    await client.close()
+
+if __name__ == "__main__":
+    set_tracing_disabled(True)
+    asyncio.run(main())
+```
+
+This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Instructions that you send the agent will be executed in a sandbox named `agent-sandbox-01` that is dynamically created and managed in your workspace on Blaxel's infrastructure.
+
+Run the agent:
+
+```shell
+python main.py
+```
+
+The agent will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
+
+```shell
+Go is installed and ready.
+
+- Installed version: `go1.25.9`
+- Command check: `go version` → `go version go1.25.9 linux/amd64`
+
+**Go Env**
+- `AR='ar'`
+- `CC='cc'`
+- `CGO_CFLAGS='-O2 -g'`
+- `CGO_CPPFLAGS=''`
+- `CGO_CXXFLAGS='-O2 -g'`
+- `CGO_ENABLED='1'`
+- `CGO_FFLAGS='-O2 -g'`
+...
+```
+
+## 5. Build a data analysis agent
+
+In addition to running commands, agents can also create, delete and manage files and directories in the sandbox filesystem. Generated files can be transferred from the sandbox environment to the host (and vice-versa).
+
+To see this in action, update the simple agent from the previous example to perform data processing and analysis in a sandbox:
+
+```python
+import asyncio
+from pathlib import Path
+
+from openai.types.responses import ResponseTextDeltaEvent
+from agents import Runner, set_tracing_disabled
+from agents.run import RunConfig
+from agents.sandbox import SandboxAgent, SandboxRunConfig
+from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
+
+async def main():
+    client = BlaxelSandboxClient()
+    session = await client.create(
+        options=BlaxelSandboxClientOptions(
+            name="agent-sandbox-02",
+            image="blaxel/py-app",
+            region="us-pdx-1",
+            memory=4096,
+        )
+    )
+    await session.start()
+
+    agent = SandboxAgent(
+        name="Data analyst",
+        model="gpt-5.4",
+        instructions="You are a data analyst. You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.",
+    )
+
+    stream_result = Runner.run_streamed(
+        agent,
+         (
+            "Obtain sample telemetry data using the API https://api.datamock.dev/v1/iot-telemetry?quantity=10&deviceType=wearable_fitness_tracker&exclude=deviceId,ipAddress,macAddress,signalStrength,networkType,location,status,batteryLevel,lastSync,firmwareVersion,alerts."
+            "Analyze the received data and create a chart showing memory and CPU usage. Save it as /workspace/chart.png. "
+            "Install any packages you need."
+         ),
+        run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
+        max_turns=50,
+    )
+    saw_text_delta = False
+    async for event in stream_result.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            if not saw_text_delta:
+                print("assistant> ", end="", flush=True)
+                saw_text_delta = True
+            print(event.data.delta, end="", flush=True)
+
+    if saw_text_delta:
+        print()
+
+    with open("chart.png", "wb") as f:
+        f.write((await session.read(Path("/workspace/chart.png"))).read())
+    print(f"Saved chart to host as chart.png")
+
+    await session.stop()
+    await session.shutdown()
+    await client.close()
+
+
+if __name__ == "__main__":
+    set_tracing_disabled(True)
+    asyncio.run(main())
+```
+
+In this example, the agent uses Blaxel's `blaxel/py-app` image to create a sandbox containing a complete Python development environment. When the sandbox is created, the SDK automatically also creates a new workspace directory (defaults to `/workspace` but can be configured to point to another location) for the agent to operate in.
+
+The agent then uses sandbox tools to call the remote API, obtains a dataset (mock data), and autonomously installs all the required packages for chart creation. It then prepares and saves a chart of the received data to the workspace at `/workspace/chart.png`. This file is then read from the sandbox session and downloaded to the local host. Once the session is complete, the sandbox is terminated.
+
+Run the agent - once complete, you will have a new `chart.png` file in your project directory containing the generated chart:
+
+```shell
+python main.py
+```
+
+This example also demonstrates the SDK's streaming capabilities - you will see a stream of the agent's reasoning as it works.
+
+## 6. Build a coding agent
+
+One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping. Blaxel sandboxes offer a unique advantage here: human operators can preview agent-generated applications in real-time via direct preview URLs for each running sandbox.
+
+To see this in practice, update the agent code in `main.py` as below:
+
+```python
+import asyncio
+import sys
+
+from openai.types.responses import ResponseTextDeltaEvent
+from agents import ModelSettings, Runner, set_tracing_disabled
+from agents.run import RunConfig
+from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
+from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
+
+
+async def main():
+    task = " ".join(sys.argv[1:]).strip()
+    if not task:
+        print("Usage: python main.py <task>")
+        sys.exit(1)
+
+    client = BlaxelSandboxClient()
+    session = await client.create(
+        manifest=Manifest(root="/blaxel"),
+        options=BlaxelSandboxClientOptions(
+            name="agent-sandbox-03",
+            image="blaxel/nextjs:latest",
+            region="us-pdx-1",
+            memory=4096,
+            exposed_port_public=True,
+            pause_on_exit=True,
+            ttl="30m"
+        )
+    )
+
+    agent = SandboxAgent(
+        name="Next.js code generation agent",
+        model="gpt-5.4",
+        instructions="You are a Next.js expert with shell access to a sandbox. You can execute commands, manage files, and start servers. The sandbox includes a skeleton Next.js app in /blaxel.",
+        model_settings=ModelSettings(tool_choice="auto"),
+    )
+
+    try:
+        stream_result = Runner.run_streamed(
+            agent,
+            task,
+            run_config=RunConfig(sandbox=SandboxRunConfig(session=session)),
+            max_turns=50,
+        )
+        saw_text_delta = False
+        async for event in stream_result.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                if not saw_text_delta:
+                    print("assistant> ", end="", flush=True)
+                    saw_text_delta = True
+                print(event.data.delta, end="", flush=True)
+
+        if saw_text_delta:
+            print()
+
+        endpoint = await session.resolve_exposed_port(3000)
+        preview_url = endpoint.url_for("http")
+        print(f"Preview URL: {preview_url}")
+    finally:
+        await session.stop()
+        await session.shutdown()
+        await client.close()
+
+
+if __name__ == "__main__":
+    set_tracing_disabled(True)
+    asyncio.run(main())
+```
+
+This creates a Next.js coding agent that accepts requests from the command-line. The coding agent's sandbox is generated from Blaxel's `blaxel/nextjs` image, which contains a complete Next.js development environment and a Next.js skeleton application. Notice the `ttl` parameter, which sets an [expiration policy](/Sandboxes/Expiration) to automatically delete the sandbox after 30 minutes.
+
+In addition, the `exposed_port_public` parameter and the `resolve_exposed_port()` function call take care of producing a [preview URL](/Sandboxes/Preview-url) for the user, and the `pause_on_exit` parameter prevents the sandbox from being automatically deleted at the end of the session.
+
+Test the agent:
+
+```shell
+python main.py "My cat Kitty does amazing things. Create a website about her."
+```
+
+The agent will start working on the task in a sandbox, streaming its responses as it works. Once it is complete, you should see a preview URL similar to the following:
+
+```shell
+Preview URL: https://a4455b03....preview.bl.run/
+```
+
+Open the preview URL in your browser to see the results of the agent's work.
+
+That's it! You're ready to start building and deploying Blaxel sandbox-backed agents with OpenAI Agents SDK on Blaxel.
+
+## Resources
+
+Want more info on developing and deploying agents on Blaxel? Check out the following resources:
+
+<Card title="Run OpenAI Agents SDK agents on Blaxel" icon="star-christmas" href="/Tutorials/OpenAI-Agents-SDK-Deployment">
+  You don’t have to stop at the sandboxes! Deploy OpenAI Agents SDK on Blaxel.
+</Card>
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
+  Complete tutorial for deploying AI agents to Blaxel.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="/Agents/Variables-and-secrets">
+  Complete tutorial for managing variables and secrets when deploying to Blaxel.
+</Card>
