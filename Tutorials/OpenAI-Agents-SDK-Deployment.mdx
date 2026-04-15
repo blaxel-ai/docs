@@ -45,7 +45,7 @@ pip install openai-agents[blaxel]
 Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [FastAPI](https://fastapi.tiangolo.com) - install it as below:
 
 ```shell
-pip install fastapi
+pip install fastapi uvicorn
 ```
 
 ## 3. Configure the environment
@@ -63,16 +63,19 @@ echo "BL_WORKSPACE=your_workspace_name_here" >> .env
 In your project directory, create a file named `main.py` with the following code.
 
 ```python
+import os
 import uvicorn
 from fastapi import FastAPI, Request
 
-from agents import ModelSettings, Runner
+from agents import ModelSettings, Runner, set_tracing_disabled
 from agents.run import RunConfig
 from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
 
 
 app = FastAPI()
+host = os.getenv("HOST", "0.0.0.0")
+port = int(os.getenv("PORT", "8000"))
 
 @app.post("/query")
 async def query(request: Request):
@@ -89,6 +92,7 @@ async def query(request: Request):
                 image="blaxel/base-image",
                 region="us-pdx-1",
                 memory=4096,
+                ttl="10m"
             ),
         )
     )
@@ -96,7 +100,7 @@ async def query(request: Request):
     agent = SandboxAgent(
         name="Sandbox agent",
         model="gpt-5.4",
-        instructions="You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.",
+        instructions="You have access to a minimal sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.",
         model_settings=ModelSettings(tool_choice="auto"),
         default_manifest=Manifest(root="/blaxel"),
     )
@@ -106,6 +110,7 @@ async def query(request: Request):
 
 
 if __name__ == "__main__":
+    set_tracing_disabled(True)
     print(f"Server listening on {host}:{port}")
     uvicorn.run(app, host=host, port=port)
 ```
