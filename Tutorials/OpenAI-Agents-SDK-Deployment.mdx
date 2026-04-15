@@ -162,7 +162,15 @@ The agent will create and deploy a Blaxel sandbox using the `blaxel/base-image` 
 
 You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your deployment policies.
 
-Deploying the agent is as simple as running the following command:
+First, create a `requirements.txt` file in the project directory with the following dependencies:
+
+```shell
+fastapi>=0.135.3
+uvicorn>=0.35.0
+openai-agents[blaxel]
+```
+
+Then, deploy the agent by running the following command:
 
 ```shell
 bl deploy
