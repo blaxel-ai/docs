@@ -104,9 +104,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
   },
   image: "expo-template:latest",
   memory: 8096,
-  ports: [
-    { name: "preview", target: 8081, protocol: "HTTP" },
-  ],
 });
 ```
 
@@ -377,9 +374,6 @@ async function main() {
       },
       image: "expo-template:latest",
       memory: 8096,
-      ports: [
-        { name: "preview", target: 8081, protocol: "HTTP" },
-      ]
     });
 
     // Create preview
