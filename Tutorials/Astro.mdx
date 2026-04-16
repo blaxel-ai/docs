@@ -163,9 +163,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
   },
   image: "astro-template:latest",
   memory: 4096,
-  ports: [
-    { name: "preview", target: 4321, protocol: "HTTP" },
-  ],
 });
 ```
 
@@ -290,9 +287,6 @@ async function main() {
       },
       image: "astro-template:latest",
       memory: 4096,
-      ports: [
-        { name: "preview", target: 4321, protocol: "HTTP" },
-      ]
     });
 
     // Create preview

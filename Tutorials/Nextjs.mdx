@@ -164,9 +164,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
   },
   image: "nextjs-template:latest",
   memory: 4096,
-  ports: [
-    { name: "preview", target: 3000, protocol: "HTTP" },
-  ],
 });
 ```
 
@@ -291,9 +288,6 @@ async function main() {
       },
       image: "nextjs-template:latest",
       memory: 4096,
-      ports: [
-        { name: "preview", target: 3000, protocol: "HTTP" },
-      ]
     });
 
     // Create preview

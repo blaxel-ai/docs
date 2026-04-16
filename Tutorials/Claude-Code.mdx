@@ -86,7 +86,6 @@ Before starting, ensure you have:
         name: "nextjs-sandbox",
         image: "blaxel/nextjs:latest",
         memory: 4096,
-        ports: [{ target: 3000, protocol: "HTTP" }],
         region: "us-pdx-1",
       });
       console.log("Application sandbox created");
@@ -154,7 +153,6 @@ Before starting, ensure you have:
             "name": "nextjs-sandbox",
             "image": "blaxel/nextjs:latest",
             "memory": 4096,
-            "ports": [{ "target": 3000, "protocol": "HTTP" }],
             "region": "us-pdx-1",
         })
         print("Application sandbox created")
