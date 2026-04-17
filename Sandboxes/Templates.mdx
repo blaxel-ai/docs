@@ -1759,6 +1759,20 @@ curl -X DELETE "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share/{targe
   -H "X-Blaxel-Workspace: $BL_WORKSPACE"
 ```
 
+### Billing
+
+Storage billing is tied to the source workspace. Metering and costs remain with the workspace that originally pushed the image, regardless of how many workspaces it is shared with.
+
+The consuming workspace pays nothing for image storage of shared images.
+
+### Constraints and limitations
+
+- **Same account only**: Images can only be shared between workspaces under the same account.
+- **No re-sharing**: A shared image cannot be re-shared from the consuming workspace to a third workspace. Only the original owner can share.
+- **Deletion protection**: You cannot delete an image (or individual tags) while it is shared with other workspaces. You must unshare it from all target workspaces first.
+- **Whole image only**: Sharing applies to the entire image with all its tags. You cannot share individual tags.
+- **Admin-only**: Both sharing and unsharing require admin permissions on both source and target workspaces.
+
 ## Best practices
 
 ### 1. Optimize for cold starts
