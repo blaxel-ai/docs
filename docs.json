@@ -201,7 +201,6 @@
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",
-                  "Security/Image-sharing",
                   "Security/Service-accounts"
                 ]
               },
@@ -521,6 +520,10 @@
     },
     {
       "source": "/sandboxes/templates",
+      "destination": "/Sandboxes/Templates"
+    },
+    {
+      "source": "/Security/Image-sharing",
       "destination": "/Sandboxes/Templates"
     },
     {
