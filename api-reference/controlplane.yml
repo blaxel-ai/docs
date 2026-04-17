@@ -2481,6 +2481,11 @@ components:
           example: 4096
         ports:
           $ref: '#/components/schemas/Ports'
+        terminationGracePeriodSeconds:
+          type: integer
+          description: Duration in seconds the pod needs to terminate gracefully.
+            Defaults to 0 for immediate termination.
+          example: 30
         ttl:
           type: string
           description: Time-to-live duration after which the sandbox is automatically
