@@ -37,6 +37,10 @@ AGENTMAIL_API_KEY=   # your AgentMail API key
 
 Create a `.env` file in the project root with these variables, or set them in your deployment environment.
 
+<Warning>
+The `AGENTMAIL_API_KEY` variable is required. If it is missing or not correctly set, the AgentMail client will fail to authenticate and return a **403 Forbidden** error at runtime. Confirm this variable is configured before deploying.
+</Warning>
+
 ## Deploy the agent
 
 [Deploy the agent](../Agents/Deploy-an-agent) on Blaxel. Once the agent is deployed, retrieve its [inference endpoint](../Agents/Query-agents).
