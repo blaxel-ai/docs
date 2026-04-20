@@ -1,6 +1,6 @@
 ---
 title: "Deploy OpenAI Agents SDK on Blaxel"
-description: "Deploy an OpenAI Agents SDK agent to Blaxel as a serverless auto-scalable API and colocate it close to the sandboxes it works on."
+description: "Deploy an OpenAI Agents SDK agent to Blaxel Agents Hosting as a serverless auto-scalable API and colocate it close to the sandboxes it works on."
 ---
 
 The [OpenAI Agents SDK](https://developers.openai.com/api/docs/guides/agents-sdk) is an open source, production-grade library for building agentic applications leveraging the Codex harness. One of the most interesting features of this SDK is the ability to create agents that are backed by remote execution environments (sandboxes) in the cloud. This ability allows the harness to get access to its own computer to execute commands, work with files and directories, write code, and perform computations.
@@ -125,13 +125,10 @@ This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Queries t
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
 
 - Add the required package to your project:
-
   ```shell
   pip install "blaxel[telemetry]"
   ```
-
 - Import the package in your code:
-
   ```python
   import blaxel.telemetry
   ```
@@ -213,7 +210,7 @@ That's it! You're ready to start building and deploying Blaxel sandbox-backed ag
 Want more info on developing and deploying agents on Blaxel? Check out the following resources:
 
 <Card title="Use OpenAI Agents SDK with Blaxel Sandboxes" icon="thumbs-up" href="/Tutorials/OpenAI-Agents-SDK">
-Build compute-capable agents backed by Blaxel sandboxes using OpenAI Agents SDK.
+  Build compute-capable agents backed by Blaxel sandboxes using OpenAI Agents SDK.
 </Card>
 
 <Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">

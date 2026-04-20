@@ -1,6 +1,6 @@
 ---
 title: "Deploy Claude Agent SDK agents on Blaxel"
-description: "Deploy a Claude Agent SDK agent to Blaxel as a serverless auto-scalable API and colocate it close to the sandboxes it works on."
+description: "Deploy a Claude Agent SDK agent to Blaxel Agents Hosting as a serverless auto-scalable API, and colocate it close to the sandboxes it works on."
 ---
 
 [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) is a library for building autonomous AI agents using Claude Code. You can deploy your Claude Agent SDK projects to Blaxel with minimal code editing (and zero configuration), enabling you to colocate them close to the [sandboxes](/Sandboxes/Overview) the agents work on.
@@ -39,24 +39,20 @@ npm init # if new project
 npm install @anthropic-ai/claude-agent-sdk express
 ```
 
-
 ```shell TypeScript (pnpm)
 pnpm init # if new project
 pnpm install @anthropic-ai/claude-agent-sdk express
 ```
-
 
 ```shell TypeScript (yarn)
 yarn init # if new project
 yarn add @anthropic-ai/claude-agent-sdk express
 ```
 
-
 ```shell TypeScript (bun)
 bun init -m --yes # if new project
 bun install @anthropic-ai/claude-agent-sdk express
 ```
-
 
 ```shell Python (pip)
 python3 -m venv .venv && source .venv/bin/activate # if new project
@@ -75,7 +71,7 @@ echo "ANTHROPIC_API_KEY=your_key_here" > .env
 
 ## 4. Build the agent
 
-In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code. Otherwise, [this other code](/Tutorials/Claude-Agent-SDK-MCP) shows how to **equip the agent with its own **[**Blaxel Sandbox**](/Sandboxes/Overview)**.**
+In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code. Otherwise, [this other code](/Tutorials/Claude-Agent-SDK-MCP) shows how to **equip the agent with its own [Blaxel Sandbox](/Sandboxes/Overview).**
 
 <CodeGroup>
 
@@ -122,7 +118,6 @@ app.listen(port, host, () => {
   console.log(`Server listening on ${host}:${port}`);
 });
 ```
-
 
 ```python Python
 import os
@@ -191,7 +186,6 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
 }
 ```
 
-
 ```json TypeScript (bun)
 {
   "scripts": {
@@ -209,47 +203,31 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
 
 - Add the required package to your project:
-
   <CodeGroup>
-
   ```shell TypeScript (npm)
   npm install @blaxel/telemetry
   ```
-
-
   ```shell TypeScript (pnpm)
   pnpm install @blaxel/telemetry
   ```
-
-
   ```shell TypeScript (yarn)
   yarn add @blaxel/telemetry
   ```
-
-
   ```shell TypeScript (bun)
   bun install @blaxel/telemetry
   ```
-
-
   ```shell Python (pip)
   pip install "blaxel[telemetry]"
   ```
-
   </CodeGroup>
 - Import the package in your code:
-
   <CodeGroup>
-
   ```typescript TypeScript
   import "@blaxel/telemetry";
   ```
-
-
   ```python Python
   import blaxel.telemetry
   ```
-
   </CodeGroup>
 
 ## 6. Test the agent locally

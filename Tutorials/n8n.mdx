@@ -1,9 +1,6 @@
 ---
-
-title: 'Orchestrate agents with n8n on Blaxel'
-
-description: 'Build n8n workflows that forward chat messages to Blaxel-hosted AI agents via HTTP requests, with step-by-step setup and configuration.'
-
+title: "Orchestrate Blaxel agents with n8n"
+description: "Build n8n workflows that forward chat messages to Blaxel-hosted AI agents via HTTP requests, with step-by-step setup and configuration."
 ---
 
 This tutorial will walk you through how to integrate your AI agents —deployed on Blaxel— into automated workflows using [n8n](https://n8n.io/). Whether you’re new to Blaxel, n8n, or both, this tutorial will help you get started quickly with a minimalistic setup that you can build on.
@@ -109,20 +106,13 @@ Before running your workflow, **update the URL field** in the HTTP Request node 
 To secure your API calls, you must set up header authentication. Follow these two key steps:
 
 1. **Set up the header auth credentials:**
-
-    Ensure that your HTTP Request node is set in ***Header Auth*** type.
-
-    ![image.webp](/img/tutorials/n8n/image2.webp)
-
+   Ensure that your HTTP Request node is set in **_Header Auth_** type.
+   ![image.webp](/img/tutorials/n8n/image2.webp)
 2. **Create Credentials:**
-
-    Fill out the form with the following details. For more details on obtaining your Blaxel API key, refer to this [Access Tokens documentation](../Security/Access-tokens#api-keys).
-
-    - **Name:** `Authorization`
-    - **Value:** `Bearer <YOUR_API_KEY>`
-
-    ![image.webp](/img/tutorials/n8n/image3.webp)
-
+   Fill out the form with the following details. For more details on obtaining your Blaxel API key, refer to this [Access Tokens documentation](../Security/Access-tokens#api-keys).
+   - **Name:** `Authorization`
+   - **Value:** `Bearer <YOUR_API_KEY>`
+   ![image.webp](/img/tutorials/n8n/image3.webp)
 
 Your n8n workflow is ready to launch!
 

@@ -1,7 +1,7 @@
 ---
-title: "Use Claude Agent SDK with Blaxel sandboxes"
+title: "Connect Claude Agent SDK to sandboxes"
 description: "Connect Claude Agent SDK (Claude Code SDK) to a Blaxel sandbox and operate it using its MCP server."
-sidebarTitle: "Example: Connect from Claude Agent SDK"
+sidebarTitle: "Connect from Claude Agent SDK"
 ---
 
 Every Blaxel sandbox exposes a Model Context Protocol (MCP) server that allows agents to operate the sandbox using tool calls. This includes [tools for process management, filesystem operations, and code generation](../Sandboxes/MCP#tools-available-in-the-mcp-server).
@@ -33,24 +33,20 @@ npm init # if new project
 npm install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
 
-
 ```shell TypeScript (pnpm)
 pnpm init # if new project
 pnpm install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
-
 
 ```shell TypeScript (yarn)
 yarn init # if new project
 yarn add @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
 
-
 ```shell TypeScript (bun)
 bun init -m --yes # if new project
 bun install @anthropic-ai/claude-agent-sdk express @blaxel/core
 ```
-
 
 ```shell Python (pip)
 python3 -m venv .venv && source .venv/bin/activate # if new project
@@ -151,7 +147,6 @@ app.listen(port, host, () => {
 });
 ```
 
-
 ```python Python
 import os
 from fastapi import FastAPI, HTTPException, Request
@@ -251,7 +246,6 @@ In TypeScript, entrypoints are managed in the `scripts` section of the `package.
   // ...
 }
 ```
-
 
 ```json TypeScript (bun)
 {
