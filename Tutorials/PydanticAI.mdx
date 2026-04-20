@@ -1,9 +1,6 @@
 ---
-
-title: 'Run PydanticAI agents on Blaxel'
-
-description: 'Learn how to leverage Blaxel with PydanticAI agents.'
-
+title: "Run PydanticAI on Blaxel"
+description: "Learn how to leverage Blaxel with PydanticAI agents."
 ---
 
 You can deploy your [PydanticAI](https://ai.pydantic.dev/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
@@ -13,7 +10,7 @@ You can deploy your [PydanticAI](https://ai.pydantic.dev/) projects to Blaxel wi
 To get started with PydanticAI on Blaxel:
 
 - if you already have a PydanticAI agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
-- else initialize an example project in PydanticAI by using the following Blaxel CLI command and selecting the *PydanticAI hello world:*
+- else initialize an example project in PydanticAI by using the following Blaxel CLI command and selecting the _PydanticAI hello world:_
 
 ```bash
 bl new agent
@@ -46,7 +43,6 @@ Run the following command to retrieve tools in PydanticAI format:
 from blaxel.pydantic import bl_tools
 
 await bl_tools(['mcp-server-name'])
-
 ```
 
 </CodeGroup>
@@ -62,7 +58,6 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 from blaxel.pydantic import bl_model
 
 model = await bl_model("model-api-name")
-
 ```
 
 </CodeGroup>
@@ -78,7 +73,6 @@ Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK
 from blaxel.core.agents import bl_agent
 
 response = await bl_agent("agent-name").run(input);
-
 ```
 
 </CodeGroup>
@@ -93,4 +87,4 @@ Either run the following CLI command from the root of your agent repository.
 bl deploy
 ```
 
-Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on *main*.
+Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on _main_.

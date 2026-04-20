@@ -1,9 +1,6 @@
 ---
-
-title: 'Run LangChain agents on Blaxel'
-
-description: 'Learn how to leverage Blaxel with LangChain and LangGraph.'
-
+title: "Run LangChain on Blaxel"
+description: "Learn how to leverage Blaxel with LangChain and LangGraph."
 ---
 
 [LangChain](https://www.langchain.com/) is a composable framework to build LLM applications. It can be combined with [LangGraph](https://www.langchain.com/langgraph) which is a stateful, orchestration framework that brings added control to agent workflows. You can deploy your LangChain or LangGraph projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
@@ -13,7 +10,7 @@ description: 'Learn how to leverage Blaxel with LangChain and LangGraph.'
 To get started with LangChain/LangGraph on Blaxel:
 
 - if you already have a LangChain or LangGraph agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
-- or initialize an example project in LangChain by using the following Blaxel CLI command and selecting the *LangChain hello world:*
+- or initialize an example project in LangChain by using the following Blaxel CLI command and selecting the _LangChain hello world:_
 
 ```bash
 bl new agent
@@ -46,7 +43,6 @@ Run the following command to retrieve tools in LangChain format:
 from blaxel.langgraph import bl_tools
 
 await bl_tools(['mcp-server-name'])
-
 ```
 
 ```typescript TypeScript
@@ -54,7 +50,6 @@ await bl_tools(['mcp-server-name'])
 import { blTools } from '@blaxel/langgraph';
 
 const tools = await blTools(['mcp-server-name'])
-
 ```
 
 </CodeGroup>
@@ -70,7 +65,6 @@ Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid ma
 from blaxel.langgraph import bl_model
 
 model = await bl_model("model-api-name")
-
 ```
 
 ```typescript TypeScript
@@ -78,7 +72,6 @@ model = await bl_model("model-api-name")
 import { blModel } from "@blaxel/langgraph";
 
 const model = await blModel("model-api-name");
-
 ```
 
 </CodeGroup>
@@ -94,7 +87,6 @@ Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK
 from blaxel.core.agents import bl_agent
 
 response = await bl_agent("agent-name").run(input);
-
 ```
 
 ```typescript TypeScript
@@ -102,7 +94,6 @@ response = await bl_agent("agent-name").run(input);
 import { blAgent } from "@blaxel/core";
 
 const myAgentResponse = await blAgent("agent-name").run(input);
-
 ```
 
 </CodeGroup>
@@ -117,4 +108,4 @@ Either run the following CLI command from the root of your agent repository.
 bl deploy
 ```
 
-Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on *main*.
+Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on _main_.
