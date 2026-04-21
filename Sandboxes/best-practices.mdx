@@ -34,7 +34,7 @@ Here's a table to help you decide:
 |   | Sandbox Filesystem |  Volume |  Agent Drive |
 |---|---|---|---|
 | Persistence | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
-| Durability | Low (lost on sandbox deletion) | High (block storage, replicated) | High (distributed storage, replicated)
+| Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated)
 | Access type | Single | Single | Multiple |
 | Hot-attach | N/A | No | Yes |
 | Interface | POSIX | POSIX | POSIX + S3 |
