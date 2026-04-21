@@ -238,11 +238,33 @@
       },
       {
         "tab": "Tutorials and Examples",
-        "groups": [
+        "pages": [
           {
-            "group": "Example Applications",
+            "group": "Popular templates",
             "pages": [
-              "Examples/Overview"
+              {
+                "group": "Claude",
+                "expanded": true,
+                "pages": [
+                  "Tutorials/Claude-Agent-SDK-MCP",
+                  "Tutorials/Claude-Code",
+                  {
+                    "group": "Advanced examples",
+                    "pages": [
+                      "Tutorials/Claude-Agent-SDK-Index",
+                      "Tutorials/Claude-Agent-SDK-Code-Mode",
+                      "Tutorials/Claude-Agent-SDK"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "OpenAI Agents",
+                "pages": [
+                  "Tutorials/OpenAI-Agents-SDK-Index",
+                  "Tutorials/OpenAI-Agents-SDK-Deployment"
+                ]
+              }
             ]
           },
           {
@@ -257,23 +279,26 @@
             ]
           },
           {
-            "group": "Agents",
+            "group": "Agent harness",
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
               "Tutorials/OpenClaw",
-              "Tutorials/Claude-Agent-SDK-Index",
-              "Tutorials/Claude-Code",
+              "Tutorials/Vercel-AI",
+              "Tutorials/Mastra",
+              "Tutorials/LangChain",
               "Tutorials/CrewAI",
               "Tutorials/ADK",
-              "Tutorials/LangChain",
               "Tutorials/LlamaIndex",
-              "Tutorials/Mastra",
-              "Tutorials/n8n",
-              "Tutorials/OpenAI-Agents-SDK-Index",
               "Tutorials/PydanticAI",
-              "Tutorials/Vercel-AI",
+              "Tutorials/n8n",
               "Tutorials/Custom-Agents"
+            ]
+          },
+          {
+            "group": "Complete examples",
+            "pages": [
+              "Examples/Overview"
             ]
           }
         ]
