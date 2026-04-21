@@ -25,9 +25,9 @@ Choosing the right storage for your sandbox data is important, as it can impact 
 
     However, relying solely on volumes for state management comes with a trade-off: you lose the "instant resume" benefit of the sandbox filesystem and will incur a cold-boot penalty when creating a new sandbox and attaching an existing volume to it.
 
-- Agent Drives: [Agent Drives](/Agent-drive/Overview) behave like a shared, distributed filesystem that can be mounted to multiple sandboxes or agents at any time. They are highly optimized for small and medium-sized file operations.
+- Agent Drive: [Agent Drive](/Agent-drive/Overview) behaves like a shared, distributed filesystem that can be mounted to multiple sandboxes or agents at any time. Drives are highly optimized for small and medium-sized file operations.
 
-  Agent Drives use a fine-grained replication strategy and are also separately backed up. They scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
+  Agent Drive uses a fine-grained replication strategy and it is also separately backed up. Drives scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
 
 Here's a table to help you decide:
 
