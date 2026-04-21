@@ -1660,6 +1660,119 @@ bl push
 
 The new revision becomes available while the old one remains accessible.
 
+## Share templates across workspaces
+
+Once you have a custom template, you can share it with other workspaces in the same [account](/Security/Workspace-access-control) - for example, to promote a template image from `development` to `production` without rebuilding or re-pushing. Only the metadata record is copied to the target workspace; the underlying storage stays in the source.
+
+When you share a template:
+
+1. The metadata is copied to the target workspace, pointing to the same underlying data in the source.
+2. The target workspace can use the shared image to create sandboxes, just like a locally-owned image.
+3. Storage billing stays with the source workspace.
+4. New tags pushed to the source image are automatically propagated to all workspaces it is shared with.
+
+Shared template in the consuming workspace include a `sourceWorkspace` field. In the [Blaxel Console](https://app.blaxel.ai), they are marked with a badge showing the source workspace name.
+
+### Prerequisites
+
+- Both workspaces must belong to the **same [account](/Security/Workspace-access-control)**. Images cannot be shared between workspaces under different accounts.
+- You must be an **admin** of both the source and target workspaces.
+- The template must be **locally owned** in the source workspace. You cannot re-share an image that was shared to you from elsewhere.
+
+### Share an image
+
+#### Blaxel Console
+
+1. Navigate to the **Images** page in the source workspace.
+2. Click the actions menu (three dots) on the image you want to share.
+3. Select **Share**.
+4. In the dialog, select the target workspace from the dropdown.
+5. Click **Share** to confirm.
+
+The shared image appears immediately in the target workspace's image list.
+
+#### Blaxel CLI
+
+Use the [`bl share image`](/cli-reference/commands/bl_share_image) command:
+
+```bash
+bl share image sandbox/<imageName> --workspace <targetWorkspace>
+```
+
+<Note>
+Sharing applies to the entire template image (all tags). Tag-qualified references like `sandbox/my-template:v1.0` are not accepted.
+</Note>
+
+#### Management API
+
+```bash
+curl -X POST "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{"targetWorkspace": "production"}'
+```
+
+### List shared templates
+
+#### Blaxel Console
+
+On the image detail page in the [Blaxel Console](https://app.blaxel.ai), templates shared across workspace are listed with the option to revoke sharing for each workspace individually.
+
+#### Management API
+
+```bash
+curl -X GET "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+### Unshare a template
+
+Unsharing removes the metadata record from the target workspace. The image data in the source workspace is not affected.
+
+You cannot delete a template (or individual tags) while it is shared. You must unshare from all connected workspaces first.
+
+<Warning>
+After unsharing, any deployments in the target workspace that reference the shared template will fail on their next restart or scale-up. Make sure no active deployments depend on the template before unsharing.
+</Warning>
+
+#### Blaxel Console
+
+1. Navigate to the **Images** page in the source workspace.
+2. Open the image detail page.
+3. In the shared workspaces list, click **Unshare** next to the target workspace you want to revoke.
+
+#### Blaxel CLI
+
+Use the [`bl unshare image`](/cli-reference/commands/bl_unshare_image) command:
+
+```bash
+bl unshare image sandbox/<imageName> --workspace <targetWorkspace>
+```
+
+#### Management API
+
+```bash
+curl -X DELETE "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share/{targetWorkspace}" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+### Billing
+
+Storage billing is tied to the source workspace. Metering and costs remain with the workspace that originally pushed the image, regardless of how many workspaces it is shared with.
+
+The consuming workspace pays nothing for image storage of shared images.
+
+### Constraints and limitations
+
+- **Same account only**: Images can only be shared between workspaces under the same account.
+- **No re-sharing**: A shared image cannot be re-shared from the consuming workspace to a third workspace. Only the original owner can share.
+- **Deletion protection**: You cannot delete an image (or individual tags) while it is shared with other workspaces. You must unshare it from all target workspaces first.
+- **Whole image only**: Sharing applies to the entire image with all its tags. You cannot share individual tags.
+- **Admin-only**: Both sharing and unsharing require admin permissions on both source and target workspaces.
+
 ## Best practices
 
 ### 1. Optimize for cold starts
@@ -1698,3 +1811,13 @@ Choose appropriate resources for your use case:
 | Light development     | 2GB    |
 | Small web application | 4GB    |
 | Full-stack web        | 8GB    |
+
+
+<CardGroup cols={2}>
+  <Card title="Volume templates" icon="database" href="/Volumes/Volumes-templates">
+    Pre-populate volumes with files for faster environment setup.
+  </Card>
+  <Card title="Workspace access control" icon="lock" href="/Security/Workspace-access-control">
+    Understand accounts, workspaces, and admin permissions.
+  </Card>
+</CardGroup>
