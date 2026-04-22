@@ -1,0 +1,18 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://api.blaxel.ai/v0",
+      "service-desc": [
+        {
+          "href": "https://docs.blaxel.ai/api-reference/controlplane.yml",
+          "type": "application/openapi+yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://docs.blaxel.ai/api-reference/introduction"
+        }
+      ]
+    }
+  ]
+}

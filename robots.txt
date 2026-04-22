@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.blaxel.ai/sitemap.xml
+
+# Content Signals (https://contentsignals.org/)
+Content-Signal: ai-train=no, search=yes, ai-input=yes

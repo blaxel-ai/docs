@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "serverInfo": {
+    "name": "blaxel-docs",
+    "version": "1.0.0",
+    "description": "MCP server providing real-time access to Blaxel documentation: sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway."
+  },
+  "transports": [
+    {
+      "type": "http",
+      "url": "https://docs.blaxel.ai/mcp"
+    }
+  ],
+  "capabilities": {
+    "tools": {}
+  },
+  "authentication": {
+    "type": "none"
+  },
+  "documentation": "https://docs.blaxel.ai/skills-mcp"
+}
