@@ -15,9 +15,12 @@ Automatic deletion differs from the automatic standby (_scale-to-zero_) which ha
 
 The following options are available for sandbox expiry and deletion:
 
-- expire after a total maximum lifetime (time-to-live or TTL) using the `ttl` parameter
-- expire after a period of inactivity using the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
+- expire after a total maximum lifetime (time-to-live or TTL) from creation using the `ttl` parameter
 - expire at a specific date using the `expires` parameter
+- expire based on a combination of one or more lifecycle policies, specified with the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
+  - `ttl-max-age`: Delete after total lifetime from creation (equivalent to `ttl`) (1h, 24h, 7d)
+  - `ttl-idle`: Delete after period of inactivity from last active time (1h, 24h, 7d)
+  - `date`: Delete at a specific date (equivalent to `expires`)
 
 <Note>
   If these parameters are absent, sandboxes will not be deleted.
@@ -88,8 +91,7 @@ sandbox = await SandboxInstance.create({
 
 Important notes:
 
-- The `ttl` parameter accepts a string with the following time units: `h` (hours), `d` (days), and `w` (weeks).
-- Lifecycle expirations policies also support types `ttl-max-age` and `date`: check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
+- Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
 - You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
 
 ## Update sandbox expiry rules
