@@ -56,11 +56,13 @@ Use [lifecycle policies and time-to-live (TTL)](../Sandboxes/Expiration) setting
 Blaxel's management API returns [structured error responses](/api-reference/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:
 
 1. First, check the origin of the error.
-Look at `error.origin` (or the `X-Blaxel-Source header`). If it is not `platform`, the 404 came from the application itself (e.g. a missing file), not from our platform. You should not re-create in that case.
+
+    Look at `error.origin` (or the `X-Blaxel-Source header`). If it is not `platform`, the 404 came from the application itself (e.g. a missing file), not from Blaxel. You should not re-create in that case.
 
 2. Then, branch on `error.code`:
-- `WORKLOAD_UNAVAILABLE`: The sandbox record exists but no healthy replica is currently serving it. This is the "sandbox is down" signal. It's marked `retryable: true`, so retry with exponential backoff (500ms to 30s, give up after ~60s). If retries keep failing, treat it as gone and re-create.
-- `WORKLOAD_NOT_FOUND`: The sandbox record itself doesn't exist in the platform (deleted, never created, or wrong name). Definitely re-create. Not retryable.
-- `ROUTE_NOT_FOUND`: The URL is wrong. This is a URL construction bug, not a sandbox availability issue. Don't re-create, fix the URL. The SDK's `sandbox.metadata.url` is the canonical source.
+
+    - `WORKLOAD_UNAVAILABLE`: The sandbox record exists but no healthy replica is currently serving it. This is the "sandbox is down" signal. It's marked `retryable: true`, so retry with exponential backoff (500ms to 30s, give up after ~60s). If retries keep failing, treat it as gone and re-create.
+    - `WORKLOAD_NOT_FOUND`: The sandbox record itself doesn't exist in the platform (deleted, never created, or wrong name). Definitely re-create. Not retryable.
+    - `ROUTE_NOT_FOUND`: The URL is wrong. This is a URL construction bug, not a sandbox availability issue. Don't re-create, fix the URL. The SDK's `sandbox.metadata.url` is the canonical source.
 
 For more information, refer to the [list of error codes](/api-reference/error-codes).

@@ -40,7 +40,7 @@ Every error has a consistent JSON body and response header, as shown below:
 | Code | HTTP | Retryable | When emitted |
 |---|---|---|---|
 | `ROUTE_NOT_FOUND` | 404 | No | Request path couldn't be parsed into a known workload, preview, or sandbox subdomain shape |
-| `WORKLOAD_NOT_FOUND` | 404 | No | Workload record doesn't exis |
+| `WORKLOAD_NOT_FOUND` | 404 | No | Workload record doesn't exist |
 | `WORKSPACE_NOT_FOUND` | 404 | No | Workspace couldn't be resolved for a deployment-subdomain request |
 | `WORKLOAD_UNAVAILABLE` | 404 | **Yes** | Workload exists but no healthy replica is currently serving it |
 | `AUTHENTICATION_REQUIRED` | 401 | No | Credentials missing |
