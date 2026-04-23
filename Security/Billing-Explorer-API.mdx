@@ -18,6 +18,10 @@ Use it to:
   Billing Explorer is an **account-scoped** API. Unless you pass `workspace=` or `groupBy=workspace` (both restricted to account admins — see [Admin-only parameters](#admin-only-parameters)), the response aggregates across every workspace in the account.
 </Note>
 
+<Warning>
+  **Metrics are not real-time.** We aggressively minimize the delay, but usage events flow through a metering pipeline before they become queryable — expect a lag of a few minutes (sometimes longer under load) between a resource running and its cost/usage appearing in the response. Do not use this API for hard real-time enforcement; use it for dashboards, reporting, and alerting.
+</Warning>
+
 ## Endpoint
 
 ```http
@@ -109,12 +113,12 @@ A **billing dimension** is the canonical, unit-stable metric that Blaxel bills a
 | `custom_domain_active_time_hours` | custom_domain | hours |
 
 <Tip>
-  Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `groupBy=billing_dimension` or `groupBy=resource_type`**. For every other grouping you will only see `totalCost` / `cost` in USD — the unit-safe common denominator.
+  Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `groupBy=billing_dimension`**, which guarantees every row shares a single unit. For every other grouping (including `resource_type`, `resource_name`, `resource_uuid`, `workspace`, and the default ungrouped response) you will only see `totalCost` / `cost` in USD — the unit-safe common denominator.
 </Tip>
 
 ## Response
 
-A successful call returns `200 OK` with an `AccountMetricsResponse`:
+A successful call returns `200 OK` with an `AccountMetricsResponse`. Example for `groupBy=resource_type` — `usage` fields are omitted per the rule above:
 
 ```json
 {
@@ -122,22 +126,21 @@ A successful call returns `200 OK` with an `AccountMetricsResponse`:
   "endTime":   "2025-11-01T00:00:00Z",
   "resolution": "daily",
   "summary": {
-    "totalCost":  142.37,
-    "totalUsage": 51234.82
+    "totalCost": 142.37
   },
   "data": [
     {
       "resourceType": "sandbox",
-      "summary": { "cost": 102.11, "usage": 48210.55 },
+      "summary": { "cost": 102.11 },
       "timeseries": [
-        { "timestamp": "2025-10-01T00:00:00Z", "cost": 3.41, "usage": 1620.03 },
-        { "timestamp": "2025-10-02T00:00:00Z", "cost": 3.12, "usage": 1498.77 },
+        { "timestamp": "2025-10-01T00:00:00Z", "cost": 3.41 },
+        { "timestamp": "2025-10-02T00:00:00Z", "cost": 3.12 },
         "..."
       ]
     },
     {
       "resourceType": "agent",
-      "summary": { "cost": 28.90, "usage": 2910.12 },
+      "summary": { "cost": 28.90 },
       "timeseries": ["..."]
     }
   ],
@@ -155,7 +158,7 @@ A successful call returns `200 OK` with an `AccountMetricsResponse`:
 | `startTime` / `endTime` | Echo of the queried window, in RFC3339 UTC. |
 | `resolution` | Bucket size actually applied (either what you asked for, or the auto-picked default). |
 | `summary.totalCost` | Total cost in USD across the full window. Sum of every group's cost in `data`. |
-| `summary.totalUsage` | Total usage across the window. **Only populated** when `groupBy=resource_type` or `groupBy=billing_dimension`, where every row shares a comparable unit. Omitted otherwise. |
+| `summary.totalUsage` | Total usage across the window. **Only populated** when `groupBy=billing_dimension`, where every row shares a single unit. Omitted otherwise. |
 | `data` | Array of grouped entries. When `groupBy` is not set, contains a single aggregated entry. |
 | `meta.hasMore` / `meta.nextCursor` | See [Pagination](#pagination). |
 
@@ -174,7 +177,7 @@ Each item in `data` is an `AccountMetricsDataEntry`. The fields populated depend
 Every entry also carries:
 
 - `summary.cost` — cost in USD for this group over the window.
-- `summary.usage` — usage for this group. Only populated for `groupBy=resource_type` and `groupBy=billing_dimension` (same unit-safety rules as the top-level summary).
+- `summary.usage` — usage for this group. Only populated for `groupBy=billing_dimension` (same unit-safety rule as the top-level summary).
 - `timeseries` — one entry per resolution bucket for the full window. Buckets with no activity have `cost: 0`. Bucket-level `usage` follows the same rule as group-level `usage`.
 
 ## Pagination
