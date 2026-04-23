@@ -204,6 +204,7 @@
                 ]
               },
               "Security/Access-tokens",
+              "Security/Billing-Explorer-API",
               {
                 "group": "Identity & Access",
                 "pages": [
