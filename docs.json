@@ -311,7 +311,8 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/error-codes"
             ]
           },
           {

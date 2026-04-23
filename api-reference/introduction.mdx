@@ -6,13 +6,13 @@ description: 'Authenticate and interact with all Blaxel resources using REST API
 
 ---
 
-Blaxel APIs allow you to interact with all resources inside of and across your workspace(s). 
+Blaxel APIs allow you to interact with all resources inside of and across your workspace(s).
 
 ## Get started
 
 Authentication to the Blaxel APIs can either be done using [API keys](../Security/Access-tokens) created from the Blaxel console, or through a [classic OAuth 2.0 flow](../Security/Access-tokens).
 
-**API keys** allow you to get started quickly. Simply [generate an API key](../Security/Access-tokens) for your user or service account and use the API key as a bearer token in place of the authorization headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs. 
+**API keys** allow you to get started quickly. Simply [generate an API key](../Security/Access-tokens) for your user or service account and use the API key as a bearer token in place of the authorization headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs.
 
 For example, to list models:
 
@@ -24,10 +24,10 @@ curl 'https://api.blaxel.ai/v0/models' \
 
 To use **short-lived JWTs**, see [the guide on using an OAuth 2.0 flow](../Security/Access-tokens).
 
-## Blaxel APIs
+See the reference documentation below for more information:
 
-See the reference for any of the following APIs:
+<Card title="Inference API" icon="earth-americas" href="/api-reference/inference">Run inference requests on your deployments by API. </Card>
 
-<Card title="Inference API" icon="earth-americas" href="/api-reference/inference" > Run inference requests on your deployments by API. </Card>
+<Card title="Management API" icon="cubes" href="/api-reference/agents/list-all-agents"> API to manage agents, functions, policies and much more.</Card>
 
-<Card title="Management API" icon="cubes" href="/api-reference/agents/list-all-agents" > API to manage agents, functions, policies and much more.</Card>
+<Card title="Error codes" icon="cubes" href="/api-reference/error-codes">See the list of error codes.</Card>
