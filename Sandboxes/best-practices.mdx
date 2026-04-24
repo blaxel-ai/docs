@@ -53,7 +53,7 @@ Use [lifecycle policies and time-to-live (TTL)](../Sandboxes/Expiration) setting
 
 ## Retry strategically in case of errors
 
-Blaxel's management API returns [structured error responses](/api-reference/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:
+Blaxel returns [structured error responses](/troubleshooting/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:
 
 1. First, check the origin of the error.
 
@@ -65,4 +65,4 @@ Blaxel's management API returns [structured error responses](/api-reference/erro
     - `WORKLOAD_NOT_FOUND`: The sandbox record itself doesn't exist in the platform (deleted, never created, or wrong name). Definitely re-create. Not retryable.
     - `ROUTE_NOT_FOUND`: The URL is wrong. This is a URL construction bug, not a sandbox availability issue. Don't re-create, fix the URL. The SDK's `sandbox.metadata.url` is the canonical source.
 
-For more information, refer to the [list of error codes](/api-reference/error-codes).
+For more information, refer to the [list of error codes](/troubleshooting/error-codes).

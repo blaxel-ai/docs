@@ -229,6 +229,7 @@
             "group": "Troubleshooting",
             "pages": [
               "troubleshooting",
+              "troubleshooting/error-codes",
               "troubleshooting/knowledge-base"
             ]
           }
@@ -311,8 +312,7 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction",
-              "api-reference/error-codes"
+              "api-reference/introduction"
             ]
           },
           {
