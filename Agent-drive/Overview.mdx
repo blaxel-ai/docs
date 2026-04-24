@@ -177,8 +177,8 @@ You can mount a drive in read-only mode:
 
 ```tsx TypeScript
 await sandbox.drives.mount({
-  name: "my-drive",
-  path: "/mnt/shared",
+  driveName: "my-drive",
+  mountPath: "/mnt/shared",
   readOnly: true,
 });
 ```
