@@ -121,13 +121,17 @@ This error occurs when a [workspace is not provisioned correctly](/troubleshooti
 
 To resolve this error, please contact us for support via [Discord](https://discord.gg/G3NqzUPcHP) or [online contact form](https://blaxel.ai/contact).
 
-## Volume creation fails with an error
+## Volume creation fails with a 403 error
 
-This error occurs when a volume is smaller than the template data, or when the workspace quota limit is breached.
+This error could occur when:
+- volumes are not enabled for the workspace;
+- volume size exceeds the maximum allowed size;
+- total volume size exceeds maximum allowed total size.
 
 To resolve this error, you can:
-- Provision extra space for your volume beyond the template content size. We recommend provisioning at least 20-30% extra space.
-- Contact us to increase your workspace quota limit.
+- Enable volumes (if not enabled)
+- Reduce the size of your volumes.
+- Contact us to increase your volume size limits.
 
 ## Hot reloads fail on Webpack previews
 
