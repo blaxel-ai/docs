@@ -348,13 +348,17 @@ import blaxel.core
 
 When agents and tools are deployed on Blaxel, request logging and tracing happens automatically.
 
+<Note>
+  You do not need to call `logging.basicConfig()` in your agent code. Importing any `blaxel.*` module automatically initializes the logger with the correct formatter for the Blaxel platform.
+</Note>
+
 To add your own custom logs that you can view in the Blaxel Console, use the Python default logger.
 
-```bash
+```python
 import logging
 
-logger = getLogger(__name__)
-logger.info("Hello, world!");
+logger = logging.getLogger(__name__)
+logger.info("Hello, world!")
 ```
 
 ## Template directory reference
