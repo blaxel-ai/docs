@@ -91,7 +91,8 @@ sandbox = await SandboxInstance.create({
 
 Important notes:
 
-- Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
+- Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
+- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
 - You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
 
 ## Update sandbox expiry rules
