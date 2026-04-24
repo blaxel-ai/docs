@@ -230,6 +230,7 @@
             "group": "Troubleshooting",
             "pages": [
               "troubleshooting",
+              "troubleshooting/error-codes",
               "troubleshooting/knowledge-base"
             ]
           }

@@ -1,0 +1,51 @@
+---
+title: "Error codes"
+description: "Understand error codes returned by Blaxel"
+---
+
+Blaxel returns structured error responses in case of request failure. These error responses include additional information designed for coding agents and LLMs.
+
+Every error has a consistent JSON body and response header, as shown below:
+
+```json
+{
+  "error": {
+    "action": "Stop. URL does not match a Blaxel route. Use `https://{sbx|agt|mcp|mdl|job}-{name}-{workspace}.{region}.bl.run[/{path}]` for workloads or `https://{preview_id}.preview.bl.run/{path}` for previews. Get the canonical URL from the SDK (e.g. `sandbox.metadata.url`), not by hand.",
+    "code": "ROUTE_NOT_FOUND",
+    "do_not": "Do not retry, do not guess URLs, do not use `run.blaxel.ai` (not served).",
+    "docs_url": "https://docs.blaxel.ai/Sandboxes/Ports.md",
+    "message": "Preview not found: xxx",
+    "origin": "platform",
+    "retryable": false,
+    "status": 404,
+    "timestamp": "2026-04-23T14:49:43+00:00"
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `error.action` | Agent-readable actions to be taken |
+| `error.code` | Machine-readable error code |
+| `error.do_not` | Agent-readable actions not to be taken |
+| `error.docs_url` | Documentation related to this error |
+| `error.message` | Human-readable description |
+| `error.origin` | `"platform"` when emitted by Blaxel; otherwise absent |
+| `error.retryable` | Whether the request can return a different response if it is retried |
+| `error.status` | HTTP status code (same as HTTP response header) |
+| `error.timestamp` | Timestamp in ISO-8601 format |
+
+## Error codes
+
+| Code | HTTP | Retryable | When emitted |
+|---|---|---|---|
+| `ROUTE_NOT_FOUND` | 404 | No | Request path couldn't be parsed into a known workload, preview, or sandbox subdomain shape |
+| `WORKLOAD_NOT_FOUND` | 404 | No | Workload record doesn't exist |
+| `WORKSPACE_NOT_FOUND` | 404 | No | Workspace couldn't be resolved for a deployment-subdomain request |
+| `WORKLOAD_UNAVAILABLE` | 404 | **Yes** | Workload exists but no healthy replica is currently serving it |
+| `AUTHENTICATION_REQUIRED` | 401 | No | Credentials missing |
+| `AUTHENTICATION_FAILED` | 401 | No | Credentials present but invalid or rejected |
+| `FORBIDDEN` | 403 | No | Authenticated but not authorized |
+| `BAD_REQUEST` | 400 | No | Malformed request |
+| `USAGE_LIMIT_EXCEEDED` | 402 | No | Plan quota reached |
+| `POLICY_VIOLATION` | varies | No | Policy rule rejection |
