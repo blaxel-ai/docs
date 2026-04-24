@@ -169,6 +169,38 @@ await sandbox.drives.mount(
   `drivePath` / `drive_path` is a mount point convenience, not a security boundary. Once a drive is mounted at any location in a sandbox, the sandbox has sufficient credentials to access all other drives in the same workspace. This is a temporary constraint during the preview phase; the final release will include fine-grained access control.
 </Warning>
 
+### Mount a drive as read-only
+
+You can mount a drive in read-only mode:
+
+<CodeGroup>
+
+```tsx TypeScript
+await sandbox.drives.mount({
+  driveName: "my-drive",
+  mountPath: "/mnt/shared",
+  readOnly: true,
+});
+```
+
+```python Python
+await sandbox.drives.mount(
+    drive_name="my-drive",
+    mount_path="/mnt/shared",
+    read_only=True,
+)
+```
+
+</CodeGroup>
+
+The same drive can be mounted read-write in one sandbox and read-only in others. However, any write attempt to a drive mounted as read-only will fail with a permission error.
+
+<Warning>
+Read-only mode is enforced at mount time, not at the storage/system level. Therefore,  if an agent running inside the sandbox manages to read the drive access token, located at `/var/run/secrets/blaxel.ai/identity/token` and re-invoke the `blfs` command itself, it could remount the drive in read-write mode and bypass the read-only restriction.
+
+To make the read-only guarantee effective in an adversarial/agentic setup, you should restrict the agent's access to `/var/run/secrets/blaxel.ai/identity/token`, and also block the `blfs` binary from the agent's `PATH` / execution scope.
+</Warning>
+
 ## List mounted drives
 
 List all drives currently mounted to a sandbox:
