@@ -60,6 +60,12 @@ Any files written to the `/app` directory within this sandbox will be stored on 
 
 At this time, you cannot detach a volume from a sandbox.
 
+## Check volume attachment status
+
+Each volume returned from the API includes a `state.attachedTo` field indicating which sandbox the volume is currently attached to.
+
+When a sandbox is deleted, Blaxel automatically clears this field on the volume. You can therefore check `state.attachedTo` directly to determine whether a volume is free to attach to a new sandbox.
+
 <CardGroup cols={2}>
   <Card title="Learn more about volumes" icon="box" href="/Volumes/Overview">
     Learn how to create and manage volumes.
