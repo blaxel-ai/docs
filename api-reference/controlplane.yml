@@ -3038,6 +3038,26 @@ components:
             type: string
             description: Reason for current status (only set for error status)
             readOnly: true
+    WorkspaceAvailability:
+      type: object
+      description: Result of a workspace-name availability check.
+      properties:
+        available:
+          type: boolean
+          description: Whether the requested workspace name is available.
+        message:
+          type: string
+          description: Human-readable explanation suitable for display in the UI.
+            Empty when available.
+        reason:
+          type: string
+          description: Machine-readable reason explaining why the name is unavailable.
+            Empty when available.
+          enum:
+          - taken
+          - forbidden_reserved
+          - forbidden_blaxel
+          - forbidden_v_prefix
     WorkspaceRuntime:
       type: object
       description: Runtime configuration for the workspace infrastructure
@@ -7869,6 +7889,15 @@ paths:
     post:
       description: Check if a workspace is available.
       operationId: CheckWorkspaceAvailability
+      parameters:
+      - description: When true, return a structured WorkspaceAvailability object with
+          a machine-readable reason and human-readable message instead of a bare boolean.
+          Defaults to false for backwards compatibility.
+        in: query
+        name: withReason
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
