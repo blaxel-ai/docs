@@ -1,37 +1,37 @@
 ---
-title: "Templates"
-description: "Create reusable sandbox templates with pre-configured tools, languages, and frameworks using Dockerfiles. Deploy new sandboxes from templates in seconds."
+title: "Images"
+description: "Create reusable sandbox images with pre-configured tools, languages, and frameworks using Dockerfiles. Deploy new sandboxes from images in seconds."
 ---
 
-Sandbox templates allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
+Sandbox images allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
 
-Templates are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR reviews agent, etc.).
+Images are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR reviews agent, etc.).
 
-## What are sandbox templates?
+## What are sandbox images?
 
-Sandbox templates are pre-configured images that serve as blueprints for creating sandboxes. Each template includes:
+Sandbox images are pre-configured container images that serve as blueprints for creating sandboxes. Each image includes:
 
 - **Base environment**: Operating system and runtime configurations
 - **Tools**: Languages, frameworks, and development tools
 - **Configuration**: Environment variables, startup scripts, …
 - **Resources**: Memory allocated
 
-When you create a sandbox from a template, Blaxel provisions a new instance with all the specifications defined in that template.
+When you create a sandbox from an image, Blaxel provisions a new instance with all the specifications defined in that image.
 
-### How sandbox templates work
+### How sandbox images work
 
-1. **Initial setup**: Follow this guide to create your sandbox template for the first time. Use `bl push` to push the template to Blaxel, or `bl deploy` to push the template and also create a sandbox from it.
+1. **Initial setup**: Follow this guide to create your sandbox image for the first time. Use `bl push` to push the image to Blaxel, or `bl deploy` to push the image and also create a sandbox from it.
 2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations.
 3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
-4. **Instantiation**: New sandboxes can be spawned from this template in seconds.
+4. **Instantiation**: New sandboxes can be spawned from this image in seconds.
 
 <Note>
-  You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox templates. Instead, you must create one or more custom images for your sandboxes using Dockerfiles and ensure that each  image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
+  You cannot directly use "library" container images (such as those hosted on Docker Hub and other registries) as sandbox images. Instead, you must create one or more custom images for your sandboxes using Dockerfiles and ensure that each image includes Blaxel's sandbox API binary. This is necessary for sandbox functionality like process management and file operations.
 </Note>
 
-## Pre-built templates
+## Pre-built images
 
-Blaxel provides a library of pre-built container images that serve as sandbox templates for common needs.
+Blaxel provides a library of pre-built container images for common needs.
 
 | Image | Description |
 |-------|-------------|
@@ -54,29 +54,29 @@ Blaxel provides a library of pre-built container images that serve as sandbox te
 | [`blaxel/jupyter-server:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/jupyter-server) | Jupyter Server with Python 3.12 |
 | [`blaxel/benchmark:latest`](https://github.com/blaxel-ai/sandbox/tree/main/hub/benchmark) | Sandbox benchmarking environment  |
 
-## Custom templates
+## Custom images
 
-You can also customize a template for specific needs.
+You can also customize an image for specific needs.
 
-### Create a sandbox template
+### Create a sandbox image
 
-You can create a customized sandbox template using the Blaxel CLI or REST API.
+You can create a customized sandbox image using the Blaxel CLI or REST API.
 
 #### Blaxel CLI
 
-##### 1. Initialize a template
+##### 1. Initialize an image
 
-Start by creating a new sandbox template using the Blaxel CLI:
+Start by creating a new sandbox image using the Blaxel CLI:
 
 ```bash
 bl new sandbox mytemplate
 ```
 
-This creates a new directory with the essential template files:
+This creates a new directory with the essential image files:
 
 ```text
 mytemplate/
-├── blaxel.toml        # Template configuration
+├── blaxel.toml        # Image configuration
 ├── Makefile           # Build commands
 ├── Dockerfile         # Defines the sandbox environment
 └── entrypoint.sh      # Initialization script
@@ -84,7 +84,7 @@ mytemplate/
 
 ##### 2. Customize the Dockerfile
 
-The Dockerfile is the heart of your template. It defines what will be available in your sandbox environment.
+The Dockerfile is the heart of your image. It defines what will be available in your sandbox environment.
 
 ```docker
 # Choose a base image
@@ -110,9 +110,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 **Always include** the _sandbox-api_ binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
 
-##### 3. Configure template settings
+##### 3. Configure image settings
 
-The `blaxel.toml` file defines your template’s runtime configuration:
+The `blaxel.toml` file defines your image’s runtime configuration:
 
 ```toml
 name = "mytemplate"
@@ -145,7 +145,7 @@ PYTHON_ENV = "development"
 
 ##### 4. Define initialization
 
-The `entrypoint.sh` script runs when a sandbox is created from your template:
+The `entrypoint.sh` script runs when a sandbox is created from this image:
 
 ```bash
 #!/bin/sh
@@ -180,7 +180,7 @@ wait
 
 ##### 5. Build and test locally
 
-Before creating the template on Blaxel, test it locally:
+Before pushing the image to Blaxel, test it locally:
 
 ```bash
 # Build the Docker image
@@ -194,9 +194,9 @@ make run
 # Example: curl http://127.0.0.1:8080/process
 ```
 
-##### 6. Push the template
+##### 6. Push the image
 
-Once satisfied with your configuration, push the template to Blaxel:
+Once satisfied with your configuration, push the image to Blaxel:
 
 ```bash
 bl push
@@ -209,7 +209,7 @@ This will:
 3. Return an image ID you can use for creating sandboxes
 
 <Tip>
-  Use `bl deploy` instead if you also want Blaxel to automatically create a first sandbox from the template, so you can test it:
+  Use `bl deploy` instead if you also want Blaxel to automatically create a first sandbox from this image, so you can test it:
 
   ```bash
   bl deploy
@@ -221,7 +221,7 @@ This will:
   bl get sandbox mytemplate --watch
   ```
 
-  You can safely delete the sandbox afterwards, and keep using the template for new sandboxes.
+  You can safely delete the sandbox afterwards, and keep using the image for new sandboxes.
 </Tip>
 
 #### Blaxel SDK
@@ -965,7 +965,7 @@ asyncio.run(main())
 
 #### Blaxel API
 
-Although less common, it is also possible to create a sandbox template and sandbox by directly interacting with the Blaxel API.
+Although less common, it is also possible to create a sandbox image and sandbox by directly interacting with the Blaxel API.
 
 Ensure that you have the following:
 
@@ -989,8 +989,8 @@ mytemplate/
 └── entrypoint.sh          # Optional - for custom initialization
 ```
 
-- The Dockerfile is the heart of your template. It defines what will be available in your sandbox environment. [See an example](#2-customize-the-dockerfile).
-- The `entrypoint.sh` script runs when a sandbox is created from your template. [See an example](#4-define-initialization).
+- The Dockerfile is the heart of your image. It defines what will be available in your sandbox environment. [See an example](#2-customize-the-dockerfile).
+- The `entrypoint.sh` script runs when a sandbox is created from this image. [See an example](#4-define-initialization).
 
 The Dockerfile can reference and use any files included in the ZIP archive. Everything gets extracted and built together as a Docker image.
 
@@ -1033,7 +1033,7 @@ curl -v -X POST "https://api.blaxel.ai/v0/sandboxes?upload=true" \
 
 Note the `upload=true` query parameter in the request, which indicates intent to upload custom code.
 
-The Blaxel API returns a JSON response. The response contains an `x-blaxel-upload-url` response header, containing the target URL to use when uploading your template. The URL is in the response headers, not the JSON body.
+The Blaxel API returns a JSON response. The response contains an `x-blaxel-upload-url` response header, containing the target URL to use when uploading your image. The URL is in the response headers, not the JSON body.
 
 Example response:
 
@@ -1080,7 +1080,7 @@ The `status` field of the response will progress through these values:
 
 Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILED`.
 
-A first sandbox with that template is automatically created on Blaxel once deployment succeeds. You can safely delete the sandbox and keep using the template for new sandboxes.
+A first sandbox from that image is automatically created on Blaxel once deployment succeeds. You can safely delete the sandbox and keep using the image for new sandboxes.
 
 ##### Example script
 
@@ -1605,11 +1605,11 @@ python main.py
 </CodeGroup>
 
 
-### Use a custom template
+### Use a custom image
 
-Once a template is successfully pushed, you can spawn new sandboxes instantly by using its image ID.
+Once an image is successfully pushed, you can spawn new sandboxes instantly by using its image ID.
 
-Use the following command to retrieve the image ID of the most recently pushed template:
+Use the following command to retrieve the image ID of the most recently pushed image:
 
 ```docker
 # Retrieve your IMAGE_ID
@@ -1646,9 +1646,9 @@ sandbox = await SandboxInstance.create({
 
 </CodeGroup>
 
-### Update a custom template
+### Update a custom image
 
-To update an existing custom template:
+To update an existing custom image:
 
 1. Modify your Dockerfile or configuration
 2. Rebuild locally to test changes
@@ -1660,23 +1660,23 @@ bl push
 
 The new revision becomes available while the old one remains accessible.
 
-## Share templates across workspaces and accounts
+## Share images across workspaces and accounts
 
-Once you have a custom template, you can share it with other workspaces in the same [account](/Security/Workspace-access-control), or with other accounts - for example, to promote a template image from `development` to `production` without rebuilding or re-pushing, or to share an image between different teams. Only the metadata record is copied to the target workspace or account; the underlying storage stays in the source.
+Once you have a custom image, you can share it with other workspaces in the same [account](/Security/Workspace-access-control), or with other accounts - for example, to promote an image from `development` to `production` without rebuilding or re-pushing, or to share an image between different teams. Only the metadata record is copied to the target workspace or account; the underlying storage stays in the source.
 
-When you share a template:
+When you share an image:
 
 1. The metadata is copied to the target workspace or account, pointing to the same underlying data in the source.
 2. The target workspace or account can use the shared image to create sandboxes, just like a locally-owned image.
 3. Storage billing stays with the source workspace or account.
 4. New tags pushed to the source image are automatically propagated to all workspaces and accounts it is shared with.
 
-Shared templates in the consuming workspace or account include a `sourceWorkspace` field. In the [Blaxel Console](https://app.blaxel.ai), they are marked with a badge showing the source workspace or account name.
+Shared images in the consuming workspace or account include a `sourceWorkspace` field. In the [Blaxel Console](https://app.blaxel.ai), they are marked with a badge showing the source workspace or account name.
 
 ### Prerequisites
 
 - When sharing between workspaces or accounts, you must be an **administrator** of the source workspace. When sharing between accounts, your share request will be completed only when it receives approval from an administrator of the target account.
-- The template must be **locally owned** in the source workspace or account. You cannot re-share an image that was shared to you from elsewhere.
+- The image must be **locally owned** in the source workspace or account. You cannot re-share an image that was shared to you from elsewhere.
 
 ### Share an image
 
@@ -1721,7 +1721,7 @@ bl share image sandbox/<imageName> --workspace <targetWorkspace>
 ```
 
 <Note>
-Sharing applies to the entire template image (all tags). Tag-qualified references like `sandbox/my-template:v1.0` are not accepted.
+Sharing applies to the entire image (all tags). Tag-qualified references like `sandbox/my-template:v1.0` are not accepted.
 </Note>
 
 #### Management API
@@ -1753,11 +1753,11 @@ curl -X POST "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share" \
   The target account ID can be obtained from the **Workspace settings** page of the Blaxel Console.
 </Tip>
 
-### List shared templates
+### List shared images
 
 #### Blaxel Console
 
-On the image detail page in the [Blaxel Console](https://app.blaxel.ai), templates shared across workspaces or accounts are listed with the option to revoke sharing for each workspace or account individually.
+On the image detail page in the [Blaxel Console](https://app.blaxel.ai), images shared across workspaces or accounts are listed with the option to revoke sharing for each workspace or account individually.
 
 #### Management API
 
@@ -1767,14 +1767,14 @@ curl -X GET "https://api.blaxel.ai/v0/images/sandbox/{imageName}/share" \
   -H "X-Blaxel-Workspace: $BL_WORKSPACE"
 ```
 
-### Unshare a template
+### Unshare an image
 
 Unsharing removes the metadata record from the target workspace or account. The image data in the source workspace is not affected.
 
-You cannot delete a template (or individual tags) while it is shared. You must unshare from all connected workspaces or accounts first.
+You cannot delete an image (or individual tags) while it is shared. You must unshare from all connected workspaces or accounts first.
 
 <Warning>
-After unsharing, any deployments in the target workspace or account that reference the shared template will fail on their next restart or scale-up. Make sure no active deployments depend on the template before unsharing.
+After unsharing, any deployments in the target workspace or account that reference the shared image will fail on their next restart or scale-up. Make sure no active deployments depend on the image before unsharing.
 </Warning>
 
 #### Blaxel Console
@@ -1808,7 +1808,7 @@ The consuming workspace or account pays nothing for image storage of shared imag
 ### Constraints and limitations
 
 - **No re-sharing**: A shared image cannot be re-shared from the consuming workspace to a third workspace or account. Only the original owner can share.
-- **Deletion protection**: You cannot delete an image (or individual tags) while it is shared with other workspaces or accounts. You must unshare it from all target workspaces first.
+- **Deletion protection**: You cannot delete an image (or individual tags) while it is shared with other workspaces or accounts. You must unshare from all target workspaces first.
 - **Whole image only**: Sharing applies to the entire image with all its tags. You cannot share individual tags.
 - **Admin-only**: Both sharing and unsharing require administrator permissions.
 
@@ -1836,7 +1836,7 @@ RUN npm install
 
 ### 3. Security considerations
 
-- Don’t include secrets in templates
+- Don’t include secrets in images
 - Use Blaxel’s secrets management for sensitive data
 - Keep base images updated
 - Scan for vulnerabilities regularly
