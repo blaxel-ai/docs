@@ -71,7 +71,7 @@ During the deployment process, the possible sandbox statuses are:
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
 
 <Note>
-  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox template folder.
+  `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox image folder.
 </Note>
 
 ## Use cases
@@ -208,14 +208,14 @@ It is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console
     The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [`Learn more about the blaxel.toml file`](/deployment-reference).
 
     <Tip>
-      Running `bl deploy` here also saves the image to be reused later as a template. As an alternative, you can use `bl push` to push the image to Blaxel's registry without deploying it.
+      Running `bl deploy` here also saves the image to be reused later. As an alternative, you can use `bl push` to push the image to Blaxel's registry without deploying it.
     </Tip>
   </Tab>
   <Tab title="Console">
     - Log in to the [Blaxel Console](https://app.blaxel.ai/).
     - Click **Sandboxes** in the left navigation menu.
     - Click **\+Create sandbox** -\> **Deploy from console**.
-    - Select an image template.
+    - Select an image.
     - On the next page, configure the sandbox resources, including memory, time-to-live and region.
     - Click **Next** to proceed.
     - On the next page, reconfirm the sandbox parameters. Click **Create** to create the sandbox.
@@ -230,9 +230,9 @@ Although less common, it is also possible to [create a sandbox by directly inter
 
 ### Images
 
-Blaxel provides [pre-built sandbox images](/Sandboxes/Templates#pre-built-templates) for common needs (e.g. `blaxel/nextjs:latest`, `blaxel/py-app:latest`).
+Blaxel provides [pre-built sandbox images](/Sandboxes/Templates#pre-built-images) for common needs (e.g. `blaxel/nextjs:latest`, `blaxel/py-app:latest`).
 
-It is also possible to build your own [custom images](/Sandboxes/Templates), which serve as _templates_ to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
+It is also possible to build your own [custom images](/Sandboxes/Templates) to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
 
 ### Memory and filesystem
 
@@ -391,7 +391,7 @@ Delete a sandbox by calling:
 
 ## Upgrade a sandbox's API
 
-Every Blaxel sandbox includes a [custom API binary](./Templates#how-sandbox-templates-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
+Every Blaxel sandbox includes a [custom API binary](./Templates#how-sandbox-images-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
 
 <Note>
   This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.
@@ -474,8 +474,8 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
   <Card title="Volumes" icon="database" href="/Sandboxes/Volumes">
     Attach volumes to sandboxes to persist files.
   </Card>
-  <Card title="Templates" icon="box" href="/Sandboxes/Templates">
-    Create custom sandbox templates.
+  <Card title="Images" icon="box" href="/Sandboxes/Templates">
+    Create custom sandbox images.
   </Card>
   <Card title="Best practices" icon="check" href="/Sandboxes/best-practices">
     Recommended practices for using Blaxel sandboxes.
