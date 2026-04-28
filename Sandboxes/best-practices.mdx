@@ -53,6 +53,19 @@ Instead of writing scripts to manually filter and delete sandboxes, use [expirat
 
 The sandbox metadata also includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
 
+## Reduce cold start times with a pre-warmed pool
+
+For workloads with heavy images, you can maintain a pool of pre-warmed sandboxes to serve requests with near-zero latency.
+
+The pattern works as follows:
+
+1. Keep a pool of sandboxes ready, with their data recorded in a database or cache.
+2. When a task arrives, assign one sandbox from the pool to that task and mark it as in-use.
+3. After assigning a sandbox, create a replacement in the background to keep the pool at your target size.
+4. When the task finishes, either release the sandbox back to the pool or delete it and let the background replenishment fill the gap.
+
+If using this pattern, implement a queuing system to coordinate sandbox usage and flag which sandboxes are in use. Without this, the same sandbox could be assigned to two tasks arriving at the same instant.
+
 ## Retry strategically in case of errors
 
 Blaxel returns [structured error responses](/troubleshooting/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:
