@@ -29,3 +29,74 @@ See the reference documentation below for more information:
 <Card title="Inference API" icon="earth-americas" href="/api-reference/inference">Run inference requests on your deployments by API. </Card>
 
 <Card title="Management API" icon="cubes" href="/api-reference/agents/list-all-agents"> API to manage agents, functions, policies and much more.</Card>
+
+## API Versioning
+
+The Blaxel API uses header-based versioning to evolve response formats and behavior without breaking existing clients.
+
+### Version Header
+
+All requests should include the `Blaxel-Version` header:
+
+<CodeGroup>
+```bash curl
+curl 'https://api.blaxel.ai/v0/agents' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-16'
+```
+</CodeGroup>
+
+### Version Format
+
+Versions follow a Stripe-style date-based format:
+
+- **Stable**: `YYYY-MM-DD` (e.g., `2026-04-16`)
+- **Preview**: `YYYY-MM-DD.preview` (e.g., `2026-04-16.preview`)
+
+### Default Behavior
+
+<Note>If you omit the `Blaxel-Version` header, the API defaults to the earliest stable version (`2026-04-16`). This ensures backward compatibility — existing clients work without changes.</Note>
+
+### Pinning to a Specific Version
+
+To guarantee consistent response shapes across API updates, pin your client to a specific version:
+
+```bash
+curl -H 'Blaxel-Version: 2026-04-20' https://api.blaxel.ai/v0/agents
+```
+
+Once a new version is released, you can update your client at your own pace.
+
+### Unknown Versions
+
+If you send an unsupported version, the API returns `400 Bad Request`:
+
+```json
+{
+  "error": "invalid_api_version",
+  "message": "Unknown API version \"2026-99-99\". Valid versions: 2026-04-16. See https://docs.blaxel.ai/api-reference/introduction#api-versioning for the list of supported versions."
+}
+```
+
+Update your client to use a version from the table below.
+
+### Version History
+
+<table>
+  <thead>
+    <tr>
+      <th>Version</th>
+      <th>Released</th>
+      <th>Status</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>2026-04-16</code></td>
+      <td>2026-04-16</td>
+      <td>Stable</td>
+      <td>Initial version</td>
+    </tr>
+  </tbody>
+</table>
