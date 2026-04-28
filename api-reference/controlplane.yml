@@ -1,4 +1,13 @@
 components:
+  parameters:
+    BlaxelVersion:
+      description: API version (e.g., 2026-04-16). Defaults to the earliest stable
+        version if omitted. See https://docs.blaxel.ai/api-reference/introduction#api-versioning.
+      in: header
+      name: Blaxel-Version
+      required: false
+      schema:
+        type: string
   schemas:
     Agent:
       type: object
