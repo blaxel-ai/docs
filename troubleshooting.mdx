@@ -158,3 +158,15 @@ module.exports = {
   },
   /// ... rest of webpack/config.dev.js
 ```
+
+## A deleted agent or MCP server still appears in the Blaxel Console listing
+
+This error occurs when a deletion operation didn't fully complete, leaving the resource in a stuck "deleted" state.
+
+To resolve this, run the `bl delete` command again on the same resource:
+
+```bash
+bl delete agent <AGENT-RESOURCE-NAME>
+# or
+bl delete function <MCP-RESOURCE-NAME>
+```
