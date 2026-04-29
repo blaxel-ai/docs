@@ -5950,8 +5950,18 @@ paths:
   /sandboxes:
     get:
       description: Returns all sandboxes in the workspace. Each sandbox includes its
-        configuration, status, and endpoint URL.
+        configuration, status, and endpoint URL. Terminated sandboxes are hidden by
+        default; pass `showTerminated=true` to include them.
       operationId: ListSandboxes
+      parameters:
+      - description: If true, include terminated sandboxes in the response. Defaults
+          to false.
+        in: query
+        name: showTerminated
+        required: false
+        schema:
+          default: false
+          type: boolean
       responses:
         "200":
           content:
