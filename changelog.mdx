@@ -3,6 +3,30 @@ title: 'Changelog'
 description: 'Chronological list of all platform updates, new features, deprecations, and infrastructure changes on Blaxel.'
 ---
 
+<Update label="2026-04-24">
+
+### New Billing Explorer API
+
+Added [Billing Explorer API](/Security/Billing-Explorer-API) to enable programmatic retrieval of cost and usage metrics for a Blaxel account.
+
+</Update>
+
+<Update label="2026-04-21">
+
+### Updated authentication system
+
+Added support for Microsoft OAuth provider.
+
+</Update>
+
+<Update label="2026-04-20">
+
+### Read-only mode in Agent Drive
+
+Added read-only support for drives. The same drive can be mounted read-write in one sandbox and read-only in others.
+
+</Update>
+
 <Update label="2026-04-20">
 
 ### Cross-account image sharing
@@ -37,11 +61,36 @@ Added Blaxel CLI skill to let coding agents deploy and manage sandboxes, agents,
 
 <Update label="2026-04-04">
 
+### USER support for sandbox image builds
+
+Added experimental support for the USER directive when building custom sandbox images.
+
+</Update>
+
+<Update label="2026-04-04">
+
 ### Push images without deploying
 
 Added `bl push` command to build and push a container image to the Blaxel registry without creating a deployment.
 
 </Update>
+
+<Update label="2026-04-01">
+
+### GitHub Runner support
+
+Jobs can now be used as GitHub Runners. Link a repository to a job with `runs-on: workspace/job` in your GitHub Actions workflow.
+
+</Update>
+
+<Update label="2026-04-01">
+
+### Ephemeral volumes for jobs
+
+Added support for volumes in jobs. These temporary volumes are auto-destroyed when the job ends.
+
+</Update>
+
 
 <Update label="2026-03-31">
 
