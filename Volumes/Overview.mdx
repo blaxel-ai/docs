@@ -10,6 +10,8 @@ Blaxel Volumes provide **persistent storage that survives resource destruction a
 
 While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](/Volumes/Volumes-templates) to start from a pre-populated filesystem.
 
+Volumes use block storage and can only be accessed by attaching them to a running sandbox or agent. They cannot be mounted locally on your machine. Blaxel also does not support mounting external storage (such as S3 buckets) as volumes.
+
 ## Create a volume
 
 To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any resource it may later be attached to.
