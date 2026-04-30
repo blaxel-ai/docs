@@ -46,14 +46,18 @@ const sandbox = await SandboxInstance.create({
 ```
 
 ```python Python
+import asyncio
 from blaxel.core import SandboxInstance
 
-sandbox = await SandboxInstance.create({
-    "name": "my-docker-sandbox",
-    "image": "blaxel/docker-in-sandbox:latest",
-    "memory": 4096,
-    "region": "us-pdx-1"
-})
+async def main():
+    sandbox = await SandboxInstance.create({
+        "name": "my-docker-sandbox",
+        "image": "blaxel/docker-in-sandbox:latest",
+        "memory": 4096,
+        "region": "us-pdx-1"
+    })
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -117,19 +121,23 @@ console.log("Preview URL:", preview.spec?.url);
 ```
 
 ```python Python
+import asyncio
 from blaxel.core import SandboxInstance
 
-sandbox = await SandboxInstance.get("my-docker-sandbox")
+async def main():
+    sandbox = await SandboxInstance.get("my-docker-sandbox")
 
-preview = await sandbox.previews.create({
-    "metadata": {"name": "nginx-preview"},
-    "spec": {
-        "port": 8081,
-        "public": True
-    }
-})
+    preview = await sandbox.previews.create({
+        "metadata": {"name": "nginx-preview"},
+        "spec": {
+            "port": 8081,
+            "public": True
+        }
+    })
 
-print("Preview URL:", preview.spec.url)
+    print("Preview URL:", preview.spec.url)
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -151,7 +159,7 @@ FROM alpine:latest
 CMD ["echo", "Hello from Blaxel"]
 ```
 
-Then, build and push it to [ttl.sh](https://ttl.sh), a transient registry:
+Then, build and push it to [ttl.sh](https://ttl.sh), a transient image registry:
 
 <Note>
   If you plan to run the final image on a Blaxel sandbox, add the `--platform linux/amd64` when building so the image runs correctly.
@@ -185,22 +193,27 @@ console.log(push.logs);
 ```
 
 ```python Python
+import asyncio
 from blaxel.core import SandboxInstance
 
-sandbox = await SandboxInstance.get("my-docker-sandbox")
-image = "ttl.sh/my-app:1h"
+async def main():
+    sandbox = await SandboxInstance.get("my-docker-sandbox")
+    image = "ttl.sh/my-app:1h"
 
-build = await sandbox.process.exec({
-    "command": f"docker build --platform linux/amd64 -t {image} /app",
-    "wait_for_completion": True,
-})
-print(build.logs)
+    build = await sandbox.process.exec({
+        "command": f"docker build --platform linux/amd64 -t {image} /app",
+        "wait_for_completion": True,
+    })
+    print(build.logs)
 
-push = await sandbox.process.exec({
-    "command": f"docker push {image}",
-    "wait_for_completion": True,
-})
-print(push.logs)
+    push = await sandbox.process.exec({
+        "command": f"docker push {image}",
+        "wait_for_completion": True,
+    })
+    print(push.logs)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </CodeGroup>
@@ -210,3 +223,14 @@ Once the image is published to the registry, you can test it with `docker run`:
 ```shell
 docker run ttl.sh/my-app:1h
 ```
+
+## Use Docker Compose
+
+The Docker sandbox image includes a sample application with a Docker Compose file, in the `example` directory. Try it with the following commands:
+
+```shell
+cd example
+docker compose up
+```
+
+<Note>
