@@ -43,7 +43,7 @@ Here's a table to help you decide:
 
 ## Automate cleanup with TTLs
 
-While we advocate for treating sandboxes as perpetual computers, not every machine needs to last forever. In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (e.g., completed tasks, abandoned user sessions). To prevent digital clutter and unnecessary storage usage, you need automated garbage collection.
+In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (completed tasks, abandoned user sessions, etc.). These can unnecessarily consume storage and add to your cost.
 
 Instead of writing scripts to manually filter and delete sandboxes, use [expiration parameters and lifecycle policies](../Sandboxes/Expiration) to automate when a sandbox should be retired. You can configure this based on idle duration (_e.g., delete if it hasn't been active for 7 days_) or absolute maximum age (_e.g., delete after 30 days_).
 
@@ -52,6 +52,14 @@ Instead of writing scripts to manually filter and delete sandboxes, use [expirat
 </Note>
 
 The sandbox metadata also includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
+
+## Reconnect external connections after standby
+
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes).
+
+However, external network connections that were active at the time of transitioning to standby, such as database connections, message queues, and HTTP connection pools, are not preserved; the remote side will automatically time out and close. When the sandbox resumes, the sandbox side of the connection will be stale, and queries or commands using it will fail.
+
+The recommended approach in this case is to use the connection library's built-in health-check or reconnection option to check or reset a connection before using it. For example, you could configure `pool_pre_ping` (SQLAlchemy) for PostgreSQL/MySQL connections, or `retryStrategy` (ioredis) for Redis connections.
 
 ## Retry strategically in case of errors
 
