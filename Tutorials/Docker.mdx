@@ -1,0 +1,212 @@
+---
+title: 'Run Docker in a sandbox'
+description: 'Build, push and run Docker images in a Blaxel sandbox'
+---
+
+This tutorial explains how to build and push Docker images inside a Blaxel sandbox. It also explains how to run Docker containers and expose them securely using sandbox preview URLs.
+
+## Prerequisites
+
+- [Blaxel CLI](../cli-reference/introduction) installed and authenticated (`bl login`)
+- Node.js 18+ or Python 3.12+ installed
+- Blaxel SDK installed in your project (`npm install @blaxel/core` or `pip install blaxel`)
+
+## Create and connect to a sandbox
+
+Blaxel provides a ready-to-use sandbox image (`blaxel/docker-in-sandbox`) with everything you need to build and run Docker images. This image also includes the Docker CLI, Docker Compose and `iptables-legacy` (as a replacement for `nftables`).
+
+Create and deploy a sandbox using the Docker sandbox image:
+
+<CodeGroup>
+
+```shell Blaxel CLI
+bl apply -f - <<EOF
+apiVersion: blaxel.ai/v1alpha1
+kind: Sandbox
+metadata:
+  name: my-docker-sandbox
+spec:
+  runtime:
+    region: us-pdx-1
+    image: blaxel/docker-in-sandbox:latest
+    generation: mk3
+    memory: 4096
+EOF
+```
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-docker-sandbox",
+  image: "blaxel/docker-in-sandbox:latest",
+  memory: 4096,
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-docker-sandbox",
+    "image": "blaxel/docker-in-sandbox:latest",
+    "memory": 4096,
+    "region": "us-pdx-1"
+})
+```
+
+</CodeGroup>
+
+Connect to the sandbox terminal for subsequent commands:
+
+```shell
+bl connect sandbox my-docker-sandbox
+```
+
+## Run a Docker container
+
+You can run a container from any public image. Here is an example of running an NGINX container:
+
+```shell
+docker run -d -p 8081:80 --name my-nginx nginx
+```
+
+Check that it is running:
+
+```shell
+docker ps
+```
+
+## Open a shell into a running Docker container
+
+Use `docker exec` to open a shell inside the running container:
+
+```shell
+docker exec -it my-nginx /bin/sh
+```
+
+## Expose a Docker container at a sandbox preview URL
+
+Once a Docker container is running inside your sandbox, you can expose it externally via a [preview URL](/Sandboxes/Preview-url).
+
+To see this in action, run an NGINX container on sandbox port 8081:
+
+```shell
+docker run -d -p 8081:80 nginx
+```
+
+Then, use the Blaxel SDK to create a preview URL for that port:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-docker-sandbox");
+
+const preview = await sandbox.previews.create({
+    metadata: { name: "nginx-preview" },
+    spec: {
+        port: 8081,
+        public: true
+    }
+});
+
+console.log("Preview URL:", preview.spec?.url);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-docker-sandbox")
+
+preview = await sandbox.previews.create({
+    "metadata": {"name": "nginx-preview"},
+    "spec": {
+        "port": 8081,
+        "public": True
+    }
+})
+
+print("Preview URL:", preview.spec.url)
+```
+
+</CodeGroup>
+
+Now, when you access the preview URL, you should see the default NGINX welcome page.
+
+<Tip>
+  To restrict access, you can create a [private preview URL](/Sandboxes/Preview-url/#private-preview-urls) instead.
+</Tip>
+
+## Build and push a Docker image
+
+You can also build and push images from the sandbox.
+
+To see this in action, first create a minimal `Dockerfile` in the sandbox's `/app` directory:
+
+```Dockerfile
+FROM alpine:latest
+CMD ["echo", "Hello from Blaxel"]
+```
+
+Then, build and push it to [ttl.sh](https://ttl.sh), a transient registry:
+
+<Note>
+  If you plan to run the final image on a Blaxel sandbox, add the `--platform linux/amd64` when building so the image runs correctly.
+</Note>
+
+<CodeGroup>
+
+```shell Blaxel CLI
+cd /app
+docker build --platform linux/amd64 -t ttl.sh/my-app:1h .
+docker push ttl.sh/my-app:1h
+```
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-docker-sandbox");
+const image = "ttl.sh/my-app:1h";
+
+const build = await sandbox.process.exec({
+  command: `docker build --platform linux/amd64 -t ${image} /app`,
+  waitForCompletion: true,
+});
+console.log(build.logs);
+
+const push = await sandbox.process.exec({
+  command: `docker push ${image}`,
+  waitForCompletion: true,
+});
+console.log(push.logs);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-docker-sandbox")
+image = "ttl.sh/my-app:1h"
+
+build = await sandbox.process.exec({
+    "command": f"docker build --platform linux/amd64 -t {image} /app",
+    "wait_for_completion": True,
+})
+print(build.logs)
+
+push = await sandbox.process.exec({
+    "command": f"docker push {image}",
+    "wait_for_completion": True,
+})
+print(push.logs)
+```
+
+</CodeGroup>
+
+Once the image is published to the registry, you can test it with `docker run`:
+
+```shell
+docker run ttl.sh/my-app:1h
+```
