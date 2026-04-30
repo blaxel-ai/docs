@@ -117,15 +117,11 @@ You must choose an [environment](../Model-Governance/Environments) when deployin
 
 Additional [policies](../Model-Governance/Policies) can be optionally attached to a model deployment directly. If there already are policies set in the environment, policies of the **same policy type** (e.g. location-based, flavor-based, etc.) will collide. In this case, the result will be [as described here](../Model-Governance/Policies).
 
-<Tip>To force execution of the model on a certain type of GPU, it is best to configure it in the model deployment [resources](/Models/Model-deployment) directly.</Tip>
-
 ### Resources
 
-Data scientists often have strong preferences for specific GPU types when running certain models. To accommodate this, Blaxel allows you to specify which flavors (i.e., which GPU types) should be used for running a particular model.
+Blaxel allows you to specify which flavors (i.e., which CPU types) should be used for running a particular model.
 
-Flavors refer to the specific CPU or GPU types that the model deployment will use for processing inferences. During inferences execution, the Global Inference Network intelligently routes each request to a location containing the desired CPU/GPU types. It then schedules the workload based on resource availability, ensuring optimal performance.
-
-For one model deployment, the selected flavors can either be several CPU types, or several GPU types, but not both at the same time.
+Flavors refer to the specific CPU types that the model deployment will use for processing inferences. During inference execution, the Global Inference Network intelligently routes each request to a location containing the desired CPU types. It then schedules the workload based on resource availability, ensuring optimal performance.
 
 <Note>You can only select flavors allowed by the policies set in the environment or the deployment.</Note>
 

@@ -41,15 +41,12 @@ They come in two different formats:
 
 ### Flavor policies
 
-Flavor policies give control over which underlying accelerator (GPU) your workloads will be executed on. 
+Flavor policies give control over which underlying hardware your workloads will be executed on.
 
 They come in two different formats:
 
 - policies on **cpu** allow to pass a specific list of CPU types
     - for example, execute only on x86
-- policies on **gpu** allow to pass a specific list of GPU types
-    - execute only on NVIDIA A100
-    - execute only on NVIDIA L4 or NVIDIA T4
 
 ### Token usage policies
 
@@ -82,12 +79,8 @@ For example:
 - Let’s assume the following policies:
     - Policy A: Country is: USA
     - Policy B: Continent is: North America, or Europe
-    - Policy C: GPU is: NVIDIA T4
 - if a workload has the following combined policies:
     - A and B: then the workload will only execute in any location in either North America (including USA) or Europe — on any kind of hardware available there.
-    - B and C: then the workload will only execute in any location in either North America or Europe, only on T4 GPUs.
-    - A and C: then the workload will only execute in any location in the USA, only on T4 GPUs.
-    - A and B and C: then the workload will only execute in any location in either North America (including USA) or Europe — only on T4 GPUs.
 
 ## Policy reference
 
@@ -100,7 +93,6 @@ Below is the list of official names to build policies.
 | **Code** | **Type** | **Flavor Name** |
 | --- | --- | --- |
 | CPU x86 | cpu | x86 |
-| t4 | gpu | NVIDIA T4 |
 
 ### Locations
 
