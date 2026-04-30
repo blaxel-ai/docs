@@ -133,6 +133,18 @@ To resolve this error, you can:
 - Reduce the size of your volumes.
 - Contact us to increase your volume size limits.
 
+## Connections to the sandbox terminal fail with `websocket: bad handshake`
+
+This error could occur when:
+- you are using an outdated CLI version
+- you are using a custom sandbox image without the sandbox API
+- you are using a deprecated image
+
+To resolve this error, you can:
+- upgrade to the latest CLI version
+- if using a pre-built image, ensure that you are using a [current version of the image](/Sandboxes/Templates#pre-built-templates). If using an older image, recreate the sandbox with the latest version.
+- if using a custom Docker image, ensure that you include the sandbox API. If it's missing, add it to your image build process and recreate the sandbox with the new image.
+
 ## Hot reloads fail on Webpack previews
 
 This error occurs when a Webpack server is configured to use the same port as local development, but the sandbox preview URL is mapped to a different port. As a result, when hot reloading previews, your client is trying to connect to the local development port instead of the sandbox's preview URL port.
