@@ -46,7 +46,7 @@ Or add them to a `.env` file at the root of your project.
 
 ## How authentication works
 
-The Blaxel SDK authenticates with your workspace using credentials from these sources, in priority order:
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must be supplied through one of the following sources, checked in priority order:
 
 1. when running on Blaxel, authentication is handled automatically
 2. `BL_WORKSPACE` and `BL_API_KEY` environment variables or `.env` file (see [this page](../Agents/Variables-and-secrets) for other authentication options)
