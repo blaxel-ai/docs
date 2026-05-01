@@ -304,11 +304,7 @@
         ]
       },
       {
-        "tab": "Management APIs",
-        "openapi": {
-          "source": "/api-reference/controlplane.yml",
-          "directory": "api-reference"
-        },
+        "tab": "Platform APIs Reference",
         "groups": [
           {
             "group": "Overview",
@@ -327,6 +323,13 @@
             "pages": [
               "api-reference/billing"
             ]
+          },
+          {
+            "group": "Management API",
+            "openapi": {
+              "source": "/api-reference/controlplane.yml",
+              "directory": "api-reference"
+            }
           }
         ]
       },

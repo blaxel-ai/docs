@@ -1,12 +1,12 @@
 ---
 
-title: 'Billing Explorer API'
+title: 'Billing API'
 
 description: 'Programmatically retrieve cost and usage metrics for your Blaxel account.'
 
 ---
 
-The **Billing Explorer API** is the same data source that powers the [Billing Explorer](/Security/Quotas#analytics) in the Blaxel Console. It returns resource-centric, paginated timeseries of cost and usage for an account over an arbitrary time window, with optional filtering and grouping.
+The **Billing API** is the same data source that powers the [Billing Explorer](/Security/Quotas#analytics) in the Blaxel Console. It returns resource-centric, paginated timeseries of cost and usage for an account over an arbitrary time window, with optional filtering and grouping.
 
 Use it to:
 
@@ -15,7 +15,7 @@ Use it to:
 - drive alerting on spend trends
 
 <Note>
-  Billing Explorer is an **account-scoped** API. Unless you pass `workspace=` or `groupBy=workspace` (both restricted to account admins — see [Admin-only parameters](/api-reference/billing#admin-only-parameters)), the response aggregates across every workspace in the account.
+  The Billing API is an **account-scoped** API. Unless you pass `workspace=` or `groupBy=workspace` (both restricted to account admins — see [Admin-only parameters](/api-reference/billing#admin-only-parameters)), the response aggregates across every workspace in the account.
 </Note>
 
 <Warning>
@@ -23,5 +23,5 @@ Use it to:
 </Warning>
 
 <Card title="Billing API Reference" icon="code" href="/api-reference/billing">
-  Full endpoint documentation: query parameters, response schema, pagination, billing dimensions, and examples.
+  Read the reference documentation.
 </Card>
