@@ -30,6 +30,8 @@ export BL_WORKSPACE=my-workspace
 export BL_API_KEY=my-api-key
 ```
 
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
 When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically — no environment variables needed.
 
 </Accordion>

@@ -32,7 +32,7 @@ Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully ma
 
 Sandboxes stay in active mode as long as there's an active connection to them.
 
-You are charged for memory (based on how much you allocated at sandbox creation) and storage while a sandbox is in active mode. CPU resources are allocated accordingly by Blaxel based on your selected memory allocation and are not charged separately. [Learn more about pricing](https://blaxel.ai/pricing).
+You are charged for memory (based on how much you allocated at sandbox creation) and storage while a sandbox is in active mode. CPU resources are allocated accordingly by Blaxel based on your selected memory allocation and are not charged separately. For example, a sandbox with 8 GB memory is allocated 4 CPU cores, while one with 16 GB memory is allocated 6 CPU cores. [Learn more about pricing](https://blaxel.ai/pricing).
 
 ### Standby mode
 
@@ -106,6 +106,8 @@ Set them as environment variables or add them to a `.env` file at the root of yo
 export BL_WORKSPACE=my-workspace
 export BL_API_KEY=my-api-key
 ```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
 
 When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically — no environment variables needed.
 
