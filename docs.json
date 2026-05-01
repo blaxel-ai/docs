@@ -304,7 +304,7 @@
         ]
       },
       {
-        "tab": "Management API",
+        "tab": "Management APIs",
         "openapi": {
           "source": "/api-reference/controlplane.yml",
           "directory": "api-reference"
@@ -320,6 +320,12 @@
             "group": "Inference API",
             "pages": [
               "api-reference/inference"
+            ]
+          },
+          {
+            "group": "Billing API",
+            "pages": [
+              "api-reference/billing"
             ]
           }
         ]

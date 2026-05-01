@@ -1,0 +1,242 @@
+---
+
+title: 'Billing API'
+
+description: 'Endpoint reference for the Billing Explorer API — retrieve cost and usage metrics for your Blaxel account.'
+
+---
+
+## Endpoint
+
+```http
+GET https://api.blaxel.ai/v0/accounts/{accountId}/metrics
+```
+
+The `{accountId}` path segment is the identifier of the Blaxel account that owns the workspaces you want to query. You can retrieve it from your account settings in the Blaxel Console, or by calling `GET /v0/accounts`.
+
+All requests must be authenticated with a Bearer token. See [Access tokens](/Security/Access-tokens) for how to obtain one.
+
+```bash
+curl "https://api.blaxel.ai/v0/accounts/{accountId}/metrics?startTime=2025-10-01T00:00:00Z&endTime=2025-11-01T00:00:00Z&groupBy=resource_type" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Query parameters
+
+### Required
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `startTime` | `string` (RFC3339 UTC) | Start of the window, **inclusive**. Example: `2025-10-01T00:00:00Z`. |
+| `endTime` | `string` (RFC3339 UTC) | End of the window, **exclusive**. Example: `2025-11-01T00:00:00Z`. |
+
+### Optional
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `resolution` | `string` | Bucket size for the returned timeseries. One of `hourly`, `daily`, `weekly`, `monthly`. Auto-picked from the window length when omitted. See [Resolution rules](#resolution-rules). |
+| `groupBy` | `string` | Dimension to split the response along. One of `workspace`, `resource_type`, `resource_name`, `resource_uuid`, `billing_dimension`. When omitted the response contains a single aggregated entry. |
+| `workspace` | `string` | Restrict to a single workspace name. **Admin-only.** |
+| `resourceType` | `string` | Filter by raw `resource_type` (e.g. `sandbox`, `agent`, `job`, `mcp_server`, `volume`, `custom_domain`). |
+| `resourceName` | `string` | Filter by resource name (primary identifier). |
+| `resourceUuid` | `string` | Filter by resource UUID / instance id. Best-effort — not every resource type carries an instance id. |
+| `billingDimension` | `string` | Filter by canonical billing dimension. See [Billing dimensions](#billing-dimensions). |
+| `limit` | `integer` | Page size for grouped results. Default `100`, max `100`. Values above `100` are silently clamped. |
+| `cursor` | `string` | Opaque pagination cursor returned in `meta.nextCursor` of a previous response. |
+
+Use the [enum discovery endpoints](#enum-discovery-endpoints) to populate dropdowns for `groupBy` and `resourceType` values without hard-coding them.
+
+## Resolution rules
+
+When `resolution` is omitted, Blaxel picks one based on the window length:
+
+| Window length | Default resolution |
+|---------------|--------------------|
+| `< 7 days` | `hourly` |
+| `< 90 days` | `daily` |
+| `< 1 year` | `weekly` |
+| `≥ 1 year` | `monthly` |
+
+Explicit values have maximum window caps to keep responses bounded:
+
+| Resolution | Max window |
+|------------|-----------|
+| `hourly` | 7 days |
+| `daily` | 90 days |
+| `weekly` | 1 year |
+| `monthly` | unbounded |
+
+Requesting a resolution that exceeds its cap returns `400 Bad Request`.
+
+## Admin-only parameters
+
+The following two features are restricted to **account admins** — non-admin callers get `403 Access denied`:
+
+- `workspace=<name>` — filtering to a single workspace
+- `groupBy=workspace` — splitting the response by workspace
+
+Non-admin members can still query their own workspace's data via `workspace=` when they are admins of the **account**, which is distinct from the workspace admin role. See [workspace access control](/Security/Workspace-access-control) for more on the role model.
+
+## Billing dimensions
+
+A **billing dimension** is the canonical, unit-stable metric that Blaxel bills against. Each resource type maps to one or more dimensions, and each dimension carries a single unit (`gbs` = GB-seconds, `count` = discrete events, `hours` = active hours).
+
+| Billing dimension | Resource type | Unit |
+|-------------------|--------------|------|
+| `sandbox_compute_runtime_gbs` | sandbox | GB-seconds |
+| `sandbox_image_storage_gbs` | sandbox | GB-seconds |
+| `sandbox_snapshot_storage_gbs` | sandbox | GB-seconds |
+| `agent_compute_runtime_gbs` | agent | GB-seconds |
+| `agent_image_storage_gbs` | agent | GB-seconds |
+| `agent_async_requests_count` | agent (async requests) | count |
+| `job_compute_runtime_gbs` | job | GB-seconds |
+| `job_image_storage_gbs` | job | GB-seconds |
+| `mcp_server_compute_runtime_gbs` | mcp_server | GB-seconds |
+| `mcp_server_image_storage_gbs` | mcp_server | GB-seconds |
+| `volume_storage_gbs` | volume | GB-seconds |
+| `custom_domain_active_time_hours` | custom_domain | hours |
+
+<Tip>
+  Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `groupBy=billing_dimension`**, which guarantees every row shares a single unit. For every other grouping (including `resource_type`, `resource_name`, `resource_uuid`, `workspace`, and the default ungrouped response) you will only see `totalCost` / `cost` in USD — the unit-safe common denominator.
+</Tip>
+
+## Response
+
+A successful call returns `200 OK` with an `AccountMetricsResponse`. Example for `groupBy=resource_type` — `usage` fields are omitted per the rule above:
+
+```json
+{
+  "startTime": "2025-10-01T00:00:00Z",
+  "endTime":   "2025-11-01T00:00:00Z",
+  "resolution": "daily",
+  "summary": {
+    "totalCost": 142.37
+  },
+  "data": [
+    {
+      "resourceType": "sandbox",
+      "summary": { "cost": 102.11 },
+      "timeseries": [
+        { "timestamp": "2025-10-01T00:00:00Z", "cost": 3.41 },
+        { "timestamp": "2025-10-02T00:00:00Z", "cost": 3.12 },
+        "..."
+      ]
+    },
+    {
+      "resourceType": "agent",
+      "summary": { "cost": 28.90 },
+      "timeseries": ["..."]
+    }
+  ],
+  "meta": {
+    "hasMore":    false,
+    "nextCursor": ""
+  }
+}
+```
+
+### Top-level fields
+
+| Field | Description |
+|-------|-------------|
+| `startTime` / `endTime` | Echo of the queried window, in RFC3339 UTC. |
+| `resolution` | Bucket size actually applied (either what you asked for, or the auto-picked default). |
+| `summary.totalCost` | Total cost in USD across the full window. Sum of every group's cost in `data`. |
+| `summary.totalUsage` | Total usage across the window. **Only populated** when `groupBy=billing_dimension`, where every row shares a single unit. Omitted otherwise. |
+| `data` | Array of grouped entries. When `groupBy` is not set, contains a single aggregated entry. |
+| `meta.hasMore` / `meta.nextCursor` | See [Pagination](#pagination). |
+
+### Per-group entry
+
+Each item in `data` is an `AccountMetricsDataEntry`. The fields populated depend on which `groupBy` was requested:
+
+| Field | Populated when `groupBy` is |
+|-------|------------------------------|
+| `workspace` | `workspace` |
+| `resourceType` | `resource_type` |
+| `resourceName` | `resource_name` |
+| `resourceUuid` | `resource_uuid` |
+| `billingDimension` | `billing_dimension` |
+
+Every entry also carries:
+
+- `summary.cost` — cost in USD for this group over the window.
+- `summary.usage` — usage for this group. Only populated for `groupBy=billing_dimension` (same unit-safety rule as the top-level summary).
+- `timeseries` — one entry per resolution bucket for the full window. Buckets with no activity have `cost: 0`. Bucket-level `usage` follows the same rule as group-level `usage`.
+
+## Pagination
+
+Grouped responses are paginated. To request the next page, pass the `nextCursor` value from the previous response back as the `cursor` query parameter:
+
+```bash
+curl "https://api.blaxel.ai/v0/accounts/{accountId}/metrics?startTime=...&endTime=...&groupBy=resource_name&limit=100&cursor=$NEXT_CURSOR" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+When `meta.hasMore` is `false`, `meta.nextCursor` is empty and there are no more pages.
+
+`limit` defaults to `100` and is capped at `100`; values above the cap are silently clamped.
+
+## Enum discovery endpoints
+
+Two helper endpoints expose the valid values for `groupBy` and `resourceType` so you can render dropdowns without baking the list into your client.
+
+### `GET /v0/accounts/{accountId}/metrics/enums/group-by`
+
+Returns every valid value for the `groupBy` query parameter. The enum is static but exposed as an endpoint so it stays in sync automatically if new groupings are added.
+
+```json
+{ "values": ["workspace", "resource_type", "resource_name", "resource_uuid", "billing_dimension"] }
+```
+
+### `GET /v0/accounts/{accountId}/metrics/enums/resource-types`
+
+Returns the distinct `resource_type` values **actually observed for the account in the supplied window**. Unlike the `group-by` enum, this list is dynamic: a resource type only appears once there is at least one metric event for it in range.
+
+Required query parameters: `startTime`, `endTime` (same format as the main endpoint).
+
+```json
+{ "values": ["sandbox", "agent", "job", "mcp_server"] }
+```
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400 Bad Request` | Missing/invalid parameter, unsupported feature (`label`, `unit`), or a `resolution` that exceeds its window cap. |
+| `403 Access denied` | Non-admin caller used `workspace=` or `groupBy=workspace`. |
+
+## Example: daily cost per resource type over 30 days
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "resolution=daily" \
+  --data-urlencode "groupBy=resource_type" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: hourly sandbox compute cost for the last 24 hours
+
+```bash
+START=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:00:00Z)
+END=$(date -u +%Y-%m-%dT%H:00:00Z)
+
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=$START" \
+  --data-urlencode "endTime=$END" \
+  --data-urlencode "resolution=hourly" \
+  --data-urlencode "billingDimension=sandbox_compute_runtime_gbs" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: per-workspace breakdown (account admin only)
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "groupBy=workspace" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
