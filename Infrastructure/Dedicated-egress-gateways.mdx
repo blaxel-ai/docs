@@ -58,31 +58,37 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",
   memory: 4096,
+  region: "eu-fra-1",
   network: {
     egress: {
       mode: "dedicated",
-      gateway: "my-egress-gateway"
+      gateway: "egress-gateway-4"
     }
   },
 });
 ```
 
 ```python Python
+import asyncio
 from blaxel.core.sandbox import SandboxInstance
 
-sandbox = await SandboxInstance.create(
-    {
-        "name": "my-sandbox",
-        "image": "blaxel/base-image:latest",
-        "memory": 4096,
-        "network": {
-            "egress": {
-                "mode": "dedicated",
-                "gateway": "my-egress-gateway",
+async def main():
+    sandbox = await SandboxInstance.create(
+        {
+            "name": "my-sandbox",
+            "image": "blaxel/base-image:latest",
+            "memory": 4096,
+            "region": "eu-fra-1",
+            "network": {
+                "egress": {
+                    "mode": "dedicated",
+                    "gateway": "egress-gateway-4",
+                },
             },
-        },
-    }
-)
+        }
+    )
+
+asyncio.run(main())
 ```
 
 </CodeGroup>
