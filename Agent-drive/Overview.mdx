@@ -293,7 +293,7 @@ await drive.delete()
 
 ## Full example
 
-The following example creates a drive, creates a sandbox from the custom sandbox template using its image ID, mounts the drive, writes a file to the mounted path, and reads it back:
+The following example creates a drive, creates a sandbox from a custom sandbox image using its image ID, mounts the drive, writes a file to the mounted path, and reads it back:
 
 <CodeGroup>
 
@@ -307,7 +307,7 @@ const drive = await DriveInstance.createIfNotExists({
 });
 
 // 2. Create a sandbox
-//    Use the image ID of the custom sandbox template
+//    Use the image ID of the custom sandbox image
 const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-agent-sandbox",
   image: "my-sandbox-image-id",
