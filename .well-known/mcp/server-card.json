@@ -3,7 +3,7 @@
   "serverInfo": {
     "name": "blaxel-docs",
     "version": "1.0.0",
-    "description": "MCP server providing real-time access to Blaxel documentation: sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway."
+    "description": "MCP server providing real-time access to Blaxel documentation. Use this MCP to answer any question about Blaxel Sandboxes, Agent Drive, Volumes, Agent Hosting, MCP Servers Hosting, Batch Jobs, and Model Gateway."
   },
   "transports": [
     {
