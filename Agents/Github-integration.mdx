@@ -50,6 +50,8 @@ jobs:
 
       - name: Install Blaxel CLI
         run: curl -fsSL https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh | BINDIR=/usr/local/bin sh
+        # for security, pin to a tagged release and/or verify a checksum, e.g.:
+        # run: https://raw.githubusercontent.com/blaxel-ai/toolkit/v0.1.90/install.sh
 
       - name: Deploy to Blaxel
         env:
