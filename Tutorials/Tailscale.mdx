@@ -7,13 +7,16 @@ This tutorial shows how to run [Tailscale](https://tailscale.com/) inside a Blax
 
 ## Prerequisites
 
-- A [Tailscale](https://tailscale.com/) account
-- A Tailscale authentication key (see below)
-- Blaxel SDK installed in your project
+Before starting, ensure you have:
 
-## Generate a Tailscale authentication key
+- a [Blaxel account](https://blaxel.ai)
+- a [Tailscale account](https://tailscale.com/)
+- a Tailscale authentication key
+- the Blaxel TypeScript or Python SDK installed in your project
 
-1. Go to [https://login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys)
+To generate a a Tailscale authentication key:
+
+1. Log in to your Tailscale account and navigate to the administration section.
 2. Click **Generate auth key**
 3. Configure the key:
    - **Reusable** — enable if you want to use the same key across multiple sandboxes
@@ -27,11 +30,39 @@ Then set it as an environment variable:
 export TS_AUTHKEY=tskey-auth-...
 ```
 
-## Create a sandbox with `iptables` enabled
+## Create a sandbox
 
 Tailscale requires iptables, which is not enabled in sandboxes by default. You enable it by passing [`extraArgs` at creation time](/Sandboxes/Overview#kernel-networking).
 
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "tailscale-sandbox",
+  extraArgs: { iptables: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "tailscale-sandbox",
+    "extra_args": {"iptables": "enabled"},
+})
+```
+
+</CodeGroup>
+
 ## Install and configure Tailscale in the sandbox
+
+Connect to the sandbox terminal:
+
+```sh
+bl connect tailscale-sandbox
+```
 
 Next, install the `tailscale` and `iptables` packages and start the `tailscaled` daemon as a background process.
 
@@ -59,6 +90,8 @@ Retrieve the Tailscale IP.
 tailscale ip
 ```
 
+## Connect to the sandbox using Tailscale
+
 Once authenticated, the sandbox is reachable via SSH from any device on your Tailscale network:
 
 ```sh
@@ -69,7 +102,7 @@ ssh root@my-sandbox
 
 ## Appendix: Using the SDK
 
-It's also possible to create a sandbox and configure Tailscale using the Blaxel SDKs:
+It's also possible to create a sandbox and configure Tailscale using the Blaxel SDKs instead of the sandbox terminal:
 
 <CodeGroup>
 
