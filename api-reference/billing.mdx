@@ -35,7 +35,7 @@ curl "https://api.blaxel.ai/v0/accounts/{accountId}/metrics?startTime=2025-10-01
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `resolution` | `string` | Bucket size for the returned timeseries. One of `hourly`, `daily`, `weekly`, `monthly`. Auto-picked from the window length when omitted. See [Resolution rules](#resolution-rules). |
-| `groupBy` | `string` | Dimension to split the response along. One of `workspace`, `resource_type`, `resource_name`, `resource_uuid`, `billing_dimension`. When omitted the response contains a single aggregated entry. |
+| `groupBy` | `string` | Dimension(s) to split the response along. Accepts a single value or a comma-separated list of up to 3 dimensions (e.g. `groupBy=resource_uuid,workspace`). Valid dimensions: `workspace`, `resource_type`, `resource_name`, `resource_uuid`, `billing_dimension`. When multiple dimensions are provided, results are grouped by their cross-product. Dimensions are canonically sorted, so `resource_uuid,workspace` and `workspace,resource_uuid` yield the same result. When omitted the response contains a single aggregated entry. |
 | `workspace` | `string` | Restrict to a single workspace name. **Admin-only.** |
 | `resourceType` | `string` | Filter by raw `resource_type` (e.g. `sandbox`, `agent`, `job`, `mcp_server`, `volume`, `custom_domain`). |
 | `resourceName` | `string` | Filter by resource name (primary identifier). |
@@ -73,7 +73,7 @@ Requesting a resolution that exceeds its cap returns `400 Bad Request`.
 The following two features are restricted to **account admins** — non-admin callers get `403 Access denied`:
 
 - `workspace=<name>` — filtering to a single workspace
-- `groupBy=workspace` — splitting the response by workspace
+- `groupBy=workspace` — splitting the response by workspace (including when `workspace` appears as one dimension in a multi-dimension `groupBy`, e.g. `groupBy=resource_type,workspace`)
 
 Non-admin members can still query their own workspace's data via `workspace=` when they are admins of the **account**, which is distinct from the workspace admin role. See [workspace access control](/Security/Workspace-access-control) for more on the role model.
 
@@ -97,7 +97,7 @@ A **billing dimension** is the canonical, unit-stable metric that Blaxel bills a
 | `custom_domain_active_time_hours` | custom_domain | hours |
 
 <Tip>
-  Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `groupBy=billing_dimension`**, which guarantees every row shares a single unit. For every other grouping (including `resource_type`, `resource_name`, `resource_uuid`, `workspace`, and the default ungrouped response) you will only see `totalCost` / `cost` in USD — the unit-safe common denominator.
+  Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `billing_dimension` is among the requested `groupBy` dimensions** — this guarantees every row shares a single unit. This applies to both `groupBy=billing_dimension` alone and multi-dimension queries that include it (e.g. `groupBy=billing_dimension,workspace`). For groupings that do not include `billing_dimension` you will only see `totalCost` / `cost` in USD — the unit-safe common denominator.
 </Tip>
 
 ## Response
@@ -142,26 +142,28 @@ A successful call returns `200 OK` with an `AccountMetricsResponse`. Example for
 | `startTime` / `endTime` | Echo of the queried window, in RFC3339 UTC. |
 | `resolution` | Bucket size actually applied (either what you asked for, or the auto-picked default). |
 | `summary.totalCost` | Total cost in USD across the full window. Sum of every group's cost in `data`. |
-| `summary.totalUsage` | Total usage across the window. **Only populated** when `groupBy=billing_dimension`, where every row shares a single unit. Omitted otherwise. |
+| `summary.totalUsage` | Total usage across the window. **Only populated** when `billing_dimension` is among the requested `groupBy` dimensions, where every row shares a single unit. Omitted otherwise. |
 | `data` | Array of grouped entries. When `groupBy` is not set, contains a single aggregated entry. |
 | `meta.hasMore` / `meta.nextCursor` | See [Pagination](#pagination). |
 
 ### Per-group entry
 
-Each item in `data` is an `AccountMetricsDataEntry`. The fields populated depend on which `groupBy` was requested:
+Each item in `data` is an `AccountMetricsDataEntry`. The fields populated depend on which `groupBy` dimension(s) were requested:
 
-| Field | Populated when `groupBy` is |
+| Field | Populated when `groupBy` includes |
 |-------|------------------------------|
-| `workspace` | `workspace` |
-| `resourceType` | `resource_type` |
-| `resourceName` | `resource_name` |
+| `workspace` | `workspace`, `resource_uuid` (enriched), `resource_name` (enriched) |
+| `resourceType` | `resource_type`, `resource_uuid` (enriched), `resource_name` (enriched), `billing_dimension` (enriched) |
+| `resourceName` | `resource_name`, `resource_uuid` (enriched) |
 | `resourceUuid` | `resource_uuid` |
 | `billingDimension` | `billing_dimension` |
+
+When using multi-dimension `groupBy`, all fields from each requested dimension are populated. Additionally, **metadata enrichment** fills in contextual fields — for example, `groupBy=resource_uuid` also populates `workspace`, `resourceName`, and `resourceType` from the underlying data.
 
 Every entry also carries:
 
 - `summary.cost` — cost in USD for this group over the window.
-- `summary.usage` — usage for this group. Only populated for `groupBy=billing_dimension` (same unit-safety rule as the top-level summary).
+- `summary.usage` — usage for this group. Only populated when `billing_dimension` is among the requested `groupBy` dimensions (same unit-safety rule as the top-level summary).
 - `timeseries` — one entry per resolution bucket for the full window. Buckets with no activity have `cost: 0`. Bucket-level `usage` follows the same rule as group-level `usage`.
 
 ## Pagination
@@ -203,8 +205,55 @@ Required query parameters: `startTime`, `endTime` (same format as the main endpo
 
 | Status | Meaning |
 |--------|---------|
-| `400 Bad Request` | Missing/invalid parameter, unsupported feature (`label`, `unit`), or a `resolution` that exceeds its window cap. |
-| `403 Access denied` | Non-admin caller used `workspace=` or `groupBy=workspace`. |
+| `400 Bad Request` | Missing/invalid parameter, unsupported feature (`label`, `unit`), a `resolution` that exceeds its window cap, more than 3 `groupBy` dimensions, or an invalid/duplicate dimension name. |
+| `403 Access denied` | Non-admin caller used `workspace=` or `groupBy=workspace` (including as part of a multi-dimension groupBy). |
+
+## Multi-dimension groupBy
+
+You can group by multiple dimensions at once by passing a comma-separated list. For example, `groupBy=resource_type,workspace` returns the cross-product — one entry per unique (resource_type, workspace) combination:
+
+```json
+{
+  "startTime": "2025-10-01T00:00:00Z",
+  "endTime":   "2025-11-01T00:00:00Z",
+  "resolution": "daily",
+  "summary": {
+    "totalCost": 142.37
+  },
+  "data": [
+    {
+      "resourceType": "sandbox",
+      "workspace": "production",
+      "summary": { "cost": 80.00 },
+      "timeseries": [
+        { "timestamp": "2025-10-01T00:00:00Z", "cost": 2.67 },
+        "..."
+      ]
+    },
+    {
+      "resourceType": "sandbox",
+      "workspace": "staging",
+      "summary": { "cost": 22.11 },
+      "timeseries": ["..."]
+    },
+    {
+      "resourceType": "agent",
+      "workspace": "production",
+      "summary": { "cost": 28.90 },
+      "timeseries": ["..."]
+    }
+  ],
+  "meta": {
+    "hasMore":    false,
+    "nextCursor": ""
+  }
+}
+```
+
+**Constraints:**
+- Maximum **3 dimensions** per query. Exceeding this returns `400 Bad Request`.
+- Pagination works the same way — the cursor is opaque and handles the composite grouping internally.
+- `summary.usage` follows the same unit-safety rule: only populated when `billing_dimension` is among the requested dimensions.
 
 ## Example: daily cost per resource type over 30 days
 
@@ -238,5 +287,15 @@ curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
   --data-urlencode "startTime=2025-10-01T00:00:00Z" \
   --data-urlencode "endTime=2025-11-01T00:00:00Z" \
   --data-urlencode "groupBy=workspace" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: cost per resource type per workspace (multi-dimension, admin only)
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "groupBy=resource_type,workspace" \
   -H "Authorization: Bearer $BL_API_KEY"
 ```
