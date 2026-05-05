@@ -140,7 +140,8 @@ await new Promise((r) => setTimeout(r, 2000));
 // 4. Authenticate and bring up the interface
 const up = await sandbox.process.exec({
   name: "tailscale-up",
-  command: `tailscale up --authkey=${TS_AUTHKEY} --hostname=${SANDBOX_NAME} --ssh`,
+  command: `tailscale up --authkey=$TS_AUTHKEY --hostname=${SANDBOX_NAME} --ssh`,
+  env: { TS_AUTHKEY },
   waitForCompletion: true,
   timeout: 30000,
 });
