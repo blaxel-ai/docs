@@ -306,6 +306,38 @@ You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Con
 bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
 ```
 
+### Kernel networking
+
+By default, sandboxes run on a minimal kernel without iptables support. You can enable iptables by passing `extraArgs` at creation time.
+
+<Note>
+   `extraArgs` can only be set when creating a sandbox. It cannot be changed after creation.
+</Note>
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  extraArgs: { iptables: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "extra_args": {"iptables": "enabled"},
+})
+```
+
+</CodeGroup>
+
+For a complete example of using iptables to run Tailscale inside a sandbox, see the [Tailscale tutorial](/Tutorials/Tailscale).
+
 ### Expiration
 
 Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions.
