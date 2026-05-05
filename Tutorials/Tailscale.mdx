@@ -193,7 +193,8 @@ async def setup_tailscale():
     # 4. Authenticate and bring up the interface
     up = await sandbox.process.exec({
         "name": "tailscale-up",
-        "command": f"tailscale up --authkey={TS_AUTHKEY} --hostname={SANDBOX_NAME} --ssh",
+        "command": f"tailscale up --authkey=$TS_AUTHKEY --hostname={SANDBOX_NAME} --ssh",
+        "env": {"TS_AUTHKEY": TS_AUTHKEY},
         "wait_for_completion": True,
         "timeout": 30000,
     })
