@@ -61,7 +61,7 @@ spec:
   region: us-was-1
   runtime:
     diskPercent: 50
-    image: job/github-runner-dev:jv7lsvdihfqz
+    image: job/github-runner-dev:<your-image-digest>  # from: bl get job github-runner-dev -o json | jq -r '.[].spec.runtime.image'
     memory: 4096
     timeout: 3600
 ```
