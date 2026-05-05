@@ -1,0 +1,85 @@
+---
+title: "Deploy multiple jobs from a single image"
+description: "Reuse a job image across multiple job definitions."
+---
+
+You can build a job image once and reuse it across multiple job definitions (e.g. different memory / disk / region profiles) without rebuilding.
+
+The workflow is:
+
+1. Build and push the image through a single "dev" job.
+2. Reference the resulting image digest from as many `Job` manifests as you need.
+3. Roll out changes to production runners by re-applying the manifests.
+
+This is particularly useful when images are large: a full rollout across every host can take up to 20 minutes, so sharing one image across many jobs is much cheaper than rebuilding per job.
+
+## 1. Build the image via a dev job
+
+Create a `blaxel.toml` describing the dev job used to build and host the image:
+
+```toml
+type = "job"
+name = "github-runner-dev"
+
+[runtime]
+diskPercent = 50
+memory = 4096
+timeout = 3600
+maxRetries = 0
+```
+
+Deploy it with:
+
+```bash
+bl deploy
+```
+
+Alternatively, use the command below to push the image without deploying it:
+
+```bash
+bl push
+```
+
+Once deployed, obtain the image reference:
+
+```bash
+bl get job github-runner-dev -o json | jq -r '.[].spec.runtime.image'
+# -> job/github-runner-dev:jv7lsvdihfqz
+```
+
+## 2. Create one manifest per runner profile
+
+For every runner variant you need (size, region, timeout, ...), write a small `Job` manifest that points at the image produced above.
+
+```yaml
+# 4grunner.yaml
+apiVersion: blaxel.ai/v1alpha1
+kind: Job
+metadata:
+  name: github-runner-4g
+spec:
+  region: us-was-1
+  runtime:
+    diskPercent: 50
+    image: job/github-runner-dev:jv7lsvdihfqz
+    memory: 4096
+    timeout: 3600
+```
+
+Apply it:
+
+```bash
+bl apply -f 4grunner.yaml
+```
+
+You can bootstrap a new manifest from the dev job's current spec:
+
+```bash
+bl get job github-runner-dev -o yaml
+```
+
+## 3. Create additional jobs from the shared image
+
+You can now use the same image to deploy jobs with different manifests/runner profiles, depending on your requirements. Because the image is shared, hosts only pull it once instead of once per job.
+
+To update the image, you can build a new image on `github-runner-dev`, validate it there, then promote it to production by bumping the `image:` field in each manifest and re-applying.
