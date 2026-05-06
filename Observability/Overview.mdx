@@ -49,6 +49,43 @@ Blaxel collects and saves the traces of a **sampled 10%** of all your executions
 
 ![traces.webp](/Observability/Overview/traces.webp)
 
+#### Add custom spans
+
+You can add your own information to traces, such as inputs, outputs, and intermediate results. This is useful when you need to perform detailed debugging.
+
+<CodeGroup>
+```typescript TypeScript
+import "@blaxel/telemetry";
+import { startSpan } from "@blaxel/telemetry";
+
+const span = startSpan("span-name", {
+  attributes: {
+    "input": JSON.stringify(userInput),
+  },
+});
+
+try {
+  // ... your code here ...
+  span.setAttribute("action.result", JSON.stringify(result));
+} finally {
+  span.end();
+}
+```
+
+```python Python
+import blaxel.telemetry
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+
+with tracer.start_as_current_span("span-name", attributes={"input": user_input}) as span:
+    # ... your code here ...
+    span.set_attribute("action.result", str(result))
+```
+</CodeGroup>
+
+You can call `startSpan` anywhere inside a request handler, and the span will be attached to the active trace for that request.
+
 ## Opt out
 
 This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable.
