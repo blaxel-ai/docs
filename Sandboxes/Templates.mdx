@@ -1604,6 +1604,58 @@ python main.py
 
 </CodeGroup>
 
+### Deploy from a private registry
+
+Instead of building from source, you can point `blaxel.toml` directly at an image in a private registry:
+
+```toml
+type = "sandbox"
+name = "my-custom-sandbox"
+image = "docker.io/myuser/my-sandbox:latest"
+
+[runtime]
+memory = 4096
+```
+
+The image must include the [sandbox API binary](#2-customize-the-dockerfile).
+
+You can then push or deploy the image using `bl push` or `bl deploy` as usual.
+
+To configure registry credentials, you have three options (listed in priority order):
+
+1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-creds` flag
+
+    ```shell
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-creds "docker.io=myuser:mypassword"
+    ```
+
+2. Pass the credentials from a different configuration file to `bl push` or `bl deploy` with the `--docker-config` flag
+
+    ```shell
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox --docker-config ~/.docker/config.json
+    ```
+
+3. Place a `.docker/config.json` in your project directory using the standard Docker config format (you can copy your existing `~/.docker/config.json`). The file will be automatically detected and used by `bl push` or `bl deploy`.
+
+    <Warning>Add `.docker/config.json` to your `.gitignore` to avoid committing registry credentials to source control.</Warning>
+
+    ```json
+    {
+      "auths": {
+        "docker.io": {
+          "auth": "<base64 of username:password>"
+        }
+      }
+    }
+    ```
+
+The following registries are currently supported:
+
+- Docker Hub
+- GitHub Container Registry
+- Google Artifact Registry
+- Amazon ECR
+- Any private registry which supports Basic auth
 
 ### Use a custom image
 
