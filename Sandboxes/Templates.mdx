@@ -1637,6 +1637,8 @@ To configure registry credentials, you have three options (listed in priority or
 
 3. Place a `.docker/config.json` in your project directory using the standard Docker config format (you can copy your existing `~/.docker/config.json`). The file will be automatically detected and used by `bl push` or `bl deploy`.
 
+    <Warning>Add `.docker/config.json` to your `.gitignore` to avoid committing registry credentials to source control.</Warning>
+
     ```json
     {
       "auths": {
