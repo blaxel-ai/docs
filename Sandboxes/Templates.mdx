@@ -1604,154 +1604,56 @@ python main.py
 
 </CodeGroup>
 
-### Deploy a Custom Docker Image as a Blaxel Sandbox
+### Deploy from a private registry
 
-This guide walks through building a custom sandbox image, pushing it to a private Docker registry, deploying it to Blaxel, and using it from the TypeScript SDK.
+Instead of building from source, you can point `blaxel.toml` directly at an image in a private registry:
 
-1. Create the Dockerfile
-
-Create a Dockerfile that extends a base image and includes the Blaxel sandbox API:
-
-FROM node:22-alpine
-WORKDIR /root
-# Copy the sandbox API binary from the official Blaxel image
-COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
-# Install any additional tools your sandbox needs
-# RUN apk add --no-cache git python3
-ENTRYPOINT ["/usr/local/bin/sandbox-api"]
-
-2. Build and push to your private registry
-
-# Build the image
-docker build -t docker.io/myuser/my-sandbox:latest .
-# Log in to your registry
-docker login docker.io
-# Push the image
-docker push docker.io/myuser/my-sandbox:latest
-
-3. Set up your project for Blaxel
-
-Create a project directory with a blaxel.toml and a .docker/config.json:
-
-my-sandbox/
-├── blaxel.toml
-└── .docker/
-    └── config.json
-
-blaxel.toml
-
+```toml
 type = "sandbox"
 name = "my-custom-sandbox"
 image = "docker.io/myuser/my-sandbox:latest"
+
 [runtime]
 memory = 4096
+```
 
-.docker/config.json
+The image must include the [sandbox API binary](#2-customize-the-dockerfile).
 
-This file provides registry credentials so Blaxel can pull your private image. It uses the standard Docker config format:
+You can then push or deploy the image using `bl push` or `bl deploy` as usual.
 
-{
-  "auths": {
-    "docker.io": {
-      "auth": "<base64 of username:password>"
+To configure registry credentials, you have three options (listed in priority order):
+
+1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-creds` flag
+
+    ```shell
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-creds "docker.io=myuser:mypassword"
+    ```
+
+2. Pass the credentials from a different configuration file to `bl push` or `bl deploy` with the `--docker-config` flag
+
+    ```shell
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox --docker-config ~/.docker/config.json
+    ```
+
+3. Place a `.docker/config.json` in your project directory using the standard Docker config format (you can copy your existing `~/.docker/config.json`). The file will be automatically detected and used by `bl push` or `bl deploy`.
+
+    ```json
+    {
+      "auths": {
+        "docker.io": {
+          "auth": "<base64 of username:password>"
+        }
+      }
     }
-  }
-}
+    ```
 
-Generate the base64 value:
+The following registries are currently supported:
 
-echo -n "myuser:mypassword" | base64
-
-Tip: If you've already run docker login, you can copy your existing ~/.docker/config.json into the project directory.
-
-4. Deploy with bl deploy
-
-From your project directory:
-
-bl deploy
-
-This will:
-
-Read blaxel.toml and detect the image field (registry image mode)
-
-Automatically read .docker/config.json for registry credentials
-
-Create the sandbox resource on Blaxel
-
-Trigger a build that pulls your private image and transforms it for Blaxel's microVM infrastructure
-
-Alternative: bl push
-
-If you only want to build and push the image without creating/updating the sandbox resource:
-
-bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox
-
-You can also pass credentials explicitly:
-
-# Point to a specific Docker config file
-bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox \
-  --docker-config ~/.docker/config.json
-# Or pass credentials inline
-bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox \
-  --registry-creds "docker.io=myuser:mypassword"
-
-5. Use the sandbox from the TypeScript SDK
-
-import { SandboxInstance } from "@blaxel/core";
-// Set these environment variables:
-// BL_WORKSPACE=my-workspace
-// BL_API_KEY=my-api-key
-async function main() {
-  // Create a sandbox using your custom image
-  const sandbox = await SandboxInstance.create({
-    name: "my-custom-sandbox",
-    image: "my-custom-sandbox",  // references the deployed sandbox template
-    memory: 4096,
-    ports: [{ target: 3000 }],
-  });
-  // Execute a command
-  const result = await sandbox.process.exec("node --version");
-  console.log(result.stdout);
-  // Write a file
-  await sandbox.fs.write("/root/hello.js", 'console.log("Hello from custom sandbox!")');
-  // Run a process
-  const proc = await sandbox.process.start({
-    cmd: ["node", "/root/hello.js"],
-  });
-  console.log(proc.stdout);
-}
-main();
-
-Connect to an existing sandbox
-
-import { SandboxInstance } from "@blaxel/core";
-// Connect to a running sandbox by name
-const sandbox = await SandboxInstance.connect("my-custom-sandbox");
-// Use it the same way
-const result = await sandbox.process.exec("ls -la /root");
-console.log(result.stdout);
-
-Credential priority
-
-When resolving Docker registry credentials, the CLI uses this priority (highest wins):
-
---registry-creds flag (inline credentials)
-
---docker-config flag (explicit config file path)
-
-.docker/config.json in the project directory (auto-discovered)
-
-Supported registries
-
-Docker Hub (docker.io)
-
-GitHub Container Registry (ghcr.io)
-
-Google Artifact Registry (*-docker.pkg.dev)
-
-Amazon ECR (*.dkr.ecr.*.amazonaws.com)
-
-Any private registry with Basic auth support
+- Docker Hub
+- GitHub Container Registry
+- Google Artifact Registry
+- Amazon ECR
+- Any private registry which supports Basic auth
 
 ### Use a custom image
 
