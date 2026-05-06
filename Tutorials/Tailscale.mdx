@@ -1,0 +1,216 @@
+---
+title: 'Run Tailscale in a sandbox'
+description: 'Connect a Blaxel sandbox to your Tailscale network and access it via SSH from any device.'
+---
+
+This tutorial shows how to run [Tailscale](https://tailscale.com/) inside a Blaxel sandbox. Once set up, your sandbox is reachable via SSH from any device on your Tailscale network.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- a [Blaxel account](https://blaxel.ai)
+- a [Tailscale account](https://tailscale.com/)
+- a Tailscale authentication key
+- the Blaxel TypeScript or Python SDK installed in your project
+
+To generate a a Tailscale authentication key:
+
+1. Log in to your Tailscale account and navigate to the administration section.
+2. Click **Generate auth key**
+3. Configure the key:
+   - **Reusable** — enable if you want to use the same key across multiple sandboxes
+   - **Ephemeral** — recommended for sandboxes: the node is automatically removed from your Tailscale network when it disconnects
+   - **Expiry** — set an appropriate duration (e.g. 90 days)
+4. Click **Generate key** and copy the value, typically starting with `tskey-auth-...`
+
+Then set it as an environment variable:
+
+```sh
+export TS_AUTHKEY=tskey-auth-...
+```
+
+## Create a sandbox
+
+Tailscale requires iptables, which is not enabled in sandboxes by default. You enable it by passing [`extraArgs` at creation time](/Sandboxes/Overview#kernel-networking).
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "tailscale-sandbox",
+  extraArgs: { iptables: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "tailscale-sandbox",
+    "extra_args": {"iptables": "enabled"},
+})
+```
+
+</CodeGroup>
+
+## Install and configure Tailscale in the sandbox
+
+Connect to the sandbox terminal:
+
+```sh
+bl connect tailscale-sandbox
+```
+
+Next, install the `tailscale` and `iptables` packages and start the `tailscaled` daemon as a background process.
+
+```sh
+# Install dependencies
+apk add tailscale iptables
+
+# Start the daemon
+tailscaled &
+```
+
+You can then run `tailscale up --ssh` to authenticate and enable Tailscale SSH.
+
+```sh
+# Authenticate and enable Tailscale SSH
+# Prints an auth URL if no key is provided, or authenticates silently with a key
+tailscale up --hostname=my-sandbox --ssh
+# or: tailscale up --authkey=$TS_AUTHKEY --hostname=my-sandbox --ssh
+```
+
+Retrieve the Tailscale IP.
+
+```sh
+# Get your Tailscale IP
+tailscale ip
+```
+
+## Connect to the sandbox using Tailscale
+
+Once authenticated, the sandbox is reachable via SSH from any device on your Tailscale network:
+
+```sh
+ssh root@<tailscale-ip>
+# or using the hostname directly:
+ssh root@my-sandbox
+```
+
+## Appendix: Using the SDK
+
+It's also possible to create a sandbox and configure Tailscale using the Blaxel SDKs instead of the sandbox terminal:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const TS_AUTHKEY = process.env.TS_AUTHKEY!;
+const SANDBOX_NAME = "tailscale-sandbox";
+
+// 1. Create sandbox with iptables enabled
+const sandbox = await SandboxInstance.create({
+  name: SANDBOX_NAME,
+  extraArgs: { iptables: "enabled" },
+});
+
+// 2. Install dependencies
+await sandbox.process.exec({
+  name: "install-deps",
+  command: "apk add --no-cache tailscale iptables",
+  waitForCompletion: true,
+  timeout: 60000,
+});
+
+// 3. Start the tailscaled daemon in the background
+await sandbox.process.exec({
+  name: "tailscaled",
+  command: "tailscaled",
+  keepAlive: true,
+  timeout: 0, // run indefinitely
+});
+
+// Give the daemon a moment to initialize
+await new Promise((r) => setTimeout(r, 2000));
+
+// 4. Authenticate and bring up the interface
+const up = await sandbox.process.exec({
+  name: "tailscale-up",
+  command: `tailscale up --authkey=$TS_AUTHKEY --hostname=${SANDBOX_NAME} --ssh`,
+  env: { TS_AUTHKEY },
+  waitForCompletion: true,
+  timeout: 30000,
+});
+console.log("tailscale up:", up.logs);
+
+// 5. Get the Tailscale IP
+const ip = await sandbox.process.exec({
+  name: "tailscale-ip",
+  command: "tailscale ip",
+  waitForCompletion: true,
+  timeout: 10000,
+});
+console.log("Tailscale IP:", ip.logs?.trim());
+```
+
+```python Python
+import asyncio
+import os
+from blaxel.core import SandboxInstance
+
+TS_AUTHKEY = os.environ["TS_AUTHKEY"]
+SANDBOX_NAME = "tailscale-sandbox"
+
+async def setup_tailscale():
+    # 1. Create sandbox with iptables enabled
+    sandbox = await SandboxInstance.create({
+        "name": SANDBOX_NAME,
+        "extra_args": {"iptables": "enabled"},
+    })
+
+    # 2. Install dependencies
+    await sandbox.process.exec({
+        "name": "install-deps",
+        "command": "apk add --no-cache tailscale iptables",
+        "wait_for_completion": True,
+        "timeout": 60000,
+    })
+
+    # 3. Start the tailscaled daemon in the background
+    await sandbox.process.exec({
+        "name": "tailscaled",
+        "command": "tailscaled",
+        "keep_alive": True,
+        "timeout": 0,  # run indefinitely
+    })
+
+    # Give the daemon a moment to initialize
+    await asyncio.sleep(2)
+
+    # 4. Authenticate and bring up the interface
+    up = await sandbox.process.exec({
+        "name": "tailscale-up",
+        "command": f"tailscale up --authkey=$TS_AUTHKEY --hostname={SANDBOX_NAME} --ssh",
+        "env": {"TS_AUTHKEY": TS_AUTHKEY},
+        "wait_for_completion": True,
+        "timeout": 30000,
+    })
+    print("tailscale up:", up.logs)
+
+    # 5. Get the Tailscale IP
+    ip = await sandbox.process.exec({
+        "name": "tailscale-ip",
+        "command": "tailscale ip",
+        "wait_for_completion": True,
+        "timeout": 10000,
+    })
+    print("Tailscale IP:", ip.logs.strip())
+
+asyncio.run(setup_tailscale())
+```
+
+</CodeGroup>
