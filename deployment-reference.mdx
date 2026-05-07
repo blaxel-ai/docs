@@ -16,6 +16,11 @@ The format of Blaxel's configuration file is described below.
 # defaults to the directory name
 # name = "my-resource"
 
+# registry image (optional, for resource type="sandbox")
+# use a pre-built image from a private registry instead of building from a Dockerfile
+# requires registry credentials in .docker/config.json or via bl push flags
+# image = "docker.io/myuser/my-sandbox:latest"
+
 # public access to resource (only for resource type="agent")
 # possible values: [true, false]
 # defaults to false
