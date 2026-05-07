@@ -37,16 +37,28 @@ mkdir sandbox-agent && cd sandbox-agent
 
 In your project directory, install the [OpenAI Agents SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop:
 
-```shell
+<CodeGroup>
+```shell TypeScript
+npm install @openai/agents @openai/agents-extensions @blaxel/core zod
+```
+
+```shell Python
 python3 -m venv .venv && source .venv/bin/activate # if new project
 pip install openai-agents[blaxel]
 ```
+</CodeGroup>
 
-Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [FastAPI](https://fastapi.tiangolo.com) - install it as below:
+Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [Express](https://expressjs.com) (TypeScript) or [FastAPI](https://fastapi.tiangolo.com) (Python):
 
-```shell
+<CodeGroup>
+```shell TypeScript
+npm install express @types/express
+```
+
+```shell Python
 pip install fastapi uvicorn
 ```
+</CodeGroup>
 
 ## 3. Configure the environment
 
@@ -60,14 +72,64 @@ echo "BL_WORKSPACE=your_workspace_name_here" >> .env
 
 ## 4. Build a simple agent
 
-In your project directory, create a file named `main.py` with the following code.
+In your project directory, create a file named `main.py` (Python) or `index.ts` (TypeScript) with the following code:
 
-```python
+<CodeGroup>
+
+```typescript TypeScript
+import { run } from "@openai/agents";
+import { Manifest, SandboxAgent } from "@openai/agents/sandbox";
+import { BlaxelSandboxClient } from "@openai/agents-extensions/sandbox/blaxel";
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+const host = process.env.HOST ?? "0.0.0.0";
+const port = parseInt(process.env.PORT ?? "8000");
+
+app.post("/query", async (req, res) => {
+  const { task } = req.body;
+
+  const client = new BlaxelSandboxClient();
+
+  const agent = new SandboxAgent({
+    name: "Sandbox agent",
+    model: "gpt-5.4",
+    instructions:
+      "You have access to a minimal sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.",
+    modelSettings: { toolChoice: "auto" },
+    defaultManifest: new Manifest({ root: "/blaxel" }),
+  });
+
+  const result = await run(agent, task, {
+    maxTurns: 50,
+    sandbox: {
+      client,
+      manifest: new Manifest({ root: "/blaxel" }),
+      options: {
+        name: "agent-sandbox",
+        image: "blaxel/base-image",
+        region: "us-pdx-1",
+        memory: 4096,
+      },
+    },
+  });
+
+  res.json({ result: result.finalOutput });
+});
+
+app.listen(port, host, () => {
+  console.log(`Server listening on ${host}:${port}`);
+});
+```
+
+```python Python
 import os
 import uvicorn
 from fastapi import FastAPI, Request
 
-from agents import ModelSettings, Runner, set_tracing_disabled
+from agents import ModelSettings, Runner
 from agents.run import RunConfig
 from agents.sandbox import Manifest, SandboxAgent, SandboxRunConfig
 from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOptions
@@ -109,10 +171,10 @@ async def query(request: Request):
 
 
 if __name__ == "__main__":
-    set_tracing_disabled(True)
     print(f"Server listening on {host}:{port}")
     uvicorn.run(app, host=host, port=port)
 ```
+</CodeGroup>
 
 This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Queries that you send the agent will be executed in a sandbox named `agent-sandbox` that is dynamically created and managed in your workspace on Blaxel's infrastructure.
 
@@ -125,13 +187,27 @@ This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Queries t
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
 
 - Add the required package to your project:
-  ```shell
+
+  <CodeGroup>
+  ```shell TypeScript
+  npm install @blaxel/telemetry
+  ```
+
+  ```shell Python
   pip install "blaxel[telemetry]"
   ```
+  </CodeGroup>
+
 - Import the package in your code:
-  ```python
+  <CodeGroup>
+  ```typescript TypeScript
+  import "@blaxel/telemetry";
+  ```
+
+  ```python Python
   import blaxel.telemetry
   ```
+  </CodeGroup>
 
 ## 6. Test the agent locally
 
@@ -159,13 +235,15 @@ The agent will create and deploy a Blaxel sandbox using the `blaxel/base-image` 
 
 You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your workloads are served optimally to dramatically accelerate cold-start and latency while enforcing your deployment policies.
 
-First, create a `requirements.txt` file in the project directory with the following dependencies:
+For Python, create a `requirements.txt` file in the project directory with the following dependencies:
 
-```shell
+```shell Python
 fastapi>=0.135.3
 uvicorn>=0.35.0
 openai-agents[blaxel]
 ```
+
+For TypeScript, your `package.json` already contains all required dependencies from the `npm install` commands run earlier. No additional file is needed.
 
 Then, deploy the agent by running the following command:
 
