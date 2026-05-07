@@ -35,28 +35,34 @@ Create a directory for the project:
 mkdir sandbox-agent && cd sandbox-agent
 ```
 
-In your project directory, install the [OpenAI Agents SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop:
+Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests.
+
+In your project directory, install the [OpenAI Agents SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop and [Express](https://expressjs.com/) (TypeScript) / [FastAPI](https://fastapi.tiangolo.com/) (Python) to handle HTTP requests and responses:
 
 <CodeGroup>
-```shell TypeScript
-npm install @openai/agents @openai/agents-extensions @blaxel/core zod
+```shell TypeScript (npm)
+npm init # if new project
+npm install @openai/agents @openai/agents-extensions @blaxel/core zod express @types/express
 ```
 
-```shell Python
+```shell TypeScript (pnpm)
+pnpm init # if new project
+pnpm install @openai/agents @openai/agents-extensions @blaxel/core zod express @types/express
+```
+
+```shell TypeScript (yarn)
+yarn init # if new project
+yarn add @openai/agents @openai/agents-extensions @blaxel/core zod express @types/express
+```
+
+```shell TypeScript (bun)
+bun init -m --yes # if new project
+bun install @openai/agents @openai/agents-extensions @blaxel/core zod express @types/express
+```
+
+```shell Python (pip)
 python3 -m venv .venv && source .venv/bin/activate # if new project
-pip install openai-agents[blaxel]
-```
-</CodeGroup>
-
-Agents deployed on Blaxel Agents Hosting must expose an HTTP endpoint for requests. An easy way to do this is with [Express](https://expressjs.com) (TypeScript) or [FastAPI](https://fastapi.tiangolo.com) (Python):
-
-<CodeGroup>
-```shell TypeScript
-npm install express @types/express
-```
-
-```shell Python
-pip install fastapi uvicorn
+pip install openai-agents[blaxel] fastapi uvicorn
 ```
 </CodeGroup>
 
@@ -106,7 +112,6 @@ app.post("/query", async (req, res) => {
     maxTurns: 50,
     sandbox: {
       client,
-      manifest: new Manifest({ root: "/blaxel" }),
       options: {
         name: "agent-sandbox",
         image: "blaxel/base-image",
@@ -182,18 +187,52 @@ This creates a simple sandbox-backed agent with the OpenAI Agents SDK. Queries t
   The agent's HTTP service must be bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment. It is important to read these variables in your code and ensure that the agent's HTTP service binds to the correct host and port.
 </Note>
 
+In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
+
+<CodeGroup>
+
+```json TypeScript (npm/pnpm/yarn)
+{
+  "scripts": {
+    "start": "tsx index.ts",
+    "dev": "tsx --watch index.ts",
+    "build": "tsc"
+  },
+  // ...
+}
+```
+
+```json TypeScript (bun)
+{
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  // ...
+}
+```
+
+</CodeGroup>
+
 ## 5. Enable telemetry (optional)
 
 Instrumentation happens automatically when workloads run on Blaxel. To enable telemetry:
 
 - Add the required package to your project:
-
   <CodeGroup>
-  ```shell TypeScript
+  ```shell TypeScript (npm)
   npm install @blaxel/telemetry
   ```
-
-  ```shell Python
+  ```shell TypeScript (pnpm)
+  pnpm install @blaxel/telemetry
+  ```
+  ```shell TypeScript (yarn)
+  yarn add @blaxel/telemetry
+  ```
+  ```shell TypeScript (bun)
+  bun install @blaxel/telemetry
+  ```
+  ```shell Python (pip)
   pip install "blaxel[telemetry]"
   ```
   </CodeGroup>

@@ -59,7 +59,7 @@ export BL_WORKSPACE=your_workspace_name_here
 
 ## 4. Build a simple agent
 
-In your project directory, create a file named `main.py` with the following code.
+In your project directory, create a file named `index.ts` (TypeScript) or `main.py` (Python) with the following code.
 
 <CodeGroup>
 ```typescript TypeScript
@@ -298,7 +298,7 @@ Run the agent - once complete, you will have a new `chart.png` file in your proj
 
 One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping. Blaxel sandboxes offer a unique advantage here: human operators can preview agent-generated applications in real-time via direct preview URLs for each running sandbox.
 
-To see this in practice, update the agent code in `main.py` as below:
+To see this in practice, update the agent code in `index.ts` / `main.py` as below:
 
 <CodeGroup>
 
@@ -311,7 +311,7 @@ import { BlaxelSandboxClient } from "@openai/agents-extensions/sandbox/blaxel";
 async function main() {
   const task = process.argv.slice(2).join(" ").trim();
   if (!task) {
-    console.log("Usage: bun index.ts <task>");
+    console.log("Usage: node index.ts <task>");
     process.exit(1);
   }
 
@@ -441,7 +441,7 @@ Test the agent:
 <CodeGroup>
 
 ```shell TypeScript
-node main.ts "My cat Kitty does amazing things. Create a website about her."
+node index.ts "My cat Kitty does amazing things. Create a website about her."
 ```
 
 ```shell Python
