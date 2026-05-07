@@ -277,11 +277,8 @@
               "Tutorials/Expo",
               "Tutorials/Nextjs",
               "Tutorials/Code-server",
-<<<<<<< HEAD
+              "Tutorials/Docker",
               "Tutorials/Tailscale"
-=======
-              "Tutorials/Docker"
->>>>>>> d57413e (docs: add Docker sandbox tutorial)
             ]
           },
           {
