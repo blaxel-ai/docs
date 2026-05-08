@@ -68,7 +68,7 @@ If using this pattern, implement a queuing system to coordinate sandbox usage an
 
 ## Use idempotent creation for sandboxes and preview URLs
 
-when creating sandboxes and preview URLs, use `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python) instead of `create()`.
+When creating sandboxes and preview URLs, use `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python) instead of `create()`.
 
 These methods are idempotent and handle conflicts gracefully when the requested resource already exists. If it exists, they return it; if not, they create it.
 
