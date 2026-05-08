@@ -113,46 +113,7 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 </Accordion>
 
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-// Create a new sandbox
-const sandbox = await SandboxInstance.create({
-  name: "my-sandbox",
-  image: "blaxel/base-image:latest",   // public or custom image
-  memory: 4096,   // in MB
-  ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
-  labels: { env: "dev", project: "my-project" }, // optional; labels
-  region: "us-pdx-1"   // deployment region
-});
-```
-
-
-```python Python
-import asyncio
-from blaxel.core import SandboxInstance
-
-async def main():
-
-    # Create a new sandbox
-    sandbox = await SandboxInstance.create({
-      "name": "my-sandbox",
-      "image": "blaxel/base-image:latest",   # public or custom image
-      "memory": 4096,   # in MB
-      "ports": [{ "target": 3000 }],   # optional; ports to expose
-      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
-      "region": "us-pdx-1"   # deployment region
-    })
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-</CodeGroup>
-
-An alternative is to use the helper function `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python). This helper function either retrieves an existing sandbox or creates a new one if it doesn't exist. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
+The recommended pattern for sandbox creation is `createIfNotExists()` / `create_if_not_exists()`. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
 
 <CodeGroup>
 
@@ -170,7 +131,6 @@ const sandbox = await SandboxInstance.createIfNotExists({
 });
 ```
 
-
 ```python Python
 import asyncio
 from blaxel.core import SandboxInstance
@@ -179,6 +139,44 @@ async def main():
 
     # Create sandbox if it doesn't exist
     sandbox = await SandboxInstance.create_if_not_exists({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # optional; ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+      "region": "us-pdx-1"   # deployment region
+    })
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+</CodeGroup>
+
+An alternative is to use `create()`, which raises an error when a sandbox with the specified name already exists:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",   // public or custom image
+  memory: 4096,   // in MB
+  ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"   // deployment region
+});
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+
+    sandbox = await SandboxInstance.create({
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
@@ -275,8 +273,7 @@ You can also add optional labels for sandboxes. Labels are specified as key-valu
 <CodeGroup>
 
 ```typescript TypeScript
-// Create a new sandbox
-const sandbox = await SandboxInstance.create({
+const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
@@ -287,8 +284,7 @@ const sandbox = await SandboxInstance.create({
 
 
 ```python Python
-# Create a new sandbox
-sandbox = await SandboxInstance.create({
+sandbox = await SandboxInstance.create_if_not_exists({
   "name": "my-sandbox",
   "image": "blaxel/base-image:latest",   # public or custom image
   "memory": 4096,   # in MB

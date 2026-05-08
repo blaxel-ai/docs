@@ -66,6 +66,14 @@ The pattern works as follows:
 
 If using this pattern, implement a queuing system to coordinate sandbox usage and flag which sandboxes are in use. Without this, the same sandbox could be assigned to two tasks arriving at the same instant.
 
+## Use idempotent creation for sandboxes and preview URLs
+
+when creating sandboxes and preview URLs, use `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python) instead of `create()`.
+
+These methods are idempotent and handle conflicts gracefully when the requested resource already exists. If it exists, they return it; if not, they create it.
+
+You should use `create()` only if you explicitly want an error to be raised when a sandbox or preview URL with the specified name already exists.
+
 ## Retry strategically in case of errors
 
 Blaxel returns [structured error responses](/troubleshooting/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:

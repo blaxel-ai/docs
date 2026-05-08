@@ -20,11 +20,13 @@ To use a volume, attach it **when you create a sandbox** by passing an array of 
 
 Each configuration must include the `name` of the volume to attach and the `mountPath` where it will be accessible inside the sandbox's filesystem. The mount path **will override the existing content** of a directory.
 
+Use `createIfNotExists()` / `create_if_not_exists()` so that re-running your setup code is safe even if the sandbox already exists with the volume attached:
+
 <CodeGroup>
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.create({
+const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-sandbox",
   image: "blaxel/nextjs:latest",
   memory: 4096,
@@ -41,7 +43,7 @@ const sandbox = await SandboxInstance.create({
 ```python Python
 from blaxel.core import SandboxInstance
 
-sandbox = await SandboxInstance.create({
+sandbox = await SandboxInstance.create_if_not_exists({
   "name": "my-sandbox",
   "image": "blaxel/nextjs:latest",
   "memory": 4096,
