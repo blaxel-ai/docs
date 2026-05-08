@@ -96,6 +96,8 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 </Accordion>
 
+The recommended pattern for preview creation is `createIfNotExists()` / `create_if_not_exists()`. Blaxel first checks for an existing preview with the provided `name` and either returns it or creates a new one using your specified configuration.
+
 Create and manage a sandbox’s public preview URL:
 
 <CodeGroup>
@@ -105,7 +107,7 @@ import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
 // Create public preview
-const preview = await sandbox.previews.create({
+const preview = await sandbox.previews.createIfNotExists({
     metadata: { name: "app-preview" },
     spec: {
         port: 3000,
@@ -132,7 +134,7 @@ from blaxel.core import SandboxInstance
 sandbox = await SandboxInstance.get("my-sandbox")
 
 # Create public preview
-preview = await sandbox.previews.create({
+preview = await sandbox.previews.create_if_not_exists({
     "metadata": {"name": "app-preview"},
     "spec": {
         "port": 3000,
@@ -165,7 +167,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.get("my-sandbox");
 
 // Create private preview
-const preview = await sandbox.previews.create({
+const preview = await sandbox.previews.createIfNotExists({
     metadata: { name: "private-preview" },
     spec: {
       port: 3000,
@@ -191,7 +193,7 @@ from datetime import datetime, timedelta, UTC
 sandbox = await SandboxInstance.get("my-sandbox")
 
 # Create private preview
-preview = await sandbox.previews.create({
+preview = await sandbox.previews.create_if_not_exists({
     "metadata": {"name": "private-preview"},
     "spec": {
         "port": 3000,
@@ -211,6 +213,33 @@ async with httpx.AsyncClient() as client:
 
 </CodeGroup>
 
+An alternative is to use `create()`, which raises an error when a preview with the specified name already exists:
+
+<CodeGroup>
+```typescript TypeScript
+const preview = await sandbox.previews.create({
+    metadata: {
+        name: "preview-name"
+    },
+    spec: {
+        port: 443,
+        public: false
+    }
+})
+```
+```python Python
+preview = await sandbox.previews.create({
+    "metadata": {
+        "name": "preview-name"
+    },
+    "spec": {
+        "port": 443,
+        "public": False
+    }
+})
+```
+</CodeGroup>
+
 ### URL prefix
 
 You can customize the preview URL with a custom string prefix using the `prefixUrl` argument:
@@ -219,7 +248,7 @@ You can customize the preview URL with a custom string prefix using the `prefixU
 ```typescript TypeScript
 const sandbox = await SandboxInstance.get("my-sandbox");
 
-const preview = await sandbox.previews.create({
+const preview = await sandbox.previews.createIfNotExists({
     metadata: { name: "app-preview" },
     spec: {
         port: 3000,
@@ -232,7 +261,7 @@ const preview = await sandbox.previews.create({
 ```python Python
 sandbox = await SandboxInstance.get("my-sandbox")
 
-preview = await sandbox.previews.create({
+preview = await sandbox.previews.create_if_not_exists({
     "metadata": {"name": "app-preview"},
     "spec": {
         "port": 3000,
@@ -245,35 +274,6 @@ preview = await sandbox.previews.create({
 
 When using a prefix URL, the workspace name is automatically added to the prefix and included in the final structure for the preview URL - for example, `https://myprefix-workspace-xxx.preview.bl.run`.
 
-### Create if not exists
-
-Just like for sandboxes, this helper function either retrieves an existing preview or creates a new one if it doesn't exist. Blaxel first checks for an existing preview with the provided `name` and either retrieves it or creates a new one using your specified configuration.
-
-<CodeGroup>
-```typescript TypeScript
-const preview = await sandbox.previews.createIfNotExists({
-    metadata: {
-        name: "preview-name"
-    },
-    spec: {
-        port: 443,
-        public: false
-    }
-})
-```
-```python Python
-preview = await sandbox.previews.create_if_not_exists({
-    "metadata": {
-        "name": "preview-name"
-    },
-    "spec": {
-        "port": 443,
-        "public": False
-    }
-})
-```
-</CodeGroup>
-
 ## Custom domains
 
 To set up a custom domain for your sandbox preview:
@@ -283,26 +283,26 @@ To set up a custom domain for your sandbox preview:
 
 <CodeGroup>
 ```typescript TypeScript {8}
-const preview = await sandbox.previews.create({
+const preview = await sandbox.previews.createIfNotExists({
     metadata: {
         name: "preview-custom-domain"
     },
     spec: {
         port: 443,
         public: false,
-        customDomain: ‘your.custom.domain.dev’
+        customDomain: "your.custom.domain.dev"
     }
 })
 ```
 ```python Python {8}
-preview = await sandbox.previews.create({
+preview = await sandbox.previews.create_if_not_exists({
     "metadata": {
         "name": "preview-custom-domain"
     },
     "spec": {
         "port": 443,
         "public": True,
-        "customDomain": "your.custom.domain.dev”
+        "customDomain": "your.custom.domain.dev"
     }
 })
 ```
