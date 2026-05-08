@@ -285,24 +285,24 @@ To set up a custom domain for your sandbox preview:
 ```typescript TypeScript {8}
 const preview = await sandbox.previews.createIfNotExists({
     metadata: {
-        name: “preview-custom-domain”
+        name: "preview-custom-domain"
     },
     spec: {
         port: 443,
         public: false,
-        customDomain: ‘your.custom.domain.dev’
+        customDomain: "your.custom.domain.dev"
     }
 })
 ```
 ```python Python {8}
 preview = await sandbox.previews.create_if_not_exists({
-    “metadata”: {
-        “name”: “preview-custom-domain”
+    "metadata": {
+        "name": "preview-custom-domain"
     },
-    “spec”: {
-        “port”: 443,
-        “public”: True,
-        “customDomain”: “your.custom.domain.dev”
+    "spec": {
+        "port": 443,
+        "public": True,
+        "customDomain": "your.custom.domain.dev"
     }
 })
 ```
