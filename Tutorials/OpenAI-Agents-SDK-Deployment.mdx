@@ -230,7 +230,7 @@ Instrumentation happens automatically when workloads run on Blaxel. To enable te
   yarn add @blaxel/telemetry
   ```
   ```shell TypeScript (bun)
-  bun install @blaxel/telemetry
+  bun add @blaxel/telemetry
   ```
   ```shell Python (pip)
   pip install "blaxel[telemetry]"
@@ -277,8 +277,8 @@ You're now ready to deploy the agent on Blaxel. When deploying to Blaxel, your w
 For Python, create a `requirements.txt` file in the project directory with the following dependencies:
 
 ```shell Python
-fastapi>=0.135.3
-uvicorn>=0.35.0
+fastapi
+uvicorn
 openai-agents[blaxel]
 ```
 
@@ -305,7 +305,7 @@ curl -X POST https://run.blaxel.ai/$(bl workspace --current)/agents/sandbox-agen
   -H "X-Blaxel-Workspace: $(bl workspace --current)" \
   -H "X-Blaxel-Authorization: Bearer $(bl token)" \
   -H "Content-Type: application/json" \
-  -d '{"task": "Write a Python program to reverse words in a string. Test it. Return the test results and the final working code."}'
+  -d '{"task": "Write a Python program to count how many times each word appears in a sentence. Test it. Return the test results and the final working code."}'
 ```
 
 As before, the agent will create a sandbox, generate the code and provide the result.
@@ -313,7 +313,7 @@ As before, the agent will create a sandbox, generate the code and provide the re
 You can also send a request through the Blaxel CLI:
 
 ```shell
-bl run agent sandbox-agent/query --data '{"task": "Write a Python program to reverse words in a string. Test it. Return the test results and the final working code."}'
+bl run agent sandbox-agent/query --data '{"task": "Write a Python program to count how many times each word appears in a sentence. Test it. Return the test results and the final working code."}'
 ```
 
 <Tip>

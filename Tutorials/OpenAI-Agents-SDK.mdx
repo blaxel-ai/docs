@@ -37,8 +37,24 @@ mkdir sandbox-agent && cd sandbox-agent
 In your project directory, install the [OpenAI Agent SDK with Blaxel support](https://developers.openai.com/api/docs/guides/agents-sdk) for the agent loop:
 
 <CodeGroup>
-```shell TypeScript
+```shell TypeScript (npm)
+npm init # if new project
 npm install @openai/agents @openai/agents-extensions @blaxel/core zod
+```
+
+```shell TypeScript (pnpm)
+pnpm init # if new project
+pnpm install @openai/agents @openai/agents-extensions @blaxel/core zod
+```
+
+```shell TypeScript (yarn)
+yarn init # if new project
+yarn add @openai/agents @openai/agents-extensions @blaxel/core zod
+```
+
+```shell TypeScript (bun)
+bun init -m --yes # if new project
+bun add @openai/agents @openai/agents-extensions @blaxel/core zod
 ```
 
 ```shell Python
@@ -99,7 +115,7 @@ async function main() {
   console.log(result.finalOutput);
 }
 
-main().catch(console.error);
+await main().catch(console.error);
 ```
 
 ```python Python
@@ -222,7 +238,7 @@ async function main() {
   await session.shutdown();
 }
 
-main().catch(console.error);
+await main().catch(console.error);
 ```
 
 ```python Python
@@ -358,7 +374,7 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+await main().catch(console.error);
 ```
 
 ```python Python
@@ -441,7 +457,11 @@ Test the agent:
 <CodeGroup>
 
 ```shell TypeScript
+# Node.js
 node index.ts "My cat Kitty does amazing things. Create a website about her."
+
+# Bun
+bun index.ts "My cat Kitty does amazing things. Create a website about her."
 ```
 
 ```shell Python
