@@ -146,6 +146,10 @@ components:
           description: Countries
           items:
             $ref: '#/components/schemas/Country'
+        detectedRegion:
+          type: string
+          description: Auto-detected closest region based on viewer geolocation (from
+            CloudFront headers). Empty when geo headers are not available.
         privateLocations:
           type: array
           description: Private locations managed with blaxel operator
