@@ -362,7 +362,7 @@ Here the most notable imports are the scripts. They are used for the `bl serve` 
 }
 ```
 
-Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+Depending on what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
 
 - `start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
 - `build` : build the project. It is done automatically when deploying.
@@ -411,7 +411,7 @@ memory = 1024
 - `public` field specifies if the agent is publicly accessible (defaults to `false`).
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
+- `[[triggers]]` and `[triggers.configuration]` sections define ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`). A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 <Tip>
 `DEADLINE_EXCEEDED` or `STARTUP TCP probe failed` errors? Check our [troubleshooting page](/troubleshooting) for possible solutions.
