@@ -1,7 +1,6 @@
 ---
-title: "Use Mastra with sandboxes"
-description: "Use Mastra to create compute-capable agents backed by Blaxel sandboxes for running commands, editing files, and executing code."
-sidebarTitle: "Example: Connect from Mastra"
+title: "Use Mastra agents with Blaxel"
+description: "Use Mastra to create compute-capable agents backed by Blaxel sandboxes."
 ---
 
 [Mastra](https://mastra.ai/) is an open source TypeScript framework for building agentic applications. It includes built-in support for Blaxel sandboxes, making it possible to create agents that are backed by remote execution environments (sandboxes) in the cloud.
@@ -19,23 +18,15 @@ This tutorial explores how you can use Mastra with Blaxel.
   The Mastra framework is provider-agnostic and can be used with multiple LLM providers. This tutorial uses Anthropic models, but you can also read about [using other models](https://mastra.ai/models).
 </Note>
 
-## 1. Install the Blaxel CLI and log in to Blaxel
-
-[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel using this command:
-
-```bash
-bl login
-```
-
-## 2. Install required dependencies
+## 1. Install required dependencies
 
 In your Mastra project directory, add the Blaxel package:
 
 ```shell
-npm install @blaxel/mastra
+npm install @mastra/blaxel
 ```
 
-## 3. Configure the environment
+## 2. Configure the environment
 
 Add your LLM API key, Blaxel API key, Blaxel workspace name and Blaxel deployment region as environment variables:
 
@@ -46,7 +37,7 @@ export BL_WORKSPACE=your_workspace_name_here
 export BL_REGION=auto
 ```
 
-## 4. Build a simple agent
+## 3. Build a simple agent
 
 In your project directory, create a file named `index.ts` with the following code.
 
@@ -110,7 +101,7 @@ Go is installed and ready.
 ...
 ```
 
-## 5. Build a streaming coding agent
+## 4. Build a streaming coding agent
 
 One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping.
 
