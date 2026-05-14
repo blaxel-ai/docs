@@ -51,7 +51,7 @@ Deployments can be **released** to a new environment. This replaces the deployme
 
 For example, for Agent XYZ:
 
-1. Let’s say you have version A of the agent running on the *production* environment (this is the  production deployment), and version B of the agent running on the *development* environment (this is the development deployment). Each version can be called through the [respective agent deployment endpoint](../Agents/Query-agents) allowing to test version B while version A still runs.
+1. Let’s say you have version A of the agent running on the *production* environment (this is the production deployment), and version B of the agent running on the *development* environment (this is the development deployment). Each version can be called through the [respective agent deployment endpoint](../Agents/Query-agents) allowing to test version B while version A still runs.
 2. Once version B is tested and ready, you [release](../Models/Model-deployment) the *development deployment* on the *production* environment.
 3. Now: version B runs on the *production* environment, and version B also runs on the *development* environment. Version A can no longer be called.
 4. You [replace](../Models/Model-deployment) the *development* deployment with version C of the agent. 
