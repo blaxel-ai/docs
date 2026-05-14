@@ -303,7 +303,7 @@ Here the most notable imports are the scripts. They are used for the `bl serve` 
 }
 ```
 
-Depending of what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
+Depending on what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
 
 - `start` : start the job locally through the TypeScript command, to avoid having to build the project when developing.
 - `prod` : start the job remotely from the dist folder, the project needs to be have been built before.
@@ -349,7 +349,7 @@ tasks = [
 - `[env]` section defines environment variables that the job can access via the SDK. Note that these are NOT secrets.
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
 - `[tasks]` sections allows to specify
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to schedule job executions.
+- `[[triggers]]` and `[triggers.configuration]` sections define ways to schedule job executions.
     - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurrence of the cron (default value is one task, without arguments)
 

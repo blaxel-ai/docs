@@ -176,7 +176,7 @@ memory = 1024
 - `[env]` section defines environment variables that the agent can access via the SDK. Note that these are NOT [secrets](/Agents/Variables-and-secrets).
 - `[runtime]` section allows to override agent deployment parameters: memory (in MB) to allocate.
 - `[[volumes]]` section attaches persistent [volumes](../Sandboxes/Volumes) to the agent. See [Attach volumes to an agent](#attach-volumes-to-an-agent) below.
-- `[[triggers]]`  and `[triggers.configuration]` sections defines ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
+- `[[triggers]]` and `[triggers.configuration]` sections define ways to send requests to the agent. You can create both [synchronous and asynchronous](/Agents/Query-agents) trigger endpoints (respectively `type = "http"` or `type = "http-async"`).
 A private synchronous HTTP endpoint is always created by default, even if you don’t define any trigger here.
 
 ### Pin an agent to a region
