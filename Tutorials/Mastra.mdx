@@ -20,10 +20,11 @@ This tutorial explores how you can use Mastra with Blaxel.
 
 ## 1. Install required dependencies
 
-In your Mastra project directory, add the Blaxel package:
+In your Mastra project directory, add the Blaxel package, `tsx` to run the TypeScript examples, and Node.js types:
 
 ```shell
-npm install @mastra/blaxel
+npm install @mastra/blaxel tsx
+npm install -D @types/node
 ```
 
 ## 2. Configure the environment
@@ -34,7 +35,7 @@ Add your LLM API key, Blaxel API key, Blaxel workspace name and Blaxel deploymen
 export ANTHROPIC_API_KEY=your_key_here
 export BL_API_KEY=your_key_here
 export BL_WORKSPACE=your_workspace_name_here
-export BL_REGION=auto
+export BL_REGION=us-pdx-1
 ```
 
 ## 3. Build a simple agent
@@ -47,40 +48,47 @@ import { Workspace } from '@mastra/core/workspace'
 import { BlaxelSandbox } from '@mastra/blaxel'
 
 async function main() {
+  const sandboxId = `mastra-blaxel-simple-${Date.now()}`
+
   // create sandbox
   const workspace = new Workspace({
     sandbox: new BlaxelSandbox({
-      id: 'agent-sandbox-01',
+      id: sandboxId,
       image: 'blaxel/base-image',
       memory: 4096,
     }),
   })
 
-  // create agent
-  const agent = new Agent({
-    id: 'agent',
-    name: 'Agent',
-    instructions: 'You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.',
-    model: 'anthropic/claude-sonnet-4-6',
-    workspace,
-  })
+  try {
+    // create agent
+    const agent = new Agent({
+      id: 'agent',
+      name: 'Agent',
+      instructions: 'You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.',
+      model: 'anthropic/claude-sonnet-4-6',
+      workspace,
+    })
 
-  // give the agent a task
-  const result = await agent.generate(
-    'Install a complete Go development environment. Once done, return the installed Go version number and Go environment variables.',
-    { maxSteps: 50 }
-  )
+    // give the agent a task
+    const result = await agent.generate(
+      'Install a complete Go development environment. Once done, return the installed Go version number and Go environment variables.',
+      { maxSteps: 50 }
+    )
 
-  console.log(result.text)
-
-  // delete the sandbox once complete
-  await workspace.sandbox?.destroy()
+    console.log(result.text)
+  } finally {
+    // delete the sandbox once complete
+    await workspace.sandbox?.destroy()
+  }
 }
 
-await main()
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
-This creates a simple sandbox-backed agent on Blaxel with the Mastra framework. Instructions that you send the agent will be executed in a sandbox named `agent-sandbox-01` that is dynamically created and managed in your workspace on Blaxel's infrastructure.
+This creates a simple sandbox-backed agent on Blaxel with the Mastra framework. Instructions that you send the agent will be executed in a uniquely named sandbox that is dynamically created and managed in your workspace on Blaxel's infrastructure.
 
 Run the agent. It will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
 
@@ -116,52 +124,59 @@ import { BlaxelSandbox } from '@mastra/blaxel'
 const task = process.argv[2]
 
 if (!task) {
-  console.error('Usage: node index.ts "<task>"')
+  console.error('Usage: npx tsx index.ts "<task>"')
   process.exit(1)
 }
 
 async function main() {
+  const sandboxId = `mastra-blaxel-coding-${Date.now()}`
+
   // create sandbox
   const workspace = new Workspace({
     sandbox: new BlaxelSandbox({
-      id: 'agent-sandbox-02',
+      id: sandboxId,
       image: 'blaxel/py-app',
       memory: 4096,
     }),
   })
 
-  // create agent
-  const agent = new Agent({
-    id: 'coding-agent',
-    name: 'Coding agent',
-    instructions: `You are an expert software engineer with access to a sandbox environment. You can write, run, and debug code in any language. Use the sandbox to execute code, install dependencies, and verify your solutions work correctly before responding. Install whichever packages you need for your task.`,
-    model: 'anthropic/claude-sonnet-4-6',
-    workspace,
-  })
+  try {
+    // create agent
+    const agent = new Agent({
+      id: 'coding-agent',
+      name: 'Coding agent',
+      instructions: `You are an expert software engineer with access to a sandbox environment. You can write, run, and debug code in any language. Use the sandbox to execute code, install dependencies, and verify your solutions work correctly before responding. Install whichever packages you need for your task.`,
+      model: 'anthropic/claude-sonnet-4-6',
+      workspace,
+    })
 
-  // set task for agent
-  // stream agent output
-  const stream = await agent.stream(task, { maxSteps: 50 })
+    // set task for agent
+    // stream agent output
+    const stream = await agent.stream(task, { maxSteps: 50 })
 
-  process.stdout.write('agent > ')
-  for await (const chunk of stream.textStream) {
-    process.stdout.write(chunk)
+    process.stdout.write('agent > ')
+    for await (const chunk of stream.textStream) {
+      process.stdout.write(chunk)
+    }
+    process.stdout.write('\n' + '--'.repeat(20) + '\n')
+  } finally {
+    // delete sandbox when complete
+    await workspace.sandbox?.destroy()
   }
-  process.stdout.write('\n' + '--'.repeat(20) + '\n')
-
-  // delete sandbox when complete
-  await workspace.sandbox?.destroy()
 }
 
-await main()
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
-This creates a coding agent that accepts requests from the command-line. The coding agent's sandbox `agent-sandbox-02` is generated from Blaxel's `blaxel/py-app` image, which contains a complete Python development environment.
+This creates a coding agent that accepts requests from the command-line. The coding agent's uniquely named sandbox is generated from Blaxel's `blaxel/py-app` image, which contains a complete Python development environment.
 
 Test the agent:
 
 ```shell
-npx ts-node index.ts "Write a Python program to calculate the number of vowels in a word. Show the code. Test it and show the results."
+npx tsx index.ts "Write a Python program to calculate the number of vowels in a word. Show the code. Test it and show the results."
 ```
 
 The agent will start working on the task in a sandbox, streaming its responses as it works. Here's a partial example of the output:
