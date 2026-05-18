@@ -108,6 +108,10 @@ Click the trash icon on any domain row to remove it. You'll be asked to confirm 
   A domain that is actively linked to a SAML SSO connection cannot be deleted until the SSO connection is removed first.
 </Note>
 
+## Multi-factor authentication
+
+Multi-factor authentication (MFA) is available for all login methods except SAML/SSO. Users can enroll a TOTP authenticator app or an SMS factor from their account settings and will be prompted for the second factor at each login. MFA is not available when SAML SSO is active, since identity verification is handled by your identity provider.
+
 ## Related
 
 - [SSO & Directory Sync](/Security/SSO-Directory-sync)
