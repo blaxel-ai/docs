@@ -354,3 +354,13 @@ tasks = [
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurrence of the cron (default value is one task, without arguments)
 
 A private HTTP endpoint to launch job executions is always available by default, even if you don't define a trigger in this file. You can launch a job execution by sending a POST request with the correct job and workspace arguments to `https://api.blaxel.ai/v0/jobs/my-job/executions?workspace=my-workspace`.
+
+## Ephemeral volumes
+
+Ephemeral volumes are temporary disk-backed storage attached to a job at startup and automatically destroyed when the job completes. They use NVMe storage on the host, making them significantly faster than standard volumes.
+
+Ephemeral volumes have separate quotas from persistent volumes. Limits depend on your plan.
+
+<Note>
+  Ephemeral volumes are only available for jobs. Sandboxes and agents should use persistent volumes instead.
+</Note>
