@@ -39,7 +39,7 @@ myrepo
     |- sharedfile
 ```
 
-No changes are required to your `blaxel.toml`. However, in your `Dockerfile`, paths **must be relative** to the root context. For example, replace `COPY src src` with`COPY myagent/src src`
+No changes are required to your `blaxel.toml`. However, in your `Dockerfile`, paths **must be relative** to the root context. For example, replace `COPY src src` with `COPY myagent/src src`
 
 This allows you to reference shared resources:
 
