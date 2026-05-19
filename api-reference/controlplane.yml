@@ -8,6 +8,55 @@ components:
       required: false
       schema:
         type: string
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor.
+        Only valid for the same query (workspace + filters); the server rejects cursors
+        bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped
+        to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName`
+        and labels (keys + values). Trimmed and lowercased server-side; queries shorter
+        than 2 characters fall back to the unfiltered listing. Bound into the cursor
+        fingerprint so a cursor opened with one query cannot be reused with another.
+        Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are
+        `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The
+        cursor fingerprint is bound to the sort, so a cursor opened with one value
+        cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
   schemas:
     Agent:
       type: object
@@ -26,6 +75,18 @@ components:
       required:
       - metadata
       - spec
+    AgentList:
+      type: object
+      description: Cursor-paginated list of agents. Returned starting with API version
+        2026-04-28; older API versions return a bare array of agents instead.
+      properties:
+        data:
+          type: array
+          description: Page of agents.
+          items:
+            $ref: '#/components/schemas/Agent'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     AgentRuntime:
       type: object
       description: Runtime configuration defining how the AI agent is deployed and
@@ -371,6 +432,18 @@ components:
       required:
       - metadata
       - spec
+    DriveList:
+      type: object
+      description: Cursor-paginated list of drives. Returned starting with API version
+        2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of drives.
+          items:
+            $ref: '#/components/schemas/Drive'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     DriveSpec:
       type: object
       description: Immutable drive configuration set at creation time
@@ -476,6 +549,11 @@ components:
           example: us-pdx-1
       required:
       - region
+    EgressGatewayUsage:
+      description: Sandboxes currently bound to each egress gateway. Returned by GET
+        /egressgateways/usage so the egress-IPs UI can render attachment counts without
+        fetching the sandboxes listing full. Keys are gateway names; values are sandbox
+        names.
     EgressIP:
       type: object
       description: An individual IP address allocated from an egress gateway for dedicated
@@ -699,6 +777,18 @@ components:
       required:
       - metadata
       - spec
+    FunctionList:
+      type: object
+      description: Cursor-paginated list of MCP server functions. Returned starting
+        with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of functions.
+          items:
+            $ref: '#/components/schemas/Function'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     FunctionRuntime:
       type: object
       description: Runtime configuration defining how the MCP server function is deployed
@@ -1112,6 +1202,19 @@ components:
       required:
       - metadata
       - spec
+    JobExecutionList:
+      type: object
+      description: Cursor-paginated list of job executions. Returned starting with
+        API version 2026-04-28; older API versions keep the legacy offset-based contract
+        and return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of job executions.
+          items:
+            $ref: '#/components/schemas/JobExecution'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     JobExecutionMetadata:
       type: object
       description: Job execution metadata
@@ -1254,6 +1357,19 @@ components:
         type:
           type: string
           description: Condition type
+    JobExecutionTaskList:
+      type: object
+      description: Cursor-paginated list of an execution's tasks. Tasks are derived
+        from event history; pagination slices the in-memory list and the cursor is
+        a base64-JSON offset bound to (workspace, job, execution).
+      properties:
+        data:
+          type: array
+          description: Page of execution tasks.
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     JobExecutionTaskMetadata:
       type: object
       description: Job execution task metadata
@@ -1305,6 +1421,18 @@ components:
       - succeeded
       - running
       - cancelled
+    JobList:
+      type: object
+      description: Cursor-paginated list of batch jobs. Returned starting with API
+        version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of jobs.
+          items:
+            $ref: '#/components/schemas/Job'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     JobRuntime:
       type: object
       description: Runtime configuration defining how batch job tasks are executed
@@ -1413,6 +1541,45 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/JobVolume'
+    LiteVolume:
+      type: object
+      description: LiteVolume is the listing-shape projection of a Volume. Drops events
+        to keep page payloads small.
+      properties:
+        metadata:
+          $ref: '#/components/schemas/LiteVolumeMetadata'
+        spec:
+          $ref: '#/components/schemas/LiteVolumeSpec'
+        state:
+          $ref: '#/components/schemas/VolumeState'
+        status:
+          type: string
+          description: Computed status of the volume.
+        terminatedAt:
+          type: string
+          description: Termination timestamp for soft-deleted volumes.
+    LiteVolumeMetadata:
+      type: object
+      description: Compact metadata for a Volume, returned in listing responses.
+      properties:
+        createdAt:
+          type: string
+        displayName:
+          type: string
+        name:
+          type: string
+        updatedAt:
+          type: string
+    LiteVolumeSpec:
+      type: object
+      description: Compact spec for a Volume, returned in listing responses.
+      properties:
+        region:
+          type: string
+          description: Region the volume is provisioned in.
+        size:
+          type: integer
+          description: Volume size in gigabytes.
     LocationResponse:
       type: object
       description: Location availability for policies
@@ -1561,6 +1728,18 @@ components:
       required:
       - metadata
       - spec
+    ModelList:
+      type: object
+      description: Cursor-paginated list of model gateway endpoints. Returned starting
+        with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of models.
+          items:
+            $ref: '#/components/schemas/Model'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     ModelRuntime:
       type: object
       description: Configuration identifying which external LLM provider and model
@@ -1672,6 +1851,24 @@ components:
           type: string
           description: The user or service account who updated the resource
           readOnly: true
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results.
+        Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for
+            the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current
+            page's filters. Lets the UI render "page X of Y" without walking the cursor
+            chain. Computed from the hash-only metadata.workspace GSI count, so search
+            (`q`) does not narrow it.
     PendingImageShare:
       type: object
       description: Pending cross-account image share awaiting approval from the destination
@@ -1875,9 +2072,23 @@ components:
           $ref: '#/components/schemas/Metadata'
         spec:
           $ref: '#/components/schemas/PolicySpec'
+        usage:
+          $ref: '#/components/schemas/PolicyUsageCounts'
       required:
       - metadata
       - spec
+    PolicyList:
+      type: object
+      description: Cursor-paginated list of policies. Returned starting with API version
+        2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of policies.
+          items:
+            $ref: '#/components/schemas/Policy'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     PolicyLocation:
       type: object
       description: Policy location
@@ -1965,6 +2176,58 @@ components:
           - flavor
           - maxToken
           example: location
+    PolicyUsageCounts:
+      type: object
+      description: Per-resource counts of how many resources reference a policy. Computed
+        by the policies listing endpoint to avoid client-side fan-out across the agents/models/functions/sandboxes/jobs
+        listings.
+      properties:
+        agents:
+          type: integer
+        functions:
+          type: integer
+        jobs:
+          type: integer
+        models:
+          type: integer
+        sandboxes:
+          type: integer
+    PolicyUsages:
+      type: object
+      description: Resources currently referencing a policy. Returned by GET /policies/{name}/usages
+        so the policies UI can render attachments without fetching the agents/models/functions
+        listings full.
+      properties:
+        agents:
+          type: array
+          description: Names of agents whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        functions:
+          type: array
+          description: Names of functions whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        jobs:
+          type: array
+          description: Names of jobs whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        models:
+          type: array
+          description: Names of models whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        sandboxes:
+          type: array
+          description: Names of sandboxes whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
     Port:
       type: object
       description: A port for a resource
@@ -2549,6 +2812,19 @@ components:
             access (e.g., '1h', '24h', '7d'). Defaults to 5m. Subject to maximum quota
             limits.
           example: 24h
+    SandboxList:
+      type: object
+      description: Cursor-paginated list of sandboxes. Returned starting with API
+        version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of sandboxes. Items use the lite shape (no inline event
+            history) to keep the page payload small, matching the unpaginated response.
+          items:
+            $ref: '#/components/schemas/Sandbox'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     SandboxNetwork:
       type: object
       description: Network configuration for a sandbox including domain filtering,
@@ -2882,6 +3158,19 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/VolumeAttachment'
+    VolumeList:
+      type: object
+      description: Cursor-paginated list of volumes. Returned starting with API version
+        2026-04-28; older API versions return a bare array. Items use the lite shape
+        (no inline event history).
+      properties:
+        data:
+          type: array
+          description: Page of volumes.
+          items:
+            $ref: '#/components/schemas/LiteVolume'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     VolumeSpec:
       type: object
       description: Immutable volume configuration set at creation time (size and region
@@ -3041,6 +3330,15 @@ components:
             type: string
             description: Workspace write region
             example: us-west-2
+          resourceCounts:
+            type: object
+            description: Per-resource counts (agents, functions, models, sandboxes,
+              policies, jobs, volumes, drives, volumetemplates, integrationconnections,
+              previews, customdomains, serviceaccounts, images). Only populated when
+              GetWorkspace is called with ?countResources=true.
+            additionalProperties:
+              type: integer
+            readOnly: true
           runtime:
             $ref: '#/components/schemas/WorkspaceRuntime'
           status:
@@ -3282,18 +3580,23 @@ openapi: 3.0.3
 paths:
   /agents:
     get:
-      description: Returns all AI agents deployed in the workspace. Each agent includes
+      description: Returns AI agents deployed in the workspace. Each agent includes
         its deployment status, runtime configuration, and global inference endpoint
-        URL.
+        URL. Starting with API version 2026-04-28 the response is wrapped in `{data,
+        meta}` and supports cursor pagination via the `cursor` and `limit` query parameters;
+        older versions keep returning a bare array with all agents.
       operationId: ListAgents
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Agent'
-                type: array
+                $ref: '#/components/schemas/AgentList'
           description: successful operation
         "401":
           content:
@@ -3731,16 +4034,22 @@ paths:
   /drives:
     get:
       description: Returns all drives in the workspace. Drives provide persistent
-        storage that can be attached to agents, functions, and sandboxes.
+        storage that can be attached to agents, functions, and sandboxes. Starting
+        with API version 2026-04-28, the response wraps items in `{data, meta}` and
+        supports cursor pagination via the `cursor` and `limit` query parameters;
+        older versions keep returning a bare array with all drives.
       operationId: ListDrives
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Drive'
-                type: array
+                $ref: '#/components/schemas/DriveList'
           description: successful operation
         "401":
           description: Unauthorized
@@ -3956,6 +4265,27 @@ paths:
       summary: List all egress gateways across all VPCs in the workspace
       tags:
       - vpcs
+  /egressgateways/usage:
+    get:
+      description: Returns the inverse map (gateway → sandbox names) for the workspace.
+        Used by the egress-IPs UI to render attachment counts without fetching the
+        sandboxes listing full client-side.
+      operationId: GetEgressGatewayUsage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGatewayUsage'
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressgateways:list
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: Egress gateway sandbox attachments
+      tags:
+      - vpcs
   /egressips:
     get:
       operationId: ListAllEgressIPs
@@ -4103,18 +4433,23 @@ paths:
       x-stainless-ignore: true
   /functions:
     get:
-      description: Returns all MCP server functions deployed in the workspace. Each
-        function includes its deployment status, transport protocol (websocket or
-        http-stream), and endpoint URL.
+      description: Returns MCP server functions deployed in the workspace. Each function
+        includes its deployment status, transport protocol (websocket or http-stream),
+        and endpoint URL. Starting with API version 2026-04-28 the response is wrapped
+        in `{data, meta}` and supports cursor pagination via the `cursor` and `limit`
+        query parameters; older versions keep returning a bare array with all functions.
       operationId: ListFunctions
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Function'
-                type: array
+                $ref: '#/components/schemas/FunctionList'
           description: successful operation
         "401":
           content:
@@ -5066,18 +5401,23 @@ paths:
       x-stainless-ignore: true
   /jobs:
     get:
-      description: Returns all batch job definitions in the workspace. Each job can
-        be triggered to run multiple parallel tasks with configurable concurrency
-        and retry settings.
+      description: Returns batch job definitions in the workspace. Each job can be
+        triggered to run multiple parallel tasks with configurable concurrency and
+        retry settings. Starting with API version 2026-04-28 the response is wrapped
+        in `{data, meta}` and supports cursor pagination via the `cursor` and `limit`
+        query parameters; older versions keep returning a bare array with all jobs.
       operationId: ListJobs
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Job'
-                type: array
+                $ref: '#/components/schemas/JobList'
           description: successful operation
       security:
       - OAuth2:
@@ -5188,8 +5528,10 @@ paths:
       - jobs
   /jobs/{jobId}/executions:
     get:
-      description: Returns paginated list of executions for a batch job, sorted by
-        creation time. Each execution contains status, task counts, and timing information.
+      description: Returns executions for a batch job. Starting with API version 2026-04-28
+        the response is wrapped in `{data, meta}` and supports cursor pagination via
+        the `cursor` and `limit` query parameters; older versions keep the legacy
+        offset/limit contract and return a bare array.
       operationId: ListJobExecutions
       parameters:
       - description: Name of the job
@@ -5207,7 +5549,7 @@ paths:
           maximum: 100
           minimum: 1
           type: integer
-      - description: Page offset
+      - description: Page offset (legacy, ignored when Blaxel-Version >= 2026-04-28)
         in: query
         name: offset
         required: false
@@ -5215,14 +5557,15 @@ paths:
           default: 0
           minimum: 0
           type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/JobExecution'
-                type: array
+                $ref: '#/components/schemas/JobExecutionList'
           description: successful operation
         "400":
           description: bad request
@@ -5348,6 +5691,50 @@ paths:
       summary: Get job execution
       tags:
       - jobs
+  /jobs/{jobId}/executions/{executionId}/tasks:
+    get:
+      description: Returns one cursor-paginated page of an execution's tasks. Tasks
+        are derived from event history each request; only the in-memory slicing is
+        paginated, the events scan still fetches the whole event log behind the scenes.
+        Available starting with API version 2026-04-28.
+      operationId: ListJobExecutionTasks
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Execution id
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecutionTaskList'
+          description: successful operation
+        "400":
+          description: bad request
+        "404":
+          description: job or execution not found
+        "500":
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: List execution tasks
+      tags:
+      - jobs
   /jobs/{jobId}/revisions:
     get:
       description: Returns revisions for a job by name.
@@ -5423,18 +5810,24 @@ paths:
       x-stainless-ignore: true
   /models:
     get:
-      description: Returns all model gateway endpoints configured in the workspace.
-        Each model represents a proxy to an external LLM provider (OpenAI, Anthropic,
-        etc.) with unified access control.
+      description: Returns model gateway endpoints configured in the workspace. Each
+        model represents a proxy to an external LLM provider (OpenAI, Anthropic, etc.)
+        with unified access control. Starting with API version 2026-04-28 the response
+        is wrapped in `{data, meta}` and supports cursor pagination via the `cursor`
+        and `limit` query parameters; older versions keep returning a bare array with
+        all models.
       operationId: ListModels
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Model'
-                type: array
+                $ref: '#/components/schemas/ModelList'
           description: successful operation
         "401":
           content:
@@ -5792,18 +6185,23 @@ paths:
       - images
   /policies:
     get:
-      description: Returns all governance policies in the workspace. Policies control
+      description: Returns governance policies in the workspace. Policies control
         deployment locations, hardware flavors, and token limits for agents, functions,
-        and models.
+        and models. Starting with API version 2026-04-28 the response is wrapped in
+        `{data, meta}` and supports cursor pagination via the `cursor` and `limit`
+        query parameters; older versions keep returning a bare array with all policies.
       operationId: ListPolicies
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Policy'
-                type: array
+                $ref: '#/components/schemas/PolicyList'
           description: successful operation
       security:
       - OAuth2:
@@ -5906,6 +6304,38 @@ paths:
       summary: Update governance policy
       tags:
       - policies
+  /policies/{policyName}/usages:
+    get:
+      description: Returns the names of every resource (agent, function, model, sandbox,
+        job) currently referencing the given policy. Replaces the client-side fan-out
+        the policies UI used to do over the listings.
+      operationId: GetPolicyUsages
+      parameters:
+      - description: Unique name identifier of the policy
+        in: path
+        name: policyName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyUsages'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:get
+        - agents:list
+        - functions:list
+        - models:list
+        - sandboxes:list
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List resources using a policy
+      tags:
+      - policies
   /publicIps:
     get:
       description: Returns a list of all public ips used in Blaxel..
@@ -5955,9 +6385,12 @@ paths:
       - sandboxhub
   /sandboxes:
     get:
-      description: Returns all sandboxes in the workspace. Each sandbox includes its
-        configuration, status, and endpoint URL. Terminated sandboxes are hidden by
-        default; pass `showTerminated=true` to include them.
+      description: Returns sandboxes in the workspace. Each sandbox includes its configuration,
+        status, and endpoint URL. Terminated sandboxes are hidden by default; pass
+        `showTerminated=true` to include them. Starting with API version 2026-04-28
+        the response is wrapped in `{data, meta}` and supports cursor pagination via
+        the `cursor` and `limit` query parameters; older versions keep returning a
+        bare array of all sandboxes.
       operationId: ListSandboxes
       parameters:
       - description: If true, include terminated sandboxes in the response. Defaults
@@ -5968,14 +6401,16 @@ paths:
         schema:
           default: false
           type: boolean
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Sandbox'
-                type: array
+                $ref: '#/components/schemas/SandboxList'
           description: successful operation
         "401":
           content:
@@ -7095,18 +7530,24 @@ paths:
         type: string
   /volumes:
     get:
-      description: Returns all persistent storage volumes in the workspace. Volumes
-        can be attached to sandboxes for durable file storage that persists across
-        sessions and sandbox deletions.
+      description: Returns persistent storage volumes in the workspace. Volumes can
+        be attached to sandboxes for durable file storage that persists across sessions
+        and sandbox deletions. Starting with API version 2026-04-28 the response is
+        wrapped in `{data, meta}` and supports cursor pagination via the `cursor`
+        and `limit` query parameters; older versions keep returning a bare array of
+        volumes.
       operationId: ListVolumes
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Volume'
-                type: array
+                $ref: '#/components/schemas/VolumeList'
           description: successful operation
         "401":
           content:
@@ -7735,6 +8176,17 @@ paths:
         required: true
         schema:
           type: string
+      - description: When true, the response includes a resourceCounts map with the
+          number of agents, functions, models, sandboxes, policies, jobs, volumes,
+          volumetemplates, integrationconnections, previews, customdomains, serviceaccounts
+          and images currently in this workspace. Off by default — each count is one
+          extra indexed query.
+        in: query
+        name: countResources
+        required: false
+        schema:
+          default: false
+          type: boolean
       responses:
         "200":
           content:
