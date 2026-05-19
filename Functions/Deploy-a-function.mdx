@@ -54,7 +54,7 @@ bl serve
 
 You can then create an MCP Client to communicate with your server. When testing locally, communication happens over stdio, but when deployed on Blaxel, your server will use streamable HTTP instead.
 
-Add the flag `--hotreload`  to get live changes.
+Add the flag `--hotreload` to get live changes.
 
 ```bash
 bl serve --hotreload
@@ -220,7 +220,7 @@ dev = "npx nodemon --exec uv run python src/server.py"
 ...
 ```
 
-- `prod`:  this is the command that will be used to serve your MCP server
+- `prod`: this is the command that will be used to serve your MCP server
 
 ```bash
 .venv/bin/python3 src/server.py
