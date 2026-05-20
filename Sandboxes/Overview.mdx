@@ -212,7 +212,7 @@ It is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console
     The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [`Learn more about the blaxel.toml file`](/deployment-reference).
 
     <Tip>
-      Running `bl deploy` here also saves the image to be reused later. As an alternative, you can use `bl push` to push the image to Blaxel's registry. `bl push` only publishes the image; it does not update existing sandbox deployments or restart running processes.
+      Running `bl deploy` here also saves the image to be reused later. As an alternative, you can use `bl push` to push the image to Blaxel's registry. `bl push` only publishes the image; it does not create a new sandbox deployment, update existing deployments, or restart running processes.
     </Tip>
   </Tab>
   <Tab title="Console">
