@@ -3378,6 +3378,41 @@ components:
           - forbidden_reserved
           - forbidden_blaxel
           - forbidden_v_prefix
+    WorkspaceHipaaInfo:
+      type: object
+      description: HIPAA compliance state for a workspace. `accountEnabled` mirrors
+        the account-level `hipaa_compliance` addon (set server-side from operator
+        tooling and Stripe billing events). `unsafe` records a per-workspace opt-out
+        toggled from workspace settings; absent when the account does not have the
+        addon.
+      properties:
+        accountEnabled:
+          type: boolean
+          description: True when the parent account has the HIPAA compliance addon
+            active. Set server-side from operator tooling and Stripe billing events;
+            cannot be changed from workspace settings.
+        unsafe:
+          $ref: '#/components/schemas/WorkspaceHipaaUnsafe'
+    WorkspaceHipaaUnsafe:
+      type: object
+      description: Per-workspace HIPAA opt-out record. Toggled from workspace settings;
+        the backend stamps `updatedBy` and `updatedAt`.
+      properties:
+        enabled:
+          type: boolean
+          description: True marks this workspace as HIPAA-unsafe (NOT compliant),
+            overriding the account-level addon. False marks the workspace as HIPAA
+            compliant.
+        updatedAt:
+          type: string
+          description: RFC3339 timestamp when the opt-out was last toggled. Stamped
+            server-side.
+          readOnly: true
+        updatedBy:
+          type: string
+          description: User id (sub) of the actor that last toggled this opt-out.
+            Stamped server-side.
+          readOnly: true
     WorkspaceRuntime:
       type: object
       description: Runtime configuration for the workspace infrastructure
