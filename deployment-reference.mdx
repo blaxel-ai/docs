@@ -21,12 +21,12 @@ The format of Blaxel's configuration file is described below.
 # requires registry credentials in .docker/config.json or via bl push flags
 # image = "docker.io/myuser/my-sandbox:latest"
 
-# public access to resource (only for resource type="agent")
+# public access to resource (only valid for resource type="agent")
 # possible values: [true, false]
 # defaults to false
 # public = false
 
-# deployment region (optional, for resource type="agent" or resource type="function")
+# deployment region (optional, for resource type="agent", "function")
 # pins the resource to a specific region instead of global distribution
 # required when attaching volumes to an agent
 # region = "us-pdx-1"
@@ -53,7 +53,7 @@ The format of Blaxel's configuration file is described below.
 
 # environment variables (optional)
 # [env]
-# key-value paris
+# key-value pairs
 # MY_VAR = "my-value"
 
 # runtime configuration (optional)
@@ -68,22 +68,31 @@ The format of Blaxel's configuration file is described below.
 # timeout = 900
 
 # maximum number of retries
-# maxRetries=0
+# maxRetries = 0
 
-# volumes (optional, for resource type="agent" and resource type="sandbox")
+# volumes (optional, for resource type="agent", "sandbox", "volume-template", "job")
 # attaches persistent storage to the resource
 # the resource must be pinned to the same region as the volume
 # [[volumes]]
 # volume name
 # name = "my-volume"
 
+# volume type (only for resource type="job")
+# possible values: ["ephemeral"]
+# type = "ephemeral"
+
 # volume mount path
+# for resource type="agent" and "sandbox", attaches persistent storage
+# for resource type="job", attaches ephemeral storage
 # mountPath = "/data"
 
-# volume templates directory (only for resource type="volume-template")
+# volume size in MB (only valid for resource type="job" and volume type="ephemeral")
+# sizeMb = 10240
+
+# volume templates directory (only valid for resource type="volume-template")
 # directory = "."
 
-# volume default size in MB (only for resource type="volume-template")
+# volume default size in MB (only valid for resource type="volume-template")
 # defaultSize = 1024
 
 # job trigger (optional)
@@ -92,16 +101,16 @@ The format of Blaxel's configuration file is described below.
 # id = "my-trigger"
 
 # trigger type
-# possible values: ["schedule", "http", "http-async"]
-# "schedule" trigger (only valid for resource type="job")
-# type = "schedule"
+# possible values: ["cron", "http", "http-async"]
+# "cron" trigger (only valid for resource type="job")
+# type = "cron"
 # "http" trigger (only valid for resource type="agent" and resource type="function")
 # type = "http"
 # "http-async" trigger (only valid for resource type="agent")
 # type = "http-async"
 
 # [[triggers.configuration]]
-# cron expression (only for trigger type="schedule")
+# cron expression (only for trigger type="cron")
 # schedule = "0 * * * *"
 
 # endpoint URL (only for trigger type="http" and trigger type="http-async")
