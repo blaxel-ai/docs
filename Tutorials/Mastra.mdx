@@ -12,20 +12,29 @@ This tutorial explores how you can use Mastra with Blaxel.
 - A Blaxel account. If not, [sign up for a Blaxel account](https://blaxel.ai).
 - A Blaxel workspace and API key. Learn about [Blaxel workspaces](/Security/Workspace-access-control) and how to [obtain a Blaxel API key](/Security/Access-tokens#api-keys).
 - An API key for a [supported LLM provider](https://mastra.ai/models).
-- Mastra framework installed. Read the [Mastra installation instructions](https://mastra.ai/docs/getting-started/manual-install).
+- A Node.js development environment
 
-<Note>
-  The Mastra framework is provider-agnostic and can be used with multiple LLM providers. This tutorial uses Anthropic models, but you can also read about [using other models](https://mastra.ai/models).
-</Note>
+The Mastra framework is provider-agnostic and can be used with multiple LLM providers. This tutorial uses Anthropic models, but you can also read about [using other models](https://mastra.ai/models).
 
 ## 1. Install required dependencies
 
-In your Mastra project directory, add the Blaxel package, `tsx` to run the TypeScript examples, and Node.js types:
+In your Mastra project directory, initialize a new project and add the Mastra and Blaxel packages, `tsx` to run the TypeScript examples, and Node.js types:
 
 ```shell
-npm install @mastra/blaxel tsx
-npm install -D @types/node
+npm init -y
+npm install -D typescript @types/node mastra@latest
+npm install @mastra/core@latest zod @mastra/blaxel tsx
+npm pkg set type=module
+npx tsc --init \
+  --target ES2022 \
+  --module ES2022 \
+  --moduleResolution bundler \
+  --esModuleInterop \
+  --strict \
+  --skipLibCheck
 ```
+
+More information on Mastra installation is available in the [Mastra documentation](https://mastra.ai/docs/getting-started/manual-install).
 
 ## 2. Configure the environment
 
@@ -90,7 +99,13 @@ main().catch((error) => {
 
 This creates a simple sandbox-backed agent on Blaxel with the Mastra framework. Instructions that you send the agent will be executed in a uniquely named sandbox that is dynamically created and managed in your workspace on Blaxel's infrastructure.
 
-Run the agent. It will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
+Run the agent:
+
+```shell
+npx tsx index.ts
+```
+
+It will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
 
 ```shell
 Go is installed and ready.
