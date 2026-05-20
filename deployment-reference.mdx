@@ -77,12 +77,16 @@ The format of Blaxel's configuration file is described below.
 # volume name
 # name = "my-volume"
 
+# volume type (only for resource type="job")
+# possible values: ["ephemeral"]
+# type = "ephemeral"
+
 # volume mount path
 # for resource type="agent" and "sandbox", attaches persistent storage
 # for resource type="job", attaches ephemeral storage
 # mountPath = "/data"
 
-# volume size in MB (only valid for resource type="job" and ephemeral storage)
+# volume size in MB (only valid for resource type="job" and volume type="ephemeral")
 # sizeMb = 10240
 
 # volume templates directory (only valid for resource type="volume-template")
@@ -90,10 +94,6 @@ The format of Blaxel's configuration file is described below.
 
 # volume default size in MB (only valid for resource type="volume-template")
 # defaultSize = 1024
-
-# volume type (only for resource type="job")
-# possible values: ["ephemeral"]
-# type = "ephemeral"
 
 # job trigger (optional)
 # [[triggers]]
