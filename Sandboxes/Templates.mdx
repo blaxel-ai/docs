@@ -20,7 +20,7 @@ When you create a sandbox from an image, Blaxel provisions a new instance with a
 
 ### How sandbox images work
 
-1. **Initial setup**: Follow this guide to create your sandbox image for the first time. Use `bl push` to push the image to Blaxel, or `bl deploy` to push the image and also create a sandbox from it.
+1. **Initial setup**: Follow this guide to create your sandbox image for the first time. Use `bl push` to publish the image to Blaxel's registry without creating a new sandbox or affecting existing sandboxes, or `bl deploy` to push the image and also create a sandbox from it.
 2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations.
 3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
 4. **Instantiation**: New sandboxes can be spawned from this image in seconds.
