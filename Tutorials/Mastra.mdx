@@ -1,90 +1,232 @@
 ---
-title: "Run Mastra on Blaxel"
-description: "Deploy Mastra TypeScript agent projects on Blaxel with serverless hosting, observability, and connections to MCP servers and LLM APIs."
+title: "Use Mastra agents with Blaxel"
+description: "Use Mastra to create compute-capable agents backed by Blaxel sandboxes."
 ---
 
-You can deploy your [Mastra](https://mastra.ai/) projects to Blaxel with minimal code editing (and zero configuration), enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more.
+[Mastra](https://mastra.ai/) is an open source TypeScript framework for building agentic applications. It includes built-in support for Blaxel sandboxes, making it possible to create agents that are backed by remote execution environments (sandboxes) in the cloud.
 
-## Get started with Mastra on Blaxel
+This tutorial explores how you can use Mastra with Blaxel.
 
-To get started with Mastra on Blaxel:
+## Prerequisites
 
-- if you already have a Mastra agent, adapt your code with [Blaxel SDK commands](../Agents/Develop-an-agent) to connect to [MCP servers](../Functions/Overview), [LLMs](../Models/Overview) and [other agents](../Agents/Overview).
-- else initialize an example project in Mastra by using the following Blaxel CLI command and selecting the _Mastra hello world:_
+- A Blaxel account. If not, [sign up for a Blaxel account](https://blaxel.ai).
+- A Blaxel workspace and API key. Learn about [Blaxel workspaces](/Security/Workspace-access-control) and how to [obtain a Blaxel API key](/Security/Access-tokens#api-keys).
+- An API key for a [supported LLM provider](https://mastra.ai/models).
+- A Node.js development environment
 
-```bash
-bl new agent
+The Mastra framework is provider-agnostic and can be used with multiple LLM providers. This tutorial uses Anthropic models, but you can also read about [using other models](https://mastra.ai/models).
+
+## 1. Install required dependencies
+
+In your Mastra project directory, initialize a new project and add the Mastra and Blaxel packages, `tsx` to run the TypeScript examples, and Node.js types:
+
+```shell
+npm init -y
+npm install -D typescript @types/node mastra@latest
+npm install @mastra/core@latest zod @mastra/blaxel tsx
+npm pkg set type=module
+npx tsc --init \
+  --target ES2022 \
+  --module ES2022 \
+  --moduleResolution bundler \
+  --esModuleInterop \
+  --strict \
+  --skipLibCheck
 ```
 
-[Deploy](../Agents/Deploy-an-agent) it by running:
+More information on Mastra installation is available in the [Mastra documentation](https://mastra.ai/docs/getting-started/manual-install).
 
-```bash
-bl deploy
+## 2. Configure the environment
+
+Add your LLM API key, Blaxel API key, Blaxel workspace name and Blaxel deployment region as environment variables:
+
+```shell
+export ANTHROPIC_API_KEY=your_key_here
+export BL_API_KEY=your_key_here
+export BL_WORKSPACE=your_workspace_name_here
+export BL_REGION=us-pdx-1
 ```
 
-## Develop a Mastra agent using Blaxel features
+## 3. Build a simple agent
 
-While building your agent in Mastra, use Blaxel [SDK](../sdk-reference/introduction) to connect to resources already hosted on Blaxel:
-
-- [MCP servers](../Functions/Overview)
-- [LLMs](../Models/Overview)
-- [other agents](../Agents/Overview)
-
-### Connect to MCP servers
-
-Connect to [MCP servers](../Functions/Overview) using the Blaxel SDK to access pre-built or custom tool servers hosted on Blaxel. This eliminates the need to manage server connections yourself, with credentials stored securely on the platform.
-
-Run the following command to retrieve tools in Mastra format:
-
-<CodeGroup>
+In your project directory, create a file named `index.ts` with the following code.
 
 ```typescript TypeScript
+import { Agent } from '@mastra/core/agent'
+import { Workspace } from '@mastra/core/workspace'
+import { BlaxelSandbox } from '@mastra/blaxel'
 
-import { blTools } from '@blaxel/mastra';
+async function main() {
+  const sandboxId = `mastra-blaxel-simple-${Date.now()}`
 
-const tools = await blTools(['mcp-server-name'])
+  // create sandbox
+  const workspace = new Workspace({
+    sandbox: new BlaxelSandbox({
+      id: sandboxId,
+      image: 'blaxel/base-image',
+      memory: 4096,
+    }),
+  })
+
+  try {
+    // create agent
+    const agent = new Agent({
+      id: 'agent',
+      name: 'Agent',
+      instructions: 'You have access to a sandbox environment. You can execute commands, manage files, and inspect processes inside the sandbox.',
+      model: 'anthropic/claude-sonnet-4-6',
+      workspace,
+    })
+
+    // give the agent a task
+    const result = await agent.generate(
+      'Install a complete Go development environment. Once done, return the installed Go version number and Go environment variables.',
+      { maxSteps: 50 }
+    )
+
+    console.log(result.text)
+  } finally {
+    // delete the sandbox once complete
+    await workspace.sandbox?.destroy()
+  }
+}
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
-</CodeGroup>
+This creates a simple sandbox-backed agent on Blaxel with the Mastra framework. Instructions that you send the agent will be executed in a uniquely named sandbox that is dynamically created and managed in your workspace on Blaxel's infrastructure.
 
-### Connect to LLMs
+Run the agent:
 
-Connect to [LLMs](../Models/Overview) hosted on Blaxel using the SDK to avoid managing model API connections yourself. All credentials remain securely stored on the platform.
+```shell
+npx tsx index.ts
+```
 
-<CodeGroup>
+It will create and deploy a Blaxel sandbox using the `blaxel/base-image` image, then investigate the sandbox and install all the tools required for Go development. Once done, it will return a report of its work and automatically delete the sandbox. Here's a partial example of the output:
+
+```shell
+Go is installed and ready.
+
+- Installed version: `go1.25.9`
+- Command check: `go version` → `go version go1.25.9 linux/amd64`
+
+**Go Env**
+- `AR='ar'`
+- `CC='cc'`
+- `CGO_CFLAGS='-O2 -g'`
+- `CGO_CPPFLAGS=''`
+- `CGO_CXXFLAGS='-O2 -g'`
+- `CGO_ENABLED='1'`
+- `CGO_FFLAGS='-O2 -g'`
+...
+```
+
+## 4. Build a streaming coding agent
+
+One of the most popular uses for agents is to generate code. Sandboxes provide isolated execution environments, allowing agents to securely run generated code with no risk of escaping.
+
+Update `index.ts` to build a simple coding agent that accepts tasks from the command line and streams its responses as it works:
 
 ```typescript TypeScript
+import { Agent } from '@mastra/core/agent'
+import { Workspace } from '@mastra/core/workspace'
+import { BlaxelSandbox } from '@mastra/blaxel'
 
-import { blModel } from "@blaxel/mastra";
+// read task from command line
+const task = process.argv[2]
 
-const model = await blModel("model-api-name");
+if (!task) {
+  console.error('Usage: npx tsx index.ts "<task>"')
+  process.exit(1)
+}
+
+async function main() {
+  const sandboxId = `mastra-blaxel-coding-${Date.now()}`
+
+  // create sandbox
+  const workspace = new Workspace({
+    sandbox: new BlaxelSandbox({
+      id: sandboxId,
+      image: 'blaxel/py-app',
+      memory: 4096,
+    }),
+  })
+
+  try {
+    // create agent
+    const agent = new Agent({
+      id: 'coding-agent',
+      name: 'Coding agent',
+      instructions: `You are an expert software engineer with access to a sandbox environment. You can write, run, and debug code in any language. Use the sandbox to execute code, install dependencies, and verify your solutions work correctly before responding. Install whichever packages you need for your task.`,
+      model: 'anthropic/claude-sonnet-4-6',
+      workspace,
+    })
+
+    // set task for agent
+    // stream agent output
+    const stream = await agent.stream(task, { maxSteps: 50 })
+
+    process.stdout.write('agent > ')
+    for await (const chunk of stream.textStream) {
+      process.stdout.write(chunk)
+    }
+    process.stdout.write('\n' + '--'.repeat(20) + '\n')
+  } finally {
+    // delete sandbox when complete
+    await workspace.sandbox?.destroy()
+  }
+}
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
-</CodeGroup>
+This creates a coding agent that accepts requests from the command-line. The coding agent's uniquely named sandbox is generated from Blaxel's `blaxel/py-app` image, which contains a complete Python development environment.
 
-### Connect to other agents
+Test the agent:
 
-Connect to other agents hosted on Blaxel from your code by using the [Blaxel SDK](../sdk-reference/introduction). This allows for multi-agent chaining without managing connections yourself. This command is independent of the framework used to build the agent.
-
-<CodeGroup>
-
-```typescript TypeScript
-
-import { blAgent } from "@blaxel/core";
-
-const myAgentResponse = await blAgent("agent-name").run(input);
+```shell
+npx tsx index.ts "Write a Python program to calculate the number of vowels in a word. Show the code. Test it and show the results."
 ```
 
-</CodeGroup>
+The agent will start working on the task in a sandbox, streaming its responses as it works. Here's a partial example of the output:
 
-### Host your agent on Blaxel
+```shell
+agent > Here's the Python program to calculate the number of vowels in a word:
 
-You can [deploy](../Agents/Deploy-an-agent) your agent on Blaxel, enabling you to use [Serverless Deployments](../Infrastructure/Global-Inference-Network), [Agentic Observability](../Observability/Overview), [Policies](../Model-Governance/Policies), and more. This command is independent of the framework used to build the agent.
+def count_vowels(word):
+    vowels = "aeiouAEIOU"
+    count = 0
+    for letter in word:
+        if letter in vowels:
+            count += 1
+    return count
 
-Either run the following CLI command from the root of your agent repository.
+# Test words
+test_words = ["hello", "Python", "AEIOU", "rhythm", "beautiful", "sky"]
 
-```bash
-bl deploy
+...
 ```
 
-Or [connect a GitHub repository to Blaxel](../Agents/Github-integration) for automatic deployments every time you push on _main_.
+That's it! You're ready to start building and deploying Blaxel sandbox-backed agents with Mastra.
+
+## Resources
+
+Want more info on developing and deploying agents on Blaxel? Check out the following resources:
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="/Agents/Deploy-an-agent">
+  Complete tutorial for deploying AI agents to Blaxel.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="/Agents/Variables-and-secrets">
+  Complete tutorial for managing variables and secrets when deploying to Blaxel.
+</Card>
+
+<Card title="Mastra documentation" icon="book" href="https://mastra.ai/docs">
+  Official Mastra documentation.
+</Card>
