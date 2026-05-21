@@ -332,12 +332,12 @@ await sandbox.fs.rm(f"/blaxel/app/config.json")
 
 The `watch` function monitors all file system changes **in the specified directory.** You can also watch subdirectories by passing a `/my/directory/**` pattern.
 
-By default (when *withContent: false*), the events will only include metadata about the changes, not the actual file contents. Here's what you'll get in the callback events:
+By default (when *withContent: false*), the events will only include metadata about the changes, not the actual file contents. Here's what you'll get in the callback events:
 
 1. For ALL operations (CREATE, WRITE, DELETE, etc.), you'll receive:
-    1. op: The operation type (e.g., "CREATE", "WRITE", "DELETE")
-    2. path: The directory path where the change occurred
-    3. name: The name of the file/directory that changed
+    1. op: The operation type (e.g., "CREATE", "WRITE", "DELETE")
+    2. path: The directory path where the change occurred
+    3. name: The name of the file/directory that changed
 2. You will NOT receive:
     1. The actual content of the files
     2. File contents for CREATE or WRITE operations
@@ -419,4 +419,4 @@ handle = sandbox.fs.watch("/", watch_callback, {
 ```
 </CodeGroup>
 
-Specify `withContent: true` so the events include the actual file contents.
+Specify `withContent: true` so the events include the actual file contents.
