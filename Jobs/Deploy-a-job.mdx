@@ -345,7 +345,7 @@ tasks = [
 ```
 
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
-- `policies` fields is also optional. It allow you to specify a Blaxel [policy](../Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
+- `policies` field is also optional. It allows you to specify a Blaxel [policy](../Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
 - `[env]` section defines environment variables that the job can access via the SDK. Note that these are NOT secrets.
 - `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
 - `[tasks]` sections allows to specify
