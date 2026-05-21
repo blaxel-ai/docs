@@ -8,6 +8,17 @@ components:
       required: false
       schema:
         type: string
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported
+        for `createdAt:desc` listings and returns the oldest page directly without
+        walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
     PaginationCursor:
       description: Opaque cursor returned by a previous response's meta.nextCursor.
         Only valid for the same query (workspace + filters); the server rejects cursors
@@ -3626,6 +3637,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -4079,6 +4091,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -4479,6 +4492,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -5447,6 +5461,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -5857,6 +5872,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -6231,6 +6247,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -6440,6 +6457,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
@@ -7577,6 +7595,7 @@ paths:
       - $ref: '#/components/parameters/PaginationLimit'
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
       responses:
         "200":
           content:
