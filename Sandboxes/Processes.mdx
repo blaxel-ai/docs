@@ -180,7 +180,7 @@ const process = await sandbox.process.exec({
   name: "build-process",
   command: "npm run build",
   waitForCompletion: true,
-  timeout: 60000 // 60 seconds
+  timeout: 60 // 60 seconds
 });
 ```
 
@@ -189,13 +189,13 @@ process = await sandbox.process.exec({
   "name": "build-process",
   "command": "npm run build",
   "wait_for_completion": True,
-  "timeout": 60000  # 60 seconds
+  "timeout": 60  # 60 seconds
 })
 ```
 
 </CodeGroup>
 
-When waiting for completion, the process execution object will contain a `.logs` field with the [combined `stdout` and `stderr` output as a string](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows to set a timeout duration on the process.
+When waiting for completion, the process execution object will contain a `.logs` field with the [combined `stdout` and `stderr` output as a string](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
 
 <Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
 
