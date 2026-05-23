@@ -123,7 +123,7 @@ await sandbox.process.exec({
   name: "install-deps",
   command: "apk add --no-cache tailscale iptables",
   waitForCompletion: true,
-  timeout: 60000,
+  timeout: 60, // 60 seconds
 });
 
 // 3. Start the tailscaled daemon in the background
@@ -143,7 +143,7 @@ const up = await sandbox.process.exec({
   command: `tailscale up --authkey=$TS_AUTHKEY --hostname=${SANDBOX_NAME} --ssh`,
   env: { TS_AUTHKEY },
   waitForCompletion: true,
-  timeout: 30000,
+  timeout: 30, // 30 seconds
 });
 console.log("tailscale up:", up.logs);
 
@@ -152,7 +152,7 @@ const ip = await sandbox.process.exec({
   name: "tailscale-ip",
   command: "tailscale ip",
   waitForCompletion: true,
-  timeout: 10000,
+  timeout: 10, // 10 seconds
 });
 console.log("Tailscale IP:", ip.logs?.trim());
 ```
@@ -177,7 +177,7 @@ async def setup_tailscale():
         "name": "install-deps",
         "command": "apk add --no-cache tailscale iptables",
         "wait_for_completion": True,
-        "timeout": 60000,
+        "timeout": 60,  # 60 seconds
     })
 
     # 3. Start the tailscaled daemon in the background
@@ -197,7 +197,7 @@ async def setup_tailscale():
         "command": f"tailscale up --authkey=$TS_AUTHKEY --hostname={SANDBOX_NAME} --ssh",
         "env": {"TS_AUTHKEY": TS_AUTHKEY},
         "wait_for_completion": True,
-        "timeout": 30000,
+        "timeout": 30,  # 30 seconds
     })
     print("tailscale up:", up.logs)
 
@@ -206,7 +206,7 @@ async def setup_tailscale():
         "name": "tailscale-ip",
         "command": "tailscale ip",
         "wait_for_completion": True,
-        "timeout": 10000,
+        "timeout": 10,  # 10 seconds
     })
     print("Tailscale IP:", ip.logs.strip())
 
