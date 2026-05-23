@@ -347,8 +347,8 @@ tasks = [
 - `name`, `workspace`, and `type` fields are optional and serve as default values. Any bl command run in the folder will use these defaults rather than prompting you for input.
 - `policies` field is also optional. It allows you to specify a Blaxel [policy](../Model-Governance/Policies) to customize the deployment. For example, deploy it only in a specific region of the world.
 - `[env]` section defines environment variables that the job can access via the SDK. Note that these are NOT secrets.
-- `[runtime]` section allows to override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
-- `[tasks]` sections allows to specify
+- `[runtime]` section lets you override job execution parameters: maximum number of concurrent tasks, maximum number of retries for each task, timeout (in s), or memory (in MB) to allocate.
+- `[tasks]` sections let you specify
 - `[[triggers]]` and `[triggers.configuration]` sections define ways to schedule job executions.
     - `type = "cron"` lets you create a cron schedule for the job to run periodically. The job will be executed without any argument by default. You can override this by passing:
         - `tasks = [{my_arg="my_value"}]` containing a list of task to execute at each occurrence of the cron (default value is one task, without arguments)
