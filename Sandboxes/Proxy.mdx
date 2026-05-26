@@ -31,7 +31,7 @@ When a sandbox is created with a proxy config, Blaxel:
 5. Injects configured headers and body fields, resolving `{{SECRET:name}}` placeholders server-side
 6. Adds an `X-Blaxel-Request-Id` header to every proxied request for tracing
 
-Standard HTTP clients work transparently: `curl`, `wget`, `git`, `pip`, `npm`, Node.js `https`, Python `requests`, etc.
+Most HTTP clients work transparently because they read the injected `HTTP_PROXY`, `HTTPS_PROXY`, and `SSL_CERT_FILE` environment variables — `curl`, `pip`, `npm`, `git`, Python `requests`, and Python `httpx` all work out of the box. Lower-level libraries that don't follow these conventions (for example, calling `urllib3` directly) need to be pointed at the proxy explicitly.
 
 <Note>
 Localhost (`127.0.0.1`), private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), `169.254.169.254`, `.local`, and `.internal` are always bypassed automatically.
@@ -148,7 +148,7 @@ When proxy is configured, the sandbox automatically has:
 
 ## CLI tool compatibility
 
-When proxy is enabled, the following tools work transparently inside the sandbox with no extra configuration:
+When proxy is enabled, common CLI tools and high-level clients work transparently inside the sandbox with no extra configuration:
 
 | Tool | Protocol | Notes |
 |---|---|---|
@@ -157,16 +157,58 @@ When proxy is enabled, the following tools work transparently inside the sandbox
 | `pip` / `pip3` | HTTPS | Automatic |
 | `npm` / `npx` | HTTPS | Automatic |
 | Python `requests` | HTTPS | Automatic via env vars |
-| Node.js `https` | HTTPS | Automatic via `HTTPS_PROXY` + `NODE_EXTRA_CA_CERTS` env vars |
+| Python `httpx` | HTTPS | Automatic via env vars |
+
+Python's stdlib `urllib.request` is not recommended with the proxy. Prefer `requests` or `httpx`, or configure `urllib3.ProxyManager` directly if you need lower-level control:
+
+```python
+import os
+import urllib.parse
+import urllib3
+
+proxy_url = os.environ["HTTPS_PROXY"]
+_parsed = urllib.parse.urlsplit(proxy_url)
+_userinfo = _parsed.netloc.rsplit("@", 1)
+proxy_kwargs = {}
+if len(_userinfo) == 2:
+    proxy_auth = urllib.parse.unquote(_userinfo[0])
+    proxy_kwargs["proxy_headers"] = urllib3.make_headers(proxy_basic_auth=proxy_auth)
+http = urllib3.ProxyManager(
+    proxy_url,
+    **proxy_kwargs,
+    cert_reqs="CERT_REQUIRED",
+    ca_certs=os.environ.get("SSL_CERT_FILE"),
+)
+resp = http.request(
+    "GET",
+    "https://api.stripe.com/v1/charges"
+)
+print(resp.status, resp.data.decode())
+```
 
 ## Behavior details
 
 - **Wildcard matching**: `*.example.com` matches `sub.example.com` and `a.b.example.com` but not `example.com` itself
 - **No cross-route leakage**: Headers/secrets from one routing rule are never applied to requests matching a different rule
 - **User headers preserved**: The proxy adds injected headers alongside any headers the sandbox code sends — it does not overwrite user-sent headers
-- **Body merge**: Injected body fields are merged into the outbound JSON payload. User-sent fields take precedence if there's a key collision
+- **Body merge**: Injected body fields are merged into JSON request bodies up to 1 MB. User-sent fields take precedence on key collisions. Requests over 1 MB, requests without a known `Content-Length` (e.g. chunked uploads), and streaming RPCs are forwarded unchanged — use header injection for credentials in those cases
 - **Tracing**: Every proxied request gets an `X-Blaxel-Request-Id` header for observability
 - **Local traffic**: Requests to `localhost` / `127.0.0.1` are never routed through the proxy
+
+### HTTP/2 and gRPC
+
+The proxy supports HTTP/2 and gRPC. Clients that previously required HTTP/1.1 workarounds now work without any flags or downgrades:
+
+- gRPC SDKs in Go, Python (`grpcio`), and Node (`@grpc/grpc-js`)
+- `curl --http2`
+- Go `net/http` (HTTP/2 is the default)
+
+All four gRPC RPC styles — unary, server-streaming, client-streaming, and bidirectional — flow through, and gRPC trailers (`grpc-status`, `grpc-message`) are preserved end-to-end.
+
+A few things to keep in mind:
+
+- **Header injection works on every request**, including streaming RPCs.
+- **Body injection is skipped on streaming requests** (gRPC streams, chunked uploads). Use header injection to attach credentials on streaming workloads — see the body injection limits in [Behavior details](#behavior-details).
 
 ## Full example: agent sandbox with proxy + firewall
 
