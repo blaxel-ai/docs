@@ -199,7 +199,6 @@ print(resp.status, resp.data.decode())
 
 The proxy supports HTTP/2 and gRPC. Clients that previously required HTTP/1.1 workarounds now work without any flags or downgrades:
 
-- `gcsfuse` and other Google Cloud clients (no need for `--client-protocol=http1`)
 - gRPC SDKs in Go, Python (`grpcio`), and Node (`@grpc/grpc-js`)
 - `curl --http2`
 - Go `net/http` (HTTP/2 is the default)
