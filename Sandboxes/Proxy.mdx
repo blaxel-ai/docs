@@ -181,7 +181,7 @@ http = urllib3.ProxyManager(
 )
 resp = http.request(
     "GET",
-    "https://storage.googleapis.com/storage/v1/b/my-bucket/o",
+    "https://api.stripe.com/v1/charges"
 )
 print(resp.status, resp.data.decode())
 ```
