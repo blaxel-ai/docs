@@ -17,7 +17,7 @@ Mark 3 infrastructure is currently available to run the following workloads:
 
 ## What about Mark 1
 
-Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed to federate multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
+Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed federating multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
 
 While it demonstrated reasonable stability even at 20+ requests per second and achieved somewhat acceptable cold starts through runtime optimization, its architecture wasn’t suited for the more lightweight workloads that make up most of autonomous agents: tool calls, agent orchestration, and external model routing.
 
