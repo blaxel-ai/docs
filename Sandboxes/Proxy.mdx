@@ -31,7 +31,7 @@ When a sandbox is created with a proxy config, Blaxel:
 5. Injects configured headers and body fields, resolving `{{SECRET:name}}` placeholders server-side
 6. Adds an `X-Blaxel-Request-Id` header to every proxied request for tracing
 
-Standard HTTP clients work transparently: `curl`, `wget`, `git`, `pip`, `npm`, Node.js `https`, Python `requests`, etc.
+Common CLI tools and high-level clients — `curl`, `pip`, `npm`, `git`, Python `requests`, Python `httpx` — work transparently via the injected `HTTP_PROXY` / `HTTPS_PROXY` / `SSL_CERT_FILE` environment variables. Lower-level libraries such as direct `urllib3` may require explicit proxy auth and CA configuration.
 
 <Note>
 Localhost (`127.0.0.1`), private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), `169.254.169.254`, `.local`, and `.internal` are always bypassed automatically.
@@ -141,14 +141,14 @@ When proxy is configured, the sandbox automatically has:
 | Variable | Purpose |
 |---|---|
 | `HTTP_PROXY` | Proxy URL for HTTP traffic |
-| `HTTPS_PROXY` | Proxy URL for HTTPS traffic |
+| `HTTPS_PROXY` | Proxy URL for HTTPS traffic. The value normally uses an `http://...` proxy URL; HTTPS destinations are tunneled with CONNECT. |
 | `NO_PROXY` | Comma-separated bypass list (always includes localhost, private ranges) |
 | `NODE_EXTRA_CA_CERTS` | Path to CA cert for Node.js TLS verification |
 | `SSL_CERT_FILE` | Path to CA cert for other TLS clients (`curl`, Python, etc.) |
 
 ## CLI tool compatibility
 
-When proxy is enabled, the following tools work transparently inside the sandbox with no extra configuration:
+When proxy is enabled, common CLI tools and high-level clients work transparently inside the sandbox with no extra configuration:
 
 | Tool | Protocol | Notes |
 |---|---|---|
@@ -157,7 +157,31 @@ When proxy is enabled, the following tools work transparently inside the sandbox
 | `pip` / `pip3` | HTTPS | Automatic |
 | `npm` / `npx` | HTTPS | Automatic |
 | Python `requests` | HTTPS | Automatic via env vars |
-| Node.js `https` | HTTPS | Automatic via `HTTPS_PROXY` + `NODE_EXTRA_CA_CERTS` env vars |
+| Python `httpx` | HTTPS | Automatic via env vars |
+
+Python's stdlib `urllib.request` works fine with an **HTTP** proxy (`HTTP_PROXY=http://...`), which is the normal pattern; it does not support HTTPS proxies (TLS-to-proxy) without monkey-patching, and we do not recommend it for that use case. Use `urllib3.ProxyManager` if you need explicit control:
+
+```python
+import os
+import urllib.parse
+import urllib3
+
+proxy_url = os.environ["HTTPS_PROXY"]
+proxy_auth = urllib.parse.unquote(
+    urllib.parse.urlsplit(proxy_url).netloc.rsplit("@", 1)[0]
+)
+http = urllib3.ProxyManager(
+    proxy_url,
+    proxy_headers=urllib3.make_headers(proxy_basic_auth=proxy_auth),
+    cert_reqs="CERT_REQUIRED",
+    ca_certs=os.environ.get("SSL_CERT_FILE"),
+)
+resp = http.request(
+    "GET",
+    "https://storage.googleapis.com/storage/v1/b/my-bucket/o",
+)
+print(resp.status, resp.data.decode())
+```
 
 ## Behavior details
 
@@ -167,6 +191,27 @@ When proxy is enabled, the following tools work transparently inside the sandbox
 - **Body merge**: Injected body fields are merged into the outbound JSON payload. User-sent fields take precedence if there's a key collision
 - **Tracing**: Every proxied request gets an `X-Blaxel-Request-Id` header for observability
 - **Local traffic**: Requests to `localhost` / `127.0.0.1` are never routed through the proxy
+
+### HTTP/2 and gRPC through CONNECT
+
+The MITM proxy advertises `h2, http/1.1` to the client and to the upstream origin during the inner TLS handshake established after CONNECT. It speaks HTTP/2 upstream when both sides support it and falls back to HTTP/1.1 transparently when they do not. Negotiation happens per inner TLS handshake.
+
+HTTP/2 support lives **inside** the CONNECT tunnel only. The client connects to the proxy with an HTTP proxy URL (`HTTP_PROXY=http://...` or `HTTPS_PROXY=http://...`), sends a cleartext CONNECT, and then negotiates h2 on the inner TLS session terminated by the MITM proxy. RFC 8441 / extended CONNECT is not supported: do not use `HTTPS_PROXY=https://...` to negotiate HTTP/2 to the proxy itself.
+
+gRPC unary, server-streaming, client-streaming, and bidirectional RPCs flow through the proxy. gRPC trailers such as `grpc-status` and `grpc-message` are preserved, and header injection is applied per stream rather than per connection.
+
+Identity headers such as `X-Blaxel-Sandbox-Id` and the resolved routing rules are bound at CONNECT time. All h2 streams multiplexed over the same CONNECT share that identity and rule set. Config changes mid-connection apply to new CONNECTs, not in-flight streams.
+
+Clients that previously needed HTTP/1.1 workarounds can now use HTTP/2 normally:
+
+- `gcsfuse` (the Go GCS client uses h2 by default; `--client-protocol=http1` is no longer required)
+- gRPC SDKs for Go, Python `grpcio`, and Node `@grpc/grpc-js`
+- Go `net/http` with `Transport.ForceAttemptHTTP2 = true` (the default since Go 1.6)
+- `curl --http2`
+
+Body injection requires buffering the request body. Lower-level `bodyInjections` rules (shown as `body` in the sandbox SDK examples) are skipped when the request body is long-lived or cannot be buffered, such as gRPC streaming RPCs or chunked uploads. Header injection has no such limitation.
+
+Browsers and Go h2 clients often coalesce many requests onto one TLS connection. Per-stream audit logging is unchanged, with one line per request, but operators should expect fewer and busier MITM connections in metrics dashboards.
 
 ## Full example: agent sandbox with proxy + firewall
 
