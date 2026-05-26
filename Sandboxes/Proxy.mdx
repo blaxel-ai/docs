@@ -167,12 +167,15 @@ import urllib.parse
 import urllib3
 
 proxy_url = os.environ["HTTPS_PROXY"]
-proxy_auth = urllib.parse.unquote(
-    urllib.parse.urlsplit(proxy_url).netloc.rsplit("@", 1)[0]
-)
+_parsed = urllib.parse.urlsplit(proxy_url)
+_userinfo = _parsed.netloc.rsplit("@", 1)
+proxy_kwargs = {}
+if len(_userinfo) == 2:
+    proxy_auth = urllib.parse.unquote(_userinfo[0])
+    proxy_kwargs["proxy_headers"] = urllib3.make_headers(proxy_basic_auth=proxy_auth)
 http = urllib3.ProxyManager(
     proxy_url,
-    proxy_headers=urllib3.make_headers(proxy_basic_auth=proxy_auth),
+    **proxy_kwargs,
     cert_reqs="CERT_REQUIRED",
     ca_certs=os.environ.get("SSL_CERT_FILE"),
 )
