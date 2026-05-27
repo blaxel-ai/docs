@@ -561,10 +561,15 @@ components:
       required:
       - region
     EgressGatewayUsage:
+      type: object
       description: Sandboxes currently bound to each egress gateway. Returned by GET
         /egressgateways/usage so the egress-IPs UI can render attachment counts without
         fetching the sandboxes listing full. Keys are gateway names; values are sandbox
         names.
+      additionalProperties:
+        items:
+          type: string
+        type: array
     EgressIP:
       type: object
       description: An individual IP address allocated from an egress gateway for dedicated
