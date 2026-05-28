@@ -231,12 +231,12 @@ curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
             {
               "destinations": ["api.stripe.com"],
               "headers": { "Authorization": "Bearer {{SECRET:stripe-key}}" },
-              "secrets": { "stripe-key": "sk_live_NEW_ROTATED_KEY..." }
+              "secrets": { "stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY" }
             },
             {
               "destinations": ["api.anthropic.com"],
               "headers": { "x-api-key": "{{SECRET:anthropic-key}}" },
-              "secrets": { "anthropic-key": "sk-ant-..." }
+              "secrets": { "anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY" }
             }
           ]
         }
