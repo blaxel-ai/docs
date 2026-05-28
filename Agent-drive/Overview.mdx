@@ -202,6 +202,45 @@ Read-only mode is enforced at mount time, not at the storage/system level. There
 To make the read-only guarantee effective in an adversarial/agentic setup, you should restrict the agent's access to `/var/run/secrets/blaxel.ai/identity/token`, and also block the `blfs` binary from the agent's `PATH` / execution scope.
 </Warning>
 
+### Map UID/GID on mount
+
+When the sandbox process runs as a non-root user, files on the drive (owned by UID/GID `0` on the filer) may appear inaccessible. You can remap file ownership at mount time by specifying a local UID and/or GID. The filer side is always `0`.
+
+<CodeGroup>
+
+```tsx TypeScript
+await sandbox.drives.mount({
+  driveName: "my-drive",
+  mountPath: "/mnt/data",
+  uidMap: "1000",
+  gidMap: "1000",
+});
+```
+
+```python Python
+await sandbox.drives.mount(
+    drive_name="my-drive",
+    mount_path="/mnt/data",
+    uid_map="1000",
+    gid_map="1000",
+)
+```
+
+</CodeGroup>
+
+Files owned by UID/GID `0` on the filer will appear as owned by UID/GID `1000` inside the sandbox. Both fields are optional and accept any non-negative integer.
+
+#### Default mapping via environment variables
+
+Set `BLFS_UID_MAP` and `BLFS_GID_MAP` on the sandbox to apply UID/GID mapping to every mount by default, without passing the values in each request.
+
+| Variable | Description |
+|---|---|
+| `BLFS_UID_MAP` | Default local UID to map to filer UID `0` |
+| `BLFS_GID_MAP` | Default local GID to map to filer GID `0` |
+
+Per-request values override environment variable defaults. If neither is set, no mapping is applied and the mount behaves as before.
+
 ## List mounted drives
 
 List all drives currently mounted to a sandbox:
