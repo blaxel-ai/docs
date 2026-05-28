@@ -214,9 +214,61 @@ A few things to keep in mind:
 
 ## Update proxy configuration
 
-You can update proxy routing rules, secrets, domain filters, and bypass lists on a running sandbox by calling the [Update sandbox](/api-reference/compute/update-sandbox) API endpoint. Pass the full sandbox object with an updated `network` field in the spec:
+You can update proxy routing rules, secrets, domain filters, and bypass lists on a running sandbox using the SDK's `updateNetwork` method. This fetches the current sandbox, merges the new network config, and applies the update in one call:
 
-```bash
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.updateNetwork("my-sandbox", {
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY" },
+        },
+        {
+          destinations: ["api.anthropic.com"],
+          headers: { "x-api-key": "{{SECRET:anthropic-key}}" },
+          secrets: { "anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY" },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+from blaxel.core.sandbox.types import SandboxUpdateNetwork
+
+await SandboxInstance.update_network(
+    "my-sandbox",
+    SandboxUpdateNetwork(network={
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY"},
+                },
+                {
+                    "destinations": ["api.anthropic.com"],
+                    "headers": {"x-api-key": "{{SECRET:anthropic-key}}"},
+                    "secrets": {"anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY"},
+                },
+            ],
+        },
+    }),
+)
+```
+
+```bash cURL
 curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -244,6 +296,8 @@ curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
     }
   }'
 ```
+
+</CodeGroup>
 
 The update replaces the entire `network` configuration. Include all routing rules, domain filters, and secrets you want active after the update.
 
