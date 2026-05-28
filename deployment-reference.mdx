@@ -70,6 +70,9 @@ The format of Blaxel's configuration file is described below.
 # maximum number of retries
 # maxRetries = 0
 
+# base root disk allocation as a percentage of available disk (only valid for resource type="job")
+# diskPercent = 5
+
 # volumes (optional, for resource type="agent", "sandbox", "volume-template", "job")
 # attaches persistent storage to the resource
 # the resource must be pinned to the same region as the volume
@@ -94,6 +97,11 @@ The format of Blaxel's configuration file is described below.
 
 # volume default size in MB (only valid for resource type="volume-template")
 # defaultSize = 1024
+
+# GitHub Runner integration (optional, only valid for resource type="job")
+# [githubRunner]
+# list of GitHub repositories this runner can pick up jobs from
+# repositories = ["owner/repo"]
 
 # job trigger (optional)
 # [[triggers]]
