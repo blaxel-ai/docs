@@ -16,8 +16,10 @@ The Blaxel SDK supports two network features when creating sandboxes:
 - **[Proxy routing with secrets injection](./Proxy-secrets-injection)** - the Blaxel proxy performs man-in-the-middle (MITM) interception on outbound HTTPS traffic and injects headers, body fields, and secrets server-side.
 - **[Domain filtering](./Proxy-domains)** - the Blaxel proxy controls which external domains the sandbox can reach.
 
+Proxy and network configuration can be updated after creation: you can rotate secrets, add or remove routing rules, and change the domain allowlist or denylist on a running sandbox.
+
 <Warning>
-  Proxy and network configuration is set at sandbox creation time and **cannot be updated after the sandbox has been created**. To change the configuration (e.g. rotate a secret, add a new routing rule, or update the allowlist), you must create a new sandbox. Support for in-place updates is coming soon.
+  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Enabling or disabling the proxy requires a new sandbox. If you remove all routing rules and domain filters from an existing proxy-enabled sandbox, the proxy remains active transparently — traffic continues to flow through it without any secret injection or domain blocking.
 </Warning>
 
 ## How it works
@@ -209,6 +211,45 @@ A few things to keep in mind:
 
 - **Header injection works on every request**, including streaming RPCs.
 - **Body injection is skipped on streaming requests** (gRPC streams, chunked uploads). Use header injection to attach credentials on streaming workloads — see the body injection limits in [Behavior details](#behavior-details).
+
+## Update proxy configuration
+
+You can update proxy routing rules, secrets, domain filters, and bypass lists on a running sandbox by calling the [Update sandbox](/api-reference/compute/update-sandbox) API endpoint. Pass the full sandbox object with an updated `network` field in the spec:
+
+```bash
+curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "my-sandbox" },
+    "spec": {
+      "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+        "proxy": {
+          "routing": [
+            {
+              "destinations": ["api.stripe.com"],
+              "headers": { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+              "secrets": { "stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY" }
+            },
+            {
+              "destinations": ["api.anthropic.com"],
+              "headers": { "x-api-key": "{{SECRET:anthropic-key}}" },
+              "secrets": { "anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY" }
+            }
+          ]
+        }
+      }
+    }
+  }'
+```
+
+The update replaces the entire `network` configuration. Include all routing rules, domain filters, and secrets you want active after the update.
+
+<Warning>
+  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Removing all routing rules and domain filters does not disable the proxy — traffic continues to flow through it transparently without any injection or blocking.
+</Warning>
 
 ## Full example: agent sandbox with proxy + firewall
 
