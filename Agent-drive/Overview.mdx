@@ -204,7 +204,7 @@ To make the read-only guarantee effective in an adversarial/agentic setup, you s
 
 ### Map UID/GID on mount
 
-When the sandbox process runs as a non-root user, files on the drive (owned by UID/GID `0` on the filer) may appear inaccessible. You can remap file ownership at mount time by specifying a local UID and/or GID. The filer side is always `0`.
+When the sandbox process runs as a non-root user, files on the drive may appear inaccessible due to ownership mismatch. You can remap file ownership at mount time by specifying a local UID and/or GID.
 
 <CodeGroup>
 
@@ -228,7 +228,7 @@ await sandbox.drives.mount(
 
 </CodeGroup>
 
-Files owned by UID/GID `0` on the filer will appear as owned by UID/GID `1000` inside the sandbox. Both fields are optional and accept any non-negative integer.
+With this configuration, drive files will appear as owned by UID/GID `1000` inside the sandbox. Both fields are optional and accept any non-negative integer.
 
 #### Default mapping via environment variables
 
@@ -236,8 +236,8 @@ Set `BLFS_UID_MAP` and `BLFS_GID_MAP` on the sandbox to apply UID/GID mapping to
 
 | Variable | Description |
 |---|---|
-| `BLFS_UID_MAP` | Default local UID to map to filer UID `0` |
-| `BLFS_GID_MAP` | Default local GID to map to filer GID `0` |
+| `BLFS_UID_MAP` | Default local UID for drive file ownership mapping |
+| `BLFS_GID_MAP` | Default local GID for drive file ownership mapping |
 
 Per-request values override environment variable defaults. If neither is set, no mapping is applied and the mount behaves as before.
 
