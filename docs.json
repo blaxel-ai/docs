@@ -46,6 +46,7 @@
               "Sandboxes/MCP",
               "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
+              "Sandboxes/Variables-and-secrets",
               {
                 "group": "Ports, previews & sessions",
                 "pages": [
@@ -543,6 +544,10 @@
     {
       "source": "/sandboxes/processes",
       "destination": "/Sandboxes/Processes"
+    },
+    {
+      "source": "/sandboxes/variables-and-secrets",
+      "destination": "/Sandboxes/Variables-and-secrets"
     },
     {
       "source": "/sandboxes/proxy",
