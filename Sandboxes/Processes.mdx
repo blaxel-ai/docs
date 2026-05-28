@@ -368,6 +368,20 @@ await sandbox.process.exec({
 
 </CodeGroup>
 
+## Disable process telemetry logging
+
+By default, process stdout and stderr are exported as structured telemetry logs (visible in external observability systems). You can disable this telemetry export by setting the `SANDBOX_DISABLE_PROCESS_LOGGING` environment variable inside the sandbox.
+
+When set to `true` or `1`, structured telemetry output is suppressed for **all** processes. File-based logging and [real-time log streaming](/Sandboxes/Log-streaming) via the SDK remain fully functional and are not affected.
+
+Set this variable in your Dockerfile or at sandbox creation time:
+
+```dockerfile
+ENV SANDBOX_DISABLE_PROCESS_LOGGING=true
+```
+
+<Note>This only suppresses the structured telemetry export. You can still retrieve process logs via the SDK's `process.logs()` method and stream them in real-time.</Note>
+
 ## Process statuses
 
 A process can have either of the following status:
