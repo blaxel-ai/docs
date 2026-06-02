@@ -396,6 +396,11 @@ components:
         cnameRecords:
           type: string
           description: CNAME target for the domain
+        fallbackPreviewId:
+          type: string
+          description: Preview ID to route to when a preview lookup fails on this
+            custom domain
+          example: my-fallback-preview
         lastVerifiedAt:
           type: string
           description: Last verification attempt timestamp
@@ -6748,6 +6753,14 @@ paths:
     post:
       description: Create a preview
       operationId: CreateSandboxPreview
+      parameters:
+      - description: Force creation by deleting conflicting previews that use the
+          same custom domain prefix URL
+        in: query
+        name: force
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
