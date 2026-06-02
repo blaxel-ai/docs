@@ -102,8 +102,7 @@
                   "Jobs/Manage-job-execution-py"
                 ]
               },
-              "Jobs/Variables-and-secrets-jobs",
-              "Jobs/GitHub-actions-runner"
+              "Jobs/Variables-and-secrets-jobs"
             ]
           },
           {
@@ -297,6 +296,12 @@
               "Tutorials/PydanticAI",
               "Tutorials/n8n",
               "Tutorials/Custom-Agents"
+            ]
+          },
+          {
+            "group": "Jobs",
+            "pages": [
+              "Tutorials/GitHub-actions-runner"
             ]
           },
           {

@@ -1,0 +1,237 @@
+---
+title: "Run GitHub Actions on Blaxel"
+description: "Run GitHub Actions self-hosted runners on Blaxel ephemeral micro-VMs using the Blaxel GitHub App."
+sidebarTitle: "GitHub Actions runner"
+---
+
+Blaxel can act as a self-hosted GitHub Actions runner. Each workflow job runs inside an ephemeral micro-VM that is spun up on demand and discarded when the job finishes. The Blaxel GitHub App receives `workflow_job` events from GitHub and automatically launches your job.
+
+<Note>
+  This tutorial assumes that you have a Python project containing unit tests and a GitHub Actions workflow that runs those unit tests using `pytest`.
+</Note>
+
+## Prerequisites
+
+- A Blaxel account and workspace
+- A GitHub repository containing a Python project with tests
+- The Blaxel CLI (`bl`) installed and authenticated
+
+## 1. Create the Dockerfile
+
+The Dockerfile defines the micro-VM filesystem. A good starting point is the `catthehacker` Ubuntu image, which includes most tools found on GitHub-hosted runners. Here is an example for a Python test runner:
+
+```dockerfile
+FROM ghcr.io/catthehacker/ubuntu:full-24.04
+
+USER root
+
+# Install Python
+RUN apt-get update -qq \
+    && apt-get install -y -qq --no-install-recommends \
+      python3 python3-pip python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pytest
+RUN pip3 install pytest pytest-cov pytest-xdist
+
+# Install GitHub Actions runner
+ARG RUNNER_VERSION=2.333.0
+RUN curl -fSL --retry 3 --retry-delay 5 \
+      -o /tmp/runner.tar.gz \
+      "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
+    && mkdir -p /actions-runner \
+    && tar xzf /tmp/runner.tar.gz -C /actions-runner \
+    && rm /tmp/runner.tar.gz
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+ENV RUNNER_ALLOW_RUNASROOT=1
+
+ENTRYPOINT ["bash", "/start.sh"]
+```
+
+You can install additional tools or set environment variables using standard `RUN`, `COPY`, and `ENV` instructions. When you are ready to use a different image, edit the Dockerfile and redeploy.
+
+## 2. Create the entrypoint script
+
+The Dockerfile references an entrypoint script (`start.sh`) that starts Docker, fetches the JIT config from Blaxel and starts the GitHub Actions runner:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+export RUNNER_ALLOW_RUNASROOT=1
+RUNNER_DIR="/actions-runner"
+export HOME="${RUNNER_DIR}"
+TASK_INDEX=${TASK_INDEX:-0}
+
+start_docker() {
+  command -v dockerd &>/dev/null || return 0
+
+  local fs_type="unknown"
+  local fs_size="unknown"
+  if mountpoint -q /var/lib/docker 2>/dev/null; then
+    read -r fs_type fs_size < <(df -hT /var/lib/docker | awk 'NR == 2 {print $2, $3}')
+  fi
+
+  # Docker overlay2 cannot use an overlay filesystem as its backing store.
+  # That happens when Blaxel overlays a non-empty image path with the volume.
+  if [ "${fs_type}" = "ext4" ] || [ "${fs_type}" = "xfs" ]; then
+    STORAGE_DRIVER="overlay2"
+    echo "Docker storage: ${fs_type} ${fs_size} -> overlay2"
+  else
+    STORAGE_DRIVER="vfs"
+    echo "Docker storage: ${fs_type} ${fs_size} -> vfs"
+  fi
+
+  dockerd --storage-driver="$STORAGE_DRIVER" &>/var/log/dockerd.log &
+  DOCKERD_PID=$!
+
+  for i in $(seq 1 30); do
+    docker info &>/dev/null && break
+    if ! kill -0 "$DOCKERD_PID" 2>/dev/null; then
+      echo "ERROR: dockerd died unexpectedly"
+      tail -20 /var/log/dockerd.log 2>/dev/null
+      return 1
+    fi
+    sleep 1
+  done
+
+  if docker info &>/dev/null; then
+    echo "Docker ready ($STORAGE_DRIVER)"
+  else
+    echo "ERROR: dockerd failed to start"
+    tail -20 /var/log/dockerd.log 2>/dev/null
+    return 1
+  fi
+}
+
+start_docker
+
+# Fetch task arguments from Blaxel execution data
+if [ -n "${BL_EXECUTION_DATA_URL:-}" ]; then
+  echo "Fetching task data from Blaxel..."
+  TASK_DATA=$(curl -sf "${BL_EXECUTION_DATA_URL}")
+  JIT_CONFIG=$(echo "${TASK_DATA}" | jq -r ".tasks[${TASK_INDEX}].JIT_CONFIG")
+fi
+
+if [ -z "${JIT_CONFIG:-}" ] || [ "${JIT_CONFIG}" = "null" ]; then
+  echo "Error: JIT_CONFIG not found in task data"
+  exit 1
+fi
+
+cd "${RUNNER_DIR}"
+echo "Starting GitHub Actions runner in JIT mode..."
+exec ./run.sh --jitconfig "${JIT_CONFIG}"
+```
+
+## 3. Create `blaxel.toml`
+
+The `blaxel.toml` file defines the job configuration. This example uses ephemeral volumes and targets the GitHub repositories this runner is allowed to serve:
+
+```toml
+type = "job"
+name = "pytest-runner"
+
+[runtime]
+memory = 16384    # 16 GB of RAM allocated to the micro-VM
+timeout = 3600    # maximum job duration: 1 hour (in seconds)
+maxRetries = 0    # no automatic retries on failure
+diskPercent = 5   # base root disk allocation (percentage)
+
+[githubRunner]
+repositories = ["owner/repo"]
+
+[[volumes]]
+# Dedicated storage for the Docker daemon
+name = "docker"
+mountPath = "/var/lib/docker"
+type = "ephemeral"
+sizeMb = 10240
+
+[[volumes]]
+# General-purpose scratch space
+name = "tmp"
+mountPath = "/tmp"
+type = "ephemeral"
+sizeMb = 102400
+```
+
+The `repositories` field lists the GitHub repositories this runner is allowed to pick up jobs from. The format is `owner/repo`.
+
+## 4. Deploy the job
+
+Deploy the job to Blaxel:
+
+```bash
+bl deploy
+```
+
+<Note>
+  Due to the large size of the image, the build process can take up to 40 minutes in some cases.
+</Note>
+
+## 5. Install the Blaxel GitHub App
+
+1. Log in to the Blaxel Console.
+2. Navigate to **Hosting** > **Jobs** > `<your-job-name>` > **Settings**.
+3. Scroll to the **GitHub Runner** section. It should show as **Active**.
+4. Click **Edit**, then click **+**.
+5. Follow the instructions to authorize and install the Blaxel GitHub App on the repository.
+6. Select the repository and click **Save**.
+
+## 6. Redeploy the job
+
+```bash
+bl deploy --skip-build
+```
+
+## 7. Use the runner in your GitHub Actions workflow
+
+In any GitHub Actions workflow, set `runs-on` to `<workspace>/<job-name>` to target your Blaxel runner:
+
+```yaml
+name: test
+
+on:
+  push:
+    branches:
+      main
+
+permissions:
+  contents: read
+
+
+jobs:
+  test:
+    runs-on: my-blaxel-workspace/pytest-runner
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        id: run-tests
+        run: |
+          pytest --tb=short -q
+```
+
+Each time this workflow runs, Blaxel spins up a fresh ephemeral micro-VM, executes the job, and discards the VM when it finishes.
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Jobs reference" href="/Jobs/Overview">
+    Learn more about Blaxel Jobs and configuration options.
+  </Card>
+  <Card title="blaxel.toml reference" href="/Jobs/blaxel-toml">
+    Full reference for all `blaxel.toml` fields.
+  </Card>
+</CardGroup>
