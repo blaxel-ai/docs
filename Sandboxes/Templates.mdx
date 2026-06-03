@@ -140,7 +140,7 @@ PYTHON_ENV = "development"
 ```
 
 <Note>
-  Currently, it is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs.
+  It is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs. See the [variables and secrets](/Sandboxes/Variables-and-secrets) documentation for details.
 </Note>
 
 ##### 4. Define initialization
@@ -231,7 +231,7 @@ The Blaxel SDK includes a declarative image builder that lets you define custom 
 This approach is ideal for dynamic image definitions, CI/CD pipelines, or when your image configuration depends on runtime logic.
 
 <Note>
-  The Declarative Image Builder is available in the **TypeScript** and **Python** SDKs. The Go SDK does not support this feature.
+  The declarative image builder is available in the **TypeScript** and **Python** SDKs. The Go SDK does not support this feature.
 </Note>
 
 Here is a simple example of how to use it:
