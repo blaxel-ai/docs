@@ -2913,8 +2913,10 @@ components:
           example: 30
         ttl:
           type: string
-          description: Time-to-live duration after which the sandbox is automatically
-            deleted (e.g., '30m', '24h', '7d')
+          description: 'Max-age from creation: the sandbox is deleted this long after
+            it is created, regardless of activity (not an idle timeout). Units s,
+            m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''). For idle-based cleanup,
+            use a lifecycle expiration policy of type ttl-idle.'
           example: 24h
     SandboxSpec:
       type: object
@@ -3443,6 +3445,17 @@ components:
           description: Infrastructure generation version for the workspace (affects
             available features and deployment behavior)
           example: mk3
+        sandbox:
+          $ref: '#/components/schemas/WorkspaceSandboxSettings'
+    WorkspaceSandboxSettings:
+      type: object
+      description: Workspace-wide sandbox configuration that applies to all sandbox
+        deployments in the workspace.
+      properties:
+        disableProcessLogging:
+          type: boolean
+          description: When true, sandbox deployments in this workspace set SANDBOX_DISABLE_PROCESS_LOGGING=true
+            to disable per-process stdout/stderr logging. Requires sandbox-api v0.2.28+.
     WorkspaceUser:
       type: object
       description: Workspace user
