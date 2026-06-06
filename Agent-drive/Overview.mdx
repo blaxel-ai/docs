@@ -79,6 +79,10 @@ drive = await DriveInstance.create(
 )
 ```
 
+```bash CLI
+bl drive create --name my-drive --region us-was-1
+```
+
 </CodeGroup>
 
 You can also use `createIfNotExists()` to retrieve an existing drive or create a new one if it doesn't exist:
@@ -138,6 +142,10 @@ await sandbox.drives.mount(
 )
 ```
 
+```bash CLI
+bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /mnt/data
+```
+
 </CodeGroup>
 
 Once mounted, any file written to `/mnt/data` inside the sandbox will be stored on the drive and persist even after the sandbox is deleted.
@@ -162,6 +170,10 @@ await sandbox.drives.mount(
     mount_path="/app/project",
     drive_path="/projects/alpha",
 )
+```
+
+```bash CLI
+bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /app/project --drive-path /projects/alpha
 ```
 
 </CodeGroup>
@@ -192,6 +204,10 @@ await sandbox.drives.mount(
 )
 ```
 
+```bash CLI
+bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /mnt/shared --read-only
+```
+
 </CodeGroup>
 
 The same drive can be mounted read-write in one sandbox and read-only in others. However, any write attempt to a drive mounted as read-only will fail with a permission error.
@@ -218,6 +234,10 @@ mounts = await sandbox.drives.list()
 print(mounts)
 ```
 
+```bash CLI
+bl drive mounts --sandbox my-sandbox
+```
+
 </CodeGroup>
 
 ## List all drives
@@ -235,12 +255,18 @@ from blaxel.core.drive import DriveInstance
 drives = await DriveInstance.list()
 ```
 
+```bash CLI
+bl drive list
+```
+
 </CodeGroup>
 
-Or via CLI:
+## Get drive details
 
-```bash
-bl get drives
+Retrieve details about a specific drive:
+
+```bash CLI
+bl drive get my-drive
 ```
 
 ## Unmount a drive
@@ -255,6 +281,10 @@ await sandbox.drives.unmount("/mnt/data");
 
 ```python Python
 await sandbox.drives.unmount("/mnt/data")
+```
+
+```bash CLI
+bl drive unmount --sandbox my-sandbox --mount-path /mnt/data
 ```
 
 </CodeGroup>
@@ -283,6 +313,10 @@ await DriveInstance.delete("my-drive")
 # Or instance-level
 drive = await DriveInstance.get("my-drive")
 await drive.delete()
+```
+
+```bash CLI
+bl drive delete my-drive
 ```
 
 </CodeGroup>
