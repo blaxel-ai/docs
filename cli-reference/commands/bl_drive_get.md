@@ -6,6 +6,10 @@ slug: bl_drive_get
 
 Get details of a specific drive
 
+### Synopsis
+
+Get detailed information about a drive in the current workspace.
+
 ```
 bl drive get <name> [flags]
 ```
@@ -39,3 +43,4 @@ bl drive get <name> [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

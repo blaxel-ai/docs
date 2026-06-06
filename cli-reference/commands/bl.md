@@ -25,6 +25,7 @@ Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 * [bl connect](/cli-reference/commands/bl_connect)	 - Open an interactive terminal session to a sandbox
 * [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 * [bl deploy](/cli-reference/commands/bl_deploy)	 - Build, push, and deploy your project to Blaxel
+* [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
 * [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 * [bl login](/cli-reference/commands/bl_login)	 - Login to Blaxel
 * [bl logout](/cli-reference/commands/bl_logout)	 - Logout from Blaxel
