@@ -36,13 +36,13 @@ bl drive mount [flags]
 ### Options
 
 ```
-      --drive string        Name of the drive to mount (required)
+      --drive string        Name of the drive to mount
       --drive-path string   Subdirectory within the drive to mount (optional, defaults to /)
       --gid-map string      Local GID to map (filer GID is always 0)
   -h, --help                help for mount
-      --mount-path string   Local path inside the sandbox to mount the drive (required)
+      --mount-path string   Local path inside the sandbox to mount the drive
       --read-only           Mount the drive as read-only
-      --sandbox string      Name of the sandbox (required)
+      --sandbox string      Name of the sandbox
       --uid-map string      Local UID to map (filer UID is always 0)
 ```
 
@@ -59,3 +59,4 @@ bl drive mount [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

@@ -25,8 +25,8 @@ bl drive unmount [flags]
 
 ```
   -h, --help                help for unmount
-      --mount-path string   Local path inside the sandbox to unmount (required)
-      --sandbox string      Name of the sandbox (required)
+      --mount-path string   Mount path to detach (must start with /)
+      --sandbox string      Name of the sandbox
 ```
 
 ### Options inherited from parent commands
@@ -42,3 +42,4 @@ bl drive unmount [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

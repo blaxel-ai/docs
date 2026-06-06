@@ -6,6 +6,14 @@ slug: bl_drive_list
 
 List all drives in the workspace
 
+### Synopsis
+
+List all drives in the current workspace.
+
+```
+bl drive list [flags]
+```
+
 ### Examples
 
 ```
@@ -35,3 +43,4 @@ List all drives in the workspace
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

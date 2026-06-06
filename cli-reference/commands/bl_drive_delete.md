@@ -6,6 +6,10 @@ slug: bl_drive_delete
 
 Delete a drive
 
+### Synopsis
+
+Delete a drive from the current workspace.
+
 ```
 bl drive delete <name> [flags]
 ```
@@ -36,3 +40,4 @@ bl drive delete <name> [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

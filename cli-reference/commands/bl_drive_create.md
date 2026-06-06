@@ -6,6 +6,10 @@ slug: bl_drive_create
 
 Create a new drive
 
+### Synopsis
+
+Create a new drive in the current workspace.
+
 ```
 bl drive create [flags]
 ```
@@ -14,19 +18,19 @@ bl drive create [flags]
 
 ```
   # Create a drive in a specific region
-  bl drive create --name my-drive --region us-was-1
+  bl drive create --name my-drive --region us-pdx-1
 
   # Create a drive with a size limit (in GB)
-  bl drive create --name my-drive --region us-was-1 --size 10
+  bl drive create --name my-drive --region us-pdx-1 --size 10
 ```
 
 ### Options
 
 ```
-  -h, --help             help for create
-      --name string      Name of the drive (required)
-      --region string    Deployment region, e.g. us-was-1, eu-lon-1 (required)
-      --size int         Size limit in GB (optional, 0 for unlimited)
+  -h, --help            help for create
+      --name string     Name of the drive
+      --region string   Deployment region (e.g., us-pdx-1, eu-lon-1)
+      --size int        Size limit in GB (optional, 0 for unlimited)
 ```
 
 ### Options inherited from parent commands
@@ -42,3 +46,4 @@ bl drive create [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+

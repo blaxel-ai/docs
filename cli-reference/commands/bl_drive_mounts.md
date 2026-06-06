@@ -4,7 +4,11 @@ slug: bl_drive_mounts
 ---
 ## bl drive mounts
 
-List drives mounted in a sandbox
+List mounted drives in a sandbox
+
+### Synopsis
+
+List all currently mounted drives in a sandbox environment.
 
 ```
 bl drive mounts [flags]
@@ -13,18 +17,15 @@ bl drive mounts [flags]
 ### Examples
 
 ```
-  # List all mounted drives in a sandbox
+  # List all mounted drives
   bl drive mounts --sandbox my-sandbox
-
-  # List mounted drives in JSON format
-  bl drive mounts --sandbox my-sandbox -o json
 ```
 
 ### Options
 
 ```
-  -h, --help               help for mounts
-      --sandbox string     Name of the sandbox (required)
+  -h, --help             help for mounts
+      --sandbox string   Name of the sandbox
 ```
 
 ### Options inherited from parent commands
@@ -40,3 +41,4 @@ bl drive mounts [flags]
 ### SEE ALSO
 
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+
