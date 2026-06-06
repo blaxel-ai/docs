@@ -418,6 +418,13 @@ components:
           - failed
           readOnly: true
           example: verified
+        subdomains:
+          type: array
+          description: List of subdomains (previews) currently using this custom domain.
+            Only populated on GET /customdomains/{domainName}.
+          items:
+            $ref: '#/components/schemas/CustomDomainSubdomain'
+          readOnly: true
         txtRecords:
           type: object
           description: Map of TXT record names to values for domain verification
@@ -427,6 +434,26 @@ components:
           type: string
           description: Error message if verification failed
           readOnly: true
+      x-stainless-ignore: true
+    CustomDomainSubdomain:
+      type: object
+      description: A subdomain (preview) using a custom domain
+      properties:
+        previewName:
+          type: string
+          description: Preview name
+        resourceName:
+          type: string
+          description: Resource name
+        resourceType:
+          type: string
+          description: Resource type (e.g., sandbox)
+        subdomain:
+          type: string
+          description: Subdomain prefix used for routing
+        url:
+          type: string
+          description: Full URL of the preview on this custom domain
       x-stainless-ignore: true
     Drive:
       type: object
