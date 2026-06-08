@@ -380,6 +380,10 @@ Set this variable in your Dockerfile or at sandbox creation time:
 ENV SANDBOX_DISABLE_PROCESS_LOGGING=true
 ```
 
+Alternatively, you can disable process logging for sandboxes at workspace level using the Blaxel Console, in the **Workspace settings** section.
+
+![Disable process logging](/images/sandboxes/disable-process-logs.webp)
+
 <Note>This only suppresses the structured telemetry export. You can still retrieve process logs via the SDK's `process.logs()` method and stream them in real-time.</Note>
 
 ## Process statuses
