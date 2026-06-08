@@ -1274,10 +1274,10 @@ while true; do
     echo ""
     echo -e "${RED}✗ Deployment failed${NC}"
     echo ""
-    echo "Check build logs with:"
-    echo "  curl -X GET '$BASE_URL/sandboxes/$SANDBOX_NAME/build-logs' \\"
+    echo "Check the sandbox status for error details:"
+    echo "  curl -s -X GET '$BASE_URL/sandboxes/$SANDBOX_NAME' \\"
     echo "    -H 'Authorization: Bearer \$BL_API_KEY' \\"
-    echo "    -H 'X-Blaxel-Workspace: \$BL_WORKSPACE'"
+    echo "    -H 'X-Blaxel-Workspace: \$BL_WORKSPACE' | jq ."
     exit 1
   elif [ "$STATUS" = "DEACTIVATED" ] || [ "$STATUS" = "DEACTIVATING" ] || [ "$STATUS" = "DELETING" ]; then
     echo ""
