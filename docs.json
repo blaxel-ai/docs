@@ -255,7 +255,8 @@
                     "pages": [
                       "Tutorials/Claude-Agent-SDK-Index",
                       "Tutorials/Claude-Agent-SDK-Code-Mode",
-                      "Tutorials/Claude-Agent-SDK"
+                      "Tutorials/Claude-Agent-SDK",
+                      "Tutorials/Claude-Managed-Agents"
                     ]
                   }
                 ]
