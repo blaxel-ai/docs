@@ -1,0 +1,332 @@
+---
+title: 'Deploy a self-hosted Claude Managed Agents on Blaxel'
+description: 'Deploy a self-hosted Claude Managed Agents environment on Blaxel for scalable, observable agent execution.'
+---
+
+Blaxel integrates with [Claude Managed Agents (CMA)](https://platform.claude.com/docs/en/managed-agents/overview), allowing you to self-host the sandbox layer while keeping the agent loop entirely within Anthropic's platform. Through this integration, agents have direct access to create and manage Blaxel [sandboxes](https://docs.blaxel.ai/Sandboxes/Overview), enabling them to call tools, execute commands, work with files and directories, write code, and perform computations in fully isolated environments.
+
+This tutorial walks you through deploying a self-hosted CMA execution environment on Blaxel.
+
+## Prerequisites
+
+- A Python development environment with Docker installed.
+- An Anthropic API key. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
+- A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
+- The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction).
+- The [Anthropic CLI] (optional). [Download and install the Anthropic CLI](https://platform.claude.com/docs/en/api/sdks/cli).
+
+## How it works
+
+Under this approach, the agent loop is managed by Anthropic, while sandbox creation and tool execution happens on the Blaxel platform.
+
+![CMA flow diagram](/img/tutorials/cma/cma-flow.png)
+
+- When a session starts, Anthropic sends an event to an orchestrator sandbox running on Blaxel. The orchestrator sandbox exposes a public [preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url) that is registered with Anthropic.
+
+- The orchestrator receives events from Anthropic and spawns a worker sandbox for the session. The worker is a short-lived sandbox that exists to execute tool calls, perform file operations and execute code.
+
+- The worker sandbox persists until the session ends, at which point it exits and is auto-deleted after its TTL expires. The orchestrator sandbox is a long-running sandbox which continues to exist to receive future events.
+
+## Clone the repository and log in to Blaxel
+
+Clone the [sample repository](https://github.com/blaxel-ai/cma-blaxel-sandbox.git), which includes templates for the orchestrator sandbox, worker sandbox, and related scripts.
+
+```bash
+git clone https://github.com/blaxel-ai/cma-blaxel-sandbox.git
+cd cma-blaxel-sandbox
+```
+
+Create the necessary environment variables:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+
+export ANTHROPIC_API_KEY=<Anthropic-API-key>
+export BL_WORKSPACE=<Blaxel-workspace-id>
+export BL_API_KEY=<Blaxel-API-key>
+```
+
+Log in to Blaxel:
+
+```bash
+bl login
+```
+
+## Create a self-hosted environment
+
+Define an [Anthropic environment](https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes) for the agent and generate an environment key to authenticate the worker sandbox with Anthropic's work queue.
+
+<Tabs>
+  <Tab title="Claude Platform Web console">
+  - On the [Claude Platform](https://platform.claude.com/), navigate to **Managed Agents** > **Environments**.
+  - Click **Add environment**.
+  - Configure a new environment:
+    - Name: "Blaxel"
+    - Type: Self-hosted
+  - Once the environment is created, click **Generate environment key**.
+  - Copy and save the environment key for use in a later step.
+  </Tab>
+  <Tab title="Anthropic CLI">
+  Run the following command:
+
+  ```bash
+  ant beta:environments create \
+    --name "Blaxel" \
+    --config '{type: self_hosted}'
+  ```
+
+  Note the `id` from the response for use in a later step. Then:
+
+  - Navigate to **Managed Agents** > **Environments** on the [Claude Platform](https://platform.claude.com/).
+  - Select the environment
+  - Click **Generate environment key**.
+  - Copy and save the key for use in a later step.
+
+  <Tip>
+    You can list available environments with `ant beta:environments list --transform "{id,name}" --format jsonl`.
+  </Tip>
+
+  </Tab>
+</Tabs>
+
+## Build and push the sandbox images
+
+The template repository includes two sandbox images: a worker that runs agent tool calls, and an orchestrator that handles webhooks and spawns workers. The next step is to push these images to Blaxel.
+
+Pushing an image to Blaxel packages your code and uploads it to Blaxel's registry so it can be provisioned as an on-demand sandbox during agent runs. See the [`bl push` reference](https://docs.blaxel.ai/cli-reference/commands/bl_push) for more details.
+
+### Worker image
+
+The worker image is based on `node:22-bookworm-slim` and contains multiple  [pre-installed applications and tools](https://platform.claude.com/docs/en/managed-agents/cloud-sandboxes-reference). Push it from the `worker/` directory in the cookbook repo:
+
+```bash
+cd worker && bl push --type sandbox
+```
+
+### Orchestrator image
+
+The orchestrator runs a FastAPI server that exposes an endpoint to receive webhook events. Push it from the `orchestrator/` directory:
+
+```bash
+cd orchestrator && bl push --type sandbox
+```
+
+Within the orchestrator is a FastAPI webhook server that runs inside a long-lived Blaxel sandbox. It listens for `session.status_run_started` events from Anthropic's CMA platform, verifies the webhook signature, and schedules a background dispatch task for the session. The webhook handler returns 200 immediately; sandbox creation happens in the background.
+
+The main workhorse is `_dispatch_for_session`, which runs as a background task for each incoming session:
+
+```python
+async def _dispatch_for_session(session_id: str) -> None:
+    try:
+        if dispatcher_debounce_ms > 0:
+            await asyncio.sleep(dispatcher_debounce_ms / 1000)
+        session_ids = set(_scheduled_session_ids)
+        session_ids.add(session_id)
+        session_ids.update(await _queued_work_session_ids())
+        prepared_workers = await _ready_workers_for_sessions(session_ids)
+        if session_id not in prepared_workers:
+            raise RuntimeError(f"worker {_worker_name(session_id)} never became ready")
+        ok = await _drain_and_dispatch_work(prepared_workers=prepared_workers)
+        if not ok:
+            logger.error("background dispatch for session %s had failures", session_id)
+    except Exception as exc:
+        logger.error("background dispatch for session %s failed before claim: %r", session_id, exc)
+    finally:
+        _scheduled_session_ids.discard(session_id)
+```
+
+This function performs the following tasks:
+
+- It debounces briefly so that multiple near-simultaneous webhooks can be batched into a single dispatch cycle, ensuring the queue is efficiently polled.
+- It collects all pending session IDs and pre-warms their sandboxes in parallel.
+- It calls `_drain_and_dispatch_work`, which claims queued work items via the Anthropic SDK's `work.poller` and, for each item, calls `_dispatch_work_item`.
+
+The `_dispatch_work_item` function is where a specific work item is actually handed off to its session sandbox. It runs `ant beta:worker run` as a process on the pre-readied sandbox, passing `ANTHROPIC_WORK_ID` and `ANTHROPIC_SESSION_ID` as environment variables so the worker binds to that work item:
+
+```python
+await worker.process.exec({
+    "name": process_name,
+    "command": f"ant beta:worker run --workdir /workspace --max-idle {worker_max_idle}",
+    "wait_for_completion": False,
+    "keep_alive": True,
+    "timeout": worker_keepalive_timeout,
+    "env": process_env,
+})
+```
+
+The process is started with `wait_for_completion=False` and `keep_alive=True` so the sandbox stays active while `ant run` serves the session. The `ant beta:worker run` command owns the heartbeat and stop logic for the claimed work item; the orchestrator does not heartbeat after handing off.
+
+The `_ensure_worker_ready` function creates Blaxel worker sandboxes (or reuses one if it already exists for that session):
+
+```python
+async def _ensure_worker_ready(session_id: str):
+    name = _worker_name(session_id)
+    spec = {
+        "name": name,
+        "image": worker_image,
+        "memory": 4096,
+        "ttl": worker_ttl,
+    }
+    if worker_region:
+        spec["region"] = worker_region
+    spec = await apply_worker_features(spec, session_id=session_id, region=worker_region)
+
+    worker = await SandboxInstance.create_if_not_exists(spec)
+    logger.info("worker %s readying for session %s", name, session_id)
+    if not await _wait_for_worker_ready(worker, name):
+        raise RuntimeError(f"worker {name} never became ready")
+    return worker
+```
+
+The sandbox `ttl` field defaults to `2h`, ensuring that Blaxel deletes the sandbox 2 hours after creation regardless of activity. This is a cleanup guarantee for cases where the orchestrator never issues an explicit delete. It should be configured (via `BLAXEL_WORKER_TTL`) to a value greater than the longest expected session length.
+
+## Deploy the orchestrator
+
+Run `setup.py` from the repository to start the orchestrator sandbox and create a public preview URL:
+
+```bash
+export ANTHROPIC_ENVIRONMENT_ID=<CMA-environment-id>
+export ANTHROPIC_ENVIRONMENT_KEY=<CMA-environment-key>
+
+python3 setup.py
+```
+
+`setup.py` prints the orchestrator's public preview URL (e.g. `https://<id>.preview.bl.run/webhook`). Note this URL for the next step.
+
+## Configure the webhook
+
+Register the orchestrator's preview URL in the Claude Platform so the platform notifies it when a new session starts.
+
+- On the [Claude Platform](https://platform.claude.com/), navigate to **Manage** > **Webhooks**.
+- Click **Add webhook endpoint**.
+- Set the endpoint URL to the preview URL from the previous step and subscribe to all session lifecycle events.
+- Once created, copy the generated signing key, then re-run `setup.py` with this value exported:
+
+```bash
+export ANTHROPIC_WEBHOOK_SIGNING_KEY=<CMA-webhook-signing key>
+python3 setup.py
+```
+
+## Create an agent
+
+Create an agent configuration that defines the model and system prompt for each agent session.
+
+<Tabs>
+  <Tab title="Claude Platform Web console">
+  - On the [Claude Platform](https://platform.claude.com/), navigate to **Managed Agents** > **Agents**.
+  - Click **New agent**.
+  - Click the **Template** tab and select **Blank agent**.
+  - In the **Agent config** section, update the following YAML keys:
+    - `name`: "Blaxel Assistant"
+    - `model`: "claude-sonnet-4-6"
+    - `system`: "You are a helpful assistant."
+  - Click **Create agent**.
+  </Tab>
+  <Tab title="Anthropic CLI">
+  ```bash
+  ant beta:agents create <<'YAML'
+  name: Blaxel Assistant
+  model: claude-sonnet-4-6
+  system: |
+    You are a helpful assistant
+  tools:
+    - type: agent_toolset_20260401
+  YAML
+  ```
+
+  Note the `id` from the response, as you will need it to start a session.
+
+  <Tip>
+    You can list available agents with `ant beta:agents list --transform "{id,name,model}" --format jsonl`.
+  </Tip>
+
+  </Tab>
+</Tabs>
+
+
+## Start a session
+
+With the environment and agent configured, start a session to run the agent.
+
+<Tabs>
+  <Tab title="Claude Platform Web console">
+  - On the [Claude Platform](https://platform.claude.com/), navigate to **Managed Agents** > **Sessions**.
+  - Click **New session**.
+  - Select your agent and the Blaxel environment, then send an initial message.
+  </Tab>
+  <Tab title="Anthropic CLI">
+  Export the agent ID and run the example session from the repository:
+
+  ```bash
+  export ANTHROPIC_AGENT_ID=<Blaxel-agent-id>
+  python3 example/run_session.py
+  ```
+
+  Alternatively, start a session using the agent ID and environment ID from the previous steps:
+
+  ```bash
+  ant beta:sessions create \
+    --agent <agent-id> \
+    --environment-id <environment-id> \
+    --title "Blaxel session"
+  ```
+
+  Send an initial message using the session ID from the response:
+
+  ```bash
+  ant beta:sessions:events send \
+    --session-id <session-id> \
+    --event '{type: user.message, content: [{type: text, text: "Your initial message here"}]}'
+  ```
+
+  You can then interactively inspect the session messages:
+
+  ```bash
+  ant beta:sessions:events list \
+    --session-id <session-id>
+    --type user.message
+    --type agent.message
+  ```
+
+  </Tab>
+</Tabs>
+
+When the session starts, the Claude Platform sends a `session.status_run_started` event to the orchestrator. The orchestrator schedules a background task that creates the worker sandbox, claims the work item from Anthropic's queue, and uses the sandbox to execute tool calls and post results back to Anthropic. The worker exits when idle and is auto-deleted after its TTL expires.
+
+<Note>
+  The orchestrator sandbox and its public preview URL persist until you remove them. Delete the sandbox when done so the public webhook endpoint does not stay live:
+
+  ```bash
+  bl delete sandbox cma-orchestrator-app
+  ```
+</Note>
+
+## Resources
+
+Want more info on developing and deploying agents on Blaxel? Check out the following resources:
+
+<Card title="Connect to a Blaxel sandbox from Claude Agent SDK" icon="thumbs-up" href="./Claude-Agent-SDK-MCP">
+  Build an agent with Claude Agent SDK that can operate a Blaxel sandbox using MCP.
+</Card>
+
+<Card title="Build and deploy an agent on Blaxel with Claude Agent SDK" icon="square-js" href="./Claude-Agent-SDK">
+  Complete tutorial for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
+</Card>
+
+<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="../Agents/Develop-an-agent-ts">
+  Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Give compute to your agent with the Python SDK " icon="python" href="../Agents/Develop-an-agent-py">
+  Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
+</Card>
+
+<Card title="Deploy your agent code to Blaxel" icon="server" href="../Agents/Deploy-an-agent">
+  Complete tutorial for deploying AI agents to Blaxel.
+</Card>
+
+<Card title="Manage environment variables" icon="lock" href="../Agents/Variables-and-secrets">
+  Complete tutorial for managing variables and secrets when deploying to Blaxel.
+</Card>
