@@ -3,7 +3,7 @@ title: 'Self-host Claude Managed Agents on Blaxel'
 description: 'Deploy a self-hosted Claude Managed Agents environment on Blaxel for scalable, observable agent execution.'
 ---
 
-Blaxel integrates with [Claude Managed Agents (CMA)](https://platform.claude.com/docs/en/managed-agents/overview), allowing you to self-host the sandbox layer while keeping the agent loop entirely within Anthropic's platform. Through this integration, agents have direct access to create and manage Blaxel [sandboxes](https://docs.blaxel.ai/Sandboxes/Overview), enabling them to call tools, execute commands, work with files and directories, write code, and perform computations in fully isolated environments.
+Blaxel integrates with [Claude Managed Agents (CMA)](https://platform.claude.com/docs/en/managed-agents/overview), allowing you to self-host the sandbox layer while keeping the agent loop entirely within Anthropic's platform. Through this integration, every tool call the agent makes runs inside a Blaxel [sandbox](https://docs.blaxel.ai/Sandboxes/Overview), letting the agent execute commands, work with files and directories, write code, and perform computations in fully isolated environments.
 
 This tutorial walks you through deploying a self-hosted CMA execution environment on Blaxel.
 
@@ -13,7 +13,7 @@ This tutorial walks you through deploying a self-hosted CMA execution environmen
 - An Anthropic API key. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
 - A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
 - The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction).
-- The [Anthropic CLI] (optional). [Download and install the Anthropic CLI](https://platform.claude.com/docs/en/api/sdks/cli).
+- The Anthropic CLI (optional). If not, [download and install the Anthropic CLI](https://platform.claude.com/docs/en/api/sdks/cli).
 
 ## How it works
 
@@ -25,7 +25,7 @@ Under this approach, the agent loop is managed by Anthropic, while sandbox creat
 
 - The orchestrator receives events from Anthropic and spawns a worker sandbox for the session. The worker is a short-lived sandbox that exists to execute tool calls, perform file operations and execute code.
 
-- The worker sandbox persists until the session ends, at which point it exits and is auto-deleted after its TTL expires. The orchestrator sandbox is a long-running sandbox which continues to exist to receive future events.
+- The worker process exits shortly after the session goes idle, and Blaxel auto-deletes the worker sandbox when its TTL (measured from creation) expires. The orchestrator sandbox is a long-running sandbox which continues to exist to receive future events.
 
 ## 1. Clone the repository and log in to Blaxel
 
@@ -44,7 +44,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 
 export ANTHROPIC_API_KEY=<Anthropic-API-key>
-export BL_WORKSPACE=<Blaxel-workspace-id>
+export BL_WORKSPACE=<Blaxel-workspace-name>
 export BL_API_KEY=<Blaxel-API-key>
 ```
 
@@ -91,6 +91,10 @@ Define an [Anthropic environment](https://platform.claude.com/docs/en/managed-ag
   </Tab>
 </Tabs>
 
+<Note>
+  Use one self-hosted environment per Blaxel workspace. Every orchestrator connected to an environment competes for the same work queue, and whichever claims a work item first creates the worker sandbox in its own workspace. If another orchestrator in a different workspace is connected to the same environment, your sessions still complete, but the worker sandboxes appear in that other workspace.
+</Note>
+
 ## 3. Build and push the sandbox images
 
 The template repository includes two sandbox images: a worker that runs agent tool calls, and an orchestrator that handles webhooks and spawns workers. The next step is to push these images to Blaxel.
@@ -99,10 +103,10 @@ Pushing an image to Blaxel packages your code and uploads it to Blaxel's registr
 
 ### Worker image
 
-The worker image is based on `node:22-bookworm-slim` and contains multiple  [pre-installed applications and tools](https://platform.claude.com/docs/en/managed-agents/cloud-sandboxes-reference). Push it from the `worker/` directory in the cookbook repo:
+The worker image is based on `node:22-bookworm-slim` and contains multiple [pre-installed applications and tools](https://platform.claude.com/docs/en/managed-agents/cloud-sandboxes-reference). Push it from the `worker/` directory in the cookbook repo:
 
 ```bash
-cd worker && bl push --type sandbox
+( cd worker && bl push --type sandbox )
 ```
 
 ### Orchestrator image
@@ -110,7 +114,7 @@ cd worker && bl push --type sandbox
 The orchestrator runs a FastAPI server that exposes an endpoint to receive webhook events. Push it from the `orchestrator/` directory:
 
 ```bash
-cd orchestrator && bl push --type sandbox
+( cd orchestrator && bl push --type sandbox )
 ```
 
 Within the orchestrator is a FastAPI webhook server that runs inside a long-lived Blaxel sandbox. It listens for `session.status_run_started` events from Anthropic's CMA platform, verifies the webhook signature, and schedules a background dispatch task for the session. The webhook handler returns 200 immediately; sandbox creation happens in the background.
@@ -201,7 +205,7 @@ Register the orchestrator's preview URL in the Claude Platform so the platform n
 
 - On the [Claude Platform](https://platform.claude.com/), navigate to **Manage** > **Webhooks**.
 - Click **Add webhook endpoint**.
-- Set the endpoint URL to the preview URL from the previous step and subscribe to all session lifecycle events.
+- Set the endpoint URL to the preview URL from the previous step and subscribe to the `session.status_run_started` event. This is the only event the orchestrator consumes.
 - Once created, copy the generated signing key, then re-run `setup.py` with this value exported:
 
 ```bash
@@ -222,6 +226,7 @@ Create an agent configuration that defines the model and system prompt for each 
     - `name`: "Blaxel Assistant"
     - `model`: "claude-sonnet-4-6"
     - `system`: "You are a helpful assistant."
+  - Make sure the `tools` section includes `- type: agent_toolset_20260401`. This toolset provides the built-in file and bash tools the agent runs in the worker sandbox.
   - Click **Create agent**.
   </Tab>
   <Tab title="Anthropic CLI">
@@ -264,6 +269,8 @@ With the environment and agent configured, start a session to run the agent.
   python3 example/run_session.py
   ```
 
+  The script prints the session transcript, ends with `EXAMPLE: PASS`, and verifies the worker sandbox in your workspace before printing the `bl get sandbox` command that inspects it.
+
   Alternatively, start a session using the agent ID and environment ID from the previous steps:
 
   ```bash
@@ -293,7 +300,7 @@ With the environment and agent configured, start a session to run the agent.
   </Tab>
 </Tabs>
 
-When the session starts, the Claude Platform sends a `session.status_run_started` event to the orchestrator. The orchestrator schedules a background task that creates the worker sandbox, claims the work item from Anthropic's queue, and uses the sandbox to execute tool calls and post results back to Anthropic. The worker exits when idle and is auto-deleted after its TTL expires.
+When the session starts, the Claude Platform sends a `session.status_run_started` event to the orchestrator. The orchestrator schedules a background task that creates the worker sandbox, claims the work item from Anthropic's queue, and uses the sandbox to execute tool calls and post results back to Anthropic. The worker process exits when the session goes idle, and the sandbox is auto-deleted when its TTL expires.
 
 <Note>
   The orchestrator sandbox and its public preview URL persist until you remove them. Delete the sandbox when done so the public webhook endpoint does not stay live:
