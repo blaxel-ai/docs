@@ -27,7 +27,7 @@ Under this approach, the agent loop is managed by Anthropic, while sandbox creat
 
 - The worker sandbox persists until the session ends, at which point it exits and is auto-deleted after its TTL expires. The orchestrator sandbox is a long-running sandbox which continues to exist to receive future events.
 
-## Clone the repository and log in to Blaxel
+## 1. Clone the repository and log in to Blaxel
 
 Clone the [sample repository](https://github.com/blaxel-ai/cma-blaxel-sandbox.git), which includes templates for the orchestrator sandbox, worker sandbox, and related scripts.
 
@@ -54,7 +54,7 @@ Log in to Blaxel:
 bl login
 ```
 
-## Create a self-hosted environment
+## 2. Create a self-hosted environment
 
 Define an [Anthropic environment](https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes) for the agent and generate an environment key to authenticate the worker sandbox with Anthropic's work queue.
 
@@ -91,7 +91,7 @@ Define an [Anthropic environment](https://platform.claude.com/docs/en/managed-ag
   </Tab>
 </Tabs>
 
-## Build and push the sandbox images
+## 3. Build and push the sandbox images
 
 The template repository includes two sandbox images: a worker that runs agent tool calls, and an orchestrator that handles webhooks and spawns workers. The next step is to push these images to Blaxel.
 
@@ -182,7 +182,7 @@ async def _ensure_worker_ready(session_id: str):
 
 The sandbox `ttl` field defaults to `2h`, ensuring that Blaxel deletes the sandbox 2 hours after creation regardless of activity. This is a cleanup guarantee for cases where the orchestrator never issues an explicit delete. It should be configured (via `BLAXEL_WORKER_TTL`) to a value greater than the longest expected session length.
 
-## Deploy the orchestrator
+## 4. Deploy the orchestrator
 
 Run `setup.py` from the repository to start the orchestrator sandbox and create a public preview URL:
 
@@ -195,7 +195,7 @@ python3 setup.py
 
 `setup.py` prints the orchestrator's public preview URL (e.g. `https://<id>.preview.bl.run/webhook`). Note this URL for the next step.
 
-## Configure the webhook
+## 5. Configure the webhook
 
 Register the orchestrator's preview URL in the Claude Platform so the platform notifies it when a new session starts.
 
@@ -209,7 +209,7 @@ export ANTHROPIC_WEBHOOK_SIGNING_KEY=<CMA-webhook-signing key>
 python3 setup.py
 ```
 
-## Create an agent
+## 6. Create an agent
 
 Create an agent configuration that defines the model and system prompt for each agent session.
 
@@ -246,7 +246,7 @@ Create an agent configuration that defines the model and system prompt for each 
 </Tabs>
 
 
-## Start a session
+## 7. Start a session
 
 With the environment and agent configured, start a session to run the agent.
 
