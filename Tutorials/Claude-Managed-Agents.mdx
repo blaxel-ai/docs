@@ -186,6 +186,10 @@ async def _ensure_worker_ready(session_id: str):
 
 The sandbox `ttl` field defaults to `2h`, ensuring that Blaxel deletes the sandbox 2 hours after creation regardless of activity. This is a cleanup guarantee for cases where the orchestrator never issues an explicit delete. It should be configured (via `BLAXEL_WORKER_TTL`) to a value greater than the longest expected session length.
 
+<Tip>
+  To give the agent access to third-party credentials, use [Blaxel Proxy secret injection](/Sandboxes/Proxy-secrets-injection). The proxy injects the credential into the worker's outbound requests, so the secret never enters the worker sandbox or the CMA agent config. The template supports this through the `BLAXEL_WORKER_PROXY_*` variables; see the [cookbook guide](https://github.com/blaxel-ai/cma-blaxel-sandbox/blob/main/GUIDE.md) for the recipe.
+</Tip>
+
 ## 4. Deploy the orchestrator
 
 Run `setup.py` from the repository to start the orchestrator sandbox and create a public preview URL:
