@@ -312,6 +312,107 @@ preview = await sandbox.previews.create_if_not_exists({
 When you register a custom domain, you also enable the use of wildcard subdomains for that domain. For example, if you register `mycompany.com`, you can configure preview URLs to use any `*.mycompany.com` subdomain.
 </Note>
 
+### Fallback preview
+
+You can also designate one preview as the fallback or catch-all for a custom domain. Any request to a subdomain that does not match an existing preview is routed to this fallback preview instead of returning a 404.
+
+Common use cases for this include:
+
+- Serving a branded "page not found" or landing page instead of a raw 404
+- Routing all traffic to a primary preview by default
+- Letting your application handle unknown subdomains with custom logic
+
+To use a fallback preview, you must have
+
+- A [verified custom domain](#custom-domains) in your workspace
+- At least one active preview on that custom domain
+
+To configure a fallback preview from the console:
+
+1. Go to **Workspace Settings** > **Custom Domains**
+2. Click the **...** menu on the domain you want to configure
+3. Select **Set Fallback Preview**
+4. Enter the name of the preview to use as the catch-all
+5. Click **Save**
+
+To remove the fallback, open the same dialog and clear the preview name.
+
+![Configure fallback preview](/images/sandboxes/fallback-preview.webp)
+
+To configure from the API, update the `fallbackPreviewId` field on the custom domain resource:
+
+<CodeGroup>
+```bash Set fallback
+curl -X PUT "https://api.blaxel.ai/v0/customdomains/{domainName}" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "name": "yourdomain.com"
+    },
+    "spec": {
+      "fallbackPreviewId": "my-landing-page"
+    }
+  }'
+```
+```bash Remove fallback
+curl -X PUT "https://api.blaxel.ai/v0/customdomains/{domainName}" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "name": "yourdomain.com"
+    },
+    "spec": {
+      "fallbackPreviewId": ""
+    }
+  }'
+```
+</CodeGroup>
+
+When a request arrives for a subdomain on your custom domain:
+
+1. Blaxel checks for a preview matching that subdomain.
+2. If no match is found and a fallback is configured, the request is routed to the fallback preview.
+3. If no fallback is configured, the request returns a 404.
+
+<Note>
+The fallback only applies to requests on your custom domain. Standard Blaxel preview URLs (`*.preview.bl.run`) are not affected.
+</Note>
+
+When a request is routed via fallback, Blaxel adds headers to the request so your application can customize its response:
+
+| Header | Value | Description |
+| --- | --- | --- |
+| `X-Blaxel-Fallback` | `true` | Indicates the request was routed via fallback |
+| `X-Blaxel-Fallback-Preview` | Preview name | The subdomain or preview name originally requested |
+| `X-Blaxel-Fallback-Domain` | Domain name | The base custom domain (e.g. `yourdomain.com`) |
+
+Use `X-Blaxel-Fallback-Preview` to display a contextual message such as "Preview [name] was not found" on your fallback page.
+
+Security considerations:
+
+- The fallback preview must belong to the same workspace as the custom domain; cross-workspace fallbacks are not allowed.
+- Client-injected `X-Blaxel-Fallback-*` headers are stripped before routing, so only Blaxel-set values are forwarded.
+- If the fallback lookup fails for any reason, the request falls through to normal routing without blocking traffic.
+
+For example, suppose you have a custom domain `demo-previews.store` with two previews:
+
+| Preview name | URL |
+| --- | --- |
+| `my-app` | `my-app.demo-previews.store` |
+| `landing-page` | `landing-page.demo-previews.store` |
+
+With `landing-page` set as the fallback, requests are routed as follows:
+
+- `my-app.demo-previews.store` routes to the `my-app` preview (direct match)
+- `landing-page.demo-previews.store` routes to the `landing-page` preview (direct match)
+- `unknown.demo-previews.store` routes to the `landing-page` preview (fallback)
+
+On fallback requests, your `landing-page` application receives `X-Blaxel-Fallback: true` and `X-Blaxel-Fallback-Preview: unknown`, allowing it to show a contextual error page.
+
 ## Delete a preview
 
 When a sandbox is deleted, whether manually or automatically due to a TTL or expiration policy, all of its associated preview URLs are automatically cleaned up as part of that deletion.
@@ -331,3 +432,34 @@ sandbox = await SandboxInstance.get("my-sandbox")
 await sandbox.previews.delete("app-preview")
 ```
 </CodeGroup>
+
+## FAQ
+
+**What is a fallback preview for a custom domain?**
+
+A fallback preview is a designated preview that receives requests for unrecognized subdomains on your custom domain, instead of returning a 404 error.
+
+**When does Blaxel route traffic to the fallback preview?**
+
+Blaxel routes to the fallback when a request arrives for a subdomain that does not match any existing preview on that custom domain. If no fallback is configured, the request returns a 404.
+
+**How do I configure a fallback preview from the console?**
+
+In the Blaxel console, go to Workspace Settings > Custom Domains, click the ⋮ menu on the domain, select Configure Fallback, enter the preview name, and click Save.
+
+**What headers does my application receive on a fallback request?**
+
+Blaxel adds `X-Blaxel-Fallback: true`, `X-Blaxel-Fallback-Preview` (the subdomain that was requested), and `X-Blaxel-Fallback-Domain` (the base custom domain) to all fallback requests.
+
+**How do I remove a fallback preview?**
+
+From the console, open the Configure Fallback dialog and clear the preview name. From the API, send a PUT request with `fallbackPreviewId` set to an empty string.
+
+<CardGroup cols={2}>
+  <Card title="Custom domains" href="../Infrastructure/Custom-domains">
+    Register and verify a custom domain for your Blaxel workspace.
+  </Card>
+  <Card title="Sandbox expiration policies" href="Expiration">
+    Configure TTL and auto-deletion rules for sandboxes.
+  </Card>
+</CardGroup>
