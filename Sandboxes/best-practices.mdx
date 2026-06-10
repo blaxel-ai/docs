@@ -41,6 +41,52 @@ Here's a table to help you decide:
 | Size | ~50% of sandbox memory | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
 
+## Upload many files efficiently
+
+Writing files one by one with `write()` costs one network round trip per file: at ~100ms per call, restoring several hundred files sequentially is minutes of pure latency.
+
+For bulk transfers, bundle the files into a single zip archive, upload it with one `writeBinary()` (TypeScript) / `write_binary()` (Python) call, and extract it inside the sandbox. This turns N round trips into 2 calls, however many files you have.
+
+<CodeGroup>
+
+```typescript TypeScript
+import AdmZip from "adm-zip";
+
+const zip = new AdmZip();
+for (const file of files) {
+  zip.addFile(file.path, Buffer.from(file.content));
+}
+
+await sandbox.fs.writeBinary("/tmp/project.zip", zip.toBuffer());
+await sandbox.process.exec({
+  name: "unzip",
+  command: "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+  waitForCompletion: true,
+});
+```
+
+```python Python
+import io, zipfile
+
+buf = io.BytesIO()
+with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+    for file in files:
+        zf.writestr(file["path"], file["content"])
+
+await sandbox.fs.write_binary("/tmp/project.zip", buf.getvalue())
+await sandbox.process.exec({
+    "name": "unzip",
+    "command": "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+    "wait_for_completion": True,
+})
+```
+
+</CodeGroup>
+
+The TypeScript example uses the `adm-zip` package; any zip library works. The extraction step requires an `unzip` binary in the sandbox image. If your image lacks one, use `python3 -m zipfile -e /tmp/project.zip /blaxel/app` instead (Python is available in Blaxel Hub images), or install `unzip` in your template.
+
+For small file sets, `writeTree()` (TypeScript) / `write_tree()` (Python) in the [filesystem API](/Sandboxes/Filesystem) writes multiple files in one batched call and is simpler. Use the zip pattern when the file count is large enough that per-call latency dominates.
+
 ## Automate cleanup with TTLs
 
 In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (completed tasks, abandoned user sessions, etc.). These can unnecessarily consume storage and add to your cost.
