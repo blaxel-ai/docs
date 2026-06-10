@@ -90,7 +90,7 @@ Define an [Anthropic environment](https://platform.claude.com/docs/en/managed-ag
   Note the `id` from the response for use in a later step. Then:
 
   - Navigate to **Managed Agents** > **Environments** on the [Claude Platform](https://platform.claude.com/).
-  - Select the environment
+  - Select the environment.
   - Click **Generate environment key**.
   - Copy and save the key for use in a later step.
 
@@ -223,7 +223,7 @@ Register the orchestrator's preview URL in the Claude Platform so the platform n
 - Once created, copy the generated signing key, then re-run `setup.py` with this value exported:
 
 ```bash
-export ANTHROPIC_WEBHOOK_SIGNING_KEY=<CMA-webhook-signing key>
+export ANTHROPIC_WEBHOOK_SIGNING_KEY=<CMA-webhook-signing-key>
 python3 setup.py
 ```
 
