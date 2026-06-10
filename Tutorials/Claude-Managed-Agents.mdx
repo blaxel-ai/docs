@@ -19,7 +19,17 @@ This tutorial walks you through deploying a self-hosted CMA execution environmen
 
 Under this approach, the agent loop is managed by Anthropic, while sandbox creation and tool execution happens on the Blaxel platform.
 
-![CMA flow diagram](/img/tutorials/cma/cma-flow.png)
+<img
+  className="block dark:hidden"
+  src="/img/tutorials/cma/claude-cma-blaxel-diagram-light.png"
+  alt="CMA flow diagram"
+/>
+
+<img
+  className="hidden dark:block"
+  src="/img/tutorials/cma/claude-cma-blaxel-diagram-dark.png"
+  alt="CMA flow diagram"
+/>
 
 - When a session starts, Anthropic sends an event to an orchestrator sandbox running on Blaxel. The orchestrator sandbox exposes a public [preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url) that is registered with Anthropic.
 
