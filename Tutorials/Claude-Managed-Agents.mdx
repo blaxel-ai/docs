@@ -1,6 +1,6 @@
 ---
 title: 'Self-host Claude Managed Agents on Blaxel'
-description: 'Deploy a self-hosted Claude Managed Agents environment on Blaxel for scalable, observable agent execution.'
+description: 'Self-host the Claude Managed Agents (CMA) sandbox execution layer on Blaxel while Anthropic runs the agent loop, with isolated tool execution.'
 ---
 
 Blaxel integrates with [Claude Managed Agents (CMA)](https://platform.claude.com/docs/en/managed-agents/overview), allowing you to self-host the sandbox layer while keeping the agent loop entirely within Anthropic's platform. Through this integration, every tool call the agent makes runs inside a Blaxel [sandbox](https://docs.blaxel.ai/Sandboxes/Overview), letting the agent execute commands, work with files and directories, write code, and perform computations in fully isolated environments.
