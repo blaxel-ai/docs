@@ -7,7 +7,7 @@ Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up an
 
 ## Use the sandbox lifecycle strategically
 
-**Treat sandboxes as** **persistent computers**, rather than thinking of them as ephemeral runtimes that must be wiped clean after every interaction. Just as your laptop isn't reformatted every time you close the lid, you shouldn't destroy a sandbox's state simply because a session ended. Blaxel Sandboxes are designed to maintain persistent storage and system state, allowing agents to retain context, shell history, and installed dependencies indefinitely.
+**Treat sandboxes as persistent computers**, rather than thinking of them as ephemeral runtimes that must be wiped clean after every interaction. Just as your laptop isn't reformatted every time you close the lid, you shouldn't destroy a sandbox's state simply because a session ended. Blaxel Sandboxes are designed to maintain persistent storage and system state, allowing agents to retain context, shell history, and installed dependencies indefinitely.
 
 The most efficient way to manage lifecycle is to let the sandbox suspend automatically when idle, rather than explicitly destroying it. Auto-suspend happens automatically after 15s inactivity. Resuming a standby sandbox is orders of magnitude faster than cold-booting a new box and re-running setup scripts (like `npm install` or `apt-get`). By relying on suspension, you ensure that when an agent returns (whether in ten minutes or ten weeks) the environment is restored exactly as it was left, enabling a seamless instant resume experience that saves both time and compute costs.
 
@@ -19,7 +19,7 @@ The most efficient way to manage lifecycle is to let the sandbox suspend automat
 
 Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers three options:
 
-- Sandbox filesystem: The sandbox itelf has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
+- Sandbox filesystem: The sandbox itself has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
 
 - Volumes: [Volumes](/Volumes/Overview) provide longer-term, durable block storage that is decoupled from compute. Data stored on a volume survives even if the associated sandbox is terminated, and newly-created sandboxes can access the data by attaching to the same volume.
 
@@ -40,6 +40,52 @@ Here's a table to help you decide:
 | Interface | POSIX | POSIX | POSIX + S3 |
 | Size | ~50% of sandbox memory | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
+
+## Upload many files efficiently
+
+Writing files one by one with `write()` costs one network round trip per file: at ~100ms per call, restoring several hundred files sequentially is minutes of pure latency.
+
+For bulk transfers, bundle the files into a single zip archive, upload it with one `writeBinary()` (TypeScript) / `write_binary()` (Python) call, and extract it inside the sandbox. This turns N round trips into 2 calls, however many files you have.
+
+<CodeGroup>
+
+```typescript TypeScript
+import AdmZip from "adm-zip";
+
+const zip = new AdmZip();
+for (const file of files) {
+  zip.addFile(file.path, Buffer.from(file.content));
+}
+
+await sandbox.fs.writeBinary("/tmp/project.zip", zip.toBuffer());
+await sandbox.process.exec({
+  name: "unzip",
+  command: "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+  waitForCompletion: true,
+});
+```
+
+```python Python
+import io, zipfile
+
+buf = io.BytesIO()
+with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+    for file in files:
+        zf.writestr(file["path"], file["content"])
+
+await sandbox.fs.write_binary("/tmp/project.zip", buf.getvalue())
+await sandbox.process.exec({
+    "name": "unzip",
+    "command": "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+    "wait_for_completion": True,
+})
+```
+
+</CodeGroup>
+
+The TypeScript example uses the `adm-zip` package; any zip library works. The extraction step requires an `unzip` binary in the sandbox image. If your image lacks one, use `python3 -m zipfile -e /tmp/project.zip /blaxel/app` instead (Python is available in Blaxel Hub images), or install `unzip` in your template.
+
+For small file sets, `writeTree()` (TypeScript) / `write_tree()` (Python) in the [filesystem API](/Sandboxes/Filesystem) writes multiple files in one batched call and is simpler. Use the zip pattern when the file count is large enough that per-call latency dominates.
 
 ## Automate cleanup with TTLs
 
@@ -88,7 +134,7 @@ Blaxel returns [structured error responses](/troubleshooting/error-codes) in cas
 
 1. First, check the origin of the error.
 
-    Look at `error.origin` (or the `X-Blaxel-Source header`). If it is not `platform`, the 404 came from the application itself (e.g. a missing file), not from Blaxel. You should not re-create in that case.
+    Look at `error.origin` (or the `X-Blaxel-Source` header). If it is not `platform`, the 404 came from the application itself (e.g. a missing file), not from Blaxel. You should not re-create in that case.
 
 2. Then, branch on `error.code`:
 

@@ -14,6 +14,12 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
 Blaxel now integrates with [Claude Managed Agents (CMA)](https://platform.claude.com/docs/en/managed-agents/overview), allowing you to self-host the sandbox execution layer while keeping the agent loop entirely within Anthropic's platform. Every tool call an agent makes in a CMA session runs inside a Blaxel sandbox: command execution, file operations, and code execution happen in fully isolated environments.
 
 See the [tutorial](/Tutorials/Claude-Managed-Agents) for a step-by-step walkthrough.
+  
+<Update label="2026-06-04">
+
+### Fallback preview URLs for custom domains
+
+You can now designate one preview as the [fallback](/Sandboxes/Preview-url#fallback-preview) or catch-all for a custom domain. When a  preview doesn't exist on this domain, requests will be routed to this fallback preview instead of returning a 404.
 
 </Update>
 
