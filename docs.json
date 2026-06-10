@@ -248,12 +248,13 @@
                 "group": "Claude",
                 "expanded": true,
                 "pages": [
-                  "Tutorials/Claude-Agent-SDK-MCP",
+                  "Tutorials/Claude-Managed-Agents",
                   "Tutorials/Claude-Code",
                   {
                     "group": "Advanced examples",
                     "pages": [
                       "Tutorials/Claude-Agent-SDK-Index",
+                      "Tutorials/Claude-Agent-SDK-MCP",
                       "Tutorials/Claude-Agent-SDK-Code-Mode",
                       "Tutorials/Claude-Agent-SDK"
                     ]
