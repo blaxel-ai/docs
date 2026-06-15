@@ -6819,7 +6819,7 @@ paths:
       - OAuth2:
         - sandboxes:get
       - ApiKeyAuth: []
-      summary: List Sandboxes
+      summary: List Sandbox Previews
       tags:
       - compute
     parameters:
