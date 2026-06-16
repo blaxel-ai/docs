@@ -2952,8 +2952,8 @@ components:
         extraArgs:
           type: object
           description: 'Extra arguments for sandbox kernel selection. Supported keys:
-            ''iptables'', ''nvme''. Values: ''enabled'' or ''disabled''. Determines
-            which kernel variant the sandbox runs on. Immutable after creation.'
+            ''iptables'', ''nvme'', ''nfs''. Values: ''enabled'' or ''disabled''.
+            Determines which kernel variant the sandbox runs on. Immutable after creation.'
           additionalProperties:
             type: string
         image:
