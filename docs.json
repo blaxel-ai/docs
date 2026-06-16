@@ -264,6 +264,7 @@
               {
                 "group": "OpenAI Agents",
                 "pages": [
+                  "Tutorials/Codex",
                   "Tutorials/OpenAI-Agents-SDK-Index",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]

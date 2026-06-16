@@ -1,0 +1,178 @@
+---
+title: 'Run Codex in a sandbox'
+description: 'Run Codex CLI inside a Blaxel sandbox to give coding agents a hosted environment with process, filesystem, and network access.'
+---
+
+This tutorial explains how to create a Blaxel sandbox with Codex CLI preinstalled. Use it when you want Codex to work inside hosted compute instead of installing the CLI each time a sandbox starts.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- a Python or TypeScript development environment;
+- a Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [create a Blaxel API key](../Security/Access-tokens#api-keys);
+- an OpenAI account and API key, or a ChatGPT account that can authenticate Codex CLI.
+
+## 1. Install the Blaxel CLI and SDK
+
+[Install the Blaxel CLI](../cli-reference/introduction) and log in to Blaxel:
+
+```shell
+bl login
+```
+
+In a new project directory, install the Blaxel SDK:
+
+<CodeGroup>
+```shell TypeScript (npm)
+npm init # if new project
+npm install @blaxel/core
+```
+
+```shell TypeScript (pnpm)
+pnpm init # if new project
+pnpm install @blaxel/core
+```
+
+```shell TypeScript (yarn)
+yarn init # if new project
+yarn add @blaxel/core
+```
+
+```shell TypeScript (bun)
+bun init -m --yes # if new project
+bun install @blaxel/core
+```
+
+```shell Python
+python3 -m venv .venv
+source .venv/bin/activate
+pip install blaxel
+```
+</CodeGroup>
+
+## 2. Configure the environment
+
+Set your Blaxel and OpenAI credentials in the host environment:
+
+```shell
+export BL_WORKSPACE=YOUR-BLAXEL-WORKSPACE-HERE
+export BL_API_KEY=YOUR-BLAXEL-API-KEY-HERE
+export OPENAI_API_KEY=YOUR-OPENAI-API-KEY-HERE
+```
+
+## 3. Create a Codex sandbox
+
+Create a script named `index.ts` or `main.py` in your project directory.
+
+<CodeGroup>
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+async function main() {
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+  if (!openaiApiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is not set");
+  }
+
+  const sandbox = await SandboxInstance.createIfNotExists({
+    name: "codex-sandbox",
+    image: "blaxel/codex:latest",
+    memory: 4096,
+    region: "us-pdx-1",
+    envs: [{ name: "OPENAI_API_KEY", value: openaiApiKey }],
+  });
+
+  const version = await sandbox.process.exec({
+    command: "codex --version",
+    waitForCompletion: true,
+  });
+
+  console.log(version.stdout);
+  console.log(`Sandbox URL: ${sandbox.metadata.url}`);
+}
+
+main().catch(console.error);
+```
+
+```python Python
+import asyncio
+import os
+
+from blaxel.core import SandboxInstance
+
+async def main():
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if not openai_api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+
+    sandbox = await SandboxInstance.create_if_not_exists({
+        "name": "codex-sandbox",
+        "image": "blaxel/codex:latest",
+        "memory": 4096,
+        "region": "us-pdx-1",
+        "envs": [{"name": "OPENAI_API_KEY", "value": openai_api_key}],
+    })
+
+    version = await sandbox.process.exec({
+        "command": "codex --version",
+        "wait_for_completion": True,
+    })
+
+    print(version.stdout)
+    print(f"Sandbox URL: {sandbox.metadata.url}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+</CodeGroup>
+
+Run the script:
+
+<CodeGroup>
+```shell TypeScript
+bun index.ts
+```
+
+```shell Python
+python main.py
+```
+</CodeGroup>
+
+The script creates a sandbox named `codex-sandbox` from `blaxel/codex:latest` and confirms Codex CLI is available on `PATH`.
+
+## 4. Run Codex in the sandbox
+
+Connect to the sandbox terminal:
+
+```shell
+bl connect sandbox codex-sandbox
+```
+
+Run Codex inside the sandbox:
+
+```shell
+codex exec "inspect /blaxel and summarize the available files"
+```
+
+Codex runs with the sandbox filesystem and process environment. If you did not pass `OPENAI_API_KEY` when creating the sandbox, authenticate inside the terminal first:
+
+```shell
+codex login
+```
+
+## Resources
+
+<CardGroup>
+  <Card title="Sandbox images" icon="box" href="/Sandboxes/Templates">
+    Use pre-built sandbox images or create custom ones for reusable environments.
+  </Card>
+
+  <Card title="Sandboxes overview" icon="server" href="/Sandboxes/Overview">
+    Learn how sandboxes provide hosted compute for agents and applications.
+  </Card>
+
+  <Card title="OpenAI Agents SDK with sandboxes" icon="star" href="/Tutorials/OpenAI-Agents-SDK">
+    Build sandbox-backed agents with the OpenAI Agents SDK and Blaxel.
+  </Card>
+</CardGroup>
