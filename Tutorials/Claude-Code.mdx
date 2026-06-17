@@ -226,7 +226,7 @@ Before starting, ensure you have:
     ```
     </CodeGroup>
 
-    Once complete, the script displays the generated preview URL for the Next.js application (for example, `https://b186....preview.bl.run?bl_preview_token=cbba622560db78e...`) and the MCP server URL (for example, ` https://sbx-nextjs-sandbox....bl.run/mcp`) for the Next.js sandbox. Note these values, as you will require them in subsequent steps.
+    Once complete, the script displays the generated preview URL for the Next.js application (for example, `https://b186....preview.bl.run?bl_preview_token=cbba622560db78e...`) and the MCP server URL (for example, `https://sbx-nextjs-sandbox....bl.run/mcp`) for the Next.js sandbox. Note these values, as you will require them in subsequent steps.
 
 ## Configure Claude Code
 
@@ -247,7 +247,7 @@ Before starting, ensure you have:
 1. Add the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) to Claude Code:
 
     ```shell
-    claude mcp add --transport http sandbox YOUR-SANDBOX-MCP-URL-HERE  --header "Authorization: Bearer $BLAXEL_API_KEY"
+    claude mcp add --transport http sandbox YOUR-SANDBOX-MCP-URL-HERE --header "Authorization: Bearer $BLAXEL_API_KEY"
     ```
 
 1. Confirm that Claude Code is able to connect to the application sandbox's MCP server. Run the following command and confirm that you see output like `sandbox: .... connected`:
@@ -272,7 +272,7 @@ You will be prompted for authentication, theme selection and permissions.
   If you wish to use an Anthropic API key instead of logging in to your Claude or Anthropic Console account, refer to the [alternative steps for API key recognition when starting Claude Code](https://github.com/anthropics/claude-code/issues/441).
 </Note>
 
- Once these steps are completed, give Claude Code a coding task referencing the application sandbox, as in the example prompt below:
+Once these steps are completed, give Claude Code a coding task referencing the application sandbox, as in the example prompt below:
 
 ```shell
 You have access to a sandbox environment over MCP. The sandbox includes tools to read and write files and directories and run commands. The sandbox includes a skeleton Next.js application at /blaxel/app. Update the application codebase and complete the coding task below.
