@@ -4,12 +4,12 @@ sidebarTitle: 'Overview'
 description: 'Deploy long-running services as publicly accessible endpoints with revision management, canary traffic splitting, and custom URLs.'
 ---
 
-Applications are long-running deployed services that run your custom code as publicly accessible endpoints. Unlike agents (which are request-scoped), applications stay running continuously and are ideal for web servers, APIs, dashboards, and any service that needs to be always-on.
+Applications are long-running deployed services that run your custom code as publicly accessible endpoints. They are ideal for web servers, APIs, dashboards, and any service that needs to be always-on.
 
-Applications run on Blaxel's mk3 infrastructure and support revision management with canary traffic splitting, custom domain URLs, and deployment from source code, container images, or forked sandboxes.
+Applications run on Blaxel's mk3 micro-VM infrastructure and support revision management with canary traffic splitting, custom domain URLs, and deployment from source code, images, or forked sandboxes.
 
 <Note>
-Application Runtime is gated by the `applications` feature flag. Contact Blaxel support to enable it on your workspace.
+Application Runtime is currently in preview.
 </Note>
 
 ## Key concepts
@@ -99,7 +99,7 @@ region = "us-pdx-1"
 memory = 2048
 ```
 
-To deploy a pre-built container image, set the `image` field:
+To deploy a pre-built image, set the `image` field:
 
 ```toml
 name = "my-app"
@@ -305,7 +305,7 @@ curl -X DELETE https://api.blaxel.ai/v0/applications/my-app \
 
 ## Revisions
 
-Each deploy creates a new revision. A maximum of 5 revisions are kept per application. Revisions contain the container image, environment variables, memory allocation, and port configuration.
+Each deploy creates a new revision. A maximum of 5 revisions are kept per application. Revisions contain the image, environment variables, memory allocation, and port configuration.
 
 ### List revisions
 
