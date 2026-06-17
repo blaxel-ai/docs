@@ -390,7 +390,114 @@ Setting `stickySessionTtl` to `0` disables sticky sessions.
 
 By default, applications are accessible at a generated URL. You can configure custom URLs using verified custom domains in your workspace.
 
-### Configure custom URLs
+### Create or update an application with custom URLs
+
+Pass the `urls` field in the application spec to attach a verified custom domain.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.create({
+  metadata: {
+    name: "my-app",
+  },
+  spec: {
+    enabled: true,
+    region: "us-pdx-1",
+    urls: [{ domain: "app.example.com" }],
+    revisions: [{
+      image: "my-registry/my-image:latest",
+      memory: 2048,
+    }],
+  },
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+
+app = await ApplicationInstance.create({
+    "metadata": {"name": "my-app"},
+    "spec": {
+        "enabled": True,
+        "region": "us-pdx-1",
+        "urls": [{"domain": "app.example.com"}],
+        "revisions": [{
+            "image": "my-registry/my-image:latest",
+            "memory": 2048,
+        }],
+    },
+})
+```
+
+```go Go
+app, err := client.Applications.Create(ctx, blaxel.ApplicationCreateParams{
+    Body: blaxel.Application{
+        Metadata: blaxel.Metadata{Name: "my-app"},
+        Spec: blaxel.ApplicationSpec{
+            Enabled: true,
+            Region:  "us-pdx-1",
+            Urls:    []blaxel.AppUrl{{Domain: "app.example.com"}},
+            Revisions: []blaxel.AppRevision{{
+                Image:  "my-registry/my-image:latest",
+                Memory: 2048,
+            }},
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+To add a custom URL to an existing application, use update:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.get("my-app");
+const updated = await ApplicationInstance.update("my-app", {
+  metadata: app.metadata,
+  spec: {
+    ...app.spec,
+    urls: [{ domain: "app.example.com" }],
+  },
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+
+app = await ApplicationInstance.get("my-app")
+updated = await app.update({
+    "metadata": app.metadata,
+    "spec": {
+        **app.spec,
+        "urls": [{"domain": "app.example.com"}],
+    },
+})
+```
+
+```go Go
+updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpdateParams{
+    Body: blaxel.Application{
+        Metadata: existing.Metadata,
+        Spec: blaxel.ApplicationSpec{
+            Enabled: existing.Spec.Enabled,
+            Region:  existing.Spec.Region,
+            Urls:    []blaxel.AppUrl{{Domain: "app.example.com"}},
+            Revisions: existing.Spec.Revisions,
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+HTTP API:
 
 ```bash
 curl -X PUT https://api.blaxel.ai/v0/applications/my-app \

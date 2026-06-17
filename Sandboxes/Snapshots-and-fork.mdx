@@ -180,6 +180,51 @@ Fork into an existing application as a canary revision receiving a percentage of
 bl fork sbx/my-sandbox app/my-app --traffic 20 --port 8080
 ```
 
+### Fork with a custom domain
+
+Attach a custom domain to the forked application using the `customDomain` parameter:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const result = await SandboxInstance.fork("my-sandbox", {
+  targetName: "my-app",
+  targetType: "application",
+  traffic: 100,
+  customDomain: "app.example.com",
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+result = await SandboxInstance.fork("my-sandbox", {
+    "target_name": "my-app",
+    "target_type": "application",
+    "traffic": 100,
+    "custom_domain": "app.example.com",
+})
+```
+
+</CodeGroup>
+
+HTTP API:
+
+```bash
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "application",
+    "targetName": "my-app",
+    "traffic": 100,
+    "customDomain": "app.example.com"
+  }'
+```
+
 ### Fork from a snapshot
 
 Use the `snapshotId` parameter to fork from a specific snapshot instead of the current sandbox state:
