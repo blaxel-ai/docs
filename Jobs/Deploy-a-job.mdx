@@ -306,7 +306,7 @@ Here the most notable imports are the scripts. They are used for the `bl serve` 
 Depending on what you do, all of the `scripts` are not required. With TypeScript, all 4 of them are used.
 
 - `start` : start the job locally through the TypeScript command, to avoid having to build the project when developing.
-- `prod` : start the job remotely from the dist folder, the project needs to be have been built before.
+- `prod` : start the job remotely from the dist folder, the project needs to have been built before.
 - `build` : build the project. It is done automatically when deploying.
 
 The remaining fields in package.json follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.

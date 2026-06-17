@@ -242,7 +242,7 @@ In TypeScript, entrypoints are managed in the `scripts` in the `package.json` fi
 
 - `scripts.start` : start the server locally through the TypeScript command, to avoid having to build the project when developing.
 - `scripts.build` : build the project. It is done automatically when deploying.
-- `scripts.prod` : start the server remotely on Blaxel from the dist folder, the project needs to be have been built before.
+- `scripts.prod` : start the server remotely on Blaxel from the dist folder, the project needs to have been built before.
 - `scripts.dev` : same as start, but with hotreload. It's useful when developing locally, each file change is reflected immediately.
 
 The remaining fields in *package.json* follow standard JavaScript/TypeScript project conventions. Feel free to add any dependencies you need, but keep in mind that devDependencies are only used during the build process and are removed afterwards.
