@@ -119,7 +119,7 @@ Before starting, ensure you have:
       // Create Claude Code sandbox
       const claudeSandbox = await SandboxInstance.createIfNotExists({
         name: "claude-sandbox",
-        image: "blaxel/node:latest",
+        image: "blaxel/claude-code:latest",
         memory: 4096,
         region: "us-pdx-1",
         envs: [
@@ -186,7 +186,7 @@ Before starting, ensure you have:
         # Create Claude Code sandbox
         claude_sandbox = await SandboxInstance.create_if_not_exists({
             "name": "claude-sandbox",
-            "image": "blaxel/node:latest",
+            "image": "blaxel/claude-code:latest",
             "memory": 4096,
             "region": "us-pdx-1",
             "envs": [
@@ -201,10 +201,11 @@ Before starting, ensure you have:
     </CodeGroup>
 
     This script creates two Blaxel sandboxes:
-      - `claude-sandbox` using Blaxel's Node.js base image
+      - `claude-sandbox` using Blaxel's Claude Code image
       - `nextjs-sandbox` using Blaxel's Next.js base image
 
     In the Claude Code sandbox, it:
+    - uses the `blaxel/claude-code:latest` image, which includes Claude Code and the sandbox API;
     - adds the Blaxel API key to `claude-sandbox` as an environment variable named `BLAXEL_API_KEY`.
 
     In the application sandbox, it:
@@ -227,7 +228,7 @@ Before starting, ensure you have:
 
     Once complete, the script displays the generated preview URL for the Next.js application (for example, `https://b186....preview.bl.run?bl_preview_token=cbba622560db78e...`) and the MCP server URL (for example, ` https://sbx-nextjs-sandbox....bl.run/mcp`) for the Next.js sandbox. Note these values, as you will require them in subsequent steps.
 
-## Install and configure Claude Code
+## Configure Claude Code
 
 1. Connect to the Claude Code sandbox terminal:
 
@@ -235,15 +236,13 @@ Before starting, ensure you have:
     bl connect sandbox claude-sandbox
     ```
 
-1. Execute the following commands to install Claude Code in the sandbox and include it in the system PATH:
+1. Confirm Claude Code is available in the sandbox:
 
     ```shell
-    apk add curl bash
-    curl -fsSL https://claude.ai/install.sh | bash
-    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc && source ~/.bashrc
+    claude --version
     ```
 
-    For detailed installation instructions, refer to the [Claude Code documentation](https://code.claude.com/docs/en/overview).
+    The `blaxel/claude-code:latest` image includes Claude Code on `PATH`.
 
 1. Add the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) to Claude Code:
 
