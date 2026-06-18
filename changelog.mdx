@@ -7,7 +7,19 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
-<Update label="2026-06-10">
+<Update label="2026-06-13">
+
+<Frame>
+<img src="/images/changelog/2026/billing-explorer.webp" alt="New Billing Explorer interface" />
+</Frame>
+
+### Refreshed Billing Explorer experience
+
+The Billing Explorer is now available in the Blaxel Console with a refreshed UI and exhaustive filters and cost breakdowns
+
+</Update>
+
+<Update label="2026-06-11">
 
 ### Self-host Claude Managed Agents on Blaxel
 
@@ -17,11 +29,35 @@ See the [tutorial](/Tutorials/Claude-Managed-Agents) for a step-by-step walkthro
 
 </Update>
 
+<Update label="2026-06-10">
+
+### Stripe Projects integration
+
+Blaxel is officially [integrated with Stripe Projects](https://blaxel.ai/blog/stripe-projects-blaxel-integration). You and your agents can use existing Stripe payment methods to provision Blaxel accounts and resources, all without needing any GUI.
+
+</Update>
+
+<Update label="2026-06-05">
+
+### Process logging improvements
+
+Disable sandbox process logging per workspace, through the **Blaxel Console** > **Workspace settings**.
+
+</Update>
+
 <Update label="2026-06-04">
 
 ### Fallback preview URLs for custom domains
 
 You can now designate one preview as the [fallback](/Sandboxes/Preview-url#fallback-preview) or catch-all for a custom domain. When a preview doesn't exist on this domain, requests will be routed to this fallback preview instead of returning a 404.
+
+</Update>
+
+<Update label="2026-05-25">
+
+### Sandbox images for Codex and Claude Code
+
+Directly scaffold new sandboxes with preinstalled Codex / Claude Code usign `bl new sandbox`.
 
 </Update>
 
@@ -128,7 +164,7 @@ Added [image sharing between workspaces](/Sandboxes/Templates#share-templates-ac
 Added Blaxel CLI skill to let coding agents deploy and manage sandboxes, agents, jobs, and MCP servers using the `bl` CLI.
 
 </Update>
-
+!
 <Update label="2026-04-04">
 
 ### USER support for sandbox image builds
