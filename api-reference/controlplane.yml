@@ -6846,7 +6846,7 @@ paths:
       description: Create a preview
       operationId: CreateSandboxPreview
       parameters:
-      - description: Force creation by deleting conflicting previews that use the
+      - description: Force creation by replacing conflicting previews that use the
           same custom domain prefix URL
         in: query
         name: force
