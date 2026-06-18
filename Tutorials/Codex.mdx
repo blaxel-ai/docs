@@ -124,7 +124,8 @@ Before starting, ensure you have:
         memory: 4096,
         region: "us-pdx-1",
         envs: [
-          { name: "OPENAI_API_KEY", value: openaiApiKey }
+          { name: "OPENAI_API_KEY", value: openaiApiKey },
+          { name: "BLAXEL_API_KEY", value: blaxelApiKey }
         ]
       });
       console.log("Codex sandbox created");
@@ -195,7 +196,8 @@ Before starting, ensure you have:
             "memory": 4096,
             "region": "us-pdx-1",
             "envs": [
-                {"name": "OPENAI_API_KEY", "value": openai_api_key}
+                {"name": "OPENAI_API_KEY", "value": openai_api_key},
+                {"name": "BLAXEL_API_KEY", "value": blaxel_api_key}
             ]
         })
         print("Codex sandbox created")
@@ -210,7 +212,7 @@ Before starting, ensure you have:
       - `nextjs-sandbox` using Blaxel's Next.js base image
 
     In the Codex sandbox, it:
-    - adds the OpenAI API key to `codex-sandbox` as an environment variable named `OPENAI_API_KEY`.
+    - adds the Blaxel and OpenAI API keys to `codex-sandbox` as environment variables.
 
     In the application sandbox, it:
     - starts the Next.js dev server in `nextjs-sandbox` on port 3000;
@@ -240,13 +242,13 @@ Before starting, ensure you have:
     bl connect sandbox codex-sandbox
     ```
 
-1. Start Codex, passing the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) and your Blaxel API key:
+1. Configure Codex to connect to the application sandbox's MCP server URL (obtained from the sandbox creation script in the previous section) with your Blaxel API key (set in the sandbox environment):
 
     ```shell
-    codex --mcp-server '{"type":"http","url":"YOUR-SANDBOX-MCP-URL-HERE","headers":{"Authorization":"Bearer YOUR-BLAXEL-API-KEY-HERE"}}'
+    codex mcp add sandbox --url YOUR-SANDBOX-MCP-URL-HERE  --bearer-token-env-var  BLAXEL_API_KEY
     ```
 
-Codex will connect to the application sandbox's MCP server and prompt you for a task.
+1. Start Codex and confirm that it is connected to the sandbox MCP server with the `/mcp` command. This command should return the list of tools available in the sandbox.
 
 ## Test Codex
 
@@ -268,23 +270,11 @@ Codex will connect to the application sandbox, inspect the Next.js codebase and 
 Want more information on building and deploying with OpenAI on Blaxel? Check out the following resources:
 
 <CardGroup>
-  <Card title="OpenAI Agents SDK" icon="star-christmas" href="/Tutorials/OpenAI-Agents-SDK">
-    Build and deploy OpenAI Agents SDK agents on Blaxel.
+  <Card title="Use with Blaxel sandboxes" icon="thumbs-up" href="/Tutorials/OpenAI-Agents-SDK">
+    Build compute-capable agents backed by Blaxel sandboxes using OpenAI Agents SDK.
   </Card>
 
-  <Card title="Claude Agent SDK" icon="star-christmas" href="/Tutorials/Claude-Agent-SDK">
-    Build and deploy Claude Agent SDK agents on Blaxel.
-  </Card>
-
-  <Card title="Connect to a Blaxel sandbox from Claude Agent SDK" icon="thumbs-up" href="/Tutorials/Claude-Agent-SDK-MCP">
-    An agent that operates a sandbox using the sandbox's MCP server and Claude Agent SDK.
-  </Card>
-
-  <Card title="Self-host Claude Managed Agents on Blaxel" icon="server" href="/Tutorials/Claude-Managed-Agents">
-    Deploy a self-hosted Claude Managed Agents environment on Blaxel.
-  </Card>
-
-  <Card title="Deploy your agent code to Blaxel" icon="server" href="../Agents/Deploy-an-agent">
-    Complete tutorial for deploying AI agents on Blaxel.
+  <Card title="Deploy on Blaxel" icon="star-christmas" href="/Tutorials/OpenAI-Agents-SDK-Deployment">
+    Build and deploy agents with OpenAI Agents SDK to Blaxel.
   </Card>
 </CardGroup>
