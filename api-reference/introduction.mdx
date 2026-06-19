@@ -106,3 +106,51 @@ Update your client to use a version from the table below.
     </tr>
   </tbody>
 </table>
+
+## Pagination
+
+<Warning>
+  This pagination feature is currently only available for the Management API.
+</Warning>
+
+List operations on the Management API return paginated results. Each response includes a `data` array and a `meta` object with cursor information for fetching subsequent pages.
+
+<Note>Pagination requires `Blaxel-Version: 2026-04-28` or later. Requests without this header use the earliest stable version, which returns a bare array without pagination metadata.</Note>
+
+### Request parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `string` | Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page. |
+| `limit` | `integer` | Maximum number of items to return per page. Defaults to 50, maximum `200`. |
+| `sort` | `string` | Sort order. Options: `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. |
+
+### Response metadata
+
+Each paginated response includes a `meta` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hasMore` | `boolean` | `true` when additional pages are available. |
+| `nextCursor` | `string` | Opaque cursor to pass as `cursor` on the next request. Empty when there are no more pages. |
+| `total` | `integer` | Total number of items in the workspace, ignoring filters. |
+
+### Fetch pages manually
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes `meta.nextCursor`. Pass it as `cursor` to fetch the next page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+Continue fetching pages until `meta.hasMore` is `false`.

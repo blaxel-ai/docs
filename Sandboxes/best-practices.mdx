@@ -99,6 +99,11 @@ Instead of writing scripts to manually filter and delete sandboxes, use [expirat
 
 The sandbox metadata also includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
 
+## Use pagination for sandbox listings
+
+Requesting a list of all sandboxes in a single API call forces the platform to scan the full workspace, which is slow and resource-intensive at scale. Use the `cursor` and `limit` parameters to [retrieve sandboxes in pages](/Sandboxes/Overview#list-sandboxes) instead.
+
+
 ## Reduce cold start times with a pre-warmed pool
 
 For workloads with heavy images, you can maintain a pool of pre-warmed sandboxes to serve requests with near-zero latency.

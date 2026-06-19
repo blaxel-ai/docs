@@ -368,6 +368,45 @@ sandbox = await SandboxInstance.get("my-sandbox")
   Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
 </Tip>
 
+## List sandboxes
+
+To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination.
+
+<Note>
+  Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+</Note>
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/sandboxes?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 312
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/sandboxes?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+
 ## Delete a sandbox
 
 <Note>
