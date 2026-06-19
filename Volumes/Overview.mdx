@@ -218,6 +218,53 @@ Resize a volume by calling:
 
 ## List volumes
 
+To retrieve all volumes in your workspace, use the Management API list endpoint with pagination.
+
+<Note>
+  Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+</Note>
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 18
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+<Tip>
+  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+</Tip>
+
+For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+
+It is also possible to list all drives in a workspace using the SDKs.
+
+<Note>
+  This approach does not currently support pagination and is therefore not recommended when working with large lists.
+</Note>
+
 <CodeGroup>
 ```typescript TypeScript
 const volumes = await VolumeInstance.list()
@@ -237,7 +284,6 @@ You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
 ```shell
 # Get volumes with specific label (e.g., env=test)
 bl get volumes -o json | jq -r '.[] | select(.metadata.labels.env == "test") | .metadata.name'
-```
 
 ## Use volumes with sandboxes and agents
 

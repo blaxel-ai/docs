@@ -369,6 +369,10 @@ curl 'https://api.blaxel.ai/v0/agents?limit=50&cursor=NEXT_CURSOR' \
   -H 'Blaxel-Version: 2026-04-28'
 ```
 
+<Tip>
+  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+</Tip>
+
 For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
 
 ## Customize the agent deployment
