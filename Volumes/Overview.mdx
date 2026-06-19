@@ -259,7 +259,7 @@ curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
 
 For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
 
-It is also possible to list all drives in a workspace using the SDKs.
+It is also possible to list all volumes in a workspace using the SDKs.
 
 <Note>
   This approach does not currently support pagination and is therefore not recommended when working with large lists.
@@ -284,6 +284,7 @@ You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
 ```shell
 # Get volumes with specific label (e.g., env=test)
 bl get volumes -o json | jq -r '.[] | select(.metadata.labels.env == "test") | .metadata.name'
+```
 
 ## Use volumes with sandboxes and agents
 
