@@ -1908,7 +1908,7 @@ components:
           description: Type of the OAuth
     OwnerFields:
       type: object
-      description: Owner fields for Persistance
+      description: Owner fields for Persistence
       properties:
         createdBy:
           type: string
@@ -2790,7 +2790,7 @@ components:
       properties:
         categories:
           type: array
-          description: Categories of the defintion
+          description: Categories of the definition
           items:
             type: object
             additionalProperties: true
@@ -2800,7 +2800,7 @@ components:
           example: false
         description:
           type: string
-          description: Description of the defintion
+          description: Description of the definition
           example: Python environment with data science libraries pre-installed
         displayName:
           type: string
@@ -2823,7 +2823,7 @@ components:
           example: blaxel/python-data-science:latest
         longDescription:
           type: string
-          description: Long description of the defintion
+          description: Long description of the definition
         memory:
           type: integer
           description: Memory of the Sandbox definition in MB
@@ -3108,7 +3108,7 @@ components:
           example: true
     TimeFields:
       type: object
-      description: Time fields for Persistance
+      description: Time fields for Persistence
       properties:
         createdAt:
           type: string
