@@ -7,6 +7,14 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-06-19">
+
+### Clear sandbox TTL and lifecycle policies
+
+The SDKs can now clear a sandbox's expiration rules without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again. See [Clear sandbox expiry rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules).
+
+</Update>
+
 <Update label="2026-06-13">
 
 ### Refreshed Billing Explorer experience
