@@ -149,3 +149,49 @@ await SandboxInstance.update_lifecycle(
 ```
 
 </CodeGroup>
+
+## Clear sandbox expiry rules
+
+To make a sandbox persist again, clear its TTL or lifecycle policies. Clearing does not recreate the sandbox or affect its filesystem.
+
+Pass `null` (or an empty string) to `updateTtl` to remove the TTL:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Clear the sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", null);
+```
+
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Clear the sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", None)
+```
+
+</CodeGroup>
+
+Pass `null` to `updateLifecycle` to remove all expiration policies:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Remove all expiration policies
+await SandboxInstance.updateLifecycle("my-sandbox", null);
+```
+
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Remove all expiration policies
+await SandboxInstance.update_lifecycle("my-sandbox", None)
+```
+
+</CodeGroup>
