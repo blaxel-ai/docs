@@ -262,9 +262,9 @@
                 ]
               },
               {
-                "group": "OpenAI Agents",
+                "group": "OpenAI / Codex",
                 "pages": [
-                  "Tutorials/OpenAI-Agents-SDK-Index",
+                  "Tutorials/Codex",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
               }
