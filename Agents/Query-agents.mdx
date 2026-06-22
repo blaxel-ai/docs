@@ -31,7 +31,7 @@ In addition to the default synchronous endpoint, Blaxel provides the ability to 
 
 ![Screenshot 2025-05-18 at 8.53.14 PM.webp](/Agents/Query-agents/Screenshot_2025-05-18_at_8.53.14_PM.webp)
 
-This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations. Blaxel handles queuing and execution behind the scene.
+This endpoint allows you to initiate requests without maintaining an open connection throughout the entire processing duration, making it particularly useful for complex or time-intensive operations. Blaxel handles queuing and execution behind the scenes.
 
 <Note>
   You are responsible for implementing your own method for retrieving the agent's results in your code. You can send results to a webhook, a database, an S3 bucket, etc. You can specify an optional callback URL to receive the result when the background job completes.
