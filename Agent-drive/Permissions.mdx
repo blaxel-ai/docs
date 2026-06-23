@@ -1,0 +1,221 @@
+---
+title: 'Drive permissions'
+sidebarTitle: 'Permissions'
+description: 'Control which workloads can access a drive using label-based permissions with AND/OR matching logic.'
+---
+
+Drive permissions restrict which sandboxes, agents, or jobs can mount a specific drive. Permissions are evaluated against the workload's identity labels at mount time. If no permissions are defined on a drive, any workload in the workspace can mount it.
+
+## How permissions work
+
+Each drive can have up to 3 permission rules. A permission rule contains:
+
+| Field | Description | Default |
+|---|---|---|
+| `labels` | Key-value pairs the workload must have (AND logic within a rule) | Required |
+| `mode` | Access mode: `read` or `read-write` | `read-write` |
+| `path` | Subfolder the workload is restricted to | `/` (full drive) |
+
+Permissions are evaluated with OR logic: the first matching rule grants access. Within a single rule, all specified labels must match (AND logic).
+
+## Label matching
+
+Workload labels are automatically injected into the workload's identity token at creation time. These include infrastructure labels (like `blaxel-workspace`, `blaxel-type`, `blaxel-name`) and any user-defined labels set on the resource's metadata.
+
+To add user-defined labels to a sandbox, set them in `metadata.labels` when creating the resource:
+
+<CodeGroup>
+
+```tsx TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-image",
+  labels: { team: "backend", env: "production" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create(
+    {
+        "name": "my-sandbox",
+        "image": "my-image",
+        "labels": {"team": "backend", "env": "production"},
+    }
+)
+```
+
+</CodeGroup>
+
+These labels then appear in the workload identity token and are evaluated against drive permission rules at mount time.
+
+## Create a drive with permissions
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.create({
+  name: "team-drive",
+  region: "us-was-1",
+  permissions: [
+    {
+      labels: { team: "backend" },
+      mode: "read-write",
+    },
+    {
+      labels: { team: "frontend" },
+      mode: "read",
+      path: "/shared",
+    },
+  ],
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.create(
+    {
+        "name": "team-drive",
+        "region": "us-was-1",
+        "permissions": [
+            {
+                "labels": {"team": "backend"},
+                "mode": "read-write",
+            },
+            {
+                "labels": {"team": "frontend"},
+                "mode": "read",
+                "path": "/shared",
+            },
+        ],
+    }
+)
+```
+
+</CodeGroup>
+
+## Update permissions on an existing drive
+
+Permissions can be modified on a drive that is already in use. Updated permissions apply to new mount requests. Existing mounts are not affected until remounted.
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.get("team-drive");
+await drive.update({
+  permissions: [
+    {
+      labels: { team: "backend", env: "production" },
+      mode: "read-write",
+    },
+  ],
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.get("team-drive")
+await drive.update(
+    {
+        "permissions": [
+            {
+                "labels": {"team": "backend", "env": "production"},
+                "mode": "read-write",
+            },
+        ],
+    }
+)
+```
+
+</CodeGroup>
+
+To remove all permissions and make the drive open-access again, set `permissions` to an empty array.
+
+## Permission patterns
+
+### Restrict to a single team
+
+Only sandboxes with `team: "data-science"` can mount the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "data-science" }, mode: "read-write" },
+]
+```
+
+### AND logic (multiple labels in one rule)
+
+The workload must have both `team: "backend"` AND `env: "production"` to match:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend", env: "production" }, mode: "read-write" },
+]
+```
+
+### OR logic (multiple rules)
+
+Either `team: "backend"` OR `team: "ml"` can access the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend" }, mode: "read-write" },
+  { labels: { team: "ml" }, mode: "read-write" },
+]
+```
+
+### Read-only access for some teams
+
+The backend team gets full access, the frontend team can only read:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend" }, mode: "read-write" },
+  { labels: { team: "frontend" }, mode: "read" },
+]
+```
+
+### Path scoping
+
+Restrict a workload to a specific subfolder within the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "analytics" }, mode: "read", path: "/reports" },
+]
+```
+
+The workload can only see files under `/reports` when it mounts the drive.
+
+## Behavior summary
+
+| Scenario | Result |
+|---|---|
+| No permissions defined on drive | Any workload in the workspace can mount |
+| Permissions defined, workload labels match a rule | Mount allowed with the rule's mode and path |
+| Permissions defined, no rule matches | Mount denied |
+| Multiple rules match | First matching rule applies |
+| Rule with empty `mode` | Defaults to `read-write` |
+| Rule with empty `path` | Defaults to `/` (full drive) |
+
+<Warning>
+  Permissions are enforced at mount time. If you update permissions on a drive, existing mounts are not affected. The workload must unmount and remount to pick up the new rules.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Agent Drive overview" href="/Agent-drive/Overview">
+    Create, mount, and manage drives.
+  </Card>
+  <Card title="Sandboxes overview" href="/Sandboxes/Overview">
+    Learn about sandbox lifecycle and configuration.
+  </Card>
+</CardGroup>
