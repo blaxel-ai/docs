@@ -383,20 +383,6 @@ sandboxes = await SandboxInstance.list(external_id="session-abc-123")
 
 </CodeGroup>
 
-Or via the CLI manifest (`bl apply -f`):
-
-```yaml
-apiVersion: blaxel.ai/v1
-kind: Sandbox
-metadata:
-  name: my-sandbox
-  externalId: session-abc-123
-spec:
-  runtime:
-    image: blaxel/base-image:latest
-  region: us-pdx-1
-```
-
 ### Kernel networking
 
 By default, sandboxes run on a minimal kernel without iptables support. You can enable iptables by passing `extraArgs` at creation time.

@@ -105,7 +105,7 @@ Requesting a list of all sandboxes in a single API call forces the platform to s
 
 ## Index sandboxes with external IDs
 
-When you manage many sandboxes per workspace (hundreds or thousands), retrieving the right one by name alone becomes impractical. You often need to find a sandbox by a caller-owned identifier: a session ID, user ID, or conversation ID from your application. Requires `@blaxel/core` ≥ 0.2.93 or `blaxel` ≥ 0.2.57.
+When you manage many sandboxes per workspace (hundreds or thousands), retrieving the right one by name alone becomes impractical. You often need to find a sandbox by a caller-owned identifier: a session ID, user ID, or conversation ID from your application. 
 
 Use `externalId` to create a fast, indexed lookup without maintaining a separate mapping database. Unlike labels (which require client-side filtering), `externalId` is backed by a dedicated database index and returns results in constant time.
 
@@ -148,7 +148,7 @@ if not sandbox:
   `externalId` is not unique. If multiple live sandboxes share the same value, `getByExternalId` returns the most recently created one. Use `list` with the `externalId` filter to retrieve all matches.
 </Note>
 
-Combine external IDs with [TTL policies](./Expiration) and [labels](#labels) for a complete sandbox management strategy: external IDs for fast lookup, labels for categorization, and TTLs for automatic cleanup.
+Combine external IDs with [TTL policies](/Sandboxes/Expiration) and [labels](/Sandboxes/Overview#labels) for a complete sandbox management strategy: external IDs for fast lookup, labels for categorization, and TTLs for automatic cleanup.
 
 ## Reduce cold start times with a pre-warmed pool
 
