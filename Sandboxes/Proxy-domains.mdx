@@ -11,7 +11,7 @@ tag: "public preview"
 Domain filtering lets you control which external domains a sandbox can reach. You can define an allowlist (only listed domains are reachable) or a denylist (all domains except listed ones are reachable). Domain filtering and proxy routing are **independent configurations** — you do not need to duplicate domains across both. A domain can appear in the allowlist without having a proxy routing rule, and vice versa.
 
 <Warning>
-  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore proxy environment variables will not be filtered unless [routing-level enforcement](#routing-level-enforcement) is enabled.
+  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore proxy environment variables will not be filtered unless [domain filter enforcement](#domain-filter-enforcement) is enabled.
 </Warning>
 
 ## Allowlist
@@ -82,14 +82,14 @@ await SandboxInstance.create({
   When both `allowedDomains` and `forbiddenDomains` are set, `forbiddenDomains` takes precedence: a domain that appears in both lists will be blocked.
 </Note>
 
-## Routing-level enforcement
+## Domain filter enforcement
 
-By default, domain filtering depends on the sandbox's tools respecting `HTTP_PROXY` and `HTTPS_PROXY`. To enforce filtering even for tools that bypass those variables, add a `firewall` config with `rulesets: ["proxy"]`. This routes all egress traffic through the proxy at the network level, regardless of how the tool is configured:
+By default, domain filtering depends on the sandbox's tools respecting `HTTP_PROXY` and `HTTPS_PROXY`. To enforce filtering even for tools that bypass those variables, add a `firewall` config with `rulesets: ["proxy"]`. This forces all outbound traffic to flow through the proxy at the network level.
 
 <CodeGroup>
 
 ```typescript TypeScript
-await SandboxInstance.create({
+await SandboxInstance.createIfNotExists({
   name: "enforced-sandbox",
   image: "blaxel/base-image:latest",
   region: "us-was-1",
@@ -102,7 +102,7 @@ await SandboxInstance.create({
 ```
 
 ```python Python
-await SandboxInstance.create({
+await SandboxInstance.create_if_not_exists({
     "name": "enforced-sandbox",
     "image": "blaxel/base-image:latest",
     "region": "us-was-1",
@@ -117,7 +117,7 @@ await SandboxInstance.create({
 </CodeGroup>
 
 <Note>
-  Routing-level enforcement is not yet applied automatically when a proxy config is set. In a future release, it will be enabled by default whenever a proxy is configured.
+  Currently, this feature is not enforced automatically by the platform when a proxy is configured. In a future release, it will be automatically enforced whenever a proxy is configured.
 </Note>
 
 ## Firewall + proxy combined

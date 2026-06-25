@@ -17,9 +17,9 @@ The SDKs can now clear a sandbox's expiration rules without recreating it. Pass 
 
 <Update label="2026-06-13">
 
-### Routing-level firewall enforcement for sandboxes
+### Proxy-based firewall support
 
-Sandboxes can now enforce domain filtering at the network level, rather than relying on tools respecting proxy environment variables. Set `firewall: { rulesets: ["proxy"] }` in the sandbox `network` config to route all egress traffic through the Blaxel proxy unconditionally — ensuring `allowedDomains` and `forbiddenDomains` rules apply even to tools that bypass `HTTP_PROXY`. Requires Python SDK ≥ 0.2.56 or TypeScript SDK ≥ 0.2.90. See [Domain filtering](/Sandboxes/Proxy-domains).
+Sandboxes can now enforce domain filtering at the network level.
 
 </Update>
 
