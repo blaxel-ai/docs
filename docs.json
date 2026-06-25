@@ -301,6 +301,12 @@
             ]
           },
           {
+            "group": "Jobs",
+            "pages": [
+              "Tutorials/GitHub-actions-runner"
+            ]
+          },
+          {
             "group": "Complete examples",
             "pages": [
               "Examples/Overview"
