@@ -129,6 +129,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",  // public or custom image
   memory: 4096,    // in MB
+  storageMb: 102400,    // optional; disk-backed root storage in MB
   ports: [{ target: 3000, protocol: "HTTP" }],  // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
   region: "us-pdx-1"    // deployment region
@@ -146,6 +147,7 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
+      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
@@ -168,6 +170,7 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
+  storageMb: 102400,   // optional; disk-backed root storage in MB
   ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
   region: "us-pdx-1"   // deployment region
@@ -184,6 +187,7 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
+      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
@@ -244,7 +248,11 @@ For maximum performance, Blaxel sandboxes store part of their filesystem in memo
 
 Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
-To avoid out-of-memory errors or if additional storage is required, one option is to add storage using [volumes](/Sandboxes/Volumes). However, this requires deleting and recreating the sandbox first. In addition, volumes are not as fast as the native in-memory filesystem.
+For write-heavy workloads, set `storageMb` (TypeScript/CLI) or `storage_mb` (Python) when creating the sandbox to provision disk-backed root storage without increasing memory. This storage is part of the sandbox root filesystem, is deleted with the sandbox, and is capped by your account's ephemeral-volume quota.
+
+`storageMb` cannot be combined with a persistent volume mounted at `/`. Use root storage for ephemeral root filesystem capacity, or use a volume at a subpath such as `/data` when data should persist independently from the sandbox lifecycle.
+
+Use [volumes](/Sandboxes/Volumes) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, and are not as fast as the native in-memory filesystem.
 
 ### Ports
 
