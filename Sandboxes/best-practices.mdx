@@ -19,7 +19,7 @@ The most efficient way to manage lifecycle is to let the sandbox suspend automat
 
 Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers three options:
 
-- Sandbox filesystem: The sandbox itself has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
+- Sandbox filesystem: The sandbox itself has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated. Use `storageMb` / `storage_mb` at sandbox creation when the root filesystem needs more disk-backed capacity than the default memory-backed filesystem.
 
 - Volumes: [Volumes](/Volumes/Overview) provide longer-term, durable block storage that is decoupled from compute. Data stored on a volume survives even if the associated sandbox is terminated, and newly-created sandboxes can access the data by attaching to the same volume.
 
@@ -38,7 +38,7 @@ Here's a table to help you decide:
 | Access type | Single | Single | Multiple |
 | Hot-attach | N/A | No | Yes |
 | Interface | POSIX | POSIX | POSIX + S3 |
-| Size | ~50% of sandbox memory | User-defined at creation, expandable | No size limit |
+| Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
 
 ## Upload many files efficiently
