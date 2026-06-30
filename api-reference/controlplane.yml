@@ -3143,6 +3143,148 @@ components:
             m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''). For idle-based cleanup,
             use a lifecycle expiration policy of type ttl-idle.'
           example: 24h
+    SandboxSchedule:
+      type: array
+      description: List of scheduled tasks for automated process execution inside
+        the sandbox. Supports recurring cron expressions, one-off datetime targets,
+        and sleep durations.
+      items:
+        $ref: '#/components/schemas/SandboxScheduleEntry'
+    SandboxScheduleEntry:
+      type: object
+      description: A scheduled task that executes a process inside the sandbox at
+        specified times. Stored in the dedicated schedules table (no longer embedded
+        in the sandbox spec).
+      properties:
+        createdAt:
+          type: string
+          description: Creation timestamp (read-only).
+          readOnly: true
+        id:
+          type: string
+          description: Unique identifier for this schedule within its sandbox. Auto-generated
+            if not provided.
+          example: schedule-0
+        input:
+          $ref: '#/components/schemas/SandboxScheduleInput'
+        maxExecutions:
+          type: integer
+          description: Maximum number of execution records kept for this schedule.
+            Once reached, recording a new execution deletes the oldest. Defaults to
+            100.
+          example: 100
+        type:
+          type: string
+          description: Type of schedule timing. 'cron' for recurring (5-field expression),
+            'at' for a specific RFC 3339 datetime, 'sleep' for a duration from now
+            (resolved to 'at' on creation).
+          enum:
+          - cron
+          - at
+          - sleep
+          example: cron
+        value:
+          type: string
+          description: 'Timing value. For ''cron'': a 5-field cron expression (e.g.
+            ''0 8 * * 1-5''). For ''at'': an RFC 3339 datetime (e.g. ''2026-07-01T09:00:00Z'').
+            For ''sleep'': a duration (e.g. ''2h'', ''30m'', ''7d'').'
+          example: 0 8 * * 1-5
+    SandboxScheduleEntryList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule definitions.
+      properties:
+        data:
+          type: array
+          description: Page of schedule definitions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleEntry'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxScheduleExecution:
+      type: object
+      description: One recorded execution of a sandbox schedule. statusCode is the
+        HTTP status from submitting the command to the sandbox (the scheduler does
+        not wait for the command to finish). Stored in the dedicated scheduleexecutions
+        table.
+      properties:
+        createdAt:
+          type: string
+          description: Creation timestamp (read-only).
+          readOnly: true
+        executedAt:
+          type: string
+          description: RFC 3339 time at which the command was submitted.
+          example: "2026-07-01T09:00:00Z"
+        id:
+          type: string
+          description: Unique id of this execution within the schedule.
+          example: '"00000000000000000042"'
+        processName:
+          type: string
+          description: Name of the process started in the sandbox for this execution,
+            used to look up its logs.
+          example: training-job
+        scheduleId:
+          type: string
+          description: Id of the schedule this execution belongs to.
+          example: schedule-0
+        statusCode:
+          type: integer
+          description: HTTP status code returned when the scheduled command was submitted
+            to the sandbox (0 if the sandbox could not be reached). 2xx/3xx means
+            the command was accepted.
+          example: 200
+        timeout:
+          type: integer
+          description: Process timeout in seconds for this execution. The UI uses
+            it to scope the log view to [executedAt, executedAt+timeout]. 0 when the
+            schedule set no timeout.
+          example: 600
+    SandboxScheduleExecutionList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule execution history
+        (across all its schedules).
+      properties:
+        data:
+          type: array
+          description: Page of schedule executions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleExecution'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxScheduleInput:
+      type: object
+      description: Process execution configuration for a scheduled sandbox task
+      properties:
+        command:
+          type: string
+          description: Shell command to execute inside the sandbox
+          example: python train.py --epochs 10
+        env:
+          type: object
+          description: Environment variables to set for the process. May contain secrets,
+            so values are encrypted at rest and masked in API responses unless an
+            admin requests show_secrets=true.
+          additionalProperties:
+            type: string
+        keepAlive:
+          type: boolean
+          description: Keep the sandbox alive (disable scale-to-zero) while the process
+            runs. Defaults to true.
+          example: true
+        name:
+          type: string
+          description: Optional name for the process (used to retrieve status/logs)
+          example: training-job
+        timeout:
+          type: integer
+          description: Timeout in seconds for the process. Defaults to 600 (10 minutes).
+            Set to 0 for no timeout.
+          example: 3600
+        workingDir:
+          type: string
+          description: Working directory for the command
+          example: /app
     SandboxSpec:
       type: object
       description: Configuration for a sandbox including its image, memory, ports,
@@ -7529,6 +7671,192 @@ paths:
         - sandboxes:delete
       - ApiKeyAuth: []
       summary: Delete token for Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/schedule-executions:
+    get:
+      description: Returns the execution history of a Sandbox's schedules (across
+        all schedules of the sandbox), newest first. Cursor-paginated via the `cursor`
+        and `limit` query parameters. Each item records the HTTP status of submitting
+        the scheduled command and the process name for log lookup.
+      operationId: ListSandboxScheduleExecutions
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleExecutionList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedule Executions
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+  /sandboxes/{sandboxName}/schedules:
+    get:
+      description: Returns the schedules configured on a Sandbox. Starting with API
+        version 2026-04-28 the response is wrapped in `{data, meta}` and supports
+        cursor pagination via the `cursor` and `limit` query parameters; older versions
+        return a bare array.
+      operationId: ListSandboxSchedules
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter schedules by timing type. Only cron and at are stored
+          (sleep resolves to at on creation); any other value is ignored.
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - cron
+          - at
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntryList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedules
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Adds a schedule to a Sandbox.
+      operationId: CreateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create Sandbox Schedule
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/schedules/{scheduleId}:
+    delete:
+      description: Deletes a Sandbox Schedule by id.
+      operationId: DeleteSandboxSchedule
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete Sandbox Schedule
+      tags:
+      - compute
+    get:
+      description: Returns a Sandbox Schedule by id.
+      operationId: GetSandboxSchedule
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Schedule
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Id of the Schedule
+      in: path
+      name: scheduleId
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a Sandbox Schedule by id.
+      operationId: UpdateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update Sandbox Schedule
       tags:
       - compute
   /sandboxes/by-external-id/{externalId}:
