@@ -353,12 +353,6 @@
               "sdk-reference/sdk-python",
               "sdk-reference/sdk-go"
             ]
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              "sdk-reference/pagination"
-            ]
           }
         ]
       },

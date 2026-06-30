@@ -378,21 +378,39 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## List sandboxes
 
-To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination.
+To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination or the built-in SDK pagination helper functions.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
 </Note>
 
-Request the first page:
+<CodeGroup>
 
-```bash
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxes = await SandboxInstance.list({ limit: 50 });
+for await (const sandbox of sandboxes) {
+  console.log(sandbox.metadata?.name);
+}
+```
+
+```python Python
+from blaxel.core import SyncSandboxInstance
+
+for sandbox in SyncSandboxInstance.list(limit=50).auto_paging_iter():
+    print(sandbox.metadata.name)
+```
+
+```bash REST
 curl 'https://api.blaxel.ai/v0/sandboxes?limit=50' \
   -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
   -H 'Blaxel-Version: 2026-04-28'
 ```
 
-The response includes a `data` array and a `meta` object:
+</CodeGroup>
+
+The curl response includes a `data` array and a `meta` object:
 
 ```json
 {
@@ -417,7 +435,7 @@ curl 'https://api.blaxel.ai/v0/sandboxes?limit=50&cursor=NEXT_CURSOR' \
   For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
 </Tip>
 
-For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
 ## Delete a sandbox
 
