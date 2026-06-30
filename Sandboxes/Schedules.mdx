@@ -188,7 +188,7 @@ for (const execution of executions) {
 executions = await sandbox.schedules.executions()
 
 for execution in executions:
-    print(execution.scheduleId, execution.statusCode, execution.processName)
+    print(execution.schedule_id, execution.status_code, execution.process_name)
 ```
 
 ```bash REST
