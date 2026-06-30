@@ -210,7 +210,7 @@ The page object also exposes pagination state so you can inspect it directly: th
 
 ### Supported endpoints
 
-Pagination applies to list endpoints across SDK resources. Agent Drives, volumes, and job executions support it in all three SDKs. The Go SDK additionally exposes cursor pagination on its generated list endpoints, including agents, functions, jobs, models, policies, and sandboxes.
+Pagination applies to list endpoints across SDK resources. Agent Drives, volumes, and job executions support it in all three SDKs. The TypeScript and Python SDKs also paginate a sandbox's schedules and schedule executions (`sandbox.schedules.list` and `sandbox.schedules.executions`). The Go SDK additionally exposes cursor pagination on its generated list endpoints, including agents, functions, jobs, models, policies, and sandboxes.
 
 <Note>
   You can also paginate results using the [API](/api-reference/introduction#pagination).
