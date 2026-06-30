@@ -1,39 +1,36 @@
 ---
-
-title: 'Process execution'
-
-description: 'Execute shell commands, retrieve process information, stream output, and control process lifecycle in Blaxel sandboxes using the SDK.'
-
+title: "Process execution"
+description: "Execute shell commands, retrieve process information, stream output, and control process lifecycle in Blaxel sandboxes using the SDK."
 ---
 
 Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
 
-<Tip>Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).</Tip>
+<Tip>
+  Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+</Tip>
 
 ## Execute processes and commands
 
 <Accordion title="Learn more about authentication on Blaxel">
+  The Blaxel SDK requires two environment variables to authenticate:
 
-The Blaxel SDK requires two environment variables to authenticate:
+  | Variable | Description |
+  | --- | --- |
+  | `BL_WORKSPACE` | Your Blaxel workspace name |
+  | `BL_API_KEY` | Your Blaxel API key |
 
-| Variable | Description |
-|---|---|
-| `BL_WORKSPACE` | Your Blaxel workspace name |
-| `BL_API_KEY` | Your Blaxel API key |
+  You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
 
-You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+  Set them as environment variables or add them to a `.env` file at the root of your project:
 
-Set them as environment variables or add them to a `.env` file at the root of your project:
+  ```bash
+  export BL_WORKSPACE=my-workspace
+  export BL_API_KEY=my-api-key
+  ```
 
-```bash
-export BL_WORKSPACE=my-workspace
-export BL_API_KEY=my-api-key
-```
+  The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
 
-The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
-
-When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically — no environment variables needed.
-
+  When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically — no environment variables needed.
 </Accordion>
 
 ### Execute command
@@ -66,7 +63,7 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-Logs for a [process](/Sandboxes/Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
+Logs for a [process](/Sandboxes/Processes) are available in the _process execution_ object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
 
 Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
 
@@ -110,7 +107,7 @@ When starting a process (running a command), you can specify a **process name**.
 
 <CodeGroup>
 
-```typescript TypeScript {2}
+```typescript TypeScript highlight={2}
 const process = await sandbox.process.exec({
   name: "hello-process",
   command: "echo 'Hello, World!'"
@@ -118,7 +115,7 @@ const process = await sandbox.process.exec({
 const processInfo = await sandbox.process.get("hello-process");
 ```
 
-```python Python {2}
+```python Python highlight={2}
 process = await sandbox.process.exec({
   "name": "hello-process",
   "command": "echo 'Hello, World!'"
@@ -169,6 +166,15 @@ await sandbox.process.kill("test")
 
 ## Long-running processes
 
+Blaxel Sandboxes are great for long-running processes. Processes you launch detach by design: their `stdout` and `stderr` are redirected to files and the process is monitored by background workers in the sandbox, so it survives independently of your client connection.
+
+By default, the general [sandbox lifecycle](/Sandboxes/Overview#sandbox-lifecycle) rules still apply: the sandbox only stays awake while a connection is maintained and will suspend after a few seconds of inactivity. Use `keepAlive` to override this for the duration of a process.
+
+Two independent flags let you tune how the behavior works.
+
+- `waitForCompletion` (default: `false`) controls only whether the SDK call blocks until the process exits and returns its output. It has no effect on the process or sandbox lifetime.
+- `keepAlive` (default: none) controls only whether the sandbox stays awake (auto-standby/scale-to-zero disabled) while the process runs, even with no active client connection. A counter tracks running `keepAlive` processes and is decremented automatically when each one completes, letting the sandbox return to standby on its own. See [Sandbox keep-alive](#sandbox-keep-alive) for details.
+
 ### Wait for process completion
 
 You can wait for process completion when executing it:
@@ -197,7 +203,13 @@ process = await sandbox.process.exec({
 
 When waiting for completion, the process execution object will contain a `.logs` field with the [combined `stdout` and `stderr` output as a string](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
 
-<Warning>When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.</Warning>
+<Warning>
+  When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.
+</Warning>
+
+<Note>
+  For processes **without** `keepAlive: true`, the `timeout` parameter does **not** kill the process. It only bounds how long the API call waits when using `waitForCompletion` (or `waitForPorts`); once the timeout elapses, an error is returned but the process keeps running in the background. Non-`keepAlive` processes have no auto-kill timeout and run until they complete on their own. To auto-kill a process after a duration, use `keepAlive: true` together with a `timeout` (see [Sandbox keep-alive](#sandbox-keep-alive)).
+</Note>
 
 You can also wait for a process after it has started:
 
@@ -284,7 +296,7 @@ process = await sandbox.process.exec({
 
 ## Sandbox keep-alive
 
-By default, sandboxes automatically switch to standby after a few seconds of inactivity to save resources. However, it is possible to adjust this behavior and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a server running in the sandbox environment even when it is not serving requests.
+By default, sandboxes automatically switch to standby when there is no active connection to save resources. However, it is possible to adjust this behavior and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a long-running task actively run within the sandbox environment even when it is not serving requests.
 
 You can include additional keep-alive metadata when launching a new process:
 
@@ -299,8 +311,8 @@ const sandbox = await SandboxInstance.get("my-sandbox");
 await sandbox.process.exec({
   name: "dev-server",
   command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
-  keepAlive: true,        // Prevents auto-standby
-  timeout: 3600           // Auto-kill after 1 hour
+  keepAlive: true,        // Prevents auto-standby while the process runs
+  timeout: 3600           // Auto-kill the process after 1 hour. Set 0 to not auto-kill.
 });
 ```
 
@@ -320,7 +332,16 @@ await sandbox.process.exec({
 
 </CodeGroup>
 
-If a `timeout` value is not specified, it defaults to 600 seconds. For processes that should run indefinitely until they complete naturally, set the `timeout` to `0`.
+The auto-kill timeout and its 600-second default **only apply to processes started with `keepAlive: true`**. If a `keepAlive` process is started without a `timeout`, it defaults to **600 seconds (10 minutes)** and is automatically terminated when the timeout elapses. To run a `keepAlive` process indefinitely with no auto-kill, set `timeout: 0`.
+
+The table below summarizes how `keepAlive` and `timeout` interact:
+
+| Configuration | Process auto-kill behavior | `timeout` parameter effect |
+| --- | --- | --- |
+| `keepAlive` not set (default) | Never auto-killed. Runs until it completes on its own. | Only bounds how long the API waits when using `waitForCompletion` or `waitForPorts`. Does not terminate the process. |
+| `keepAlive: true`, no `timeout` | Auto-killed after **600 seconds** (10 minutes). | — |
+| `keepAlive: true`, `timeout: 0` | Never auto-killed. Runs until it completes on its own. | — |
+| `keepAlive: true`, `timeout: N` | Auto-killed after **N seconds**. | — |
 
 You can run multiple processes, and the sandbox will stay active until all of them complete:
 
@@ -384,7 +405,9 @@ Alternatively, you can disable process logging for sandboxes at workspace level 
 
 ![Disable process logging](/images/sandboxes/disable-process-logs.webp)
 
-<Note>This only suppresses the structured telemetry export. You can still retrieve process logs via the SDK's `process.logs()` method and stream them in real-time.</Note>
+<Note>
+  This only suppresses the structured telemetry export. You can still retrieve process logs via the SDK's `process.logs()` method and stream them in real-time.
+</Note>
 
 ## Process statuses
 
