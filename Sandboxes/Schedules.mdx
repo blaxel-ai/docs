@@ -172,7 +172,24 @@ Deleting a schedule removes it from the underlying scheduler, so no further runs
 
 Each firing records one execution. The `statusCode` is the HTTP status returned when the command was submitted to the sandbox, not the command's own exit code: the scheduler does not wait for the command to finish. A 2xx or 3xx status means the command was accepted.
 
+List the execution history of a sandbox. It returns the runs of every schedule on the sandbox, newest first:
+
 <CodeGroup>
+
+```typescript TypeScript
+const executions = await sandbox.schedules.executions();
+
+for (const execution of executions) {
+  console.log(execution.scheduleId, execution.statusCode, execution.processName);
+}
+```
+
+```python Python
+executions = await sandbox.schedules.executions()
+
+for execution in executions:
+    print(execution.scheduleId, execution.statusCode, execution.processName)
+```
 
 ```bash REST
 curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedule-executions" \
@@ -181,7 +198,7 @@ curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedule-executions" \
 
 </CodeGroup>
 
-Each record carries the `processName` used to start the process, so you can look up its logs (see [Log streaming](/Sandboxes/Log-streaming)). History is a ring buffer per schedule: once it reaches `maxExecutions` (default 100), recording a new run drops the oldest.
+Each record carries `scheduleId`, `statusCode`, `executedAt`, and the `processName` used to start the process, so you can look up its logs (see [Log streaming](/Sandboxes/Log-streaming)). History is a ring buffer per schedule: once it reaches `maxExecutions` (default 100), recording a new run drops the oldest.
 
 ## Manage from the console
 
