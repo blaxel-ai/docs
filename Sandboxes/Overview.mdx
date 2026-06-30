@@ -378,7 +378,7 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## List sandboxes
 
-To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination or the built-in SDK pagination helper functions.
+To retrieve all sandboxes in your workspace, use the built-in SDK pagination helper functions.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
@@ -396,46 +396,20 @@ for await (const sandbox of sandboxes) {
 ```
 
 ```python Python
-from blaxel.core import SyncSandboxInstance
+import asyncio
+from blaxel.core import SandboxInstance
 
-for sandbox in SyncSandboxInstance.list(limit=50).auto_paging_iter():
-    print(sandbox.metadata.name)
-```
+async def main():
+    sandboxes = await SandboxInstance.list(limit=50)
+    async for sandbox in sandboxes.auto_paging_iter():
+        print(sandbox.metadata.name)
 
-```bash REST
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
+asyncio.run(main())
 ```
 
 </CodeGroup>
 
-The curl response includes a `data` array and a `meta` object:
-
-```json
-{
-  "data": [ ... ],
-  "meta": {
-    "hasMore": true,
-    "nextCursor": "...",
-    "total": 312
-  }
-}
-```
-
-Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
-
-```bash
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50&cursor=NEXT_CURSOR' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
-```
-
-<Tip>
-  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
-</Tip>
-
-For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
+Pagination is also available via the Management API list endpoint. For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
 ## Delete a sandbox
 
