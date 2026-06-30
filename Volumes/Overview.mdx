@@ -259,25 +259,36 @@ curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
 
 For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
 
-It is also possible to list all volumes in a workspace using the SDKs.
-
-<Note>
-  This approach does not currently support pagination and is therefore not recommended when working with large lists.
-</Note>
+It is also possible to list all volumes in a workspace using the SDKs, with built-in pagination helpers.
 
 <CodeGroup>
 ```typescript TypeScript
-const volumes = await VolumeInstance.list()
+import { VolumeInstance } from "@blaxel/core";
+
+const volumes = await VolumeInstance.list({ limit: 50 });
+for await (const volume of volumes) {
+  console.log(volume.name);
+}
 ```
 
 ```python Python
-volumes = await VolumeInstance.list()
+import asyncio
+from blaxel.core import VolumeInstance
+
+async def main():
+    volumes = await VolumeInstance.list(limit=50)
+    async for volume in volumes.auto_paging_iter():
+        print(volume.name)
+
+asyncio.run(main())
 ```
 
 ```shell Blaxel CLI
 bl get volumes
 ```
 </CodeGroup>
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
 
 You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
 

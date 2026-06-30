@@ -378,46 +378,38 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## List sandboxes
 
-To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination.
+To retrieve all sandboxes in your workspace, use the built-in SDK pagination helper functions.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
 </Note>
 
-Request the first page:
+<CodeGroup>
 
-```bash
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
-```
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-The response includes a `data` array and a `meta` object:
-
-```json
-{
-  "data": [ ... ],
-  "meta": {
-    "hasMore": true,
-    "nextCursor": "...",
-    "total": 312
-  }
+const sandboxes = await SandboxInstance.list({ limit: 50 });
+for await (const sandbox of sandboxes) {
+  console.log(sandbox.metadata?.name);
 }
 ```
 
-Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
 
-```bash
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50&cursor=NEXT_CURSOR' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
+async def main():
+    sandboxes = await SandboxInstance.list(limit=50)
+    async for sandbox in sandboxes.auto_paging_iter():
+        print(sandbox.metadata.name)
+
+asyncio.run(main())
 ```
 
-<Tip>
-  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
-</Tip>
+</CodeGroup>
 
-For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+Pagination is also available via the Management API list endpoint. For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
 ## Delete a sandbox
 

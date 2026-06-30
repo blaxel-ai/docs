@@ -120,8 +120,11 @@ Read, update, and delete schedules by their `id`:
 <CodeGroup>
 
 ```typescript TypeScript
-// List every schedule on the sandbox
-const schedules = await sandbox.schedules.list();
+// List schedules (one page; iterate with `for await` to walk every page)
+const schedules = await sandbox.schedules.list({ limit: 50 });
+for (const schedule of schedules.data) {
+  console.log(schedule.id);
+}
 
 // Get one by id
 const schedule = await sandbox.schedules.get("schedule-0");
@@ -138,8 +141,10 @@ await sandbox.schedules.delete("schedule-0");
 ```
 
 ```python Python
-# List every schedule on the sandbox
-schedules = await sandbox.schedules.list()
+# List schedules (one page; use auto_paging_iter() to walk every page)
+schedules = await sandbox.schedules.list(limit=50)
+for schedule in schedules.data:
+    print(schedule.id)
 
 # Get one by id
 schedule = await sandbox.schedules.get("schedule-0")
@@ -178,17 +183,17 @@ List the execution history of a sandbox. It returns the runs of every schedule o
 <CodeGroup>
 
 ```typescript TypeScript
-const executions = await sandbox.schedules.executions();
+const executions = await sandbox.schedules.executions({ limit: 50 });
 
-for (const execution of executions) {
+for await (const execution of executions) {
   console.log(execution.scheduleId, execution.statusCode, execution.processName);
 }
 ```
 
 ```python Python
-executions = await sandbox.schedules.executions()
+executions = await sandbox.schedules.executions(limit=50)
 
-for execution in executions:
+async for execution in executions.auto_paging_iter():
     print(execution.schedule_id, execution.status_code, execution.process_name)
 ```
 
