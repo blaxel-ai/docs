@@ -92,8 +92,15 @@ sandbox = await SandboxInstance.create({
 | Field | Type | Description |
 |---|---|---|
 | `allowedDomains` | `string[]` / `list[str]` | Allowlist — only these domains are reachable. Supports wildcards (`*.s3.amazonaws.com`). |
-| `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `forbiddenDomains` takes precedence. |
+| `forbiddenDomains` | `string[]` / `list[str]` | Denylist — all domains except these are reachable. Supports wildcards. If both are set, `allowedDomains` takes precedence. |
+| `firewall` | `FirewallConfig` | Proxy firewall configuration. |
 | `proxy` | `ProxyConfig` | Proxy routing and bypass configuration. |
+
+### `FirewallConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `rulesets` | `string[]` / `list[str]` | Domain filtering rules to apply. Set to `["proxy"]` to force all sandbox outbound traffic through the Blaxel proxy. |
 
 ### `ProxyConfig`
 
