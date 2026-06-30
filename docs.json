@@ -73,7 +73,8 @@
           {
             "group": "Agent Drive",
             "pages": [
-              "Agent-drive/Overview"
+              "Agent-drive/Overview",
+              "Agent-drive/Permissions"
             ]
           },
           {

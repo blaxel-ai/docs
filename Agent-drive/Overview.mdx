@@ -6,7 +6,7 @@ tag: "private preview"
 ---
 
 <Note>
-  This feature is currently in private preview. During the preview, the Agent Drive feature is only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. Similarly, drive access control is currently only possible at workspace level: once a drive is mounted in a sandbox, the sandbox has sufficient credentials to access all other drives in the same workspace. A quotas system for drive storage and more fine-grained access control features are coming soon. [Request access](https://blaxel.fillout.com/t/pbTXmanx3Sus).
+  This feature is currently in private preview. During the preview, the Agent Drive feature is only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. A quotas system for drive storage is coming soon. [Request access](https://blaxel.fillout.com/t/pbTXmanx3Sus).
 </Note>
 
 Agent Drive is a distributed filesystem that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
@@ -178,9 +178,9 @@ bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /app/project -
 
 </CodeGroup>
 
-<Warning>
-  `drivePath` / `drive_path` is a mount point convenience, not a security boundary. Once a drive is mounted at any location in a sandbox, the sandbox has sufficient credentials to access all other drives in the same workspace. This is a temporary constraint during the preview phase; the final release will include fine-grained access control.
-</Warning>
+<Note>
+  `drivePath` / `drive_path` controls the subtree visible to the sandbox. When combined with [drive permissions](/Agent-drive/Permissions), you can restrict a workload to a specific subfolder of a drive using the `path` field in a permission rule.
+</Note>
 
 ### Mount a drive as read-only
 
@@ -212,11 +212,9 @@ bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /mnt/shared --
 
 The same drive can be mounted read-write in one sandbox and read-only in others. However, any write attempt to a drive mounted as read-only will fail with a permission error.
 
-<Warning>
-Read-only mode is enforced at mount time, not at the storage/system level. Therefore, if an agent running inside the sandbox manages to read the drive access token, located at `/var/run/secrets/blaxel.ai/identity/token` and re-invoke the `blfs` command itself, it could remount the drive in read-write mode and bypass the read-only restriction.
-
-To make the read-only guarantee effective in an adversarial/agentic setup, you should restrict the agent's access to `/var/run/secrets/blaxel.ai/identity/token`, and also block the `blfs` binary from the agent's `PATH` / execution scope.
-</Warning>
+<Note>
+When [drive permissions](/Agent-drive/Permissions) are configured with `mode: "read"`, read-only access is enforced both at the FUSE mount level and at the storage server level. The workload's identity token is validated against the permission rules, preventing unauthorized remounting in read-write mode.
+</Note>
 
 ## List mounted drives
 
