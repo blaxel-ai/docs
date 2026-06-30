@@ -7,6 +7,14 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-06-18">
+
+### Sandbox runtime telemetry
+
+The sandbox API now reports internal errors to Sentry for improved reliability monitoring. All telemetry is anonymous. Opt out via the `--disable-telemetry` flag or by setting `TELEMETRY_ENABLED=false`. See [Sandbox runtime error reporting](/Security/Data-collection-and-privacy#sandbox-runtime-error-reporting).
+
+</Update>
+
 <Update label="2026-06-19">
 
 ### Clear sandbox TTL and lifecycle policies

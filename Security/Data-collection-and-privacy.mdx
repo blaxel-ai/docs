@@ -85,3 +85,33 @@ export BL_ENABLE_OPENTELEMETRY=true    # Enable OpenTelemetry logging
 <Warning>
   Setting `DO_NOT_TRACK=1` has no effect on OpenTelemetry.
 </Warning>
+
+## Sandbox runtime error reporting
+
+The Blaxel sandbox runtime (`sandbox-api`) reports internal errors to Sentry. The data collected is limited to:
+
+- Error type and message
+- Stack trace
+- Environment
+- Release/version
+- Runtime context (e.g. goroutine info)
+
+Request context and user data are unconditionally stripped server-side before any data leaves the process. No request payloads, API keys, user identifiers, or IP addresses are transmitted.
+
+When telemetry is active, `sandbox-api` logs an explicit notice at startup.
+
+### Opt out
+
+Sandbox runtime telemetry is controlled independently from the SDK/CLI `DO_NOT_TRACK` variable. Use either of the following in your sandbox image configuration:
+
+```bash
+# Environment variable
+TELEMETRY_ENABLED=false
+
+# Startup flag in entrypoint script
+/usr/local/bin/sandbox-api --disable-telemetry &
+```
+
+<Warning>
+  `TELEMETRY_ENABLED` and `--disable-telemetry` only affect sandbox runtime error reporting. They have no effect on SDK/CLI error tracking (controlled by `DO_NOT_TRACK`) or OpenTelemetry tracing (controlled by `BL_ENABLE_OPENTELEMETRY`).
+</Warning>
