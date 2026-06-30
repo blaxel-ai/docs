@@ -12,6 +12,9 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
 ### Pagination support in SDKs
 
 Added [pagination support](/sdk-reference/introduction#pagination) for list operations in all SDKs.
+### Sandbox schedules
+
+Run a command inside a sandbox on a [fixed schedule](/Sandboxes/Schedules): recurring cron, at a future date, or after a delay.
 
 </Update>
 
@@ -19,7 +22,15 @@ Added [pagination support](/sdk-reference/introduction#pagination) for list oper
 
 ### Clear sandbox TTL and lifecycle policies
 
-The SDKs can now clear a sandbox's expiration rules without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again. See [Clear sandbox expiry rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules).
+The SDKs can now [clear a sandbox's expiration rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules) without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again.
+
+</Update>
+
+<Update label="2026-06-18">
+
+### Sandbox runtime telemetry
+
+The sandbox API now reports internal errors to Sentry for improved reliability monitoring. All telemetry is anonymized. Opt out via the `--disable-telemetry` flag or by setting `TELEMETRY_ENABLED=false`. See [Sandbox runtime error reporting](/Security/Data-collection-and-privacy#sandbox-runtime-error-reporting).
 
 </Update>
 

@@ -42,6 +42,7 @@
               "Tutorials/OpenAI-Agents-SDK",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
+              "Sandboxes/Schedules",
               "Sandboxes/Filesystem",
               "Sandboxes/MCP",
               "Sandboxes/Codegen-tools",
