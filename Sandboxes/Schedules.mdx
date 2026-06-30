@@ -202,10 +202,16 @@ Each record carries `scheduleId`, `statusCode`, `executedAt`, and the `processNa
 
 ## Manage from the console
 
-You can create and inspect schedules from the Blaxel Console, on the Schedules tab of a sandbox. The tab lists every schedule with its type, timing, and command, and shows the execution history for each one.
+You can create and inspect schedules from the [Blaxel Console](https://app.blaxel.ai), on the **Schedules** tab of a sandbox. The tab lists every schedule with its type, timing, and command, and shows the execution history for each one.
 
-## Resources
-
-- [Processes](/Sandboxes/Processes) to run commands in a sandbox on demand
-- [Log streaming](/Sandboxes/Log-streaming) to read the output of a scheduled run
-- [Standby control](/Sandboxes/Standby-control) for how `keepAlive` interacts with scale-to-zero
+<CardGroup>
+  <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
+    Execute and manage processes in sandboxes.
+  </Card>
+  <Card title="Log streaming" icon="table-list" href="/Sandboxes/Log-streaming">
+    Access logs generated in a sandbox.
+  </Card>
+  <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
+    Automatically delete sandboxes based on specific conditions.
+  </Card>
+</CardGroup>
