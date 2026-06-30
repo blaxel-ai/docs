@@ -2,6 +2,7 @@
 title: 'Drive permissions'
 sidebarTitle: 'Permissions'
 description: 'Control which workloads can access a drive using label-based permissions with AND/OR matching logic.'
+tag: "private preview"
 ---
 
 Drive permissions restrict which sandboxes, agents, or jobs can mount a specific drive. Permissions are evaluated against the workload's identity labels at mount time. If no permissions are defined on a drive, any workload in the workspace can mount it.
@@ -22,7 +23,7 @@ Permissions are evaluated with OR logic: the first matching rule grants access. 
 
 Workload labels are automatically injected into the workload's identity token at creation time. These include infrastructure labels (like `blaxel-workspace`, `blaxel-type`, `blaxel-name`) and any user-defined labels set on the resource's metadata.
 
-To add user-defined labels to a sandbox, set them in `metadata.labels` when creating the resource:
+To add user-defined labels to a sandbox, set them in `labels` when creating the resource:
 
 <CodeGroup>
 
