@@ -44,7 +44,7 @@ export BL_API_KEY=my-api-key
 
 Or add them to a `.env` file at the root of your project.
 
-## How authentication works
+## Authentication
 
 The Blaxel SDK does not accept credentials as constructor arguments. Credentials must be supplied through one of the following sources, checked in priority order:
 
@@ -59,6 +59,162 @@ bl login
 ```
 
 This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+## Pagination
+
+List endpoints in the Blaxel SDKs return paginated results. Each call fetches one page of items and a cursor that points to the next page. The SDKs expose two ways to consume these pages: auto-paging, which iterates every item across all pages for you, and manual pagination, which gives you control over each page request.
+
+Pagination is cursor-based. Every page carries an opaque `cursor` to the next page and a flag that tells you whether more pages exist. You never build cursors yourself: pass the page through the auto-pager or call the next-page helper, and the SDK forwards the cursor for you.
+
+Each page also reports the total number of items in the workspace, ignoring any filters applied to the request.
+
+### Auto-paging
+
+Auto-paging is the recommended approach. The SDK fetches each page on demand as you iterate, so you can walk an entire result set without tracking cursors.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drives = await DriveInstance.list({ limit: 50 });
+for await (const drive of drives) {
+  console.log(drive.name);
+}
+```
+
+```python Python (sync)
+from blaxel.core import SyncDriveInstance
+
+for drive in SyncDriveInstance.list(limit=50).auto_paging_iter():
+    print(drive.name)
+```
+
+```python Python (async)
+import asyncio
+from blaxel.core import DriveInstance
+
+async def main():
+    drives = await DriveInstance.list(limit=50)
+    async for drive in drives.auto_paging_iter():
+        print(drive.name)
+
+asyncio.run(main())
+```
+
+```go Go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/blaxel-ai/sdk-go"
+)
+
+func main() {
+	client := blaxel.NewClient()
+	iter := client.Drives.ListAutoPaging(context.Background(), blaxel.DriveListParams{})
+	for iter.Next() {
+		drive := iter.Current()
+		fmt.Println(drive.Metadata.Name)
+	}
+	if err := iter.Err(); err != nil {
+		panic(err)
+	}
+}
+```
+
+</CodeGroup>
+
+In TypeScript, you can also collect items into an array with `autoPagingToArray({ limit })`, which stops once it reaches the requested number of items.
+
+### Manual pagination
+
+Use manual pagination when you need control over each request, for example to process one page at a time or to stop early based on the page contents. Read the current page from `data`, check whether more pages exist, then fetch the next page.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+let page = await DriveInstance.list({ limit: 50 });
+while (page) {
+  for (const drive of page.data) {
+    console.log(drive.name);
+  }
+  page = await page.nextPage();
+}
+```
+
+```python Python (sync)
+from blaxel.core import SyncDriveInstance
+
+page = SyncDriveInstance.list(limit=50)
+while True:
+    for drive in page.data:
+        print(drive.name)
+    if not page.has_more:
+        break
+    page = page.next_page()
+```
+
+```python Python (async)
+import asyncio
+from blaxel.core import DriveInstance
+
+async def main():
+    page = await DriveInstance.list(limit=50)
+    while True:
+        for drive in page.data:
+            print(drive.name)
+        if not page.has_more:
+            break
+        page = await page.next_page()
+
+asyncio.run(main())
+```
+
+```go Go
+client := blaxel.NewClient()
+page, err := client.Drives.List(context.Background(), blaxel.DriveListParams{Limit: blaxel.Int(50)})
+if err != nil {
+	panic(err)
+}
+for {
+	for _, drive := range page.Data {
+		fmt.Println(drive.Metadata.Name)
+	}
+	if !page.Meta.HasMore {
+		break
+	}
+	page, err = page.GetNextPage()
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+</CodeGroup>
+
+### Pagination parameters
+
+List endpoints accept the following query parameters:
+
+| Parameter | Description |
+|---|---|
+| `limit` | Maximum number of items per page. Defaults to `50`. |
+| `cursor` | Opaque token pointing to a page. The SDK sets this for you when you use auto-paging or the next-page helper. |
+
+The page object also exposes pagination state so you can inspect it directly: the items (`data`), whether more pages exist (`hasMore` in TypeScript, `has_more` in Python, `Meta.HasMore` in Go), and the next cursor.
+
+### Supported endpoints
+
+Pagination applies to list endpoints across SDK resources. Agent Drives, volumes, and sandboxes support it in all three SDKs. The TypeScript and Python SDKs also paginate a sandbox's schedules and schedule executions (`sandbox.schedules.list` and `sandbox.schedules.executions`), as well as jobs, functions, and agents (`list_jobs`, `list_functions`, and `list_agents`). The Go SDK additionally exposes cursor pagination on its generated list endpoints, including agents, functions, jobs, models, policies, and sandboxes.
+
+<Note>
+  You can also paginate results using the [API](/api-reference/introduction#pagination).
+</Note>
 
 ## Data collection and privacy
 

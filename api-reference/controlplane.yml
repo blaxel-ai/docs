@@ -204,6 +204,154 @@ components:
             type: string
             description: Subject type (user or service_account)
             example: user
+    AppRevision:
+      type: object
+      description: A single application revision containing the deployed image and
+        configuration
+      properties:
+        createdAt:
+          type: string
+          description: When this revision was created
+        createdBy:
+          type: string
+          description: Who created this revision
+        envs:
+          type: array
+          description: Environment variables for this revision
+          items:
+            $ref: '#/components/schemas/Env'
+        id:
+          type: string
+          description: Unique revision identifier
+        image:
+          type: string
+          description: Container image for this revision (mandatory)
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Determines CPU allocation (CPU
+            = memory / 2048).
+          example: 2048
+        port:
+          type: integer
+          description: Port the application listens on for this revision (default
+            uses spec-level port or 8080)
+          example: 8080
+      required:
+      - image
+    AppRevisionConfiguration:
+      type: object
+      description: Routing configuration controlling which revision is active and
+        canary traffic splitting
+      properties:
+        active:
+          type: string
+          description: Active revision id
+        canary:
+          type: string
+          description: Canary revision id
+        canaryPercent:
+          type: integer
+          description: Canary revision percent (0-100)
+          example: 10
+        stickySessionTtl:
+          type: integer
+          description: Sticky session TTL in seconds (0 = disabled)
+          example: 0
+        traffic:
+          type: integer
+          description: Traffic percentage for deployment
+          example: 100
+    AppRevisions:
+      type: array
+      items:
+        $ref: '#/components/schemas/AppRevision'
+    AppUrl:
+      type: object
+      description: A single URL entry for the application. If the domain is a wildcard
+        custom domain (e.g. *.sandbox.vybe.build), use subdomain to pick a specific
+        subdomain. If the domain is a direct custom domain (e.g. app.vybe.build),
+        subdomain is not needed.
+      properties:
+        domain:
+          type: string
+          description: Custom domain (must be a verified custom domain in the workspace).
+            Can be a wildcard domain (e.g. sandbox.vybe.build registered as *.sandbox.vybe.build)
+            or a direct domain (e.g. app.vybe.build).
+          example: app.example.com
+        subdomain:
+          type: string
+          description: Subdomain to use with a wildcard custom domain (optional)
+          example: www
+      required:
+      - domain
+    AppUrls:
+      type: array
+      description: URL configuration for the application. Each entry defines a custom
+        URL through which the application is accessible. The domain must be a verified
+        custom domain in the workspace.
+      items:
+        $ref: '#/components/schemas/AppUrl'
+    Application:
+      type: object
+      description: Long-running application deployment that runs your custom code
+        as a publicly accessible endpoint. Applications are always public and use
+        mk3 generation.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/ApplicationSpec'
+        status:
+          type: string
+          description: Application status computed from events
+          readOnly: true
+      required:
+      - metadata
+      - spec
+    ApplicationList:
+      type: object
+      description: Cursor-paginated list of applications. Returned starting with API
+        version 2026-04-28; older API versions return a bare array of applications
+        instead.
+      properties:
+        data:
+          type: array
+          description: Page of applications.
+          items:
+            $ref: '#/components/schemas/Application'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    ApplicationSpec:
+      type: object
+      description: Configuration for an application including revision management,
+        URL routing, and deployment region
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the application is disabled and will not serve
+            requests
+          example: true
+          default: true
+        port:
+          type: integer
+          description: Port the application listens on (default 8080)
+          example: 8080
+        region:
+          type: string
+          description: Region where the application is deployed (e.g. us-pdx-1, eu-lon-1)
+          example: us-pdx-1
+        revision:
+          $ref: '#/components/schemas/AppRevisionConfiguration'
+        revisions:
+          $ref: '#/components/schemas/AppRevisions'
+        urls:
+          $ref: '#/components/schemas/AppUrls'
+    Applications:
+      type: array
+      items:
+        $ref: '#/components/schemas/Application'
     Configuration:
       type: object
       description: Configuration
@@ -418,13 +566,13 @@ components:
           - failed
           readOnly: true
           example: verified
-        subdomains:
+        subjectAlternativeNames:
           type: array
-          description: List of subdomains (previews) currently using this custom domain.
-            Only populated on GET /customdomains/{domainName}.
+          description: Subject Alternative Names (SANs) for the ACM certificate. Only
+            applicable for application domains.
           items:
-            $ref: '#/components/schemas/CustomDomainSubdomain'
-          readOnly: true
+            type: object
+            additionalProperties: true
         txtRecords:
           type: object
           description: Map of TXT record names to values for domain verification
@@ -434,26 +582,6 @@ components:
           type: string
           description: Error message if verification failed
           readOnly: true
-      x-stainless-ignore: true
-    CustomDomainSubdomain:
-      type: object
-      description: A subdomain (preview) using a custom domain
-      properties:
-        previewName:
-          type: string
-          description: Preview name
-        resourceName:
-          type: string
-          description: Resource name
-        resourceType:
-          type: string
-          description: Resource type (e.g., sandbox)
-        subdomain:
-          type: string
-          description: Subdomain prefix used for routing
-        url:
-          type: string
-          description: Full URL of the preview on this custom domain
       x-stainless-ignore: true
     Drive:
       type: object
@@ -487,6 +615,26 @@ components:
             $ref: '#/components/schemas/Drive'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
+    DrivePermission:
+      type: object
+      description: Permission that controls which workloads can access a drive. A
+        workload must have ALL specified labels (AND logic). Permissions are evaluated
+        with OR logic — the first matching permission grants access.
+      properties:
+        labels:
+          type: object
+          description: Labels that the workload must have. All labels must match (AND
+            logic). Empty labels match all workloads.
+        mode:
+          type: string
+          description: Access mode granted by this permission
+          enum:
+          - read
+          - read-write
+        path:
+          type: string
+          description: Subfolder path to restrict access to. Defaults to / (full drive).
+          example: /data
     DriveSpec:
       type: object
       description: Immutable drive configuration set at creation time
@@ -496,6 +644,13 @@ components:
           description: The internal infrastructure resource identifier for this drive
             (bucket name)
           readOnly: true
+        permissions:
+          type: array
+          description: Permissions controlling which workloads can access this drive.
+            Empty means all workloads in the workspace can access the drive. Maximum
+            3 permissions.
+          items:
+            $ref: '#/components/schemas/DrivePermission'
         region:
           type: string
           description: Deployment region for the drive (e.g., us-pdx-1, eu-lon-1).
@@ -888,6 +1043,8 @@ components:
           description: Minimum instances to keep warm. Set to 1+ to eliminate cold
             starts, 0 for scale-to-zero.
           example: 0
+        ports:
+          $ref: '#/components/schemas/Ports'
         transport:
           type: string
           description: Transport compatibility for the MCP, can be "websocket" or
@@ -1908,7 +2065,7 @@ components:
           description: Type of the OAuth
     OwnerFields:
       type: object
-      description: Owner fields for Persistance
+      description: Owner fields for Persistence
       properties:
         createdBy:
           type: string
@@ -2214,6 +2371,7 @@ components:
       - function
       - agent
       - sandbox
+      - application
     PolicyResourceTypes:
       type: array
       description: PolicyResourceTypes is a local type that wraps a slice of PolicyResourceType
@@ -2786,7 +2944,7 @@ components:
       properties:
         categories:
           type: array
-          description: Categories of the defintion
+          description: Categories of the definition
           items:
             type: object
             additionalProperties: true
@@ -2796,7 +2954,7 @@ components:
           example: false
         description:
           type: string
-          description: Description of the defintion
+          description: Description of the definition
           example: Python environment with data science libraries pre-installed
         displayName:
           type: string
@@ -2819,7 +2977,7 @@ components:
           example: blaxel/python-data-science:latest
         longDescription:
           type: string
-          description: Long description of the defintion
+          description: Long description of the definition
         memory:
           type: integer
           description: Memory of the Sandbox definition in MB
@@ -2985,6 +3143,141 @@ components:
             m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''). For idle-based cleanup,
             use a lifecycle expiration policy of type ttl-idle.'
           example: 24h
+    SandboxScheduleEntry:
+      type: object
+      description: A scheduled task that executes a process inside the sandbox at
+        specified times. Stored in the dedicated schedules table (no longer embedded
+        in the sandbox spec).
+      properties:
+        createdAt:
+          type: string
+          description: Creation timestamp (read-only).
+          readOnly: true
+        id:
+          type: string
+          description: Unique identifier for this schedule within its sandbox. Auto-generated
+            if not provided.
+          example: schedule-0
+        input:
+          $ref: '#/components/schemas/SandboxScheduleInput'
+        maxExecutions:
+          type: integer
+          description: Maximum number of execution records kept for this schedule.
+            Once reached, recording a new execution deletes the oldest. Defaults to
+            100.
+          example: 100
+        type:
+          type: string
+          description: Type of schedule timing. 'cron' for recurring (5-field expression),
+            'at' for a specific RFC 3339 datetime, 'sleep' for a duration from now
+            (resolved to 'at' on creation).
+          enum:
+          - cron
+          - at
+          - sleep
+          example: cron
+        value:
+          type: string
+          description: 'Timing value. For ''cron'': a 5-field cron expression (e.g.
+            ''0 8 * * 1-5''). For ''at'': an RFC 3339 datetime (e.g. ''2026-07-01T09:00:00Z'').
+            For ''sleep'': a duration (e.g. ''2h'', ''30m'', ''7d'').'
+          example: 0 8 * * 1-5
+    SandboxScheduleEntryList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule definitions.
+      properties:
+        data:
+          type: array
+          description: Page of schedule definitions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleEntry'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxScheduleExecution:
+      type: object
+      description: One recorded execution of a sandbox schedule. statusCode is the
+        HTTP status from submitting the command to the sandbox (the scheduler does
+        not wait for the command to finish). Stored in the dedicated scheduleexecutions
+        table.
+      properties:
+        createdAt:
+          type: string
+          description: Creation timestamp (read-only).
+          readOnly: true
+        executedAt:
+          type: string
+          description: RFC 3339 time at which the command was submitted.
+          example: "2026-07-01T09:00:00Z"
+        id:
+          type: string
+          description: Unique id of this execution within the schedule.
+          example: "00000000000000000042"
+        processName:
+          type: string
+          description: Name of the process started in the sandbox for this execution,
+            used to look up its logs.
+          example: training-job
+        scheduleId:
+          type: string
+          description: Id of the schedule this execution belongs to.
+          example: schedule-0
+        statusCode:
+          type: integer
+          description: HTTP status code returned when the scheduled command was submitted
+            to the sandbox (0 if the sandbox could not be reached). 2xx/3xx means
+            the command was accepted.
+          example: 200
+        timeout:
+          type: integer
+          description: Process timeout in seconds for this execution. The UI uses
+            it to scope the log view to [executedAt, executedAt+timeout]. 0 when the
+            schedule set no timeout.
+          example: 600
+    SandboxScheduleExecutionList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule execution history
+        (across all its schedules).
+      properties:
+        data:
+          type: array
+          description: Page of schedule executions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleExecution'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxScheduleInput:
+      type: object
+      description: Process execution configuration for a scheduled sandbox task
+      properties:
+        command:
+          type: string
+          description: Shell command to execute inside the sandbox
+          example: python train.py --epochs 10
+        env:
+          type: object
+          description: Environment variables to set for the process. May contain secrets,
+            so values are encrypted at rest and masked in API responses unless an
+            admin requests show_secrets=true.
+          additionalProperties:
+            type: string
+        keepAlive:
+          type: boolean
+          description: Keep the sandbox alive (disable scale-to-zero) while the process
+            runs. Defaults to true.
+          example: true
+        name:
+          type: string
+          description: Optional name for the process (used to retrieve status/logs)
+          example: training-job
+        timeout:
+          type: integer
+          description: Timeout in seconds for the process. Defaults to 600 (10 minutes).
+            Set to 0 for no timeout.
+          example: 3600
+        workingDir:
+          type: string
+          description: Working directory for the command
+          example: /app
     SandboxSpec:
       type: object
       description: Configuration for a sandbox including its image, memory, ports,
@@ -3104,7 +3397,7 @@ components:
           example: true
     TimeFields:
       type: object
-      description: Time fields for Persistance
+      description: Time fields for Persistence
       properties:
         createdAt:
           type: string
@@ -3410,7 +3703,8 @@ components:
             description: Group-to-role mappings for directory sync (SCIM) group membership
             items:
               $ref: '#/components/schemas/GroupWorkspaceMapping'
-          hipaaInfo: {}
+          hipaaInfo:
+            $ref: '#/components/schemas/WorkspaceHipaaInfo'
           id:
             type: string
             description: Autogenerated unique workspace id
@@ -3583,6 +3877,11 @@ components:
             agents:update: Update agents
             apiKey:list: List API keys
             apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
             configurations:list: List configurations
             customdomains:create: Create custom domains
             customdomains:delete: Delete custom domains
@@ -3653,6 +3952,11 @@ components:
             agents:update: Update agents
             apiKey:list: List API keys
             apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
             configurations:list: List configurations
             customdomains:create: Create custom domains
             customdomains:delete: Delete custom domains
@@ -4001,6 +4305,314 @@ paths:
       summary: List all agent revisions
       tags:
       - agents
+  /applications:
+    get:
+      description: Returns applications deployed in the workspace. Each application
+        includes its deployment status, runtime configuration, and endpoint URL. Starting
+        with API version 2026-04-28 the response is wrapped in `{data, meta}` and
+        supports cursor pagination via the `cursor` and `limit` query parameters;
+        older versions keep returning a bare array with all applications.
+      operationId: ListApplications
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationList'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list applications
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - applications:list
+      - ApiKeyAuth: []
+      summary: List all applications
+      tags:
+      - applications
+    post:
+      description: Creates a new application deployment. Applications are long-running
+        workloads that default to public access and mk3 generation.
+      operationId: CreateApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid application configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create applications
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Application with this name already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - applications:create
+      - ApiKeyAuth: []
+      summary: Create application
+      tags:
+      - applications
+  /applications/{applicationName}:
+    delete:
+      description: Permanently deletes an application and all its deployment history.
+        The application endpoint will immediately stop responding. This action cannot
+        be undone.
+      operationId: DeleteApplication
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this application
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Application does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - applications:delete
+      - ApiKeyAuth: []
+      summary: Delete application
+      tags:
+      - applications
+    get:
+      description: Returns detailed information about an application including its
+        current deployment status, configuration, events history, and endpoint URL.
+      operationId: GetApplication
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this application
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Application does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - applications:get
+      - ApiKeyAuth: []
+      summary: Get application
+      tags:
+      - applications
+    parameters:
+    - description: Unique name identifier of the application
+      in: path
+      name: applicationName
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates an application's configuration and triggers a new deployment.
+        Changes to runtime settings, environment variables, or scaling parameters
+        will be applied on the next deployment.
+      operationId: UpdateApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid application configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this application
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Application does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - applications:update
+      - ApiKeyAuth: []
+      summary: Update application
+      tags:
+      - applications
+  /applications/{applicationName}/customdomains:
+    post:
+      description: Creates a new custom domain scoped to a specific application. After
+        creation, you must configure DNS records and verify domain ownership before
+        it becomes active.
+      operationId: CreateApplicationCustomDomain
+      parameters:
+      - description: Name of the application
+        in: path
+        name: applicationName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:create
+      - ApiKeyAuth: []
+      summary: Create application custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /applications/{applicationName}/revisions:
+    get:
+      operationId: ListApplicationRevisions
+      parameters:
+      - description: Name of the application
+        in: path
+        name: applicationName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - applications:list
+      - ApiKeyAuth: []
+      summary: List all application revisions
+      tags:
+      - applications
   /configuration:
     get:
       description: Returns global platform configuration including available regions,
@@ -6846,7 +7458,7 @@ paths:
       description: Create a preview
       operationId: CreateSandboxPreview
       parameters:
-      - description: Force creation by deleting conflicting previews that use the
+      - description: Force creation by replacing conflicting previews that use the
           same custom domain prefix URL
         in: query
         name: force
@@ -7052,6 +7664,192 @@ paths:
         - sandboxes:delete
       - ApiKeyAuth: []
       summary: Delete token for Sandbox Preview
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/schedule-executions:
+    get:
+      description: Returns the execution history of a Sandbox's schedules (across
+        all schedules of the sandbox), newest first. Cursor-paginated via the `cursor`
+        and `limit` query parameters. Each item records the HTTP status of submitting
+        the scheduled command and the process name for log lookup.
+      operationId: ListSandboxScheduleExecutions
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleExecutionList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedule Executions
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+  /sandboxes/{sandboxName}/schedules:
+    get:
+      description: Returns the schedules configured on a Sandbox. Starting with API
+        version 2026-04-28 the response is wrapped in `{data, meta}` and supports
+        cursor pagination via the `cursor` and `limit` query parameters; older versions
+        return a bare array.
+      operationId: ListSandboxSchedules
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter schedules by timing type. Only cron and at are stored
+          (sleep resolves to at on creation); any other value is ignored.
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - cron
+          - at
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntryList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedules
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    post:
+      description: Adds a schedule to a Sandbox.
+      operationId: CreateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create Sandbox Schedule
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/schedules/{scheduleId}:
+    delete:
+      description: Deletes a Sandbox Schedule by id.
+      operationId: DeleteSandboxSchedule
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete Sandbox Schedule
+      tags:
+      - compute
+    get:
+      description: Returns a Sandbox Schedule by id.
+      operationId: GetSandboxSchedule
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Schedule
+      tags:
+      - compute
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Id of the Schedule
+      in: path
+      name: scheduleId
+      required: true
+      schema:
+        type: string
+    put:
+      description: Updates a Sandbox Schedule by id.
+      operationId: UpdateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update Sandbox Schedule
       tags:
       - compute
   /sandboxes/by-external-id/{externalId}:

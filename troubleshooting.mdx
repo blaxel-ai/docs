@@ -1,5 +1,5 @@
 ---
-title: "Troubleshooting"
+title: "Troubleshoot Blaxel deployments, runtime, and CLI errors"
 description: "Resolve common issues with Blaxel deployments including build failures, runtime errors, connectivity problems, and CLI authentication."
 ---
 
@@ -103,17 +103,23 @@ To resolve this error, adjust the model's token usage policy. Token usage polici
 
 This error occurs when your sandbox runs out of storage space. This usually happens when your file storage requirements exceed the available memory since, for performance reasons, Blaxel sandboxes reserve, when possible, [approximately 50% of their available memory](/Sandboxes/Overview#memory-and-filesystem) for the filesystem.
 
-To resolve this error, you have two options:
+To resolve this error, choose the storage option that matches the workload:
+
+- Set `storageMb` (TypeScript/CLI) or `storage_mb` (Python) when creating the sandbox. This provisions disk-backed root storage without increasing memory and is the best fit for large temporary working directories, package installs, builds, and generated artifacts.
+
+    <Note>
+    Root storage cannot be combined with a persistent volume mounted at `/`.
+    </Note>
 
 - Increase the available memory allocation for the sandbox, which also increases the available filesystem storage.
 
     <Note>
-    Increasing memory also increases CPU allocation
+    Increasing memory also increases CPU allocation.
     - 8GB memory = 4 CPU cores
     - 16GB memory = 6 CPU cores
     </Note>
 
-- Add storage using [volumes](/Sandboxes/Volumes). Adding storage requires deleting and recreating the sandbox first.
+- Add storage using [volumes](/Sandboxes/Volumes) when data should live at a specific mount path or persist independently from the sandbox lifecycle. Adding storage requires deleting and recreating the sandbox first.
 
     <Note>
     Volumes are slower than the in-memory filesystem.

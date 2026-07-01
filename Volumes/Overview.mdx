@@ -218,19 +218,77 @@ Resize a volume by calling:
 
 ## List volumes
 
+To retrieve all volumes in your workspace, use the built-in SDK pagination helper functions.
+
+<Note>
+  Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+</Note>
+
 <CodeGroup>
 ```typescript TypeScript
-const volumes = await VolumeInstance.list()
+import { VolumeInstance } from "@blaxel/core";
+
+const volumes = await VolumeInstance.list({ limit: 50 });
+for await (const volume of volumes) {
+  console.log(volume.name);
+}
 ```
 
 ```python Python
-volumes = await VolumeInstance.list()
+import asyncio
+from blaxel.core import VolumeInstance
+
+async def main():
+    volumes = await VolumeInstance.list(limit=50)
+    async for volume in volumes.auto_paging_iter():
+        print(volume.name)
+
+asyncio.run(main())
 ```
 
 ```shell Blaxel CLI
 bl get volumes
 ```
 </CodeGroup>
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
+
+Pagination is also available via the Management API list endpoint.
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 18
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+<Tip>
+  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+</Tip>
+
+For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
 
 You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
 

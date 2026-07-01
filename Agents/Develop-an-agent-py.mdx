@@ -332,6 +332,49 @@ first_agent_response = await bl_agent("first_agent").run(input);
 second_agent_response = await bl_agent("second_agent").run(first_agent_response);
 ```
 
+## List agents
+
+To retrieve all agents in your workspace, use the Management API list endpoint with pagination.
+
+<Note>
+  Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+</Note>
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 312
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+<Tip>
+  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+</Tip>
+
+For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+
 ## Customize the agent deployment
 
 You can set custom parameters for an agent deployment (e.g. specify the agent name, etc.) in the [`blaxel.toml` file](/deployment-reference) at the root of your directory.

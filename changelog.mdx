@@ -1,5 +1,5 @@
 ---
-title: 'Changelog'
+title: 'Blaxel platform changelog and release notes'
 description: 'Chronological log of all Blaxel platform updates, new feature releases, deprecations, infrastructure changes, and notable improvements.'
 ---
 
@@ -7,7 +7,67 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
-<Update label="2026-06-10">
+<Update label="2026-06-30">
+
+### Agent Drive permissions
+
+Added support for restricting read/write access to Agent Drive files and folders using [label-based ACL rules](/Agent-drive/Permissions).
+
+</Update>
+
+<Update label="2026-06-30">
+
+### Pagination support in SDKs
+
+Added [pagination support](/sdk-reference/introduction#pagination) for list operations in all SDKs.
+
+### Pagination support in Management API
+
+Added [pagination support](/api-reference/introduction#pagination) for list operations in Management API.
+
+### Sandbox schedules
+
+Run a command inside a sandbox on a [fixed schedule](/Sandboxes/Schedules): recurring cron, at a future date, or after a delay.
+
+</Update>
+
+<Update label="2026-06-19">
+
+### Clear sandbox TTL and lifecycle policies
+
+The SDKs can now [clear a sandbox's expiration rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules) without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again.
+
+</Update>
+
+<Update label="2026-06-18">
+
+### Sandbox runtime telemetry
+
+The sandbox API now reports internal errors to Sentry for improved reliability monitoring. All telemetry is anonymized. Opt out via the `--disable-telemetry` flag or by setting `TELEMETRY_ENABLED=false`. See [Sandbox runtime error reporting](/Security/Data-collection-and-privacy#sandbox-runtime-error-reporting).
+
+</Update>
+
+<Update>
+
+### External IDs for sandboxes
+
+Added support for user-supplied external identifiers for sandboxes (your session ID, user ID, or application-related ID). Benefit from a fast, indexed lookup without needing to maintain a separate mapping database.
+
+</Update>
+
+<Update label="2026-06-13">
+
+### Refreshed Billing Explorer experience
+
+<Frame>
+<img src="/images/changelog/2026/billing-explorer.webp" alt="New Billing Explorer interface" />
+</Frame>
+
+The Billing Explorer is now available in the Blaxel Console with a refreshed UI and exhaustive filters and cost breakdowns
+
+</Update>
+
+<Update label="2026-06-11">
 
 ### Self-host Claude Managed Agents on Blaxel
 
@@ -17,11 +77,35 @@ See the [tutorial](/Tutorials/Claude-Managed-Agents) for a step-by-step walkthro
 
 </Update>
 
+<Update label="2026-06-10">
+
+### Stripe Projects integration
+
+Blaxel is officially [integrated with Stripe Projects](https://blaxel.ai/blog/stripe-projects-blaxel-integration). You and your agents can use existing Stripe payment methods to provision Blaxel accounts and resources, all without needing any GUI.
+
+</Update>
+
+<Update label="2026-06-05">
+
+### Process logging improvements
+
+Disable sandbox process logging per workspace, through the **Blaxel Console** > **Workspace settings**.
+
+</Update>
+
 <Update label="2026-06-04">
 
 ### Fallback preview URLs for custom domains
 
 You can now designate one preview as the [fallback](/Sandboxes/Preview-url#fallback-preview) or catch-all for a custom domain. When a preview doesn't exist on this domain, requests will be routed to this fallback preview instead of returning a 404.
+
+</Update>
+
+<Update label="2026-05-25">
+
+### Sandbox images for Codex and Claude Code
+
+Directly scaffold new sandboxes with preinstalled Codex / Claude Code using `bl new sandbox`.
 
 </Update>
 
@@ -53,7 +137,7 @@ Multi-factor authentication (MFA) is now available for all login methods except 
 
 ### Support for build variables
 
-Pass build secrets and configuration values into the Docker build phase without exposing them at runtime. Available for agent, job and MCP server builds.
+Pass build secrets and configuration values into the Docker build phase without exposing them at runtime. Available for agent, job, sandbox, and MCP server builds.
 
 </Update>
 
@@ -200,11 +284,12 @@ Removed OpenClaw agent template. OpenClaw can still be [manually installed](http
 
 ### New Console sidebar
 
-Overhauled the Blaxel Console sidebar for a better navigation experience.
-
 <Frame>
 <img src="/images/changelog/2026/console-sidebar.webp" alt="New Console sidebar navigation" />
 </Frame>
+
+Overhauled the Blaxel Console sidebar for a better navigation experience.
+
 </Update>
 
 <Update label="2026-03-11">
@@ -669,7 +754,7 @@ Added new MCP server: [Linkup](https://www.linkup.so/)
 </Frame>
 
 - Added possibility to register a custom domain in your workspace and verify it from Blaxel
-- Added support for custom domains for sandboxes previews
+- Added support for custom domains for sandbox previews
 
 </Update>
 
@@ -962,7 +1047,7 @@ Added support for PydanticAI framework
 </Frame>
 
 - Added 6 templates of agents
-- Templates can be used when creating a new agent from the Blaxel Console. Deploying a template will deploy the agent on your GitHub organization and setup a live synchronization watching future updates
+- Templates can be used when creating a new agent from the Blaxel Console. Deploying a template will deploy the agent on your GitHub organization and set up a live synchronization watching future updates
 - The entire template list is available on [our website](https://blaxel.ai/templates)
 - Added information in Blaxel Console that an agent is synchronized via GitHub
 - Updated the schema for functions to better match MCP standard
@@ -1117,7 +1202,7 @@ New [policy](Model-Governance/Policies) type: maximum token usage
 Beamlit Beta is available publicly! Coming with the following new features:
 
 - New world-class infrastructure for minimal cold starts and maximum reliability
-- World map showing the origin of requests on your agents AI
+- World map showing the origin of requests on your AI agents
 - Many additional charts
 
 </Update>

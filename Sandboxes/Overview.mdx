@@ -1,5 +1,5 @@
 ---
-title: "Sandboxes"
+title: "Sandboxes overview: secure VMs for agent code execution"
 sidebarTitle: "Overview"
 description: "Run LLM-generated code in lightweight, sandboxed virtual machines with sub-25ms cold starts, file system, processes, and an MCP server for agents."
 ---
@@ -129,6 +129,7 @@ const sandbox = await SandboxInstance.createIfNotExists({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",  // public or custom image
   memory: 4096,    // in MB
+  storageMb: 102400,    // optional; disk-backed root storage in MB
   ports: [{ target: 3000, protocol: "HTTP" }],  // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
   region: "us-pdx-1"    // deployment region
@@ -146,6 +147,7 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
+      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
@@ -168,6 +170,7 @@ const sandbox = await SandboxInstance.create({
   name: "my-sandbox",
   image: "blaxel/base-image:latest",   // public or custom image
   memory: 4096,   // in MB
+  storageMb: 102400,   // optional; disk-backed root storage in MB
   ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
   labels: { env: "dev", project: "my-project" }, // optional; labels
   region: "us-pdx-1"   // deployment region
@@ -184,6 +187,7 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
+      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
@@ -244,7 +248,11 @@ For maximum performance, Blaxel sandboxes store part of their filesystem in memo
 
 Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
-To avoid out-of-memory errors or if additional storage is required, one option is to add storage using [volumes](/Sandboxes/Volumes). However, this requires deleting and recreating the sandbox first. In addition, volumes are not as fast as the native in-memory filesystem.
+For write-heavy workloads, set `storageMb` (TypeScript/CLI) or `storage_mb` (Python) when creating the sandbox to provision disk-backed root storage without increasing memory. This storage is part of the sandbox root filesystem, is deleted with the sandbox, and is capped by your account's ephemeral-volume quota.
+
+`storageMb` cannot be combined with a persistent volume mounted at `/`. Use root storage for ephemeral root filesystem capacity, or use a volume at a subpath such as `/data` when data should persist independently from the sandbox lifecycle.
+
+Use [volumes](/Sandboxes/Volumes) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, and are not as fast as the native in-memory filesystem.
 
 ### Ports
 
@@ -305,6 +313,75 @@ You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Con
 # Get sandboxes with specific label (e.g., env=dev)
 bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
 ```
+
+### External ID
+
+External IDs let you tag sandboxes with your own identifier so you can retrieve them later without scanning your entire workspace. Use them to index sandboxes by session ID, user ID, conversation ID, or any caller-owned key.
+
+<Note>
+  Requires `@blaxel/core` ≥ 0.2.93 (TypeScript) or `blaxel` ≥ 0.2.57 (Python).
+</Note>
+
+External IDs are backed by a dedicated database index, making lookups fast regardless of how many sandboxes exist in the workspace.
+
+Rules for `externalId`:
+
+- Max 64 characters, alphanumeric and dashes only (`a-z`, `A-Z`, `0-9`, `-`)
+- Not unique: multiple sandboxes can share the same value
+- Mutable: can be changed after creation
+- Omitting it on update preserves the current value
+
+Set `externalId` in metadata at creation time:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  externalId: "session-abc-123",
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "external_id": "session-abc-123",
+    "region": "us-pdx-1"
+})
+```
+
+</CodeGroup>
+
+Retrieve the most recent non-terminated sandbox matching an external ID:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.getByExternalId("session-abc-123");
+```
+
+```python Python
+sandbox = await SandboxInstance.get_by_external_id("session-abc-123")
+```
+
+</CodeGroup>
+
+List all sandboxes with a given external ID (paginated, hides terminated sandboxes by default):
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandboxes = await SandboxInstance.list({ externalId: "session-abc-123" });
+```
+
+```python Python
+sandboxes = await SandboxInstance.list(external_id="session-abc-123")
+```
+
+</CodeGroup>
 
 ### Kernel networking
 
@@ -367,6 +444,41 @@ sandbox = await SandboxInstance.get("my-sandbox")
 <Tip>
   Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
 </Tip>
+
+## List sandboxes
+
+To retrieve all sandboxes in your workspace, use the built-in SDK pagination helper functions.
+
+<Note>
+  Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+</Note>
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxes = await SandboxInstance.list({ limit: 50 });
+for await (const sandbox of sandboxes) {
+  console.log(sandbox.metadata?.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+    sandboxes = await SandboxInstance.list(limit=50)
+    async for sandbox in sandboxes.auto_paging_iter():
+        print(sandbox.metadata.name)
+
+asyncio.run(main())
+```
+
+</CodeGroup>
+
+Pagination is also available via the Management API list endpoint. For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
 ## Delete a sandbox
 
