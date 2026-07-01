@@ -240,11 +240,44 @@ bl drive mounts --sandbox my-sandbox
 
 ## List all drives
 
-To retrieve all drives in your workspace, use the Management API list endpoint with pagination.
+To retrieve all drives in your workspace, use the built-in SDK pagination helper functions.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
 </Note>
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drives = await DriveInstance.list({ limit: 50 });
+for await (const drive of drives) {
+  console.log(drive.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core.drive import DriveInstance
+
+async def main():
+    drives = await DriveInstance.list(limit=50)
+    async for drive in drives.auto_paging_iter():
+        print(drive.name)
+
+asyncio.run(main())
+```
+
+```bash CLI
+bl drive list
+```
+
+</CodeGroup>
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
+
+Pagination is also available via the Management API list endpoint.
 
 Request the first page:
 
@@ -280,39 +313,6 @@ curl 'https://api.blaxel.ai/v0/drives?limit=50&cursor=NEXT_CURSOR' \
 </Tip>
 
 For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
-
-It is also possible to list all drives in a workspace using the SDKs, with built-in pagination helpers.
-
-<CodeGroup>
-
-```tsx TypeScript
-import { DriveInstance } from "@blaxel/core";
-
-const drives = await DriveInstance.list({ limit: 50 });
-for await (const drive of drives) {
-  console.log(drive.name);
-}
-```
-
-```python Python
-import asyncio
-from blaxel.core.drive import DriveInstance
-
-async def main():
-    drives = await DriveInstance.list(limit=50)
-    async for drive in drives.auto_paging_iter():
-        print(drive.name)
-
-asyncio.run(main())
-```
-
-```bash CLI
-bl drive list
-```
-
-</CodeGroup>
-
-For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
 
 ## Get drive details
 
