@@ -314,6 +314,75 @@ You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Con
 bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
 ```
 
+### External ID
+
+External IDs let you tag sandboxes with your own identifier so you can retrieve them later without scanning your entire workspace. Use them to index sandboxes by session ID, user ID, conversation ID, or any caller-owned key.
+
+<Note>
+  Requires `@blaxel/core` ≥ 0.2.93 (TypeScript) or `blaxel` ≥ 0.2.57 (Python).
+</Note>
+
+External IDs are backed by a dedicated database index, making lookups fast regardless of how many sandboxes exist in the workspace.
+
+Rules for `externalId`:
+
+- Max 64 characters, alphanumeric and dashes only (`a-z`, `A-Z`, `0-9`, `-`)
+- Not unique: multiple sandboxes can share the same value
+- Mutable: can be changed after creation
+- Omitting it on update preserves the current value
+
+Set `externalId` in metadata at creation time:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  externalId: "session-abc-123",
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "external_id": "session-abc-123",
+    "region": "us-pdx-1"
+})
+```
+
+</CodeGroup>
+
+Retrieve the most recent non-terminated sandbox matching an external ID:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.getByExternalId("session-abc-123");
+```
+
+```python Python
+sandbox = await SandboxInstance.get_by_external_id("session-abc-123")
+```
+
+</CodeGroup>
+
+List all sandboxes with a given external ID (paginated, hides terminated sandboxes by default):
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandboxes = await SandboxInstance.list({ externalId: "session-abc-123" });
+```
+
+```python Python
+sandboxes = await SandboxInstance.list(external_id="session-abc-123")
+```
+
+</CodeGroup>
+
 ### Kernel networking
 
 By default, sandboxes run on a minimal kernel without iptables support. You can enable iptables by passing `extraArgs` at creation time.

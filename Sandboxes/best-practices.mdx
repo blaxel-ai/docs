@@ -103,6 +103,52 @@ The sandbox metadata also includes a read-only parameter, `expiresIn`, that comp
 
 Requesting a list of all sandboxes in a single API call forces the platform to scan the full workspace, which is slow and resource-intensive at scale. Use the `cursor` and `limit` parameters to [retrieve sandboxes in pages](/Sandboxes/Overview#list-sandboxes) instead. For more information and examples, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
+## Index sandboxes with external IDs
+
+When you manage many sandboxes per workspace (hundreds or thousands), retrieving the right one by name alone becomes impractical. You often need to find a sandbox by a caller-owned identifier: a session ID, user ID, or conversation ID from your application. 
+
+Use `externalId` to create a fast, indexed lookup without maintaining a separate mapping database. Unlike labels (which require client-side filtering), `externalId` is backed by a dedicated database index and returns results in constant time.
+
+Common patterns:
+
+- **One sandbox per user session**: Tag each sandbox with your session ID. When the user returns, call `getByExternalId` to reconnect to the same environment instantly.
+- **Idempotent provisioning**: Before creating a new sandbox, check if one already exists for your workflow ID. This avoids duplicate sandbox creation in retry scenarios.
+- **Multi-tenant isolation**: Tag sandboxes with tenant or user IDs for quick per-tenant enumeration via `list({ externalId })`.
+
+<CodeGroup>
+
+```typescript TypeScript
+// Reconnect to the user's sandbox, or create one if none exists
+let sandbox = await SandboxInstance.getByExternalId(sessionId);
+if (!sandbox) {
+  sandbox = await SandboxInstance.createIfNotExists({
+    name: uniqueName(),
+    image: "blaxel/base-image:latest",
+    externalId: sessionId,
+    region: "us-pdx-1"
+  });
+}
+```
+
+```python Python
+# Reconnect to the user's sandbox, or create one if none exists
+sandbox = await SandboxInstance.get_by_external_id(session_id)
+if not sandbox:
+    sandbox = await SandboxInstance.create_if_not_exists({
+        "name": unique_name(),
+        "image": "blaxel/base-image:latest",
+        "external_id": session_id,
+        "region": "us-pdx-1"
+    })
+```
+
+</CodeGroup>
+
+<Note>
+  `externalId` is not unique. If multiple live sandboxes share the same value, `getByExternalId` returns the most recently created one. Use `list` with the `externalId` filter to retrieve all matches.
+</Note>
+
+Combine external IDs with [TTL policies](/Sandboxes/Expiration) and [labels](/Sandboxes/Overview#labels) for a complete sandbox management strategy: external IDs for fast lookup, labels for categorization, and TTLs for automatic cleanup.
 
 ## Reduce cold start times with a pre-warmed pool
 
