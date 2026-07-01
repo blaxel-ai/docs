@@ -216,6 +216,45 @@ The same drive can be mounted read-write in one sandbox and read-only in others.
 When [drive permissions](/Agent-drive/Permissions) are configured with `mode: "read"`, read-only access is enforced both at the FUSE mount level and at the storage server level. The workload's identity token is validated against the permission rules, preventing unauthorized remounting in read-write mode.
 </Note>
 
+### Map UID/GID on mount
+
+When the sandbox process runs as a non-root user, files on the drive may appear inaccessible due to ownership mismatch. You can remap file ownership at mount time by specifying a local UID and/or GID.
+
+<CodeGroup>
+
+```tsx TypeScript
+await sandbox.drives.mount({
+  driveName: "my-drive",
+  mountPath: "/mnt/data",
+  uidMap: "1000",
+  gidMap: "1000",
+});
+```
+
+```python Python
+await sandbox.drives.mount(
+    drive_name="my-drive",
+    mount_path="/mnt/data",
+    uid_map="1000",
+    gid_map="1000",
+)
+```
+
+</CodeGroup>
+
+With this configuration, drive files will appear as owned by UID/GID `1000` inside the sandbox. Both fields are optional and accept any non-negative integer.
+
+#### Default mapping via environment variables
+
+Set `BLFS_UID_MAP` and `BLFS_GID_MAP` on the sandbox to apply UID/GID mapping to every mount by default, without passing the values in each request.
+
+| Variable | Description |
+|---|---|
+| `BLFS_UID_MAP` | Default local UID for drive file ownership mapping |
+| `BLFS_GID_MAP` | Default local GID for drive file ownership mapping |
+
+Per-request values override environment variable defaults. If neither is set, no mapping is applied and the mount behaves as before.
+
 ## List mounted drives
 
 List all drives currently mounted to a sandbox:
