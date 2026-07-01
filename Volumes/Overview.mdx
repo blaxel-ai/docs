@@ -218,42 +218,11 @@ Resize a volume by calling:
 
 ## List volumes
 
-To retrieve all volumes in your workspace, use the built-in SDK pagination helper functions.
+To retrieve all volumes in your workspace, use the Management API list endpoint with pagination.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
 </Note>
-
-<CodeGroup>
-```typescript TypeScript
-import { VolumeInstance } from "@blaxel/core";
-
-const volumes = await VolumeInstance.list({ limit: 50 });
-for await (const volume of volumes) {
-  console.log(volume.name);
-}
-```
-
-```python Python
-import asyncio
-from blaxel.core import VolumeInstance
-
-async def main():
-    volumes = await VolumeInstance.list(limit=50)
-    async for volume in volumes.auto_paging_iter():
-        print(volume.name)
-
-asyncio.run(main())
-```
-
-```shell Blaxel CLI
-bl get volumes
-```
-</CodeGroup>
-
-For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
-
-Pagination is also available via the Management API list endpoint.
 
 Request the first page:
 
@@ -289,6 +258,37 @@ curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
 </Tip>
 
 For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+
+It is also possible to list all volumes in a workspace using the SDKs, with built-in pagination helpers.
+
+<CodeGroup>
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volumes = await VolumeInstance.list({ limit: 50 });
+for await (const volume of volumes) {
+  console.log(volume.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import VolumeInstance
+
+async def main():
+    volumes = await VolumeInstance.list(limit=50)
+    async for volume in volumes.auto_paging_iter():
+        print(volume.name)
+
+asyncio.run(main())
+```
+
+```shell Blaxel CLI
+bl get volumes
+```
+</CodeGroup>
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](/sdk-reference/introduction#pagination).
 
 You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
 
