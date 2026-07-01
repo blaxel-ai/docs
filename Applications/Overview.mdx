@@ -532,6 +532,25 @@ For wildcard custom domains (e.g. `*.sandbox.example.com`), use the `subdomain` 
 }
 ```
 
+### Create a custom domain for an application
+
+You can also create a custom domain scoped to a specific application using the dedicated endpoint. After creation, configure DNS records and verify domain ownership before it becomes active.
+
+```bash
+curl -X POST https://api.blaxel.ai/v0/applications/my-app/customdomains \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "app.example.com" },
+    "spec": {
+      "type": "applications",
+      "domain": "app.example.com",
+      "region": "us-pdx-1"
+    }
+  }'
+```
+
 <Note>
 The domain must be a verified custom domain in your workspace. Custom domain verification is managed in the [Infrastructure section](/Infrastructure/Custom-domains) of the Blaxel Console.
 </Note>
