@@ -10,8 +10,8 @@ components:
         type: string
     PaginationAnchor:
       description: Start from a known pagination boundary. `end` is only supported
-        for `createdAt:desc` listings and returns the oldest page directly without
-        walking every cursor from the first page.
+        for `createdAt` listings (asc or desc) and returns the tail page directly
+        without walking every cursor from the first page.
       in: query
       name: anchor
       required: false
@@ -2218,6 +2218,9 @@ components:
         expiresAt:
           type: string
           description: The date and time when the invitation expires
+        invitationId:
+          type: string
+          description: Opaque invitation identifier
         invitedAt:
           type: string
           description: Invitation date
@@ -9296,60 +9299,6 @@ paths:
         - workspaces:update
       - ApiKeyAuth: []
       summary: Update workspace
-      tags:
-      - workspaces
-      x-stainless-ignore: true
-  /workspaces/{workspaceName}/decline:
-    post:
-      description: Declines an invitation to a workspace.
-      operationId: DeclineWorkspaceInvitation
-      parameters:
-      - description: Name of the workspace
-        in: path
-        name: workspaceName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PendingInvitation'
-          description: Invitation successfully declined
-      security:
-      - OAuth2:
-        - workspaces:decline
-      - ApiKeyAuth: []
-      summary: Decline invitation to workspace
-      tags:
-      - workspaces
-      x-stainless-ignore: true
-  /workspaces/{workspaceName}/join:
-    post:
-      description: Accepts an invitation to a workspace.
-      operationId: AcceptWorkspaceInvitation
-      parameters:
-      - description: Name of the workspace
-        in: path
-        name: workspaceName
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PendingInvitationAccept'
-          description: Invitation successfully accepted
-        "404":
-          description: Workspace or invitation not found
-      security:
-      - OAuth2:
-        - workspaces:accept
-      - ApiKeyAuth: []
-      summary: Accept invitation to workspace
       tags:
       - workspaces
       x-stainless-ignore: true
