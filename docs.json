@@ -20,6 +20,11 @@
           "anchor": "Blaxel Skills & MCP",
           "icon": "robot",
           "href": "/skills-mcp"
+        },
+        {
+          "anchor": "Community",
+          "icon": "discord",
+          "href": "/Community"
         }
       ]
     },
@@ -32,7 +37,8 @@
             "pages": [
               "Overview",
               "Get-started",
-              "skills-mcp"
+              "skills-mcp",
+              "Community"
             ]
           },
           {
@@ -455,17 +461,32 @@
     "links": [
       {
         "label": "Changelog",
+        "icon": "calendar",
         "href": "/changelog"
       },
       {
         "label": "Agent Skill",
+        "icon": "robot",
         "href": "/skills-mcp"
+      },
+      {
+        "label": "Community",
+        "icon": "discord",
+        "href": "/Community"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Blaxel Console",
       "href": "https://app.blaxel.ai"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/blaxel-ai",
+      "linkedin": "https://www.linkedin.com/company/blaxel-ai",
+      "twitter": "https://x.com/blaxelai",
+      "discord": "https://discord.gg/G3NqzUPcHP"
     }
   },
   "description": "Blaxel documentation: cloud sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway for building and deploying AI-powered applications.",
