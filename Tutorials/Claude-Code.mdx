@@ -93,7 +93,7 @@ Before starting, ensure you have:
       // Start dev server in application sandbox
       await appSandbox.process.exec({
         workingDir: "/blaxel/app",
-        command: "npm run dev -- --hostname 0.0.0.0 --port 3000"
+        command: "npm run dev -- --hostname $HOST --port 3000"
       });
       console.log("Application server started");
 
@@ -160,7 +160,7 @@ Before starting, ensure you have:
         # Start dev server in application sandbox
         await app_sandbox.process.exec({
           "working_dir": "/blaxel/app",
-          "command": "npm run dev -- --hostname 0.0.0.0 --port 3000"
+          "command": "npm run dev -- --hostname $HOST --port 3000"
         })
         print("Application server started")
 

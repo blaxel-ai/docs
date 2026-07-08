@@ -821,7 +821,7 @@ const mlImage = base
 const webImage = base
   .pipInstall("fastapi", "uvicorn", "sqlalchemy")
   .expose(8000)
-  .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0");
+  .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "::");
 
 // Build both independently
 const mlSandbox = await mlImage.build({ name: "ml-sandbox", memory: 16384 });
@@ -847,7 +847,7 @@ web_image = (
     base
     .pip_install("fastapi", "uvicorn", "sqlalchemy")
     .expose(8000)
-    .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0")
+    .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "::")
 )
 
 # Build both independently

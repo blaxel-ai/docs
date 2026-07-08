@@ -277,7 +277,7 @@ You can restart a process if it fails, up to a maximum number of restart attempt
 ```typescript TypeScript
 const process = await sandbox.process.exec({
   name: "start-server",
-  command: "npm run dev -- --host 0.0.0.0 --port 8000",
+  command: "npm run dev -- --host $HOST --port 8000",
   restartOnFailure: true,
   maxRestarts: 5
 });
@@ -286,7 +286,7 @@ const process = await sandbox.process.exec({
 ```python Python
 process = await sandbox.process.exec({
   "name": "start-server",
-  "command": "uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+  "command": "uvicorn main:app --reload --host $HOST --port 8000",
   "restart_on_failure": True,
   "max_restarts": 5
 })
@@ -310,7 +310,7 @@ const sandbox = await SandboxInstance.get("my-sandbox");
 // Start a dev server that keeps the sandbox awake
 await sandbox.process.exec({
   name: "dev-server",
-  command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
+  command: "npm run dev -- --hostname $HOST --port 3000",
   keepAlive: true,        // Prevents auto-standby while the process runs
   timeout: 3600           // Auto-kill the process after 1 hour. Set 0 to not auto-kill.
 });
@@ -324,7 +324,7 @@ sandbox = await SandboxInstance.get("my-sandbox")
 # Start a dev server that keeps the sandbox awake
 await sandbox.process.exec({
   "name": "dev-server",
-  "command": "npm run dev -- --hostname 0.0.0.0 --port 3000",
+  "command": "npm run dev -- --hostname $HOST --port 3000",
   "keep_alive": True,        # Prevents auto-standby
   "timeout": 3600            # Auto-kill after 1 hour
 })

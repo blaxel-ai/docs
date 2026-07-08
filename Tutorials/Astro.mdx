@@ -17,7 +17,7 @@ Before starting, ensure you have:
 
 Running Astro inside a Blaxel sandbox requires a few adjustments:
 
-- Configuring `astro.config.mjs` with `host: '0.0.0.0'` and `allowedHosts: true`
+- Configuring `astro.config.mjs` with `host: process.env.HOST` and `allowedHosts: true`
 - Exposing the Astro dev server via a Blaxel preview URL
 
 ## Create a base sandbox image
@@ -62,7 +62,7 @@ import { defineConfig } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
   server: {
-    host: '0.0.0.0',
+    host: process.env.HOST,
     port: 4321,
     allowedHosts: true
   }

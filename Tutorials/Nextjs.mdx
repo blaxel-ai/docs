@@ -97,7 +97,7 @@ curl http://localhost:8080/process \
   -d '{
     "name": "dev-server",
     "workingDir": "/app",
-    "command": "npm run dev -- --port 3000",
+    "command": "npm run dev -- --hostname $HOST --port 3000",
     "waitForCompletion": false,
     "restartOnFailure": true,
     "maxRestarts": 25
@@ -219,7 +219,7 @@ async function startDevServer(sandbox: SandboxInstance) {
   console.log("Starting Next.js dev server...");
   await sandbox.process.exec({
     name: "dev-server",
-    command: "npm run dev -- --port 3000",
+    command: "npm run dev -- --hostname $HOST --port 3000",
     workingDir: "/app",
     waitForPorts: [3000],
     restartOnFailure: true,
@@ -270,7 +270,7 @@ const responseHeaders = {
 async function startDevServer(sandbox: SandboxInstance) {
   await sandbox.process.exec({
     name: "dev-server",
-    command: "npm run dev -- --port 3000",
+    command: "npm run dev -- --hostname $HOST --port 3000",
     workingDir: "/app",
     waitForPorts: [3000],
     restartOnFailure: true,

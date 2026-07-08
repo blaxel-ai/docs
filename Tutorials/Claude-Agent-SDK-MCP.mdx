@@ -75,7 +75,7 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import express from "express";
 import { SandboxInstance } from "@blaxel/core";
 
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "::";
 const port = parseInt(process.env.PORT || "8000");
 
 const app = express();
@@ -154,7 +154,7 @@ from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, Result
 from blaxel.core import SandboxInstance
 import uvicorn
 
-host = os.getenv("HOST", "0.0.0.0")
+host = os.getenv("HOST", "::")
 port = int(os.getenv("PORT", "8000"))
 
 app = FastAPI()

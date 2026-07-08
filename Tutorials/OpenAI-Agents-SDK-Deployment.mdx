@@ -91,7 +91,7 @@ import express from "express";
 const app = express();
 app.use(express.json());
 
-const host = process.env.HOST ?? "0.0.0.0";
+const host = process.env.HOST ?? "::";
 const port = parseInt(process.env.PORT ?? "8000");
 
 app.post("/query", async (req, res) => {
@@ -141,7 +141,7 @@ from agents.extensions.sandbox import BlaxelSandboxClient, BlaxelSandboxClientOp
 
 
 app = FastAPI()
-host = os.getenv("HOST", "0.0.0.0")
+host = os.getenv("HOST", "::")
 port = int(os.getenv("PORT", "8000"))
 
 @app.post("/query")
