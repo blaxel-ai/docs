@@ -62,7 +62,7 @@ import { defineConfig } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
   server: {
-    host: process.env.HOST,
+    host: process.env.HOST || '::',
     port: 4321,
     allowedHosts: true
   }
