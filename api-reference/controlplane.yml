@@ -352,6 +352,32 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Application'
+    ChangelogEntry:
+      type: object
+      description: Changelog entry shown in the controlplane UI.
+      properties:
+        content:
+          type: string
+          description: Markdown body for the changelog entry.
+        date:
+          type: string
+          description: Release date for the changelog entry in YYYY-MM-DD format.
+          example: "2026-07-07"
+        title:
+          type: string
+          description: Changelog entry title.
+          example: New sandbox scheduling controls
+      x-stainless-ignore: true
+    ChangelogResponse:
+      type: object
+      description: Latest changelog entries shown in the controlplane UI.
+      properties:
+        entries:
+          type: array
+          description: Latest changelog entries, newest first.
+          items:
+            $ref: '#/components/schemas/ChangelogEntry'
+      x-stainless-ignore: true
     Configuration:
       type: object
       description: Configuration
@@ -1785,6 +1811,9 @@ components:
           type: string
         displayName:
           type: string
+        externalId:
+          type: string
+          description: Caller-owned identifier for external lookups.
         name:
           type: string
         updatedAt:
@@ -1828,6 +1857,7 @@ components:
           type: string
           description: Status of the location
           example: healthy
+      x-stainless-ignore: true
     MCPDefinition:
       type: object
       description: Definition of an MCP from the MCP Hub
@@ -3117,9 +3147,10 @@ components:
           example: "2025-12-31T23:59:59Z"
         extraArgs:
           type: object
-          description: 'Extra arguments for sandbox kernel selection. Supported keys:
-            ''iptables'', ''nvme'', ''nfs''. Values: ''enabled'' or ''disabled''.
-            Determines which kernel variant the sandbox runs on. Immutable after creation.'
+          description: 'Extra arguments for kernel selection. Supported keys: ''iptables'',
+            ''nfs'' (mk3.0), ''tun'' (mk3.1). Values: ''enabled'' or ''disabled''.
+            Determines which kernel variant the workload runs on. Immutable after
+            creation.'
           additionalProperties:
             type: string
         image:
@@ -4616,6 +4647,24 @@ paths:
       summary: List all application revisions
       tags:
       - applications
+  /changelog:
+    get:
+      description: Returns the latest public changelog entries for the controlplane
+        UI. The origin response is intentionally not cached in memory; CloudFront
+        caches this endpoint according to the Cache-Control header.
+      operationId: GetChangelog
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+          description: Latest changelog entries
+      security: []
+      summary: Get latest changelog entries
+      tags:
+      - changelog
+      x-stainless-ignore: true
   /configuration:
     get:
       description: Returns global platform configuration including available regions,
@@ -4802,6 +4851,13 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Filter drives by external ID. When set, only drives matching
+          this caller-owned identifier are returned.
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -4982,6 +5038,40 @@ paths:
       summary: Create drive access token
       tags:
       - drives
+  /drives/by-external-id/{externalId}:
+    get:
+      description: Returns a drive matching the given external ID. If no drive is
+        found, returns 404.
+      operationId: GetDriveByExternalId
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden - Insufficient permissions to view drives
+        "404":
+          description: Drive not found
+        "500":
+          description: Internal server error
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Get drive by external ID
+      tags:
+      - drives
+    parameters:
+    - description: Caller-owned external identifier for the drive
+      in: path
+      name: externalId
+      required: true
+      schema:
+        type: string
   /drives/jwks.json:
     get:
       description: Returns the JSON Web Key Set containing the Ed25519 public key
@@ -8234,6 +8324,8 @@ paths:
         - templates:get
       - ApiKeyAuth: []
       summary: Get template
+      tags:
+      - templates
   /users:
     get:
       description: Returns all team members in the workspace including their roles
@@ -8557,6 +8649,13 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Filter volumes by external ID. When set, only volumes matching
+          this caller-owned identifier are returned.
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -8765,6 +8864,56 @@ paths:
       summary: Update volume
       tags:
       - volumes
+  /volumes/by-external-id/{externalId}:
+    get:
+      description: Returns an active volume matching the given external ID. If no
+        active volume is found, returns 404.
+      operationId: GetVolumeByExternalId
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view volumes
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - No active volume with this external ID
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:get
+      - ApiKeyAuth: []
+      summary: Get volume by external ID
+      tags:
+      - volumes
+    parameters:
+    - description: Caller-owned external identifier for the volume
+      in: path
+      name: externalId
+      required: true
+      schema:
+        type: string
   /vpcs:
     get:
       operationId: ListVPCs
