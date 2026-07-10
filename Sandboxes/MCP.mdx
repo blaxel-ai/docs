@@ -13,7 +13,7 @@ The MCP server operates through streamable HTTP at the sandbox's base URL:
 https://<SANDBOX_BASE_URL>/mcp
 ```
 
-The base URL of a sandbox can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) via the management API of sandboxes under `metadata.url`.
+The base URL of a sandbox can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) via the management API of sandboxes under `metadata.url` or via the Blaxel [SDKs](/Sandboxes/Overview#retrieve-an-existing-sandbox).
 
 Connect to this MCP server [like any other MCP server](../Functions/Invoke-functions) through the endpoint shown above. Instructions for some popular applications are provided below.
 
@@ -23,6 +23,10 @@ Connect to this MCP server [like any other MCP server](../Functions/Invoke-funct
   - Required: `Authorization: Bearer <APIKEY>`
   - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 </Note>
+
+<Tip>
+  Bearer-token authentication only — there is no OAuth for connecting to the sandbox MCP endpoint. See [MCP endpoints at a glance](/skills-mcp#mcp-endpoints-at-a-glance) for how this compares to the other MCP surfaces on Blaxel.
+</Tip>
 
 ### Add to Cursor
 
