@@ -87,6 +87,8 @@ The TypeScript example uses the `adm-zip` package; any zip library works. The ex
 
 For small file sets, `writeTree()` (TypeScript) / `write_tree()` (Python) in the [filesystem API](/Sandboxes/Filesystem) writes multiple files in one batched call and is simpler. Use the zip pattern when the file count is large enough that per-call latency dominates.
 
+If the resulting zip archive exceeds 5 MB, `writeBinary()` / `write_binary()` automatically splits it into multipart uploads. Refer to [the sandbox filesystem documentation](/Sandboxes/Filesystem#write-binary-file) for details.
+
 ## Automate cleanup with TTLs
 
 In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (completed tasks, abandoned user sessions, etc.). These can unnecessarily consume storage and add to your cost.
