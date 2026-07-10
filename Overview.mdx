@@ -91,7 +91,9 @@ When building your agentic system, you'll need to make architecture design choic
 | Volumes | Long-term persistent block storage attached to a sandbox or agent | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Block storage (POSIX) |
 | Agent Drive | Shared distributed filesystem across sandboxes and agents | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Distributed filesystem (POSIX + S3) |
 
-Volumes and Agent Drive are storage products rather than compute runtimes, so "boot time" and "workload duration" don't strictly apply — they're included here for a complete view of Blaxel's core products.
+<Note>
+  Volumes and Agent Drive are storage products, so "boot time" and "workload duration" don't apply.
+</Note>
 
 ## The Blaxel powerhouse
 
