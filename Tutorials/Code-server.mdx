@@ -104,7 +104,7 @@ The key configuration settings here are:
 - `bind-addr: [::]:8081` - listens on all interfaces over both IPv4 and IPv6 on port 8081 (bracket syntax is required for IPv6 addresses in `host:port` form), the port exposed via the sandbox preview
 - `auth: none` - disables password auth (access will be gated using a [private preview URL and token](/Sandboxes/Preview-url), discussed below)
 - `cert: false` - disables TLS termination (handled upstream by Blaxel)
-- `trusted-origins: ["*"]` required to allow requests coming from the sandbox proxy origin; without this, code-server will reject WebSocket connections
+- `trusted-origins: ["*"]` - required to allow requests coming from the sandbox proxy origin; without this, code-server will reject WebSocket connections
 
 ### blaxel.toml
 
