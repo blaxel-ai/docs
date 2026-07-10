@@ -98,9 +98,9 @@ app.post('/mcp', async (req, res) => {
 });
 
 const port = parseInt(process.env.PORT || '80');
-const host = process.env.HOST || '0.0.0.0';
+const host = process.env.HOST || '::';
 
-app.listen(port, () => {
+app.listen(port, host, () => {
   console.log(`MCP Server running on <http://$>{host}:${port}/mcp`);
 }).on('error', error => {
   console.error('Server error:', error);
@@ -126,7 +126,7 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP(
     "GreetingServer",
     stateless_http=True,
-    host=os.getenv('HOST', "0.0.0.0"),
+    host=os.getenv('HOST', "::"),
     port=os.getenv('PORT', "80")
 )
 

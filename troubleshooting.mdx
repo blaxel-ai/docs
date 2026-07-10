@@ -13,20 +13,20 @@ This page describes common issues and how to troubleshoot them. If your issue is
 
 This error occurs when the application server is either not running inside the sandbox, or is running but binding to `localhost`. In the latter case, it is only reachable inside the sandbox and the external preview URL will not be able to access it.
 
-To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to IP address `0.0.0.0`, so that it listens on all available network interfaces. Once this is done, restart the application server. To avoid IPv4/IPv6 compatibility issues, we recommend using the environment variable `HOST` instead of setting the address to a static value.
+To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to the address provided by the `HOST` environment variable, which Blaxel injects into the sandbox, rather than a static value. Once this is done, restart the application server. If you need a static fallback (for example when running the same code outside a sandbox), use `::` so it listens on all available network interfaces over both IPv4 and IPv6 (use `0.0.0.0` only if you specifically need to restrict the server to IPv4).
 
 For example, in code:
 
 <CodeGroup>
 ```tsx TypeScript
-const host = process.env.HOST || '0.0.0.0';
+const host = process.env.HOST || '::';
 app.listen(3000, host, () => {
   console.log(`Server is running`);
 });
 ```
 
 ```python Python
-host = os.environ.get("HOST", "0.0.0.0")
+host = os.environ.get("HOST", "::")
 app.run(host=host, port=3000)
 ```
 </CodeGroup>
@@ -35,13 +35,13 @@ or at the command line:
 
 <CodeGroup>
 ```tsx TypeScript
-npm run dev -- --host 0.0.0.0
+npm run dev -- --host $HOST
 # or
-npm serve -- --host 0.0.0.0
+npm serve -- --host $HOST
 ```
 
 ```python Python
-python main.py --host 0.0.0.0
+python main.py --host $HOST
 ```
 </CodeGroup>
 
@@ -72,7 +72,7 @@ For example:
 <CodeGroup>
 ```tsx TypeScript
 const port = parseInt(env.PORT || "80");
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "::";
 app.listen(port, host, () => {
   console.log(`Server is running`);
 });
@@ -80,7 +80,7 @@ app.listen(port, host, () => {
 
 ```python Python
 port = os.environ.get("PORT", "80")
-host = os.environ.get("HOST", "0.0.0.0")
+host = os.environ.get("HOST", "::")
 app.run(host=host, port=port)
 ```
 </CodeGroup>
