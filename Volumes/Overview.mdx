@@ -12,6 +12,10 @@ While Blaxel automatically snapshots the full state of a sandbox at scale down a
 
 Volumes use block storage and can only be accessed by attaching them to a running sandbox or agent. They cannot be mounted locally on your machine. Blaxel also does not support mounting external storage (such as S3 buckets) as volumes.
 
+<Tip>
+  Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more informaton.
+</Tip>
+
 ## Create a volume
 
 To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any resource it may later be attached to.

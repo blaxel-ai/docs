@@ -37,9 +37,15 @@ Here's a table to help you decide:
 | Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated)
 | Access type | Single | Single | Multiple |
 | Hot-attach | N/A | No | Yes |
-| Interface | POSIX | POSIX | POSIX + S3 |
+| Interface | POSIX | POSIX | POSIX (S3 interface coming soon) |
 | Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
+
+Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more informaton.
+
+<Note>
+  No storage option currently supports mounting external storage (such as S3 buckets) as a filesystem today via s3fs or similar (Agent Drive's S3 interface is planned but not yet available). There is also no built-in way to bulk-sync files between a sandbox and your local machine. Instead, use [`sandbox.fs.download()`](/Sandboxes/Filesystem#download-file-to-host) for single files, or the zip-upload-unzip pattern in the next section for bulk transfers.
+</Note>
 
 ## Upload many files efficiently
 
