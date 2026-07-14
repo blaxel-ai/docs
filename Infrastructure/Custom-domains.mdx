@@ -8,6 +8,8 @@ description: 'Expose Blaxel agents, sandboxes, MCP servers, and other resources 
 
 Blaxel allows you to connect your own domain names to your Blaxel workspace to use when exposing resources.
 
+You can also share a verified preview custom domain with another workspace in the same account. The target workspace can use the shared domain for its own previews, while the shared copy stays read-only.
+
 When you register a domain, you also enable the use of wildcard subdomains for that domain. For example:
 
 - If you register `mycompany.com`, you can use any `*.mycompany.com` subdomain to create custom URLs.
@@ -20,6 +22,20 @@ In the [Blaxel Console](https://app.blaxel.ai/), navigate to **Network** > **Cus
 
 ![image.webp](/Infrastructure/Custom-domains/image.webp)
 
+## Share a custom domain
+
+After you verify a preview custom domain, you can share it with another workspace in the same account.
+
+- Use a workspace share when one target workspace should get a read-only copy
+- Use an account share when every workspace in the account should be able to use the domain
+- Create previews from the target workspace after the share is in place
+
+<Note>
+Only verified preview custom domains can be shared.
+</Note>
+
+When a target workspace binds a preview to the shared domain, the full host still needs to be unique across the account. If another workspace already uses the same `<prefixUrl>.<domain>` host, Blaxel returns `409`.
+
 ## Use a custom domain
 
 Custom domains can currently be used for:
@@ -27,3 +43,14 @@ Custom domains can currently be used for:
 - [Sandbox previews](../Sandboxes/Preview-url)
 - Agents: coming soon!
 - MCP servers: coming soon!
+
+Related pages:
+
+<CardGroup cols={2}>
+  <Card title="Sandbox preview URLs" href="../Sandboxes/Preview-url">
+    Create preview URLs and configure fallback routing for custom domains.
+  </Card>
+  <Card title="Changelog" href="../changelog">
+    Review recent platform updates related to custom domains and previews.
+  </Card>
+</CardGroup>
