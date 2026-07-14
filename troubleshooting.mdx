@@ -45,6 +45,12 @@ python main.py --host $HOST
 ```
 </CodeGroup>
 
+## Preview URL requests fail on the browser's CORS preflight (OPTIONS) request
+
+This error occurs when calling a preview URL from browser-based JavaScript on a different origin, and the browser's CORS preflight (`OPTIONS`) request doesn't get the expected headers back. It typically shows up as a CORS error in the browser console, and the actual request never reaches your sandbox.
+
+To resolve this error, configure `responseHeaders` on the preview with the appropriate CORS headers. Make sure `Access-Control-Allow-Origin` matches the calling origin exactly, and that `Access-Control-Allow-Headers` includes every custom header your client sends, including any authentication-related headers.
+
 ## Sandbox commands return a `502 Bad Gateway` server error
 
 This error occurs for three possible reasons:
@@ -124,6 +130,22 @@ To resolve this error, choose the storage option that matches the workload:
     <Note>
     Volumes are slower than the in-memory filesystem.
     </Note>
+
+## API requests fail with a 403 error even though the credentials are valid
+
+This error occurs when the credentials themselves (API key or OAuth token) are valid, but the user or service account they belong to doesn't have sufficient privileges in the specified workspace.
+
+Two related errors can also occur:
+- A `400` error if the request doesn't specify a workspace at all where one is required.
+- A `400` or `404` error if the credential has access to zero or multiple workspaces and none was specified, since Blaxel can't determine which one to use.
+
+<Note>
+  This is distinct from a `401 Unauthorized` error, which means the [credentials themselves are missing or invalid](/troubleshooting/error-codes).
+</Note>
+
+To resolve this error, first confirm the workspace name in your request matches a workspace you (or the service account) has access to. Also check your [role in that workspace](/Security/Workspace-access-control) and ask a workspace administrator to grant the required role if it's missing or insufficient.
+
+Personal API keys and OAuth logins grant access to every workspace you belong to, while [service account](/Security/Service-accounts) API keys and client-credentials tokens are scoped to a single workspace. Ensure that you're using credentials that are actually valid for the workspace you're targeting.
 
 ## Sandbox commands return a `404 WORKSPACE_NOT_FOUND` error
 

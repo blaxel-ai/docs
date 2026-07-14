@@ -16,6 +16,10 @@ Long-lived tokens are easier to use but are less secure as their validity can go
 
 **OAuth tokens** are recommended for security reasons, as their duration is only of 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
 
+<Note>
+  A personal API key or personal OAuth login grants access to every [workspace](/Security/Workspace-access-control) your account belongs to, while a service account's API key or client-credentials token only grants access to the single workspace that service account belongs to. If a request fails with a 403 error even though the credential is valid, this usually means the credential doesn't have access to the specified workspace.
+</Note>
+
 ## API keys
 
 Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration can be infinite.
@@ -228,6 +232,10 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'Accept: application/json, text/plain, */*' \
   -H 'X-Blaxel-Authorization: Bearer YOUR_TOKEN'
 ```
+
+<Note>
+  **Common errors**: a missing or incorrect `grant_type` value, or an invalid/missing `client_secret`, both return a `400` error describing the specific parameter that's invalid or missing. Double check the *client ID* and *client secret* were copied correctly — the secret is only shown once at creation and can't be retrieved again.
+</Note>
 
 ### (Advanced) Use OAuth tokens in the APIs
 
