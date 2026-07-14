@@ -236,6 +236,10 @@ components:
           description: Port the application listens on for this revision (default
             uses spec-level port or 8080)
           example: 8080
+        snapshot:
+          type: string
+          description: Snapshot ID this revision was forked from (optional, only set
+            when created via fork)
       required:
       - image
     AppRevisionConfiguration:
@@ -301,6 +305,10 @@ components:
           $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/Metadata'
+        nodeGeneration:
+          type: string
+          description: Infrastructure generation this application is deployed on (mk3.0
+            or mk3.1). Read-only.
         spec:
           $ref: '#/components/schemas/ApplicationSpec'
         status:
@@ -310,6 +318,23 @@ components:
       required:
       - metadata
       - spec
+    ApplicationExtension:
+      type: object
+      description: Configuration for a single application extension. The fields used
+        depend on the extension key; for ai.blaxel.experimental/bind-to-sandbox only
+        "sandbox" is used.
+      properties:
+        sandbox:
+          type: string
+          description: Name of the sandbox this application binds to (used by the
+            ai.blaxel.experimental/bind-to-sandbox extension).
+          example: my-sandbox
+    ApplicationExtensions:
+      type: object
+      description: Map of experimental, opt-in application extensions keyed by fully-qualified
+        extension name (e.g. "ai.blaxel.experimental/bind-to-sandbox").
+      additionalProperties:
+        $ref: '#/components/schemas/ApplicationExtension'
     ApplicationList:
       type: object
       description: Cursor-paginated list of applications. Returned starting with API
@@ -334,10 +359,38 @@ components:
             requests
           example: true
           default: true
+        envs:
+          type: array
+          description: Environment variables for the application
+          items:
+            $ref: '#/components/schemas/Env'
+        extensions:
+          $ref: '#/components/schemas/ApplicationExtensions'
+        image:
+          type: string
+          description: Container image for the application. The backend generates
+            a revision from the spec-level compute (image, memory, envs, port) on
+            every create/update — clients set the compute here, exactly like agents
+            and functions, and never craft revisions by hand.
+          example: my-registry/my-app:latest
+        memory:
+          type: integer
+          description: Memory allocation in megabytes for the application (default
+            2048). Determines CPU allocation (CPU = memory / 2048).
+          example: 2048
         port:
           type: integer
           description: Port the application listens on (default 8080)
           example: 8080
+        proxy:
+          type: boolean
+          description: When true, the application proxies to an existing sandbox (the
+            active revision image is the sandbox name) instead of building and deploying
+            its own compute. Proxy applications have no deployment pipeline and are
+            always reported as deployed. Deprecated — prefer the ai.blaxel.experimental/bind-to-sandbox
+            extension.
+          example: false
+          default: false
         region:
           type: string
           description: Region where the application is deployed (e.g. us-pdx-1, eu-lon-1)
@@ -560,9 +613,35 @@ components:
             type: string
             description: Domain name (e.g., "example.com")
             example: preview.example.com
+          sharedFromWorkspace:
+            type: string
+            description: If this custom domain is shared from another workspace of
+              the same account, this field contains the name of the source (owning)
+              workspace. Empty for owned domains.
+            readOnly: true
           workspace:
             type: string
             description: Workspace name
+    CustomDomainShareTarget:
+      type: object
+      description: A workspace (or the whole account) a custom domain is shared with
+      properties:
+        status:
+          type: string
+          description: Share status; always "active" for same-account custom domain
+            shares.
+        workspace:
+          type: string
+          description: The workspace the domain is shared with, or "account" for an
+            account-wide share.
+        workspaceDisplayName:
+          type: string
+          description: Display name of the target workspace (empty for an account-wide
+            share).
+      required:
+      - workspace
+      - status
+      x-stainless-ignore: true
     CustomDomainSpec:
       type: object
       description: Custom domain specification
@@ -570,6 +649,13 @@ components:
         cnameRecords:
           type: string
           description: CNAME target for the domain
+        domainType:
+          type: string
+          description: Type of custom domain (previews or applications)
+          enum:
+          - previews
+          - applications
+          example: applications
         fallbackPreviewId:
           type: string
           description: Preview ID to route to when a preview lookup fails on this
@@ -2774,6 +2860,10 @@ components:
         location:
           type: string
           description: Region display name
+        mk31Available:
+          type: boolean
+          description: Whether this region supports mk3.1 (blaxel nodes). Required
+            for Application and Job deployments.
         name:
           type: string
           description: Region name
@@ -2956,6 +3046,10 @@ components:
           readOnly: true
         metadata:
           $ref: '#/components/schemas/Metadata'
+        nodeGeneration:
+          type: string
+          description: Infrastructure generation this sandbox is deployed on (mk3.0
+            or mk3.1). Read-only.
         spec:
           $ref: '#/components/schemas/SandboxSpec'
         state:
@@ -3069,6 +3163,58 @@ components:
       required:
       - code
       - message
+    SandboxForkRequest:
+      type: object
+      description: Request body for forking a sandbox into an application. Creates
+        a new application or adds a canary revision to an existing one.
+      properties:
+        customDomain:
+          type: string
+          description: Custom domain for the application
+        port:
+          type: integer
+          description: Port to expose from the sandbox
+          example: 8080
+        prefix:
+          type: string
+          description: URL prefix for the application
+        snapshotId:
+          type: string
+          description: Snapshot ID to fork from. When set, the application revision
+            references this snapshot.
+        targetName:
+          type: string
+          description: Name of the target application to create or update
+          example: my-app
+        targetType:
+          type: string
+          description: Target resource type to fork into
+          example: application
+        traffic:
+          type: integer
+          description: Traffic percentage for canary deployment (0-100). When set
+            on an existing target, creates a new revision with this traffic percentage.
+          example: 10
+      required:
+      - targetType
+      - targetName
+    SandboxForkResponse:
+      type: object
+      description: Response returned after forking a sandbox. Contains either the
+        new sandbox or application depending on the fork type.
+      properties:
+        name:
+          type: string
+          description: Name of the created or updated resource
+        snapshotId:
+          type: string
+          description: The snapshot ID the fork was created from
+        type:
+          type: string
+          description: Type of resource that was created (sandbox or application)
+          enum:
+          - sandbox
+          - application
     SandboxLifecycle:
       type: object
       description: Lifecycle configuration controlling automatic sandbox deletion
@@ -3312,6 +3458,54 @@ components:
           type: string
           description: Working directory for the command
           example: /app
+    SandboxSnapshot:
+      type: object
+      description: A point-in-time snapshot of a sandbox that can be used for forking
+        into a new sandbox or application.
+      properties:
+        createdAt:
+          type: string
+          description: When the snapshot was created
+        createdBy:
+          type: string
+          description: Who created the snapshot
+        id:
+          type: string
+          description: Unique snapshot identifier
+          example: snap_abc123
+        name:
+          type: string
+          description: Optional human-readable name for the snapshot
+          example: before-migration
+        sandboxName:
+          type: string
+          description: Name of the source sandbox
+        status:
+          type: string
+          description: Status of the snapshot (pending, ready, failed)
+          example: ready
+        workspace:
+          type: string
+          description: Workspace of the source sandbox
+      required:
+      - workspace
+      - sandboxName
+      - id
+      - createdAt
+      - status
+    SandboxSnapshotRequest:
+      type: object
+      description: Request body for creating a snapshot of a sandbox. Captures the
+        current sandbox state.
+      properties:
+        name:
+          type: string
+          description: Optional human-readable name for the snapshot
+          example: before-migration
+    SandboxSnapshots:
+      type: array
+      items:
+        $ref: '#/components/schemas/SandboxSnapshot'
     SandboxSpec:
       type: object
       description: Configuration for a sandbox including its image, memory, ports,
@@ -4637,7 +4831,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/RevisionMetadata'
+                  $ref: '#/components/schemas/AppRevision'
                 type: array
           description: successful operation
       security:
@@ -4809,6 +5003,122 @@ paths:
         - customdomains:update
       - ApiKeyAuth: []
       summary: Update custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}/share:
+    get:
+      description: Returns the list of workspaces (and/or the account) that a custom
+        domain is currently shared with.
+      operationId: ListCustomDomainShares
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CustomDomainShareTarget'
+                type: array
+          description: successful operation
+        "404":
+          description: custom domain not found
+      security:
+      - OAuth2:
+        - customdomains:get
+      - ApiKeyAuth: []
+      summary: List custom domain shares
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+    post:
+      description: Shares a verified custom domain with another workspace of the same
+        account by copying the domain record; the ACM certificate and CloudFront tenant
+        stay with the owner and are reused (not re-provisioned). Use targetWorkspace
+        "account" to make the domain usable by every workspace of the account. Cross-account
+        sharing is not supported.
+      operationId: ShareCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                targetWorkspace:
+                  description: Name of the workspace to share the domain with, or
+                    "account" to share with every workspace of the account.
+                  type: string
+              required:
+              - targetWorkspace
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+        "400":
+          description: invalid request
+        "404":
+          description: custom domain not found
+        "409":
+          description: custom domain conflict in target workspace
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Share a custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}/share/{targetWorkspace}:
+    delete:
+      description: Revokes sharing of a custom domain with a target workspace (or
+        the account when targetWorkspace is "account"). Removes the shared copy /
+        clears the account-global marker; the owner's domain is not affected.
+      operationId: UnshareCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      - description: Name of the target workspace, or "account" for an account-wide
+          share.
+        in: path
+        name: targetWorkspace
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+        "404":
+          description: custom domain or share not found
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Unshare a custom domain
       tags:
       - customdomains
       x-stainless-ignore: true
@@ -7520,6 +7830,65 @@ paths:
       summary: Update sandbox
       tags:
       - compute
+  /sandboxes/{sandboxName}/fork:
+    post:
+      description: Forks a sandbox into a new sandbox or application. When forking
+        to a sandbox, the target must not already exist (409 if it does). When forking
+        to an application, a new revision is added if the app already exists, or a
+        new application is created. This is a WIP endpoint — the full implementation
+        depends on the execution plane.
+      operationId: ForkSandbox
+      parameters:
+      - description: Name of the sandbox to fork
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxForkRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxForkResponse'
+          description: Fork created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid fork parameters
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Source sandbox does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Target sandbox already exists (only for type sandbox)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Fork sandbox
+      tags:
+      - compute
   /sandboxes/{sandboxName}/previews:
     get:
       description: Returns a list of Sandbox Previews in the workspace.
@@ -7943,6 +8312,121 @@ paths:
         - sandboxes:update
       - ApiKeyAuth: []
       summary: Update Sandbox Schedule
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/snapshots:
+    get:
+      description: Returns a list of snapshots for the specified sandbox.
+      operationId: ListSandboxSnapshots
+      parameters:
+      - description: Name of the sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshots'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List sandbox snapshots
+      tags:
+      - compute
+    post:
+      description: Creates a point-in-time snapshot of a sandbox. Snapshots capture
+        the sandbox state and can be used for forking into new sandboxes or applications.
+        This is a WIP endpoint — the full implementation depends on the execution
+        plane.
+      operationId: CreateSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox to snapshot
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxSnapshotRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: Snapshot created successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create sandbox snapshot
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/snapshots/{snapshotId}:
+    delete:
+      description: Deletes a snapshot of a sandbox by its ID.
+      operationId: DeleteSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: ID of the snapshot to delete
+        in: path
+        name: snapshotId
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Snapshot deleted successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete sandbox snapshot
       tags:
       - compute
   /sandboxes/by-external-id/{externalId}:
