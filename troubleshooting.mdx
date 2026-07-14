@@ -61,6 +61,16 @@ The sandbox logs will typically contain additional information to identify the r
 Deleting and recreating will cause the current state of the sandbox to be lost.
 </Note>
 
+## Sandbox creation returns a `504 Gateway Timeout`
+
+This error occurs when a sandbox creation request takes longer than CloudFront's edge timeout (approximately 60 seconds) to complete. CloudFront closes the connection to the origin and returns an HTML `504 Gateway Time-out` page rather than a Blaxel JSON error. This does **not** mean sandbox creation failed; the build and deployment continue in the background.
+
+To resolve this error, poll the sandbox's `status` field until it reaches `DEPLOYED` or `FAILED`, using the polling pattern shown in the [custom image deployment guide](/Sandboxes/Templates#4-monitor-deployment-status).
+
+<Note>
+  The TypeScript SDK's `SandboxInstance.create()` handles this automatically by falling back to polling on a 504, so this only needs manual handling when calling the REST API directly or using other language SDKs.
+</Note>
+
 ## Sandbox deployment fails with `STARTUP TCP probe failed` or `DEADLINE_EXCEEDED` error
 
 This error occurs when the server running inside the sandbox is not binding to the correct host and port.
