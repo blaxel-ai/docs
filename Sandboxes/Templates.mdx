@@ -1626,10 +1626,10 @@ You can then push or deploy the image using `bl push` or `bl deploy` as usual.
 
 To configure registry credentials, you have three options (listed in priority order):
 
-1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-creds` flag
+1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-cred` flag
 
     ```shell
-    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-creds "docker.io=myuser:mypassword"
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-cred "docker.io=myuser:mypassword"
     ```
 
 2. Pass the credentials from a different configuration file to `bl push` or `bl deploy` with the `--docker-config` flag
