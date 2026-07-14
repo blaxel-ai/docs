@@ -231,6 +231,23 @@ claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
 }
 ```
 
+### MCP server for sandboxes
+
+Every Blaxel sandbox also exposes its own built-in [MCP server](/Sandboxes/MCP), hosted via streamable HTTP at `https://<SANDBOX_BASE_URL>/mcp`, so agents can operate that specific sandbox directly.
+
+### MCP server hosting
+
+Blaxel also lets you deploy and host your [own MCP servers](/Functions/Overview) as serverless, autoscaling endpoints.
+
+### MCP endpoints at a glance
+
+| Surface | Endpoint pattern | Purpose | Persistence |
+| --- | --- | --- | --- |
+| Resource management | `https://api.blaxel.ai/v0/mcp` | Manage your Blaxel workspace (create/list/delete resources) from a coding assistant | Fixed platform endpoint |
+| Documentation | `https://docs.blaxel.ai/mcp` | Give a coding assistant real-time access to this documentation | Fixed platform endpoint |
+| Per deployed MCP server | `https://run.blaxel.ai/{workspace}/functions/{server-name}/mcp` | Call tools exposed by an MCP server deployed by you | Fixed so long as the function's name is unchanged |
+| Per deployed sandbox | `https://<SANDBOX_BASE_URL>/mcp` | Let an agent operate a sandbox deployed by you | Tied to the sandbox's `name`; fixed across standby/resume. |
+
 ## llms-full.txt
 
 A compiled text document of the entire documentation, formatted for LLMs. Copy and paste it directly into your coding assistant's prompt:
