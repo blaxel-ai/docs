@@ -63,26 +63,18 @@ Agents will transform how we work in the coming years. Traditional cloud provide
 
 Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through [MCP servers](skills-mcp), allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
 
-<Accordion title="The Blaxel method">
-Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds. As such, here are some recommended best practices:
+Building effectively on this cloud means embracing a few operational practices unique to how Blaxel works:
 
-- If the end-user or agent is expected to continue a session soon, just leave the sandbox be. It will automatically suspend when the connection closes (= you will stop paying for compute runtime) and resume when reconnected.
-- The definition of "soon" is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for a few hours to a few days.
-- Blaxel doesn't limit how long a sandbox can stay in standby mode, but doesn't guarantee data persistence. For guaranteed long-term data persistence, use [volumes](Volumes).
-- If you persist data in a volume, you can delete the sandbox. To resume a session, you'll need to re-create the sandbox (~2–4 seconds) and restart processes to restore the same state.
-- For automatic cleanup, set TTLs when creating your sandbox to delete it after a set idle duration or maximum age.
-- When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
-
-We also recommend more general best-practices aiming to provide guardrails and framing when you build your agents - from our experience working with top AI teams.
-
-- Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel Agents Hosting - but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDK allows builders to split services and connect them from your code.
+- Blaxel sandboxes automatically scale up and down at near-instant speeds, unlike traditional sandbox providers. Let sandboxes suspend automatically when idle instead of deleting them. Resuming from standby is near-instant, even after long periods away. Learn more about the [sandbox lifecycle](/Sandboxes/best-practices#use-the-sandbox-lifecycle-strategically), including session length and the standby-storage cost tradeoff in detail.
+- For guaranteed long-term data persistence beyond a sandbox's own lifecycle, use [Volumes](/Volumes/Overview) or [Agent Drive](/Agent-drive/Overview). If you persist data this way, you can delete the sandbox itself; to resume, re-create the sandbox (~2–4 seconds) and restart processes to restore state.
+- [TTLs and lifecycle policies](/Sandboxes/best-practices#automate-cleanup-with-ttls) let you automatically clean up sandboxes you no longer need.
+- When you delete a sandbox, all data is immediately erased. If the sandbox was never put into standby mode, Blaxel guarantees ZDR (zero data retention).
+- Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel Agents Hosting - but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDKs allow builders to split services and connect them from your code.
 - Similarly, while direct tool calls are possible, deploying separate MCP servers improves reusability, optimizes resources, and simplifies monitoring. Blaxel also optimizes placement globally when your serverless tool server needs to make multiple backend calls.
-
-</Accordion>
 
 ### Which component should I use?
 
-When building your agentic system, you'll need to make architecture design choices. Blaxel offers several high-perf compute options, summarized below in order of latency performance:
+When building your agentic system, you'll need to make architecture design choices. Blaxel offers several high-performance compute options, summarized below in order of latency performance, alongside two storage products (Volumes and Agent Drive) for long-term persistence:
 
 - [**Sandboxes**](Sandboxes/Overview): Perfect for maximum workload flexibility. These microVMs provide full access to filesystem, network, and processes, booting from standby in under 25ms.
 - [**Agents Hosting (sync mode)**](https://docs.blaxel.ai/Agents/Query-agents#default-synchronous-endpoint): Ideal for running HTTP API services that process requests within a few seconds.
@@ -96,8 +88,16 @@ When building your agentic system, you'll need to make architecture design choic
 | Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~25ms | Custom API endpoints |
 | Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific input parameters |
 | MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 10 mins**) | ~25ms | API following MCP  |
+| Volumes | Long-term persistent block storage attached to a sandbox or agent | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Block storage (POSIX) |
+| Agent Drive | Shared distributed filesystem across sandboxes and agents | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Distributed filesystem (POSIX + S3) |
+
+<Note>
+  Volumes and Agent Drive are storage products, so "boot time" and "workload duration" don't apply.
+</Note>
 
 ## The Blaxel powerhouse
+
+Blaxel is a fully managed cloud platform. For regulated or enterprise customers who require "self-hosted" options: private network connectivity and bring-your-own-server arrangements are available; [contact us](https://blaxel.ai/contact) to discuss your requirements.
 
 When you deploy workloads to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part.
 
