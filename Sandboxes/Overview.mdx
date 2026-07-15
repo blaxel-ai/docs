@@ -252,7 +252,7 @@ For write-heavy workloads, set `storageMb` (TypeScript/CLI) or `storage_mb` (Pyt
 
 `storageMb` cannot be combined with a persistent volume mounted at `/`. Use root storage for ephemeral root filesystem capacity, or use a volume at a subpath such as `/data` when data should persist independently from the sandbox lifecycle.
 
-Use [volumes](/Sandboxes/Volumes) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, and are not as fast as the native in-memory filesystem.
+Use [volumes](/Sandboxes/Volumes) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, and are not as fast as the native in-memory filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
 
 ### Ports
 
