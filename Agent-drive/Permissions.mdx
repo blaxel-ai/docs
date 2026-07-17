@@ -1,13 +1,28 @@
 ---
 title: 'Drive permissions'
 sidebarTitle: 'Permissions'
-description: 'Restrict which sandboxes, agents, or jobs can mount an Agent Drive using label-based ACL rules with read or read-write access and path scoping.'
+description: 'Control which sandboxes, agents, or jobs can access an Agent Drive contents using label-based ACL rules with read or read-write access and path scoping.'
 tag: "private preview"
 ---
 
-Drive permissions restrict which sandboxes, agents, or jobs can mount a specific drive. Permissions are evaluated against the workload's identity labels at mount time. If no permissions are defined on a drive, any workload in the workspace can mount it.
+Drive permissions control which sandboxes, agents, or jobs can access the contents of a drive (or a specific folder in a drive). They are access control rules set at the drive level, evaluated against the workload's identity labels. If no permissions are defined on a drive, any workload in the workspace can access all of its contents.
+
+## Mount and access are different things
+
+The most common point of confusion is treating a mount as an access boundary. It is not. Mounting and accessing a drive are two separate operations, and permissions govern access, not the mount.
+
+- Mounting is a client-side operation. It projects a drive's contents into a sandbox's filesystem at a mount path, so the workload can read and write files with a standard POSIX interface. Mounting a drive is like serving a website locally: it changes where the content appears, not who is allowed to reach it.
+- Accessing is reaching the drive's contents. Agent Drive exposes an internal HTTP API, so a workload can read and write a drive's files directly, whether or not the drive is mounted anywhere.
+
+Because a workload can reach a drive's contents through the API without ever mounting it, controlling the mount does not isolate a drive. Permissions are what isolate a drive: they are enforced by the server for every access path, both mounts and direct API calls.
+
+<Warning>
+  By default, a new drive has no permissions, which means any workload in the workspace can access all of its contents, mounted or not. Set permissions to restrict access to the workloads you choose.
+</Warning>
 
 ## How permissions work
+
+Permissions are a list of access control rules attached to a drive. A workload is granted access when it matches a rule, and the same rules apply whether the workload mounts the drive or calls the HTTP API directly.
 
 Each drive can have up to 3 permission rules. A permission rule contains:
 
@@ -17,7 +32,7 @@ Each drive can have up to 3 permission rules. A permission rule contains:
 | `mode` | Access mode: `read` or `read-write` | `read-write` |
 | `path` | Subfolder the workload is restricted to | `/` (full drive) |
 
-Permissions are evaluated with OR logic: the first matching rule grants access. Within a single rule, all specified labels must match (AND logic).
+Rules are evaluated with OR logic: the first matching rule grants access with its `mode` and `path`. Within a single rule, all specified labels must match (AND logic). If no rule matches, access is denied.
 
 ## Label matching
 
@@ -51,7 +66,7 @@ sandbox = await SandboxInstance.create(
 
 </CodeGroup>
 
-These labels then appear in the workload identity token and are evaluated against drive permission rules at mount time.
+These labels then appear in the workload identity token and are evaluated against the drive's permission rules on every access.
 
 ## Create a drive with permissions
 
@@ -103,7 +118,7 @@ drive = await DriveInstance.create(
 
 ## Update permissions on an existing drive
 
-Permissions can be modified on a drive that is already in use. Updated permissions apply to new mount requests. Existing mounts are not affected until remounted.
+Permissions can be modified on a drive that is already in use.
 
 <CodeGroup>
 
@@ -145,7 +160,7 @@ To remove all permissions and make the drive open-access again, set `permissions
 
 ### Restrict to a single team
 
-Only sandboxes with `team: "data-science"` can mount the drive:
+Only workloads with `team: "data-science"` can access the drive:
 
 ```tsx TypeScript
 permissions: [
@@ -195,22 +210,18 @@ permissions: [
 ]
 ```
 
-The workload can only see files under `/reports` when it mounts the drive.
+The workload can only access files under `/reports`, whether it reads them through the API or mounts the drive.
 
 ## Behavior summary
 
 | Scenario | Result |
 |---|---|
-| No permissions defined on drive | Any workload in the workspace can mount |
-| Permissions defined, workload labels match a rule | Mount allowed with the rule's mode and path |
-| Permissions defined, no rule matches | Mount denied |
+| No permissions defined on drive | Any workload in the workspace can access all contents (via mount or internal API) |
+| Permissions defined, workload labels match a rule | Access allowed with the rule's mode and path |
+| Permissions defined, no rule matches | Access denied |
 | Multiple rules match | First matching rule applies |
 | Rule with empty `mode` | Defaults to `read-write` |
 | Rule with empty `path` | Defaults to `/` (full drive) |
-
-<Warning>
-  Permissions are enforced at mount time. If you update permissions on a drive, existing mounts are not affected. The workload must unmount and remount to pick up the new rules.
-</Warning>
 
 <CardGroup cols={2}>
   <Card title="Agent Drive overview" href="/Agent-drive/Overview">
