@@ -118,7 +118,7 @@ drive = await DriveInstance.create(
 
 ## Update permissions on an existing drive
 
-Permissions can be modified on a drive that is already in use. Updated permissions apply to new access requests and new mount requests. Existing mounts are not affected until remounted.
+Permissions can be modified on a drive that is already in use.
 
 <CodeGroup>
 
@@ -216,16 +216,12 @@ The workload can only access files under `/reports`, whether it reads them throu
 
 | Scenario | Result |
 |---|---|
-| No permissions defined on drive | Any workload in the workspace can access all contents (mount or direct API) |
+| No permissions defined on drive | Any workload in the workspace can access all contents (via mount or internal API) |
 | Permissions defined, workload labels match a rule | Access allowed with the rule's mode and path |
 | Permissions defined, no rule matches | Access denied |
 | Multiple rules match | First matching rule applies |
 | Rule with empty `mode` | Defaults to `read-write` |
 | Rule with empty `path` | Defaults to `/` (full drive) |
-
-<Warning>
-  Permissions are enforced by the server on every access, so they apply to both mounts and direct API calls. If you update permissions on a drive, existing mounts keep their current access until the workload unmounts and remounts to pick up the new rules.
-</Warning>
 
 <CardGroup cols={2}>
   <Card title="Agent Drive overview" href="/Agent-drive/Overview">
