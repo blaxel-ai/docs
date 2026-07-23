@@ -249,6 +249,7 @@
       {
         "tab": "Tutorials and Examples",
         "pages": [
+          "Tutorials/Overview",
           {
             "group": "Popular templates",
             "pages": [
@@ -275,7 +276,8 @@
                   "Tutorials/Codex",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
-              }
+              },
+              "Examples/Overview"
             ]
           },
           {
@@ -306,12 +308,6 @@
               "Tutorials/PydanticAI",
               "Tutorials/n8n",
               "Tutorials/Custom-Agents"
-            ]
-          },
-          {
-            "group": "Complete examples",
-            "pages": [
-              "Examples/Overview"
             ]
           }
         ]
