@@ -72,6 +72,8 @@
               },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
+              "Sandboxes/Snapshots-and-fork",
+              "Sandboxes/Fork",
               "Sandboxes/Schedules",
               "Sandboxes/best-practices"
             ]
@@ -112,6 +114,12 @@
                 ]
               },
               "Jobs/Variables-and-secrets-jobs"
+            ]
+          },
+          {
+            "group": "Applications",
+            "pages": [
+              "Applications/Overview"
             ]
           },
           {
