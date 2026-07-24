@@ -273,7 +273,6 @@
               {
                 "group": "OpenAI / Codex",
                 "pages": [
-                  "Tutorials/OpenAI-Agents-API",
                   "Tutorials/Codex",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
