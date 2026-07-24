@@ -72,6 +72,7 @@
               },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
+              "Sandboxes/Fork",
               "Sandboxes/Schedules",
               "Sandboxes/best-practices"
             ]
