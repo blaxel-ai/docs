@@ -13,17 +13,25 @@ Create a snapshot of an existing sandbox. The snapshot captures the filesystem, 
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { createSandboxSnapshot } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshot = await sandbox.createSnapshot({ name: "before-migration" });
+const { data: snapshot } = await createSandboxSnapshot({
+  path: { sandboxName: "my-sandbox" },
+  body: { name: "before-migration" },
+  throwOnError: true,
+});
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.compute.create_sandbox_snapshot import asyncio as create_sandbox_snapshot
+from blaxel.core.client.models import SandboxSnapshotRequest
 
-sandbox = await SandboxInstance.get("my-sandbox")
-snapshot = await sandbox.create_snapshot({"name": "before-migration"})
+snapshot = await create_sandbox_snapshot(
+    sandbox_name="my-sandbox",
+    client=client,
+    body=SandboxSnapshotRequest(name="before-migration"),
+)
 ```
 
 </CodeGroup>
@@ -43,17 +51,19 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { listSandboxSnapshots } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshots = await sandbox.listSnapshots();
+const { data: snapshots } = await listSandboxSnapshots({
+  path: { sandboxName: "my-sandbox" },
+  throwOnError: true,
+});
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.compute.list_sandbox_snapshots import asyncio as list_sandbox_snapshots
 
-sandbox = await SandboxInstance.get("my-sandbox")
-snapshots = await sandbox.list_snapshots()
+snapshots = await list_sandbox_snapshots(sandbox_name="my-sandbox", client=client)
 ```
 
 </CodeGroup>
@@ -83,21 +93,25 @@ Forking creates a new resource (sandbox or application) from an existing sandbox
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { forkSandbox } from "@blaxel/core";
 
-const result = await SandboxInstance.fork("my-sandbox", {
-  targetName: "my-sandbox-copy",
-  targetType: "sandbox",
+const { data: result } = await forkSandbox({
+  path: { sandboxName: "my-sandbox" },
+  body: { targetName: "my-sandbox-copy", targetType: "sandbox" },
+  throwOnError: true,
 });
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.compute.fork_sandbox import asyncio as fork_sandbox
+from blaxel.core.client.models import SandboxForkRequest
 
-result = await SandboxInstance.fork("my-sandbox", {
-    "target_name": "my-sandbox-copy",
-    "target_type": "sandbox",
-})
+result = await fork_sandbox(
+    sandbox_name="my-sandbox",
+    client=client,
+    body=SandboxForkRequest(target_name="my-sandbox-copy", target_type="sandbox"),
+)
 ```
 
 </CodeGroup>
@@ -128,25 +142,35 @@ Create an [application](/Applications/Overview) directly from a running sandbox.
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { forkSandbox } from "@blaxel/core";
 
-const result = await SandboxInstance.fork("my-sandbox", {
-  targetName: "my-app",
-  targetType: "application",
-  traffic: 100,
-  port: 8080,
+const { data: result } = await forkSandbox({
+  path: { sandboxName: "my-sandbox" },
+  body: {
+    targetName: "my-app",
+    targetType: "application",
+    traffic: 100,
+    port: 8080,
+  },
+  throwOnError: true,
 });
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.compute.fork_sandbox import asyncio as fork_sandbox
+from blaxel.core.client.models import SandboxForkRequest
 
-result = await SandboxInstance.fork("my-sandbox", {
-    "target_name": "my-app",
-    "target_type": "application",
-    "traffic": 100,
-    "port": 8080,
-})
+result = await fork_sandbox(
+    sandbox_name="my-sandbox",
+    client=client,
+    body=SandboxForkRequest(
+        target_name="my-app",
+        target_type="application",
+        traffic=100,
+        port=8080,
+    ),
+)
 ```
 
 </CodeGroup>
@@ -187,25 +211,35 @@ Attach a custom domain to the forked application using the `customDomain` parame
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { forkSandbox } from "@blaxel/core";
 
-const result = await SandboxInstance.fork("my-sandbox", {
-  targetName: "my-app",
-  targetType: "application",
-  traffic: 100,
-  customDomain: "app.example.com",
+const { data: result } = await forkSandbox({
+  path: { sandboxName: "my-sandbox" },
+  body: {
+    targetName: "my-app",
+    targetType: "application",
+    traffic: 100,
+    customDomain: "app.example.com",
+  },
+  throwOnError: true,
 });
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.compute.fork_sandbox import asyncio as fork_sandbox
+from blaxel.core.client.models import SandboxForkRequest
 
-result = await SandboxInstance.fork("my-sandbox", {
-    "target_name": "my-app",
-    "target_type": "application",
-    "traffic": 100,
-    "custom_domain": "app.example.com",
-})
+result = await fork_sandbox(
+    sandbox_name="my-sandbox",
+    client=client,
+    body=SandboxForkRequest(
+        target_name="my-app",
+        target_type="application",
+        traffic=100,
+        custom_domain="app.example.com",
+    ),
+)
 ```
 
 </CodeGroup>

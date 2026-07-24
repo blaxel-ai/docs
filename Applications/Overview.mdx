@@ -39,35 +39,38 @@ const app = await ApplicationInstance.create({
 ```
 
 ```python Python
-import asyncio
 from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, Env
 
-async def main():
-    app = await ApplicationInstance.create({
-        "name": "my-app",
-        "image": "my-registry/my-image:latest",
-        "memory": 2048,
-        "region": "us-pdx-1",
-        "envs": [{"name": "NODE_ENV", "value": "production"}],
-    })
-
-if __name__ == "__main__":
-    asyncio.run(main())
+app = await ApplicationInstance.create(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="my-registry/my-image:latest",
+        memory=2048,
+        envs=[Env(name="NODE_ENV", value="production")],
+    ),
+))
 ```
 
 ```go Go
-import blaxel "github.com/blaxel-ai/sdk-go"
+import (
+    blaxel "github.com/blaxel-ai/sdk-go"
+    "github.com/blaxel-ai/sdk-go/shared"
+)
 
-app, err := client.Applications.Create(ctx, blaxel.ApplicationCreateParams{
-    Body: blaxel.Application{
-        Metadata: blaxel.Metadata{Name: "my-app"},
-        Spec: blaxel.ApplicationSpec{
-            Enabled: true,
-            Region:  "us-pdx-1",
-            Revisions: []blaxel.AppRevision{{
-                Image:  "my-registry/my-image:latest",
-                Memory: 2048,
-                Envs:   []blaxel.Env{{Name: "NODE_ENV", Value: "production"}},
+app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("my-registry/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            Envs: []shared.EnvParam{{
+                Name:  blaxel.String("NODE_ENV"),
+                Value: blaxel.String("production"),
             }},
         },
     },
@@ -120,14 +123,16 @@ curl -X POST https://api.blaxel.ai/v0/applications \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
-      "revisions": [{
-        "image": "my-registry/my-image:latest",
-        "memory": 2048,
-        "envs": [{ "name": "NODE_ENV", "value": "production" }]
-      }]
+      "image": "my-registry/my-image:latest",
+      "memory": 2048,
+      "envs": [{ "name": "NODE_ENV", "value": "production" }]
     }
   }'
 ```
+
+<Note>
+Set the compute (`image`, `memory`, `envs`, `port`) at the spec level. The backend generates a revision from the spec-level compute on every create/update — you never craft `revisions` by hand.
+</Note>
 
 ## Retrieve an application
 
@@ -148,7 +153,7 @@ print(app.status)
 ```
 
 ```go Go
-app, err := client.Applications.Get(ctx, "my-app", blaxel.ApplicationGetParams{})
+app, err := client.Applications.Get(ctx, "my-app")
 ```
 
 </CodeGroup>
@@ -221,25 +226,29 @@ const updated = await app.update({
 
 ```python Python
 from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata
 
 app = await ApplicationInstance.get("my-app")
-updated = await app.update({
-    "image": "my-registry/my-image:v2",
-    "memory": 4096,
-})
+updated = await app.update(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="my-registry/my-image:v2",
+        memory=4096,
+    ),
+))
 ```
 
 ```go Go
 updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpdateParams{
-    Body: blaxel.Application{
-        Metadata: blaxel.Metadata{Name: "my-app"},
-        Spec: blaxel.ApplicationSpec{
-            Enabled: true,
-            Region:  "us-pdx-1",
-            Revisions: []blaxel.AppRevision{{
-                Image:  "my-registry/my-image:v2",
-                Memory: 4096,
-            }},
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("my-registry/my-image:v2"),
+            Memory:  blaxel.Int(4096),
         },
     },
 })
@@ -259,10 +268,8 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
-      "revisions": [{
-        "image": "my-registry/my-image:v2",
-        "memory": 4096
-      }]
+      "image": "my-registry/my-image:v2",
+      "memory": 4096
     }
   }'
 ```
@@ -284,7 +291,7 @@ await ApplicationInstance.delete("my-app")
 ```
 
 ```go Go
-err := client.Applications.Delete(ctx, "my-app")
+_, err := client.Applications.Delete(ctx, "my-app")
 ```
 
 </CodeGroup>
@@ -319,10 +326,10 @@ const revisions = await app.listRevisions();
 ```
 
 ```python Python
-from blaxel.core import ApplicationInstance
+from blaxel.core.client import client
+from blaxel.core.client.api.applications.list_application_revisions import asyncio as list_application_revisions
 
-app = await ApplicationInstance.get("my-app")
-revisions = await app.list_revisions()
+revisions = await list_application_revisions(application_name="my-app", client=client)
 ```
 
 ```go Go
@@ -359,13 +366,11 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
+      "image": "my-registry/my-image:v3",
+      "memory": 2048,
       "revision": {
         "traffic": 20
-      },
-      "revisions": [{
-        "image": "my-registry/my-image:v3",
-        "memory": 2048
-      }]
+      }
     }
   }'
 ```
@@ -406,44 +411,39 @@ const app = await ApplicationInstance.create({
   spec: {
     enabled: true,
     region: "us-pdx-1",
+    image: "my-registry/my-image:latest",
+    memory: 2048,
     urls: [{ domain: "app.example.com" }],
-    revisions: [{
-      image: "my-registry/my-image:latest",
-      memory: 2048,
-    }],
   },
 });
 ```
 
 ```python Python
 from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, AppUrl
 
-app = await ApplicationInstance.create({
-    "metadata": {"name": "my-app"},
-    "spec": {
-        "enabled": True,
-        "region": "us-pdx-1",
-        "urls": [{"domain": "app.example.com"}],
-        "revisions": [{
-            "image": "my-registry/my-image:latest",
-            "memory": 2048,
-        }],
-    },
-})
+app = await ApplicationInstance.create(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="my-registry/my-image:latest",
+        memory=2048,
+        urls=[AppUrl(domain="app.example.com")],
+    ),
+))
 ```
 
 ```go Go
-app, err := client.Applications.Create(ctx, blaxel.ApplicationCreateParams{
-    Body: blaxel.Application{
-        Metadata: blaxel.Metadata{Name: "my-app"},
-        Spec: blaxel.ApplicationSpec{
-            Enabled: true,
-            Region:  "us-pdx-1",
-            Urls:    []blaxel.AppUrl{{Domain: "app.example.com"}},
-            Revisions: []blaxel.AppRevision{{
-                Image:  "my-registry/my-image:latest",
-                Memory: 2048,
-            }},
+app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("my-registry/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
         },
     },
 })
@@ -470,26 +470,31 @@ const updated = await ApplicationInstance.update("my-app", {
 
 ```python Python
 from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, AppUrl
 
 app = await ApplicationInstance.get("my-app")
-updated = await app.update({
-    "metadata": app.metadata,
-    "spec": {
-        **app.spec,
-        "urls": [{"domain": "app.example.com"}],
-    },
-})
+updated = await app.update(Application(
+    metadata=app.metadata,
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="my-registry/my-image:latest",
+        memory=2048,
+        urls=[AppUrl(domain="app.example.com")],
+    ),
+))
 ```
 
 ```go Go
 updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpdateParams{
-    Body: blaxel.Application{
-        Metadata: existing.Metadata,
-        Spec: blaxel.ApplicationSpec{
-            Enabled: existing.Spec.Enabled,
-            Region:  existing.Spec.Region,
-            Urls:    []blaxel.AppUrl{{Domain: "app.example.com"}},
-            Revisions: existing.Spec.Revisions,
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("my-registry/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
         },
     },
 })
@@ -509,13 +514,11 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
+      "image": "my-registry/my-image:latest",
+      "memory": 2048,
       "urls": [
         { "domain": "app.example.com" }
-      ],
-      "revisions": [{
-        "image": "my-registry/my-image:latest",
-        "memory": 2048
-      }]
+      ]
     }
   }'
 ```
@@ -557,19 +560,17 @@ The domain must be a verified custom domain in your workspace. Custom domain ver
 
 ## Environment variables and secrets
 
-Pass environment variables to your application through the revision's `envs` field. Each entry supports either a plain `value` or a reference to a Blaxel `secretName`.
+Pass environment variables to your application through the spec-level `envs` field. Each entry has a `name` and `value`; set `secret: true` to mark the value as a secret so it is stored and displayed securely.
 
 ```json
 {
   "spec": {
-    "revisions": [{
-      "image": "my-registry/my-image:latest",
-      "memory": 2048,
-      "envs": [
-        { "name": "DATABASE_URL", "value": "postgres://..." },
-        { "name": "API_KEY", "secretName": "my-api-key-secret" }
-      ]
-    }]
+    "image": "my-registry/my-image:latest",
+    "memory": 2048,
+    "envs": [
+      { "name": "DATABASE_URL", "value": "postgres://..." },
+      { "name": "API_KEY", "value": "super-secret-value", "secret": true }
+    ]
   }
 }
 ```
