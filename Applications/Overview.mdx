@@ -1,12 +1,12 @@
 ---
 title: 'Applications'
 sidebarTitle: 'Overview'
-description: 'Deploy long-running services as publicly accessible endpoints with revision management, canary traffic splitting, and custom URLs.'
+description: 'Deploy long-running services as publicly accessible endpoints with revision management and custom URLs.'
 ---
 
 Applications are long-running deployed services that run your custom code as publicly accessible endpoints. They are ideal for web servers, APIs, dashboards, and any service that needs to be always-on.
 
-Applications run on Blaxel's mk3 micro-VM infrastructure and support revision management with canary traffic splitting, custom domain URLs, and deployment from source code, images, or forked sandboxes.
+Applications run on Blaxel's mk3 micro-VM infrastructure and support revision management, custom domain URLs, and deployment from source code, images, or forked sandboxes.
 
 <Note>
 Application Runtime is currently in preview.
@@ -16,7 +16,6 @@ Application Runtime is currently in preview.
 
 - **Application**: A long-running deployment that serves traffic on a public URL.
 - **Revision**: An immutable snapshot of the application code, image, environment, and memory configuration. Each deploy creates a new revision (max 5 kept).
-- **Traffic splitting**: Route traffic between an active revision and a canary revision using percentage-based splitting.
 - **Sticky sessions**: Optional session affinity via `stickySessionTtl` to keep users on the same revision.
 - **Custom URLs**: Map verified custom domains to your application.
 
@@ -136,7 +135,7 @@ Set the compute (`image`, `memory`, `envs`, `port`) at the spec level. The backe
 
 ## Create an application from a sandbox fork
 
-You can turn a running sandbox into an application by forking it. This produces a **proxy application** that rebinds to the forked sandbox — the application has no compute of its own to build. Its `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management, traffic splitting, and custom domains on top.
+You can turn a running sandbox into an application by forking it. This produces a **proxy application** that rebinds to the forked sandbox — the application has no compute of its own to build. Its `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
 
 This is useful for promoting a sandbox you developed and tested interactively into a long-running, publicly addressable service without rebuilding an image.
 
@@ -442,35 +441,6 @@ HTTP API:
 curl https://api.blaxel.ai/v0/applications/my-app/revisions \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
-```
-
-### Traffic splitting
-
-Control how traffic is distributed between revisions using the `traffic` parameter on deploy:
-
-- `traffic=100` (default): the new revision receives 100% of traffic (full deployment).
-- `traffic=1-99`: canary deployment. The new revision receives this percentage, and the active revision receives the rest.
-- `traffic=0`: staging deployment. The new revision is deployed but receives no traffic.
-
-To deploy a canary revision via the HTTP API:
-
-```bash
-curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
-  -H "Authorization: Bearer $BL_API_KEY" \
-  -H "X-Blaxel-Workspace: my-workspace" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "metadata": { "name": "my-app" },
-    "spec": {
-      "enabled": true,
-      "region": "us-pdx-1",
-      "image": "my-registry/my-image:v3",
-      "memory": 2048,
-      "revision": {
-        "traffic": 20
-      }
-    }
-  }'
 ```
 
 ### Sticky sessions
