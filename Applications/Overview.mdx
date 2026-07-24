@@ -174,7 +174,7 @@ print(result.name)  # "my-app"
 
 The fork snapshots the sandbox's live state automatically. To fork from a snapshot you took earlier, pass its `snapshotId` (TypeScript) / `snapshot_id` (Python).
 
-You can also attach a custom domain and split traffic at fork time:
+You can also attach a custom domain at fork time:
 
 <CodeGroup>
 
@@ -186,7 +186,6 @@ const sandbox = await SandboxInstance.get("my-sandbox");
 const result = await sandbox.fork("my-app", {
   targetType: "application",
   port: 3000,              // port the app serves on (defaults to the sandbox's first port, else 8080)
-  traffic: 20,             // send 20% of traffic to this revision (canary)
   customDomain: "app.example.com",
   prefix: "myapp",         // subdomain for wildcard custom domains
 });
@@ -201,7 +200,6 @@ result = await sandbox.fork(
     "my-app",
     target_type="application",
     port=3000,
-    traffic=20,
     custom_domain="app.example.com",
     prefix="myapp",
 )
