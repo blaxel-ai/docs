@@ -26,11 +26,12 @@ Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 * [bl delete](/cli-reference/commands/bl_delete)	 - Delete resources from your workspace
 * [bl deploy](/cli-reference/commands/bl_deploy)	 - Build, push, and deploy your project to Blaxel
 * [bl drive](/cli-reference/commands/bl_drive)	 - Manage drives and drive mounts on sandboxes
+* [bl fork](/cli-reference/commands/bl_fork)	 - Fork a sandbox into a new sandbox or application
 * [bl get](/cli-reference/commands/bl_get)	 - List or retrieve Blaxel resources in your workspace
 * [bl login](/cli-reference/commands/bl_login)	 - Login to Blaxel
 * [bl logout](/cli-reference/commands/bl_logout)	 - Logout from Blaxel
 * [bl logs](/cli-reference/commands/bl_logs)	 - View and stream logs for agents, jobs, sandboxes, and functions
-* [bl new](/cli-reference/commands/bl_new)	 - Scaffold a new project from a template (agent, mcp, sandbox, job, volume-template)
+* [bl new](/cli-reference/commands/bl_new)	 - Scaffold a new project from a template (agent, app, mcp, sandbox, job, volume-template)
 * [bl push](/cli-reference/commands/bl_push)	 - Build and push a container image to the Blaxel registry
 * [bl run](/cli-reference/commands/bl_run)	 - Execute a resource (agent, model, job, function, sandbox)
 * [bl serve](/cli-reference/commands/bl_serve)	 - Start a local development server for your project
