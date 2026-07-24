@@ -134,6 +134,12 @@
             ]
           },
           {
+            "group": "Applications",
+            "pages": [
+              "Applications/Overview"
+            ]
+          },
+          {
             "group": "MCP Servers Hosting",
             "pages": [
               "Functions/Overview",
