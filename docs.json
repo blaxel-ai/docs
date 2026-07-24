@@ -8,6 +8,18 @@
     "dark": "#F0652D"
   },
   "favicon": "/favicon.webp",
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "devin",
+      "download-spec"
+    ],
+    "display": "header"
+  },
   "navigation": {
     "global": {
       "anchors": [
