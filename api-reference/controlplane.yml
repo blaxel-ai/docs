@@ -308,7 +308,8 @@ components:
         nodeGeneration:
           type: string
           description: Infrastructure generation this application is deployed on (mk3.0
-            or mk3.1). Read-only.
+            or mk3.1).
+          readOnly: true
         spec:
           $ref: '#/components/schemas/ApplicationSpec'
         status:
@@ -3049,7 +3050,8 @@ components:
         nodeGeneration:
           type: string
           description: Infrastructure generation this sandbox is deployed on (mk3.0
-            or mk3.1). Read-only.
+            or mk3.1).
+          readOnly: true
         spec:
           $ref: '#/components/schemas/SandboxSpec'
         state:
@@ -3751,8 +3753,10 @@ components:
       - spec
     VolumeAttachment:
       type: object
-      description: Configuration for attaching a persistent volume to a sandbox at
-        a specific filesystem path
+      description: Configuration for attaching a volume to a sandbox at a specific
+        filesystem path. Defaults to a persistent volume; set type to "ephemeral"
+        for disk-backed scratch space created with the sandbox and destroyed when
+        it stops.
       properties:
         mountPath:
           type: string
@@ -3761,14 +3765,29 @@ components:
           example: /mnt/data
         name:
           type: string
-          description: Name of the volume resource to attach (must exist in the same
-            workspace and region)
+          description: For persistent volumes, the name of the volume resource to
+            attach (must exist in the same workspace and region). For ephemeral volumes,
+            an identifier used to reference the volume internally.
           example: my-volume
         readOnly:
           type: boolean
           description: If true, the volume is mounted read-only and cannot be modified
             by the sandbox
           example: false
+        sizeMb:
+          type: integer
+          description: Storage capacity in megabytes. Required for ephemeral volumes,
+            ignored for persistent volumes.
+          example: 102400
+        type:
+          type: string
+          description: Type of volume. Defaults to "persistent" (an existing volume
+            resource). Use "ephemeral" for temporary disk-backed storage created with
+            the sandbox.
+          enum:
+          - persistent
+          - ephemeral
+          example: persistent
     VolumeAttachments:
       type: array
       items:
