@@ -1,16 +1,29 @@
 ---
 title: 'Applications'
 sidebarTitle: 'Overview'
-description: 'Deploy long-running services as publicly accessible endpoints with revision management and custom URLs.'
+description: 'Serve AI-generated code as publicly accessible endpoints with revision management and custom URLs.'
+tag: "private preview"
 ---
 
-Applications are long-running deployed services that run your custom code as publicly accessible endpoints. They are ideal for web servers, APIs, dashboards, and any service that needs to be always-on.
-
-Applications run on Blaxel's mk3 micro-VM infrastructure and support revision management, custom domain URLs, and deployment from source code, images, or forked sandboxes.
-
 <Note>
-Application Runtime is currently in preview.
+  This feature is currently in private preview and is not recommended for production use.
 </Note>
+
+Applications are long-running, deployed services that run custom code as publicly accessible endpoints. They are ideal for serving AI-generated software to end-users. They support revision management, [custom domain URLs](/Infrastructure/Custom-domains), and deployment from source code, images, or [forked sandboxes](/Sandboxes/Fork).
+
+## Design philosophy
+Autonomous agents now all have coding abilities. It gives them near-infinite flexibility for tool calling. We believe the future of autonomous agents goes one step further: they will build adhoc user-facing software to expose as micro-apps to end-users - whether humans-in-the-loop, or other agents. 
+
+As AI agents produce outputs faster than humans by several orders of magnitude, a key requirement is the ability for agents to iterate on this user-facing software in near real-time. For instance, in a world where an agent generates a full running app in a couple of minutes, pushes it to prod, and iterates on it every few minutes, it cannot afford a build time for every deployment. 
+
+Conceptually, an Application is a snapshot of an AI-generated piece of software, frozen at a point in time and served to end users. Sandboxes, on the other hand, are the development & experimentation environment for agents. In a sandbox, they can do anything anytime, but that also means they can break anything which becomes a problem once it’s serving live traffic.
+
+With that framing, features can be built specifically for each use case, for example:
+* A distinct custom domain per app. Each Application typically belongs to a different end user, whereas a Sandbox usually sits behind a single custom domain: yours.
+* A real deployment lifecycle: blue-green deploys, rollbacks, observability, etc.
+
+Blaxel aims to power both the development phase (Blaxel Sandboxes) and the production phase (Blaxel Applications) of AI-generated software: you can flip from dev to prod in a few milliseconds thanks to the core Blaxel runtime.
+
 
 ## Key concepts
 
@@ -135,7 +148,7 @@ Set the compute (`image`, `memory`, `envs`, `port`) at the spec level. The backe
 
 ## Create an application from a sandbox fork
 
-You can turn a running sandbox into an application by forking it. This produces a **proxy application** that rebinds to the forked sandbox — the application has no compute of its own to build. Its `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
+You can turn a running sandbox into an application by [forking it](/Sandboxes/Fork). This produces a **proxy application** that rebinds to the forked sandbox — the application has no compute of its own to build. Its `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
 
 This is useful for promoting a sandbox you developed and tested interactively into a long-running, publicly addressable service without rebuilding an image.
 
@@ -204,17 +217,11 @@ result = await sandbox.fork(
 )
 ```
 
-</CodeGroup>
-
-CLI:
-
-```bash
+```bash CLI
 bl fork sbx/my-sandbox app/my-app
 ```
 
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -224,6 +231,9 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
     "targetName": "my-app"
   }'
 ```
+
+</CodeGroup>
+
 
 <Note>
 If an application with `targetName` already exists, forking updates its compute so the backend generates a fresh revision proxying to the (forked) sandbox. Otherwise a new application is created. Forking into an application requires the Application Runtime feature to be enabled on your workspace.
@@ -253,21 +263,20 @@ print(app.status)
 app, err := client.Applications.Get(ctx, "my-app")
 ```
 
-</CodeGroup>
-
-CLI:
-
-```bash
+```bash CLI
 bl get applications
 ```
 
-HTTP API:
 
-```bash
+```bash HTTP API
 curl https://api.blaxel.ai/v0/applications/my-app \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
+
+</CodeGroup>
+
+
 
 ## List applications
 
@@ -289,21 +298,18 @@ apps = await ApplicationInstance.list()
 apps, err := client.Applications.List(ctx, blaxel.ApplicationListParams{})
 ```
 
-</CodeGroup>
-
-CLI:
-
-```bash
+```bash CLI
 bl get applications
 ```
 
-HTTP API:
-
-```bash
+```bash HTTP API
 curl https://api.blaxel.ai/v0/applications \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
+
+</CodeGroup>
+
 
 ## Update an application
 
@@ -351,11 +357,7 @@ updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpda
 })
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -370,6 +372,10 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     }
   }'
 ```
+
+</CodeGroup>
+
+
 
 ## Delete an application
 
@@ -391,21 +397,18 @@ await ApplicationInstance.delete("my-app")
 _, err := client.Applications.Delete(ctx, "my-app")
 ```
 
-</CodeGroup>
-
-CLI:
-
-```bash
+```bash CLI
 bl delete application my-app
 ```
 
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X DELETE https://api.blaxel.ai/v0/applications/my-app \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
+
+</CodeGroup>
+
 
 ## Revisions
 
@@ -433,15 +436,14 @@ revisions = await list_application_revisions(application_name="my-app", client=c
 revisions, err := client.Applications.ListRevisions(ctx, "my-app")
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl https://api.blaxel.ai/v0/applications/my-app/revisions \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
+
+</CodeGroup>
+
 
 ### Sticky sessions
 
@@ -568,11 +570,7 @@ updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpda
 })
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -590,6 +588,8 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     }
   }'
 ```
+
+</CodeGroup>
 
 For wildcard custom domains (e.g. `*.sandbox.example.com`), use the `subdomain` field:
 
