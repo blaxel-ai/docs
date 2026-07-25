@@ -31,17 +31,16 @@ sandbox = await SandboxInstance.get("my-sandbox")
 snapshot = await sandbox.snapshot("before-migration")
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
   -H "Content-Type: application/json" \
   -d '{ "name": "before-migration" }'
 ```
+
+</CodeGroup>
+
 
 ## List snapshots
 
@@ -61,15 +60,13 @@ sandbox = await SandboxInstance.get("my-sandbox")
 snapshots = await sandbox.list_snapshots()
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
+
+</CodeGroup>
 
 ## Delete a snapshot
 
@@ -89,19 +86,18 @@ sandbox = await SandboxInstance.get("my-sandbox")
 await sandbox.delete_snapshot("snap_abc123")
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/snap_abc123 \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
 
+</CodeGroup>
+
+
 ## Fork a sandbox
 
-Forking creates a new sandbox from an existing one. The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
+Forking creates a new sandbox from an existing one, forking its entire memory state (files + running processes). The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
 
 Calling `fork()` automatically snapshots the source sandbox's current state and forks from it — you don't need to create a snapshot first.
 
@@ -121,17 +117,11 @@ sandbox = await SandboxInstance.get("my-sandbox")
 result = await sandbox.fork("my-sandbox-copy")
 ```
 
-</CodeGroup>
-
-CLI:
-
-```bash
+```bash CLI
 bl fork sbx/my-sandbox sbx/my-sandbox-copy
 ```
 
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -141,6 +131,10 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
     "targetName": "my-sandbox-copy"
   }'
 ```
+
+</CodeGroup>
+
+
 
 ### Fork from a snapshot
 
@@ -169,11 +163,7 @@ result = await sandbox.fork(
 )
 ```
 
-</CodeGroup>
-
-HTTP API:
-
-```bash
+```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -184,6 +174,10 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
     "snapshotId": "snap_abc123"
   }'
 ```
+
+</CodeGroup>
+
+
 
 ## Fork request parameters
 
