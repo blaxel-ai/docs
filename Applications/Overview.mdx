@@ -43,7 +43,7 @@ import { ApplicationInstance } from "@blaxel/core";
 
 const app = await ApplicationInstance.create({
   name: "my-app",
-  image: "my-registry/my-image:latest",
+  image: "app/my-image:latest",
   memory: 2048,
   region: "us-pdx-1",
   envs: [{ name: "NODE_ENV", value: "production" }],
@@ -59,7 +59,7 @@ app = await ApplicationInstance.create(Application(
     spec=ApplicationSpec(
         enabled=True,
         region="us-pdx-1",
-        image="my-registry/my-image:latest",
+        image="app/my-image:latest",
         memory=2048,
         envs=[Env(name="NODE_ENV", value="production")],
     ),
@@ -78,7 +78,7 @@ app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
         Spec: blaxel.ApplicationSpecParam{
             Enabled: blaxel.Bool(true),
             Region:  blaxel.String("us-pdx-1"),
-            Image:   blaxel.String("my-registry/my-image:latest"),
+            Image:   blaxel.String("app/my-image:latest"),
             Memory:  blaxel.Int(2048),
             Envs: []shared.EnvParam{{
                 Name:  blaxel.String("NODE_ENV"),
@@ -114,13 +114,13 @@ region = "us-pdx-1"
 memory = 2048
 ```
 
-To deploy a pre-built image, set the `image` field:
+To reuse an image already built on Blaxel (from a previous `bl deploy` or `bl push`), set the `image` field. External registries are not supported — the image must live in your workspace's Blaxel registry:
 
 ```toml
 name = "my-app"
 type = "application"
 workspace = "my-workspace"
-image = "my-registry/my-image:latest"
+image = "app/my-image:latest"
 ```
 
 ### Using the HTTP API
@@ -135,7 +135,7 @@ curl -X POST https://api.blaxel.ai/v0/applications \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
-      "image": "my-registry/my-image:latest",
+      "image": "app/my-image:latest",
       "memory": 2048,
       "envs": [{ "name": "NODE_ENV", "value": "production" }]
     }
@@ -322,7 +322,7 @@ import { ApplicationInstance } from "@blaxel/core";
 
 const app = await ApplicationInstance.get("my-app");
 const updated = await app.update({
-  image: "my-registry/my-image:v2",
+  image: "app/my-image:v2",
   memory: 4096,
 });
 ```
@@ -337,7 +337,7 @@ updated = await app.update(Application(
     spec=ApplicationSpec(
         enabled=True,
         region="us-pdx-1",
-        image="my-registry/my-image:v2",
+        image="app/my-image:v2",
         memory=4096,
     ),
 ))
@@ -350,7 +350,7 @@ updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpda
         Spec: blaxel.ApplicationSpecParam{
             Enabled: blaxel.Bool(true),
             Region:  blaxel.String("us-pdx-1"),
-            Image:   blaxel.String("my-registry/my-image:v2"),
+            Image:   blaxel.String("app/my-image:v2"),
             Memory:  blaxel.Int(4096),
         },
     },
@@ -367,7 +367,7 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
-      "image": "my-registry/my-image:v2",
+      "image": "app/my-image:v2",
       "memory": 4096
     }
   }'
@@ -481,7 +481,7 @@ const app = await ApplicationInstance.create({
   spec: {
     enabled: true,
     region: "us-pdx-1",
-    image: "my-registry/my-image:latest",
+    image: "app/my-image:latest",
     memory: 2048,
     urls: [{ domain: "app.example.com" }],
   },
@@ -497,7 +497,7 @@ app = await ApplicationInstance.create(Application(
     spec=ApplicationSpec(
         enabled=True,
         region="us-pdx-1",
-        image="my-registry/my-image:latest",
+        image="app/my-image:latest",
         memory=2048,
         urls=[AppUrl(domain="app.example.com")],
     ),
@@ -511,7 +511,7 @@ app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
         Spec: blaxel.ApplicationSpecParam{
             Enabled: blaxel.Bool(true),
             Region:  blaxel.String("us-pdx-1"),
-            Image:   blaxel.String("my-registry/my-image:latest"),
+            Image:   blaxel.String("app/my-image:latest"),
             Memory:  blaxel.Int(2048),
             URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
         },
@@ -548,7 +548,7 @@ updated = await app.update(Application(
     spec=ApplicationSpec(
         enabled=True,
         region="us-pdx-1",
-        image="my-registry/my-image:latest",
+        image="app/my-image:latest",
         memory=2048,
         urls=[AppUrl(domain="app.example.com")],
     ),
@@ -562,7 +562,7 @@ updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpda
         Spec: blaxel.ApplicationSpecParam{
             Enabled: blaxel.Bool(true),
             Region:  blaxel.String("us-pdx-1"),
-            Image:   blaxel.String("my-registry/my-image:latest"),
+            Image:   blaxel.String("app/my-image:latest"),
             Memory:  blaxel.Int(2048),
             URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
         },
@@ -580,7 +580,7 @@ curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
     "spec": {
       "enabled": true,
       "region": "us-pdx-1",
-      "image": "my-registry/my-image:latest",
+      "image": "app/my-image:latest",
       "memory": 2048,
       "urls": [
         { "domain": "app.example.com" }
@@ -633,7 +633,7 @@ Pass environment variables to your application through the spec-level `envs` fie
 ```json
 {
   "spec": {
-    "image": "my-registry/my-image:latest",
+    "image": "app/my-image:latest",
     "memory": 2048,
     "envs": [
       { "name": "DATABASE_URL", "value": "postgres://..." },
