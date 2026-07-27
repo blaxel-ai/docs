@@ -216,6 +216,70 @@ The same drive can be mounted read-write in one sandbox and read-only in others.
 When [drive permissions](/Agent-drive/Permissions) are configured with `mode: "read"`, read-only access is enforced both at the FUSE mount level and at the storage server level. The workload's identity token is validated against the permission rules, preventing unauthorized remounting in read-write mode.
 </Note>
 
+## Access a drive over S3
+
+Every drive also exposes an S3-compatible HTTP endpoint, so you can read and write its contents directly from any S3 client, such as the AWS CLI, boto3, or the AWS SDK for JavaScript, without mounting the drive into a sandbox first.
+
+Requests must use SigV4 signing and path-style addressing (the bucket in the path, not the hostname). Credentials are a [service account](/Security/Service-accounts)'s [API key](/Security/Access-tokens) ID and secret, used as the AWS access key ID and secret access key. Personal API keys and OAuth tokens are not supported for S3 access.
+
+<Note>
+  S3 access follows the same rules as mounting. If [drive permissions](/Agent-drive/Permissions) are configured, the service account's labels must match a permission rule, or access is denied.
+</Note>
+
+### Find a drive's S3 endpoint and bucket
+
+The endpoint is returned in the drive's state as `s3Url`, in the form `{endpoint}/{bucket}`:
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.get("my-drive");
+console.log(drive.state?.s3Url);
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.get("my-drive")
+print(drive.state.s3_url)
+```
+
+```bash CLI
+bl drive get my-drive
+```
+
+</CodeGroup>
+
+The bucket is the last path segment of `s3Url`; the rest of the URL is the endpoint to pass to your S3 client.
+
+### Use the AWS CLI
+
+Export the service account's API key as AWS-style credentials, then use standard `aws s3` commands with `--endpoint-url` and `--region` set to the drive's endpoint and region:
+
+```bash
+export AWS_ACCESS_KEY_ID="<api-key-id>"
+export AWS_SECRET_ACCESS_KEY="<api-key-secret>"
+```
+
+```bash
+aws s3 ls "s3://<bucket>/" \
+  --endpoint-url "<endpoint>" \
+  --region "<drive-region>"
+```
+
+```bash
+aws s3 cp ./local.bin "s3://<bucket>/path/local.bin" \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+aws s3 cp "s3://<bucket>/path/local.bin" ./local.bin \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+```
+
+<Tip>
+  The region passed to the S3 client must match the drive's `region`, and the endpoint must be called with path-style addressing (the default for most S3 clients when a custom endpoint is set).
+</Tip>
+
 ## List mounted drives
 
 List all drives currently mounted to a sandbox:
@@ -468,3 +532,12 @@ asyncio.run(main())
 ```
 
 </CodeGroup>
+
+<CardGroup cols={2}>
+  <Card title="Drive permissions" href="/Agent-drive/Permissions">
+    Restrict which sandboxes, agents, or jobs can access a drive.
+  </Card>
+  <Card title="Sandboxes overview" href="/Sandboxes/Overview">
+    Learn about sandbox lifecycle and configuration.
+  </Card>
+</CardGroup>
