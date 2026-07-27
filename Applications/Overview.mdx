@@ -1,0 +1,725 @@
+---
+title: 'Applications'
+sidebarTitle: 'Overview'
+description: 'Serve AI-generated code as publicly accessible endpoints with revision management and custom URLs.'
+tag: "private preview"
+---
+
+<Note>
+  This feature is currently in private preview and is not recommended for production use.
+</Note>
+
+Applications are long-running, deployed services that run custom code as publicly accessible endpoints. They are ideal for serving AI-generated software to end-users. They support revision management, [custom domain URLs](/Infrastructure/Custom-domains), and deployment from source code, images, or [forked sandboxes](/Sandboxes/Fork).
+
+## Design philosophy
+Autonomous agents now all have coding abilities. It gives them near-infinite flexibility for tool calling. We believe the future of autonomous agents goes one step further: they will build adhoc user-facing software to expose as micro-apps to end-users - whether humans-in-the-loop, or other agents. 
+
+As AI agents produce outputs faster than humans by several orders of magnitude, a key requirement is the ability for agents to iterate on this user-facing software in near real-time. For instance, in a world where an agent generates a full running app in a couple of minutes, pushes it to prod, and iterates on it every few minutes, it cannot afford a build time for every deployment. 
+
+Conceptually, an Application is a snapshot of an AI-generated piece of software, frozen at a point in time and served to end users. Sandboxes, on the other hand, are the development & experimentation environment for agents. In a sandbox, they can do anything anytime, but that also means they can break anything which becomes a problem once it’s serving live traffic.
+
+With that framing, features can be built specifically for each use case, for example:
+* A distinct custom domain per app. Each Application typically belongs to a different end user, whereas a Sandbox usually sits behind a single custom domain: yours.
+* A real deployment lifecycle: blue-green deploys, rollbacks, observability, etc.
+
+Blaxel aims to power both the development phase (Blaxel Sandboxes) and the production phase (Blaxel Applications) of AI-generated software: you can flip from dev to prod in a few milliseconds thanks to the core Blaxel runtime.
+
+
+## Key concepts
+
+- **Application**: A long-running deployment that serves traffic on a public URL.
+- **Revision**: An immutable snapshot of the application code, image, environment, and memory configuration. Each deploy creates a new revision (max 5 kept).
+- **Custom URLs**: Map verified custom domains to your application.
+
+## Create an application
+
+### Using the SDKs
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.create({
+  name: "my-app",
+  image: "app/my-image:latest",
+  memory: 2048,
+  region: "us-pdx-1",
+  envs: [{ name: "NODE_ENV", value: "production" }],
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, Env
+
+app = await ApplicationInstance.create(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="app/my-image:latest",
+        memory=2048,
+        envs=[Env(name="NODE_ENV", value="production")],
+    ),
+))
+```
+
+```go Go
+import (
+    blaxel "github.com/blaxel-ai/sdk-go"
+    "github.com/blaxel-ai/sdk-go/shared"
+)
+
+app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("app/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            Envs: []shared.EnvParam{{
+                Name:  blaxel.String("NODE_ENV"),
+                Value: blaxel.String("production"),
+            }},
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+### Using the CLI
+
+Deploy from a project directory containing a `blaxel.toml`:
+
+```bash
+bl deploy --type application
+```
+
+Example `blaxel.toml`:
+
+```toml
+name = "my-app"
+type = "application"
+workspace = "my-workspace"
+
+[env]
+NODE_ENV = "production"
+
+[deploy]
+region = "us-pdx-1"
+memory = 2048
+```
+
+To reuse an image already built on Blaxel (from a previous `bl deploy` or `bl push`), set the `image` field. External registries are not supported — the image must live in your workspace's Blaxel registry:
+
+```toml
+name = "my-app"
+type = "application"
+workspace = "my-workspace"
+image = "app/my-image:latest"
+```
+
+### Using the HTTP API
+
+```bash
+curl -X POST https://api.blaxel.ai/v0/applications \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "my-app" },
+    "spec": {
+      "enabled": true,
+      "region": "us-pdx-1",
+      "image": "app/my-image:latest",
+      "memory": 2048,
+      "envs": [{ "name": "NODE_ENV", "value": "production" }]
+    }
+  }'
+```
+
+## Create an application from a sandbox fork
+
+You can turn a running sandbox into an application by [forking it](/Sandboxes/Fork). The application's `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
+
+This is useful for promoting a sandbox you developed and tested interactively into a long-running, publicly addressable service without rebuilding an image.
+
+Fork a sandbox into an application with `sandbox.fork(targetName, { targetType: "application" })`:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Fork the sandbox into an application named "my-app".
+const result = await sandbox.fork("my-app", {
+  targetType: "application",
+});
+
+console.log(result.type); // "application"
+console.log(result.name); // "my-app"
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Fork the sandbox into an application named "my-app".
+result = await sandbox.fork("my-app", target_type="application")
+
+print(result.type)  # "application"
+print(result.name)  # "my-app"
+```
+
+</CodeGroup>
+
+The fork snapshots the sandbox's live state automatically.
+
+### Fork from an earlier snapshot
+
+To serve a specific point in time rather than the sandbox's current state, take a [snapshot](/Sandboxes/Fork) first, then pass its id when forking (`snapshotId` in TypeScript, `snapshot_id` in Python):
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// 1. Snapshot the sandbox while it is in the state you want to serve.
+const snapshot = await sandbox.snapshot("release-candidate");
+
+// 2. Later, fork that snapshot into an application.
+const result = await sandbox.fork("my-app", {
+  targetType: "application",
+  snapshotId: snapshot.id,
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# 1. Snapshot the sandbox while it is in the state you want to serve.
+snapshot = await sandbox.snapshot("release-candidate")
+
+# 2. Later, fork that snapshot into an application.
+result = await sandbox.fork(
+    "my-app",
+    target_type="application",
+    snapshot_id=snapshot.id,
+)
+```
+
+```bash HTTP API
+# 1. Create the snapshot.
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "release-candidate" }'
+
+# 2. Fork it into an application, using the id returned above.
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "application",
+    "targetName": "my-app",
+    "snapshotId": "snap_abc123"
+  }'
+```
+
+</CodeGroup>
+
+List your existing snapshots with `sandbox.listSnapshots()` / `sandbox.list_snapshots()`. See [Snapshots and fork](/Sandboxes/Fork) for the full snapshot lifecycle.
+
+### Attach a custom domain at fork time
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const result = await sandbox.fork("my-app", {
+  targetType: "application",
+  port: 3000,              // port the app serves on (defaults to the sandbox's first port, else 8080)
+  customDomain: "app.example.com",
+  prefix: "myapp",         // subdomain for wildcard custom domains
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+result = await sandbox.fork(
+    "my-app",
+    target_type="application",
+    port=3000,
+    custom_domain="app.example.com",
+    prefix="myapp",
+)
+```
+
+```bash CLI
+bl fork sbx/my-sandbox app/my-app
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "application",
+    "targetName": "my-app"
+  }'
+```
+
+</CodeGroup>
+
+
+<Note>
+If an application with `targetName` already exists, forking updates its compute so the backend generates a fresh revision serving the forked sandbox's state. Otherwise a new application is created. Forking into an application requires the Application Runtime feature to be enabled on your workspace.
+</Note>
+
+For more on sandbox snapshots and forking sandboxes into new sandboxes, see [Sandbox snapshots and fork](/Sandboxes/Fork).
+
+## Retrieve an application
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.get("my-app");
+console.log(app.status);
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+
+app = await ApplicationInstance.get("my-app")
+print(app.status)
+```
+
+```go Go
+app, err := client.Applications.Get(ctx, "my-app")
+```
+
+```bash CLI
+bl get applications
+```
+
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/applications/my-app \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+
+
+## List applications
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const apps = await ApplicationInstance.list();
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+
+apps = await ApplicationInstance.list()
+```
+
+```go Go
+apps, err := client.Applications.List(ctx, blaxel.ApplicationListParams{})
+```
+
+```bash CLI
+bl get applications
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/applications \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+
+## Update an application
+
+Updating an application with a new image or configuration creates a new revision.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.get("my-app");
+const updated = await app.update({
+  image: "app/my-image:v2",
+  memory: 4096,
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata
+
+app = await ApplicationInstance.get("my-app")
+updated = await app.update(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="app/my-image:v2",
+        memory=4096,
+    ),
+))
+```
+
+```go Go
+updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpdateParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("app/my-image:v2"),
+            Memory:  blaxel.Int(4096),
+        },
+    },
+})
+```
+
+```bash HTTP API
+curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "my-app" },
+    "spec": {
+      "enabled": true,
+      "region": "us-pdx-1",
+      "image": "app/my-image:v2",
+      "memory": 4096
+    }
+  }'
+```
+
+</CodeGroup>
+
+
+
+## Delete an application
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+await ApplicationInstance.delete("my-app");
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+
+await ApplicationInstance.delete("my-app")
+```
+
+```go Go
+_, err := client.Applications.Delete(ctx, "my-app")
+```
+
+```bash CLI
+bl delete application my-app
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/applications/my-app \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+
+## Revisions
+
+Each deploy creates a new revision. A maximum of 5 revisions are kept per application. Revisions contain the image, environment variables, memory allocation, and port configuration.
+
+### List revisions
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.get("my-app");
+const revisions = await app.listRevisions();
+```
+
+```python Python
+from blaxel.core.client import client
+from blaxel.core.client.api.applications.list_application_revisions import asyncio as list_application_revisions
+
+revisions = await list_application_revisions(application_name="my-app", client=client)
+```
+
+```go Go
+revisions, err := client.Applications.ListRevisions(ctx, "my-app")
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/applications/my-app/revisions \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+
+### Switch between revisions
+
+The latest revision serves traffic by default. To roll back (or forward) to another one, set `active` to its id in the application's `revision` configuration:
+
+```json
+{
+  "spec": {
+    "revision": {
+      "active": "rev_abc123"
+    }
+  }
+}
+```
+
+## Custom URLs
+
+By default, applications are accessible at a generated URL. You can configure custom URLs using verified custom domains in your workspace.
+
+### Create or update an application with custom URLs
+
+Pass the `urls` field in the application spec to attach a verified custom domain.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.create({
+  metadata: {
+    name: "my-app",
+  },
+  spec: {
+    enabled: true,
+    region: "us-pdx-1",
+    image: "app/my-image:latest",
+    memory: 2048,
+    urls: [{ domain: "app.example.com" }],
+  },
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, AppUrl
+
+app = await ApplicationInstance.create(Application(
+    metadata=Metadata(name="my-app"),
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="app/my-image:latest",
+        memory=2048,
+        urls=[AppUrl(domain="app.example.com")],
+    ),
+))
+```
+
+```go Go
+app, err := client.Applications.New(ctx, blaxel.ApplicationNewParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("app/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+To add a custom URL to an existing application, use update:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { ApplicationInstance } from "@blaxel/core";
+
+const app = await ApplicationInstance.get("my-app");
+const updated = await ApplicationInstance.update("my-app", {
+  metadata: app.metadata,
+  spec: {
+    ...app.spec,
+    urls: [{ domain: "app.example.com" }],
+  },
+});
+```
+
+```python Python
+from blaxel.core import ApplicationInstance
+from blaxel.core.client.models import Application, ApplicationSpec, Metadata, AppUrl
+
+app = await ApplicationInstance.get("my-app")
+updated = await app.update(Application(
+    metadata=app.metadata,
+    spec=ApplicationSpec(
+        enabled=True,
+        region="us-pdx-1",
+        image="app/my-image:latest",
+        memory=2048,
+        urls=[AppUrl(domain="app.example.com")],
+    ),
+))
+```
+
+```go Go
+updated, err := client.Applications.Update(ctx, "my-app", blaxel.ApplicationUpdateParams{
+    Application: blaxel.ApplicationParam{
+        Metadata: blaxel.MetadataParam{Name: "my-app"},
+        Spec: blaxel.ApplicationSpecParam{
+            Enabled: blaxel.Bool(true),
+            Region:  blaxel.String("us-pdx-1"),
+            Image:   blaxel.String("app/my-image:latest"),
+            Memory:  blaxel.Int(2048),
+            URLs:    []blaxel.AppURLParam{{Domain: "app.example.com"}},
+        },
+    },
+})
+```
+
+```bash HTTP API
+curl -X PUT https://api.blaxel.ai/v0/applications/my-app \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "my-app" },
+    "spec": {
+      "enabled": true,
+      "region": "us-pdx-1",
+      "image": "app/my-image:latest",
+      "memory": 2048,
+      "urls": [
+        { "domain": "app.example.com" }
+      ]
+    }
+  }'
+```
+
+</CodeGroup>
+
+For wildcard custom domains (e.g. `*.sandbox.example.com`), use the `subdomain` field:
+
+```json
+{
+  "spec": {
+    "urls": [
+      { "subdomain": "myapp", "domain": "sandbox.example.com" }
+    ]
+  }
+}
+```
+
+### Create a custom domain for an application
+
+You can also create a custom domain scoped to a specific application using the dedicated endpoint. After creation, configure DNS records and verify domain ownership before it becomes active.
+
+```bash
+curl -X POST https://api.blaxel.ai/v0/applications/my-app/customdomains \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "app.example.com" },
+    "spec": {
+      "type": "applications",
+      "domain": "app.example.com",
+      "region": "us-pdx-1"
+    }
+  }'
+```
+
+<Note>
+The domain must be a verified custom domain in your workspace. Custom domain verification is managed in the [Infrastructure section](/Infrastructure/Custom-domains) of the Blaxel Console.
+</Note>
+
+## Environment variables and secrets
+
+Pass environment variables to your application through the spec-level `envs` field. Each entry has a `name` and `value`; set `secret: true` to mark the value as a secret so it is stored and displayed securely.
+
+```json
+{
+  "spec": {
+    "image": "app/my-image:latest",
+    "memory": 2048,
+    "envs": [
+      { "name": "DATABASE_URL", "value": "postgres://..." },
+      { "name": "API_KEY", "value": "super-secret-value", "secret": true }
+    ]
+  }
+}
+```
+
+## Memory and compute
+
+Memory allocation is set per revision in megabytes. The default is 2048 MB. CPU resources are allocated proportionally based on memory (CPU = memory / 2048 cores).
+
+| Memory | CPU cores |
+|--------|-----------|
+| 2048 MB | 1 core |
+| 4096 MB | 2 cores |
+| 8192 MB | 4 cores |
+
+## Application deployment statuses
+
+During the deployment process, the possible application statuses are:
+
+- `DEPLOYING`: The application deployment is in progress.
+- `DEPLOYED`: The application is running and serving traffic.
+- `FAILED`: An error occurred during the build or deployment.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox snapshots and fork" icon="code-fork" href="/Sandboxes/Fork">
+    Create snapshots and fork sandboxes into applications or new sandboxes.
+  </Card>
+  <Card title="Variables and secrets" icon="key" href="/Agents/Variables-and-secrets">
+    Manage environment variables and secrets for your deployments.
+  </Card>
+</CardGroup>

@@ -116,6 +116,12 @@
             ]
           },
           {
+            "group": "Applications",
+            "pages": [
+              "Applications/Overview"
+            ]
+          },
+          {
             "group": "Agents Hosting",
             "pages": [
               "Agents/Overview",
