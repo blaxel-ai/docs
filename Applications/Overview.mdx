@@ -148,7 +148,7 @@ Set the compute (`image`, `memory`, `envs`, `port`) at the spec level. The backe
 
 ## Create an application from a sandbox fork
 
-You can turn a running sandbox into an application by [forking it](/Sandboxes/Fork). This produces a **proxy application** that rebinds to the forked sandbox — the application has no compute of its own to build. Its `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
+You can turn a running sandbox into an application by [forking it](/Sandboxes/Fork). The application's `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
 
 This is useful for promoting a sandbox you developed and tested interactively into a long-running, publicly addressable service without rebuilding an image.
 
@@ -161,7 +161,7 @@ import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
 
-// Fork the sandbox into a proxy application named "my-app".
+// Fork the sandbox into an application named "my-app".
 const result = await sandbox.fork("my-app", {
   targetType: "application",
 });
@@ -175,7 +175,7 @@ from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
 
-# Fork the sandbox into a proxy application named "my-app".
+# Fork the sandbox into an application named "my-app".
 result = await sandbox.fork("my-app", target_type="application")
 
 print(result.type)  # "application"
@@ -236,7 +236,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 
 <Note>
-If an application with `targetName` already exists, forking updates its compute so the backend generates a fresh revision proxying to the (forked) sandbox. Otherwise a new application is created. Forking into an application requires the Application Runtime feature to be enabled on your workspace.
+If an application with `targetName` already exists, forking updates its compute so the backend generates a fresh revision serving the forked sandbox's state. Otherwise a new application is created. Forking into an application requires the Application Runtime feature to be enabled on your workspace.
 </Note>
 
 For more on sandbox snapshots and forking sandboxes into new sandboxes, see [Sandbox snapshots and fork](/Sandboxes/Fork).
