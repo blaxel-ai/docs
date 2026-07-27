@@ -142,10 +142,6 @@ curl -X POST https://api.blaxel.ai/v0/applications \
   }'
 ```
 
-<Note>
-Set the compute (`image`, `memory`, `envs`, `port`) at the spec level. The backend generates a revision from the spec-level compute on every create/update — you never craft `revisions` by hand.
-</Note>
-
 ## Create an application from a sandbox fork
 
 You can turn a running sandbox into an application by [forking it](/Sandboxes/Fork). The application's `image`, `memory`, `envs`, and `port` are inherited from the source sandbox, so the fork starts serving the sandbox's current state on a stable application URL with revision management and custom domains on top.
