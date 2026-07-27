@@ -29,7 +29,6 @@ Blaxel aims to power both the development phase (Blaxel Sandboxes) and the produ
 
 - **Application**: A long-running deployment that serves traffic on a public URL.
 - **Revision**: An immutable snapshot of the application code, image, environment, and memory configuration. Each deploy creates a new revision (max 5 kept).
-- **Sticky sessions**: Optional session affinity via `stickySessionTtl` to keep users on the same revision.
 - **Custom URLs**: Map verified custom domains to your application.
 
 ## Create an application
@@ -180,9 +179,70 @@ print(result.name)  # "my-app"
 
 </CodeGroup>
 
-The fork snapshots the sandbox's live state automatically. To fork from a snapshot you took earlier, pass its `snapshotId` (TypeScript) / `snapshot_id` (Python).
+The fork snapshots the sandbox's live state automatically.
 
-You can also attach a custom domain at fork time:
+### Fork from an earlier snapshot
+
+To serve a specific point in time rather than the sandbox's current state, take a [snapshot](/Sandboxes/Fork) first, then pass its id when forking (`snapshotId` in TypeScript, `snapshot_id` in Python):
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// 1. Snapshot the sandbox while it is in the state you want to serve.
+const snapshot = await sandbox.snapshot("release-candidate");
+
+// 2. Later, fork that snapshot into an application.
+const result = await sandbox.fork("my-app", {
+  targetType: "application",
+  snapshotId: snapshot.id,
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# 1. Snapshot the sandbox while it is in the state you want to serve.
+snapshot = await sandbox.snapshot("release-candidate")
+
+# 2. Later, fork that snapshot into an application.
+result = await sandbox.fork(
+    "my-app",
+    target_type="application",
+    snapshot_id=snapshot.id,
+)
+```
+
+```bash HTTP API
+# 1. Create the snapshot.
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "release-candidate" }'
+
+# 2. Fork it into an application, using the id returned above.
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "application",
+    "targetName": "my-app",
+    "snapshotId": "snap_abc123"
+  }'
+```
+
+</CodeGroup>
+
+List your existing snapshots with `sandbox.listSnapshots()` / `sandbox.list_snapshots()`. See [Snapshots and fork](/Sandboxes/Fork) for the full snapshot lifecycle.
+
+### Attach a custom domain at fork time
 
 <CodeGroup>
 
@@ -441,21 +501,19 @@ curl https://api.blaxel.ai/v0/applications/my-app/revisions \
 </CodeGroup>
 
 
-### Sticky sessions
+### Switch between revisions
 
-Enable sticky sessions to keep users routed to the same revision for the duration of the TTL:
+The latest revision serves traffic by default. To roll back (or forward) to another one, set `active` to its id in the application's `revision` configuration:
 
 ```json
 {
   "spec": {
     "revision": {
-      "stickySessionTtl": 3600
+      "active": "rev_abc123"
     }
   }
 }
 ```
-
-Setting `stickySessionTtl` to `0` disables sticky sessions.
 
 ## Custom URLs
 
