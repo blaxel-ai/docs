@@ -20,7 +20,7 @@ This gives you three useful boundaries:
 - Delete temporary compute after the task instead of maintaining another server
 - Pass explicit files to a fresh agent without pretending that model memory is shared
 
-This tutorial uses the [Blaxel OpenAI Agents API cookbook](https://github.com/blaxel-ai/openai-agents-api-cookbook) to demonstrate that lifecycle with a small report.
+This tutorial uses the [Blaxel OpenAI Agents API cookbook](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook) to demonstrate that lifecycle with a small report.
 
 ## Who owns what
 
@@ -47,7 +47,7 @@ Agent Drive is optional for the first run and required only for the fresh-sessio
 Copy this into a coding agent with terminal access:
 
 ```text
-Clone https://github.com/blaxel-ai/openai-agents-api-cookbook.git and read AGENTS.md.
+Clone https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook.git and read AGENTS.md.
 
 Without printing or saving secrets, confirm that OPENAI_API_KEY, BL_WORKSPACE, and BL_API_KEY are available.
 
@@ -59,8 +59,8 @@ If setup or access blocks the run, stop and report the exact missing requirement
 ### Run it yourself
 
 ```bash
-git clone https://github.com/blaxel-ai/openai-agents-api-cookbook.git
-cd openai-agents-api-cookbook
+git clone https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook.git
+cd blaxel-openai-agents-api-cookbook
 
 export OPENAI_API_KEY='<openai-project-key>'
 export BL_WORKSPACE='<blaxel-workspace>'
@@ -142,7 +142,7 @@ Keep the lifecycle and replace the example task:
 | Agent Drive access and mount | Artifact schema |
 | Streaming, verification, and diagnostics | Verification rule |
 
-Start with [main.py](https://github.com/blaxel-ai/openai-agents-api-cookbook/blob/main/main.py) for one session. Use [handoff.py](https://github.com/blaxel-ai/openai-agents-api-cookbook/blob/main/handoff.py) when your workflow needs a fresh agent to continue from a persisted artifact.
+Start with [main.py](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook/blob/main/main.py) for one session. Use [handoff.py](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook/blob/main/handoff.py) when your workflow needs a fresh agent to continue from a persisted artifact.
 
 ## 6. Advanced details
 
@@ -170,7 +170,7 @@ The Sandbox's 15-minute lifetime is a cleanup backstop. It does not delete an Op
 
 ## Resources
 
-<Card title="OpenAI Agents API cookbook" icon="github" href="https://github.com/blaxel-ai/openai-agents-api-cookbook">
+<Card title="OpenAI Agents API cookbook" icon="github" href="https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook">
   Review the complete runnable example.
 </Card>
 
