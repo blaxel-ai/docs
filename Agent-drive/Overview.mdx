@@ -13,7 +13,7 @@ Agent Drive is a distributed filesystem that can be mounted to multiple sandboxe
 
 Unlike [volumes](/Volumes/Overview), which are block storage devices attached at sandbox creation to a single sandbox, drives behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give a POSIX-compliant interface.
 
-- A drive can be attached to an already-running sandbox at any mount path, without needing to recreate the sandbox
+- A drive can be attached to an already-running sandbox at any mount path, without needing to recreate the sandbox.
 - Multiple sandboxes can mount the same drive simultaneously with full read-write access.
 - A specific subdirectory of a drive can be mounted using `drivePath` (instead of mounting the entire drive).
 - Drives scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
