@@ -61,7 +61,6 @@
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
               "Sandboxes/Filesystem",
-              "Sandboxes/Fork",
               "Sandboxes/MCP",
               "Sandboxes/Codegen-tools",
               "Sandboxes/Log-streaming",
