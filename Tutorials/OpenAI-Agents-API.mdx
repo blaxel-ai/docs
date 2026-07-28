@@ -144,7 +144,15 @@ Keep the lifecycle and replace the example task:
 
 Start with [main.py](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook/blob/main/main.py) for one session. Use [handoff.py](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook/blob/main/handoff.py) when your workflow needs a fresh agent to continue from a persisted artifact.
 
-## 6. Advanced details
+## 6. What's next
+
+Three idea starters, ordered by effort. Each is a prompt for a coding agent that has the cookbook cloned and the same environment variables set, and each was run end to end from the cookbook before being written down. The full prompts live in the cookbook's [What's next section](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook#whats-next).
+
+1. **Swap in your own document (2 minutes).** Replace `sample_report.txt` with a document of yours, keep the verification-marker line, rerun `./run.sh`, and confirm the kept `summary.md` reflects your document.
+2. **Analyze data and open the result in your browser.** The cookbook ships `sample_data.csv`. Have the agent compute totals and the busiest day, write a self-contained `report.html` with an inline SVG chart, then serve it from the sandbox and open it on a public [preview URL](/Sandboxes/Preview-url).
+3. **Run it as a hosted Blaxel job.** Deploy the same orchestration as a [Blaxel job](/Jobs/Overview) and trigger an execution with no laptop in the loop. Inside a job, Blaxel injects workspace credentials, so the only secret the job needs is `OPENAI_API_KEY`.
+
+## 7. Advanced details
 
 <AccordionGroup>
   <Accordion title="How the connection works">
