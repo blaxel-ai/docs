@@ -243,7 +243,7 @@ console.log(drive.state?.s3Url);
 from blaxel.core.drive import DriveInstance
 
 drive = await DriveInstance.get("my-drive")
-print(drive.state.s3_url)
+print(drive.state.s3_url if drive.state else None)
 ```
 
 ```bash CLI
