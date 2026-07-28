@@ -223,7 +223,7 @@ Every drive also exposes an S3-compatible HTTP endpoint, so you can read and wri
 Requests must use SigV4 signing and path-style addressing (the bucket in the path, not the hostname). Credentials are a [service account](/Security/Service-accounts)'s [API key](/Security/Access-tokens): `AWS_ACCESS_KEY_ID` is the API key's record ID and `AWS_SECRET_ACCESS_KEY` is its raw secret value — **not** the service account's OAuth client ID/secret pair. Personal API keys and OAuth tokens are not supported for S3 access.
 
 <Warning>
-  Drive permission rules (labels, `path`, `mode`) are **not currently enforced** for S3 access. A valid service-account API key grants full read-write access to the entire drive over S3, regardless of any [drive permissions](/Agent-drive/Permissions) configured on it. Only issue S3 credentials to service accounts you're comfortable giving full access to the drive; enforcing permission rules over S3 is planned but not yet available.
+  Drive permission rules (labels, `path`, `mode`) are **not currently enforced** for S3 access. A valid service-account API key grants full read-write access to every drive in the workspace over S3, regardless of any [drive permissions](/Agent-drive/Permissions) configured on them. Only issue S3 credentials to service accounts you're comfortable giving full access to all drives in the workspace; enforcing permission rules over S3 is planned but not yet available.
 </Warning>
 
 <Note>
@@ -247,7 +247,8 @@ console.log(drive.state?.s3Url);
 from blaxel.core.drive import DriveInstance
 
 drive = await DriveInstance.get("my-drive")
-print(drive.drive.state.s_3_url)  # low-level field name; a higher-level property is planned
+state = drive.drive.state
+print(state.s_3_url if state and state.s_3_url else None)  # low-level field name; a higher-level property is planned
 ```
 
 </CodeGroup>
