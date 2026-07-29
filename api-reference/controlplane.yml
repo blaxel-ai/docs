@@ -3386,6 +3386,12 @@ components:
           type: string
           description: Creation timestamp (read-only).
           readOnly: true
+        error:
+          type: string
+          description: Reason the execution failed, naming the resource that could
+            not be reached. Empty when the command was accepted by the sandbox.
+          example: sandbox my-sandbox is not reachable at https://xxx.us-pdx-1.bl.run
+            (HTTP 404)
         executedAt:
           type: string
           description: RFC 3339 time at which the command was submitted.
