@@ -769,11 +769,6 @@ components:
           description: Deployment region for the drive (e.g., us-pdx-1, eu-lon-1).
             Must match the region of resources it attaches to.
           example: us-pdx-1
-        size:
-          type: integer
-          description: Optional size limit for the drive in GB. If not specified,
-            drive has no size limit.
-          example: 100
     DriveState:
       type: object
       description: Current runtime state of the drive
