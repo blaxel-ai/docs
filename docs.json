@@ -84,6 +84,7 @@
               },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
+              "Sandboxes/Non-root-user",
               "Sandboxes/Schedules",
               "Sandboxes/Fork",
               "Sandboxes/best-practices"
