@@ -10,7 +10,11 @@ By default, everything inside a sandbox runs as `root`. You can instead declare 
 
 The sandbox API is PID 1 in the sandbox. It mounts [agent drives](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
 
-This is why a plain `USER` directive is not enough on its own: it de-privileges the sandbox API itself, which breaks drive mounts. Instead, the runtime keeps the sandbox API as root and passes your user down to it, and the API drops privileges for every operation it performs on your behalf.
+This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks drive mounts. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for every operation it performs on your behalf.
+
+<Warning>
+  Running the same image locally with `docker run` applies `USER` to the sandbox API, so drive mounts and networking setup fail. Use the entrypoint variant below if you need the image to behave the same way outside Blaxel.
+</Warning>
 
 <Note>
   This scopes privileges inside the sandbox. It is a defense-in-depth measure: the microVM boundary remains the isolation guarantee between your sandbox and everything else.
@@ -46,12 +50,12 @@ If you need root-only preparation at boot, such as a `chown` or a `mkdir` outsid
 #!/bin/sh
 set -eu
 
-chown -R app "${HOME:-/blaxel}"
+chown -R app /blaxel
 
 exec /usr/local/bin/sandbox-api --user app "$@"
 ```
 
-The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
+Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and point `ENTRYPOINT` at the script. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
 
 ## What runs as your user
 
