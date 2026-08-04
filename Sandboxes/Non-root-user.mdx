@@ -70,7 +70,7 @@ Calls to the sandbox API from inside a sandbox process keep the same identity. T
 
 ## Limitations
 
-- Access granted only through a supplementary group of your user is not honoured on filesystem API calls, which apply the primary group.
+- Access granted only through a supplementary group of your user is not honored on filesystem API calls, which apply the primary group.
 - Files that already exist in the image and belong to root stay read-only for your workload. Change their ownership at build time or in a root entrypoint.
 - With `BL_SANDBOX_USER_ENABLED` unset, the sandbox behaves exactly as before and runs everything as root.
 
