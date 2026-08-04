@@ -10,7 +10,7 @@ By default, everything inside a sandbox runs as `root`. You can instead declare 
 
 The sandbox API is PID 1 in the sandbox. It mounts [agent drives](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
 
-This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks drive mounts. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for every operation it performs on your behalf.
+This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks drive mounts. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
 
 <Warning>
   Running the same image locally with `docker run` applies `USER` to the sandbox API, so drive mounts and networking setup fail. Use the entrypoint variant below if you need the image to behave the same way outside Blaxel.
