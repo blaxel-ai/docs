@@ -1,0 +1,84 @@
+---
+title: 'Run sandbox workloads as a non-root user'
+sidebarTitle: 'Non-root user'
+description: 'Scope everything a sandbox runs on your behalf to an unprivileged user while the sandbox API keeps the privileges it needs.'
+---
+
+By default, everything inside a sandbox runs as `root`. You can instead declare an unprivileged user in your image, so processes, terminals and filesystem operations run as that user while the sandbox API keeps the privileges it needs for drive mounts, networking and keep-alive.
+
+## Why the sandbox API stays root
+
+The sandbox API is PID 1 in the sandbox. It mounts [agent drives](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
+
+This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks drive mounts. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
+
+<Warning>
+  Running the same image locally with `docker run` applies `USER` to the sandbox API, so drive mounts and networking setup fail. Use the entrypoint variant below if you need the image to behave the same way outside Blaxel.
+</Warning>
+
+<Note>
+  This scopes privileges inside the sandbox. It is a defense-in-depth measure: the microVM boundary remains the isolation guarantee between your sandbox and everything else.
+</Note>
+
+## Enable it in your image
+
+Create the user in your Dockerfile, declare it with `USER`, and turn the feature on with `BL_SANDBOX_USER_ENABLED`:
+
+```docker
+FROM node:24-alpine
+
+RUN adduser -D -u 10001 -h /blaxel app
+WORKDIR /blaxel
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+USER app
+
+ENV HOME=/blaxel
+ENV BL_SANDBOX_USER_ENABLED=true
+
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+The user follows Docker `USER` syntax: `app`, `10001`, `app:app` or `10001:10001`. The user must exist in the image, and it cannot resolve to uid 0. Make sure your workload owns every directory it writes to.
+
+### Pass the user explicitly
+
+If you need root-only preparation at boot, such as a `chown` or a `mkdir` outside the user's home, use an entrypoint that runs as root and hands over to the sandbox API with the `--user` flag:
+
+```bash
+#!/bin/sh
+set -eu
+
+chown -R app /blaxel
+
+exec /usr/local/bin/sandbox-api --user app "$@"
+```
+
+Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and point `ENTRYPOINT` at the script. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
+
+## What runs as your user
+
+| Runs as your user | Stays root |
+|---|---|
+| Processes, startup and background commands | Agent drive mounts |
+| Terminal sessions | Egress and networking setup |
+| Code execution | CA bundle installation |
+| Filesystem API calls (read, write, upload, search) | Keep-alive and standby control |
+
+Calls to the sandbox API from inside a sandbox process keep the same identity. There is no parameter or environment variable that asks for root, so a process cannot use the API to escalate its own privileges.
+
+## Limitations
+
+- Access granted only through a supplementary group of your user is not honoured on filesystem API calls, which apply the primary group.
+- Files that already exist in the image and belong to root stay read-only for your workload. Change their ownership at build time or in a root entrypoint.
+- With `BL_SANDBOX_USER_ENABLED` unset, the sandbox behaves exactly as before and runs everything as root.
+
+<CardGroup cols={2}>
+  <Card title="Build a sandbox image" href="/Sandboxes/Templates">
+    Create reusable sandbox images with Dockerfiles.
+  </Card>
+  <Card title="Variables and secrets" href="/Sandboxes/Variables-and-secrets">
+    Pass configuration and secrets to a sandbox.
+  </Card>
+</CardGroup>

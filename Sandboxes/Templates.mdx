@@ -1701,6 +1701,18 @@ sandbox = await SandboxInstance.create({
 
 </CodeGroup>
 
+### Run the workload as a non-root user
+
+Everything in a sandbox runs as `root` by default. To scope processes, terminals and filesystem operations to an unprivileged user while the sandbox API keeps the privileges it needs, declare the user in your Dockerfile and enable the feature:
+
+```docker
+RUN adduser -D -u 10001 -h /blaxel app
+USER app
+ENV BL_SANDBOX_USER_ENABLED=true
+```
+
+See [running sandbox workloads as a non-root user](/Sandboxes/Non-root-user) for the entrypoint variant, what stays privileged, and the limitations.
+
 ### Update a custom image
 
 To update an existing custom image:
