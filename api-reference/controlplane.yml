@@ -8,6 +8,20 @@ components:
       required: false
       schema:
         type: string
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`).
+        Values are case-insensitive; unknown values are rejected with a 400. Selecting
+        every status is equivalent to omitting the parameter. Bound into the cursor
+        fingerprint so a cursor opened with one selection cannot be reused with another.
+        Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing);
+        on earlier versions the value is still validated but the listing is unfiltered,
+        except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
     PaginationAnchor:
       description: Start from a known pagination boundary. `end` is only supported
         for `createdAt` listings (asc or desc) and returns the tail page directly
@@ -4285,6 +4299,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -4567,6 +4582,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -5188,6 +5204,7 @@ paths:
         required: false
         schema:
           type: string
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -5623,6 +5640,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -6592,6 +6610,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -7003,6 +7022,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
@@ -7588,6 +7608,15 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`).
+          When set it takes precedence over `showTerminated`. Unknown values are rejected
+          with a 400. Bound into the cursor fingerprint.
+        example: DEPLOYED,FAILED
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
       - description: Filter sandboxes by external ID. When set, only sandboxes matching
           this caller-owned identifier are returned.
         in: query
@@ -9160,6 +9189,7 @@ paths:
         required: false
         schema:
           type: string
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
           content:
