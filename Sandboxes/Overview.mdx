@@ -71,6 +71,8 @@ During the deployment process, the possible sandbox statuses are:
 - `DEPLOYING`: The sandbox deployment is in progress.
 - `DEPLOYED`: The sandbox is ready to use. It is either in active mode or standby mode.
 - `FAILED`: An error occurred during the build or deployment of the sandbox.
+- `DEACTIVATING`: The sandbox is being disabled, either because it was explicitly disabled or because a previous revision is being superseded by a new deployment.
+- `DEACTIVATED`: The sandbox has been disabled and is not accepting connections.
 - `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
 

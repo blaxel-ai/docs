@@ -1079,7 +1079,8 @@ The `status` field of the response will progress through these values:
 | `DEPLOYING` | Container is being deployed to the cluster |
 | `DEPLOYED` | Sandbox is ready to use |
 | `FAILED` | Deployment failed (check build logs) |
-| `DEACTIVATED` | Sandbox has been deactivated |
+
+See [sandbox deployment statuses](/Sandboxes/Overview#sandbox-deployment-statuses) for the full list of statuses a sandbox can report outside of this initial deployment flow.
 
 Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILED`.
 
