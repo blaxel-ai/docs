@@ -1,0 +1,488 @@
+---
+title: 'Run Amp in a sandbox'
+description: 'Run Amp inside a Blaxel sandbox, stream coding tasks, and continue a thread after reconnecting.'
+---
+
+This tutorial shows you how to run [Amp](https://ampcode.com) in a Blaxel sandbox. You will create a sandbox with Amp pre-installed, clone a repository, stream a coding task, and continue the same thread later.
+
+## Prerequisites
+
+You need:
+
+- a Blaxel account;
+- the [Blaxel CLI](/cli-reference/introduction#install);
+- an [Amp access token](https://ampcode.com/settings/security);
+- Node.js 24 or Python 3.10 or newer;
+- a Git repository that the sandbox can clone.
+
+Log in to Blaxel:
+
+```shell
+bl login
+```
+
+Export your Amp token and repository URL:
+
+```shell
+export AMP_API_KEY=YOUR-AMP-ACCESS-TOKEN
+export REPOSITORY_URL=https://github.com/YOUR-ORGANIZATION/YOUR-REPOSITORY.git
+```
+
+<Note>
+  The sandbox receives `AMP_API_KEY` as an environment variable. The example does not print it.
+</Note>
+
+<Warning>
+  Headless Amp tasks can run commands without asking for confirmation. Use trusted repositories, private threads, a short sandbox TTL, and restricted network access for sensitive code.
+</Warning>
+
+## 1. Install the Blaxel SDK
+
+Create a local project and install one Blaxel SDK:
+
+<CodeGroup>
+```shell TypeScript (npm)
+npm init -y
+npm pkg set type=module
+npm install @blaxel/core
+npm install --save-dev tsx
+```
+
+```shell Python
+python3 -m venv .venv
+source .venv/bin/activate
+pip install blaxel
+```
+</CodeGroup>
+
+## 2. Create the Amp sandbox
+
+Create `index.ts` or `main.py` with the following code:
+
+<CodeGroup>
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const repositoryUrl = process.env.REPOSITORY_URL;
+const ampApiKey = process.env.AMP_API_KEY;
+const repositoryDir = "/blaxel/work/repository";
+
+if (!repositoryUrl) throw new Error("REPOSITORY_URL is required");
+if (!ampApiKey) throw new Error("AMP_API_KEY is required");
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "amp-sandbox",
+  image: "blaxel/amp:latest",
+  memory: 8192,
+  region: "us-pdx-1",
+  ttl: "2h",
+  envs: [{ name: "AMP_API_KEY", value: ampApiKey }],
+});
+
+const cloneResult = await sandbox.process.exec({
+  command: [
+    `mkdir -p ${shellQuote(repositoryDir)}`,
+    `test -d ${shellQuote(`${repositoryDir}/.git`)} || git clone --depth 1 ${shellQuote(repositoryUrl)} ${shellQuote(repositoryDir)}`,
+  ].join(" && "),
+  waitForCompletion: true,
+  timeout: 300,
+});
+if (cloneResult.exitCode !== 0) {
+  throw new Error(`Git clone failed with exit code ${cloneResult.exitCode}`);
+}
+
+console.log(`Amp sandbox ready: ${sandbox.metadata.name}`);
+```
+
+```python Python
+import asyncio
+import json
+import os
+import shlex
+
+from blaxel.core import SandboxInstance
+
+REPOSITORY_DIR = "/blaxel/work/repository"
+
+
+async def main() -> None:
+    repository_url = os.environ.get("REPOSITORY_URL")
+    amp_api_key = os.environ.get("AMP_API_KEY")
+
+    if not repository_url:
+        raise RuntimeError("REPOSITORY_URL is required")
+    if not amp_api_key:
+        raise RuntimeError("AMP_API_KEY is required")
+
+    sandbox = await SandboxInstance.create_if_not_exists(
+        {
+            "name": "amp-sandbox",
+            "image": "blaxel/amp:latest",
+            "memory": 8192,
+            "region": "us-pdx-1",
+            "ttl": "2h",
+            "envs": [{"name": "AMP_API_KEY", "value": amp_api_key}],
+        }
+    )
+
+    clone_result = await sandbox.process.exec(
+        {
+            "command": " && ".join(
+                [
+                    f"mkdir -p {shlex.quote(REPOSITORY_DIR)}",
+                    f"test -d {shlex.quote(f'{REPOSITORY_DIR}/.git')} || git clone --depth 1 {shlex.quote(repository_url)} {shlex.quote(REPOSITORY_DIR)}",
+                ]
+            ),
+            "wait_for_completion": True,
+            "timeout": 300,
+        }
+    )
+    if clone_result.exit_code != 0:
+        raise RuntimeError(f"Git clone failed with exit code {clone_result.exit_code}")
+
+    print(f"Amp sandbox ready: {sandbox.metadata.name}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+</CodeGroup>
+
+Run the script:
+
+<CodeGroup>
+```shell TypeScript (npm)
+npx tsx index.ts
+```
+
+```shell Python
+python main.py
+```
+</CodeGroup>
+
+The `blaxel/amp:latest` image includes Amp, Git, and the Blaxel sandbox API. The sandbox keeps its memory and files when it enters standby.
+
+<Note>
+  `createIfNotExists` reuses a sandbox with the same name. Delete and recreate the sandbox after you rotate `AMP_API_KEY`.
+</Note>
+
+## 3. Run an Amp task
+
+Add the following code after sandbox creation and repository cloning. In Python, add it inside `main()`.
+
+<CodeGroup>
+```typescript TypeScript
+const prompt = "Inspect this repository and explain how to run its tests. Do not change any files.";
+let ampOutput = "";
+
+const result = await sandbox.process.exec({
+  name: "amp-task",
+  command: [
+    "amp",
+    "--mode low",
+    "--visibility private",
+    "--no-ide",
+    "--no-notifications",
+    "--no-color",
+    "--no-remote-control-terminal",
+    "--stream-json",
+    "--no-archive-after-execute",
+    `--execute ${shellQuote(prompt)}`,
+  ].join(" "),
+  workingDir: repositoryDir,
+  waitForCompletion: true,
+  timeout: 600,
+  onStdout: (chunk) => {
+    ampOutput += chunk;
+    process.stdout.write(chunk);
+  },
+  onStderr: (chunk) => process.stderr.write(chunk),
+});
+
+if (result.exitCode !== 0) {
+  throw new Error(`Amp failed with exit code ${result.exitCode}`);
+}
+
+const ampEvents = ampOutput
+  .split("\n")
+  .map((line) => {
+    try {
+      return JSON.parse(line);
+    } catch {
+      return undefined;
+    }
+  });
+const initEvent = ampEvents.find((event) => event?.type === "system" && event?.subtype === "init");
+const resultEvent = ampEvents.find((event) => event?.type === "result");
+const createdThreadId = initEvent?.session_id;
+if (typeof createdThreadId !== "string") throw new Error("Amp did not return a thread ID");
+if (resultEvent?.subtype !== "success" || resultEvent?.is_error !== false) {
+  throw new Error(`Amp thread ${createdThreadId} did not finish successfully`);
+}
+console.log(`Thread ID: ${createdThreadId}`);
+```
+
+```python Python
+    prompt = "Inspect this repository and explain how to run its tests. Do not change any files."
+    amp_output: list[str] = []
+
+    def handle_stdout(chunk: str) -> None:
+        amp_output.append(chunk)
+        print(chunk, end="")
+
+    result = await sandbox.process.exec(
+        {
+            "name": "amp-task",
+            "command": " ".join(
+                [
+                    "amp",
+                    "--mode low",
+                    "--visibility private",
+                    "--no-ide",
+                    "--no-notifications",
+                    "--no-color",
+                    "--no-remote-control-terminal",
+                    "--stream-json",
+                    "--no-archive-after-execute",
+                    f"--execute {shlex.quote(prompt)}",
+                ]
+            ),
+            "working_dir": REPOSITORY_DIR,
+            "wait_for_completion": True,
+            "timeout": 600,
+            "on_stdout": handle_stdout,
+            "on_stderr": print,
+        }
+    )
+
+    if result.exit_code != 0:
+        raise RuntimeError(f"Amp failed with exit code {result.exit_code}")
+
+    amp_events = []
+    for line in "".join(amp_output).splitlines():
+        try:
+            amp_events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+    init_event = next(
+        (event for event in amp_events if event.get("type") == "system" and event.get("subtype") == "init"),
+        None,
+    )
+    result_event = next((event for event in amp_events if event.get("type") == "result"), None)
+    created_thread_id = init_event.get("session_id") if init_event else None
+    if not isinstance(created_thread_id, str):
+        raise RuntimeError("Amp did not return a thread ID")
+    if not result_event or result_event.get("subtype") != "success" or result_event.get("is_error") is not False:
+        raise RuntimeError(f"Amp thread {created_thread_id} did not finish successfully")
+    print(f"Thread ID: {created_thread_id}")
+```
+</CodeGroup>
+
+Amp returns structured JSON lines while it works. Store the printed thread ID if you need to continue the task later.
+
+## 4. Continue the thread after reconnecting
+
+Your application can reconnect after the sandbox enters standby. Create `continue.ts` or `continue.py` with the following code. Replace the environment value with the thread ID from the first task.
+
+<CodeGroup>
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const threadId = process.env.AMP_THREAD_ID;
+if (!threadId) throw new Error("AMP_THREAD_ID is required");
+
+const repositoryDir = "/blaxel/work/repository";
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+const resumed = await SandboxInstance.get("amp-sandbox");
+const followUp = "Now identify the smallest useful test improvement. Do not change any files.";
+let followUpOutput = "";
+
+const followUpResult = await resumed.process.exec({
+  name: "amp-follow-up",
+  command: [
+    "amp",
+    "--mode low",
+    "--visibility private",
+    "--no-ide",
+    "--no-notifications",
+    "--no-color",
+    "--no-remote-control-terminal",
+    "--stream-json",
+    `--execute ${shellQuote(followUp)}`,
+    "threads continue",
+    shellQuote(threadId),
+  ].join(" "),
+  workingDir: repositoryDir,
+  waitForCompletion: true,
+  timeout: 600,
+  onStdout: (chunk) => {
+    followUpOutput += chunk;
+    process.stdout.write(chunk);
+  },
+  onStderr: (chunk) => process.stderr.write(chunk),
+});
+const followUpResultEvent = followUpOutput
+  .split("\n")
+  .map((line) => {
+    try {
+      return JSON.parse(line);
+    } catch {
+      return undefined;
+    }
+  })
+  .find((event) => event?.type === "result");
+if (
+  followUpResult.exitCode !== 0 ||
+  followUpResultEvent?.subtype !== "success" ||
+  followUpResultEvent?.is_error !== false
+) {
+  throw new Error(`Amp thread ${threadId} did not finish successfully`);
+}
+```
+
+```python Python
+import asyncio
+import json
+import os
+import shlex
+
+from blaxel.core import SandboxInstance
+
+REPOSITORY_DIR = "/blaxel/work/repository"
+
+
+async def main() -> None:
+    thread_id = os.environ.get("AMP_THREAD_ID")
+    if not thread_id:
+        raise RuntimeError("AMP_THREAD_ID is required")
+
+    resumed = await SandboxInstance.get("amp-sandbox")
+    follow_up = "Now identify the smallest useful test improvement. Do not change any files."
+    follow_up_output: list[str] = []
+
+    def handle_stdout(chunk: str) -> None:
+        follow_up_output.append(chunk)
+        print(chunk, end="")
+
+    follow_up_result = await resumed.process.exec(
+        {
+            "name": "amp-follow-up",
+            "command": " ".join(
+                [
+                    "amp",
+                    "--mode low",
+                    "--visibility private",
+                    "--no-ide",
+                    "--no-notifications",
+                    "--no-color",
+                    "--no-remote-control-terminal",
+                    "--stream-json",
+                    f"--execute {shlex.quote(follow_up)}",
+                    "threads continue",
+                    shlex.quote(thread_id),
+                ]
+            ),
+            "working_dir": REPOSITORY_DIR,
+            "wait_for_completion": True,
+            "timeout": 600,
+            "on_stdout": handle_stdout,
+            "on_stderr": lambda chunk: print(chunk, end=""),
+        }
+    )
+    follow_up_result_event = None
+    for line in "".join(follow_up_output).splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") == "result":
+            follow_up_result_event = event
+            break
+
+    if (
+        follow_up_result.exit_code != 0
+        or not follow_up_result_event
+        or follow_up_result_event.get("subtype") != "success"
+        or follow_up_result_event.get("is_error") is not False
+    ):
+        raise RuntimeError(f"Amp thread {thread_id} did not finish successfully")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+</CodeGroup>
+
+Run the continuation script:
+
+<CodeGroup>
+```shell TypeScript (npm)
+AMP_THREAD_ID=T-YOUR-THREAD-ID npx tsx continue.ts
+```
+
+```shell Python
+AMP_THREAD_ID=T-YOUR-THREAD-ID python continue.py
+```
+</CodeGroup>
+
+The sandbox wakes on the first process call. Its repository files and local Amp thread metadata remain available.
+
+## 5. Open Amp in the sandbox terminal
+
+Connect to the same sandbox when you want an interactive session:
+
+```shell
+bl connect sandbox amp-sandbox
+cd /blaxel/work/repository
+amp --version
+amp
+```
+
+## 6. Troubleshoot common failures
+
+### Amp rejects the access token
+
+Confirm that `AMP_API_KEY` contains an active Amp access token. Delete and recreate an existing sandbox after you rotate the token.
+
+### The repository does not clone
+
+Confirm that the sandbox can access the Git host. For a private repository, provide credentials through your approved secret workflow instead of placing them in the script.
+
+### Amp cannot reach a required service
+
+Allow the domains required by Amp, your Git host, and your dependency registries in the sandbox network policy.
+
+### A task exits without a successful result
+
+Check the final structured `result` event. Amp can report an error in the event stream, so do not rely only on the process exit code.
+
+### The thread does not continue
+
+Reconnect to the same named sandbox and use the exact thread ID from the first task. A different sandbox does not contain the same repository state.
+
+## 7. Delete the sandbox
+
+Delete the sandbox when you finish:
+
+```shell
+bl delete sandbox amp-sandbox
+```
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Amp manual" href="https://ampcode.com/manual">
+    Learn about Amp modes, threads, and command-line options.
+  </Card>
+  <Card title="Sandbox processes" href="/Sandboxes/Processes">
+    Run and monitor more commands with Python or TypeScript.
+  </Card>
+</CardGroup>
