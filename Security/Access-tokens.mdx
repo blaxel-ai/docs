@@ -14,7 +14,7 @@ Blaxel employs two main authentication paradigms: **short-lived tokens** (OAuth)
 
 Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console.
 
-**OAuth tokens** are recommended for security reasons, as their duration is only of 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
+**OAuth tokens** are recommended for security reasons, as their duration is only 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
 
 <Note>
   A personal API key or personal OAuth login grants access to every [workspace](/Security/Workspace-access-control) your account belongs to, while a service account's API key or client-credentials token only grants access to the single workspace that service account belongs to. If a request fails with a 403 error even though the credential is valid, this usually means the credential doesn't have access to the specified workspace.
@@ -258,4 +258,4 @@ await settings.authenticate() // Refreshes the token only if needed
 console.log(settings.token)
 ```
 
-*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [is done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*
+*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [are done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*
