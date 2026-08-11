@@ -17,9 +17,9 @@ Before starting, ensure you have:
 ## 1. Generate a Tailscale authentication key
 
 1. Open the [Tailscale keys page](https://login.tailscale.com/admin/settings/keys).
-2. Select **Generate auth key**.
-3. Enable **Ephemeral** so Tailscale removes the node after the sandbox disconnects.
-4. Enable **Reusable** if the key will create more than one sandbox.
+2. Select Generate auth key.
+3. Enable Ephemeral so Tailscale removes the node after the sandbox disconnects.
+4. Enable Reusable if the key will create more than one sandbox.
 5. Copy the generated value, which starts with `tskey-auth-`.
 
 Store the key in your local environment when using an SDK:
@@ -37,9 +37,9 @@ export TS_AUTHKEY=tskey-auth-...
 
 ### Blaxel Console
 
-1. Open **Sandboxes** in the Blaxel Console.
-2. Select **Create sandbox**.
-3. Choose the **Tailscale** image.
+1. Open Sandboxes in the Blaxel Console.
+2. Select Create sandbox.
+3. Choose the Tailscale image.
 4. Add an environment variable named `TS_AUTHKEY` and paste your authentication key as its value.
 5. Create the sandbox.
 
