@@ -33,7 +33,7 @@ export TS_AUTHKEY=tskey-auth-...
   it directly in application code.
 </Warning>
 
-## 2. Create the sandbox
+## 2. Create the sandbox with the Tailscale image (recommended)
 
 The image uses userspace networking. You do not need to enable a TUN device or `iptables`.
 
@@ -121,7 +121,7 @@ tailscale ssh root@tailscale-sandbox
 
 Your [Tailscale SSH access policy](https://tailscale.com/kb/1193/tailscale-ssh) determines which users and devices can connect.
 
-<Accordion title="Alternative: configure a base image manually">
+## 5. Configure a base image manually
 
 Use the base image when you need to control the Tailscale installation or startup commands yourself. Create the sandbox with the `iptables` kernel enabled:
 
@@ -167,8 +167,6 @@ apk add --no-cache tailscale iptables
 tailscaled &
 tailscale up --auth-key="$TS_AUTHKEY" --hostname=tailscale-sandbox --ssh
 ```
-
-</Accordion>
 
 ## Resources
 
