@@ -12,17 +12,12 @@ Before starting, ensure you have:
 - a [Blaxel account](https://blaxel.ai)
 - a [Tailscale account](https://tailscale.com/)
 - a Tailscale authentication key
+- the [Blaxel CLI](/cli-reference/introduction), logged in to your workspace
 - the Blaxel TypeScript or Python SDK installed in your project
 
-## 1. Generate a Tailscale authentication key
+## 1. Configure a Tailscale authentication key
 
-1. Log in to your Tailscale account and navigate to the administration section.
-2. Click **Generate auth key**
-3. Configure the key:
-   - **Reusable** — enable if you want to use the same key across multiple sandboxes
-   - **Ephemeral** — recommended for sandboxes: the node is automatically removed from your Tailscale network when it disconnects
-   - **Expiry** — set an appropriate duration (e.g. 90 days)
-4. Click **Generate key** and copy the value, typically starting with `tskey-auth-...`
+Follow the [Tailscale authentication key documentation](https://tailscale.com/docs/features/access-control/auth-keys) to create a key.
 
 Then set it as an environment variable:
 
@@ -35,30 +30,17 @@ export TS_AUTHKEY=tskey-auth-...
   it directly in application code.
 </Warning>
 
-## 2. Create the sandbox with the Tailscale image (recommended)
+## 2. Create the sandbox through the API (recommended)
 
 The image uses userspace networking. You do not need to enable a TUN device or `iptables`.
 
-### Blaxel Console
-
-1. Open Sandboxes in the Blaxel Console.
-2. Select Create sandbox.
-3. Enter `tailscale-sandbox` as the sandbox name.
-4. Choose the Tailscale image.
-5. Add an environment variable named `TS_AUTHKEY` and paste your authentication key as its value.
-6. Create the sandbox.
-
-The sandbox validates that `TS_AUTHKEY` is present before starting its services. Tailscale then validates the key when the sandbox joins your tailnet and enables Tailscale SSH.
+Use the TypeScript or Python SDK to call the Blaxel API. Create the sandbox with the `blaxel/tailscale:latest` image and pass `TS_AUTHKEY` as a runtime environment variable.
 
 <Warning>
   The sandbox stops immediately when `TS_AUTHKEY` is missing. An invalid, expired,
   or revoked key prevents Tailscale from connecting, so the sandbox stops when
   Tailscale exits or after the 60-second startup timeout.
 </Warning>
-
-### SDK
-
-Create the sandbox with the `blaxel/tailscale:latest` image and pass `TS_AUTHKEY` as a runtime environment variable.
 
 <CodeGroup>
 
