@@ -35,6 +35,8 @@ export TS_AUTHKEY=tskey-auth-...
 
 ## 2. Create the sandbox
 
+The image uses userspace networking. You do not need to enable a TUN device or `iptables`.
+
 ### Blaxel Console
 
 1. Open Sandboxes in the Blaxel Console.
@@ -43,7 +45,13 @@ export TS_AUTHKEY=tskey-auth-...
 4. Add an environment variable named `TS_AUTHKEY` and paste your authentication key as its value.
 5. Create the sandbox.
 
-The sandbox starts `tailscaled`, authenticates with the supplied key, and enables Tailscale SSH automatically.
+The sandbox validates that `TS_AUTHKEY` is present before starting its services. Tailscale then validates the key when the sandbox joins your tailnet and enables Tailscale SSH.
+
+<Warning>
+  The sandbox stops immediately when `TS_AUTHKEY` is missing. An invalid, expired,
+  or revoked key prevents Tailscale from connecting, so the sandbox stops when
+  Tailscale exits or after the 60-second startup timeout.
+</Warning>
 
 ### SDK
 
@@ -99,7 +107,9 @@ tailscale status
 tailscale ip
 ```
 
-The sandbox hostname defaults to its Blaxel sandbox name. Set `TS_HOSTNAME` when creating the sandbox to use a different Tailscale hostname.
+The image uses the first available hostname value in this order: `TS_HOSTNAME`, a manually provided `SANDBOX_NAME`, the Blaxel-provided `BL_NAME`, then `tailscale-sandbox`.
+
+In the standard Blaxel flow, the Tailscale hostname defaults to the sandbox name through `BL_NAME`. Set `TS_HOSTNAME` when creating the sandbox to use a different hostname.
 
 ## 4. Connect with Tailscale SSH
 
