@@ -95,6 +95,18 @@ When building your agentic system, you'll need to make architecture design choic
   Volumes and Agent Drive are storage products, so "boot time" and "workload duration" don't apply.
 </Note>
 
+### Which storage solution to choose
+
+Choose storage based on durability and sharing needs:
+
+- [**Sandbox filesystem**](/Sandboxes/Overview#memory-and-filesystem): Fastest option (in-memory, no network or disk I/O). Use it for scratch files, working directories, and outputs that only need to live for the current sandbox. It survives standby and resume, but is erased when the sandbox is deleted. Not replicated or durable; capacity is roughly half the sandbox memory allocation.
+- [**Volumes**](/Volumes/Overview): Durable block storage that survives sandbox deletion and attaches to one sandbox at a time. Use it for high-performance persistence in a single sandbox lineage (databases, source checkouts, agent memories). Mounts only at sandbox creation; re-attaching to a new sandbox costs a cold boot of a few hundred ms.
+- [**Agent Drive**](/Agent-drive/Overview): Shared distributed filesystem that multiple sandboxes or agents can mount and write concurrently. Use it to share state across sandboxes, sessions, or tenants. Attach or detach on running sandboxes at any path, with fine-grained permissions. Prefer a Volume for single-writer block workloads like databases.
+
+As a rule of thumb: if the data only needs to survive the current sandbox session, use the sandbox filesystem. If it needs to outlive the sandbox but only one sandbox will ever touch it at a time, use a Volume. If more than one sandbox or agent needs to read or write it at the same time, use Agent Drive. Because the sandbox filesystem is not replicated or durable, if the data is not easily recreated, use a Volume or Agent Drive instead of relying on it alone.
+
+For a deeper comparison, see [Choose the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents).
+
 ## The Blaxel powerhouse
 
 Blaxel is a fully managed cloud platform. For regulated or enterprise customers who require "self-hosted" options: private network connectivity and bring-your-own-server arrangements are available; [contact us](https://blaxel.ai/contact) to discuss your requirements.
