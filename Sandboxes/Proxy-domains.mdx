@@ -1,7 +1,7 @@
 ---
-title: "Domain filtering"
-description: "Restrict which external domains a Blaxel sandbox can reach using allowlists and denylists to prevent data exfiltration and unwanted outbound traffic."
-tag: "public preview"
+title: 'Domain filtering'
+description: 'Restrict which external domains, HTTP methods, and URL paths a Blaxel sandbox can reach using allowlists and denylists to prevent data exfiltration and unwanted outbound traffic.'
+tag: 'public preview'
 ---
 
 <Note>
@@ -79,8 +79,99 @@ await SandboxInstance.create({
 </CodeGroup>
 
 <Note>
-  When both `allowedDomains` and `forbiddenDomains` are set, `allowedDomains` takes precedence: a domain that appears in both lists will be allowed.
+  When a request matches both lists, `forbiddenDomains` wins and the request is blocked. An empty `allowedDomains` allows everything that is not in `forbiddenDomains`.
 </Note>
+
+## Method and path patterns
+
+Each entry in `allowedDomains` and `forbiddenDomains` is a pattern. A bare domain like `api.stripe.com` or `*.s3.amazonaws.com` is the simplest form. You can also scope a rule to specific HTTP methods and URL paths by adding method prefixes and a path suffix:
+
+```text
+[!]METHOD:...:domain[/path]
+```
+
+- An optional leading `!` negates the method set.
+- Zero or more HTTP methods, colon-separated, before the domain (case-insensitive).
+- The domain (exact, `*.suffix`, or `*`).
+- An optional `/path` prefix.
+
+| Pattern | Matches |
+|---------|---------|
+| `api.openai.com` | Any request to `api.openai.com` |
+| `*.googleapis.com` | Any subdomain, but not the bare `googleapis.com` |
+| `*` | Any domain |
+| `GET:POST:storage.googleapis.com` | Only GET and POST to that domain |
+| `!POST:storage.googleapis.com` | Every method except POST |
+| `storage.googleapis.com/company-mercor*` | Paths starting with `/company-mercor` |
+| `GET:storage.googleapis.com/data/` | GET requests under `/data/` |
+
+### Methods
+
+- No method in the pattern matches any method.
+- One or more methods match only those methods (case-insensitive).
+- A leading `!` negates the set: it matches every method except those listed. `!POST:domain` matches everything but POST, and `!GET:POST:domain` matches everything but GET and POST.
+
+### Domains
+
+- `*` matches every domain.
+- `*.example.com` matches `sub.example.com` and `a.b.example.com`, but not the bare `example.com`.
+- Any other value is an exact, case-insensitive match.
+- A `:port` on the request is ignored when matching.
+
+### Paths
+
+- No path in the pattern applies the rule to every path on the domain.
+- A path is matched as a start-anchored prefix. `*` matches any run of characters; every other character is literal.
+  - `/data/` matches `/data/` and `/data/file.txt`, but not `/data`.
+  - `/company-mercor*` matches `/company-mercor` and `/company-mercor-1/obj`, but not `/company-other`.
+- The query string is ignored, so tokens in query parameters never affect the decision.
+- The path is canonicalized before matching, so `.`, `..`, and duplicate slashes cannot slip a request past a prefix rule. A request to `/company-mercor/../other/obj` is evaluated as `/other/obj`.
+
+<Tip>
+  A pattern that does not fit this shape is treated as a plain domain equal to the literal string. It can never widen access beyond the domain it names, so a typo fails safe and matches nothing extra.
+</Tip>
+
+This example allows read-only access under one path prefix and blocks writes to a sensitive subpath:
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "scoped-egress",
+  network: {
+    allowedDomains: ["GET:storage.googleapis.com/company-mercor*"],
+    forbiddenDomains: ["POST:storage.googleapis.com/company-mercor/secrets*"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "scoped-egress",
+    "network": {
+        "allowedDomains": ["GET:storage.googleapis.com/company-mercor*"],
+        "forbiddenDomains": ["POST:storage.googleapis.com/company-mercor/secrets*"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+## Evaluation order
+
+For each outbound request the proxy decides in this order:
+
+1. If any `forbiddenDomains` pattern matches, the request is blocked.
+2. Otherwise, if `allowedDomains` is non-empty and no pattern matches, the request is blocked.
+3. Otherwise, the request is allowed.
+
+Forbidden rules always take precedence over allow rules. An empty `allowedDomains` allows everything that is not forbidden. A blocked request receives an HTTP `403` response with a `Proxy-Error: firewall_blocked` header.
+
+## Backward compatibility
+
+Plain-domain entries behave exactly as before, so existing configurations keep working without changes. The method, path, and negation syntax is opt-in: put the richer strings into the same `allowedDomains` and `forbiddenDomains` arrays. There are no new fields.
 
 ## Firewall + proxy combined
 
