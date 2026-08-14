@@ -766,11 +766,6 @@ components:
       type: object
       description: Immutable drive configuration set at creation time
       properties:
-        infrastructureId:
-          type: string
-          description: The internal infrastructure resource identifier for this drive
-            (bucket name)
-          readOnly: true
         permissions:
           type: array
           description: Permissions controlling which workloads can access this drive.
@@ -3825,10 +3820,6 @@ components:
       description: Immutable volume configuration set at creation time (size and region
         cannot be changed after creation)
       properties:
-        infrastructureId:
-          type: string
-          description: The internal infrastructure resource identifier for this volume
-          readOnly: true
         region:
           type: string
           description: Deployment region for the volume (e.g., us-pdx-1, eu-lon-1).
