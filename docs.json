@@ -134,35 +134,6 @@
             ]
           },
           {
-            "group": "Agents Hosting",
-            "pages": [
-              "Agents/Overview",
-              "Agents/Quickstart-agent",
-              {
-                "group": "Development guide",
-                "pages": [
-                  "Agents/Develop-an-agent",
-                  "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py"
-                ]
-              },
-              {
-                "group": "Deploy an agent",
-                "pages": [
-                  "Agents/Deploy-an-agent",
-                  "Agents/Deploy-dockerfile",
-                  "Agents/Deploy-multiple"
-                ]
-              },
-              "Agents/Github-integration",
-              "Agents/Query-agents",
-              "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps",
-              "Agents/Volumes"
-            ]
-          },
-          {
             "group": "MCP Servers Hosting",
             "pages": [
               "Functions/Overview",
