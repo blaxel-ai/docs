@@ -98,7 +98,8 @@
             "group": "Agent Drive",
             "pages": [
               "Agent-drive/Overview",
-              "Agent-drive/Permissions"
+              "Agent-drive/Permissions",
+              "Agent-drive/S3-endpoint"
             ]
           },
           {

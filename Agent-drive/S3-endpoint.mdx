@@ -1,0 +1,73 @@
+---
+title: 'Access an Agent Drive over S3'
+sidebarTitle: 'S3 endpoint'
+description: 'Access an Agent Drive from S3-compatible clients using its HTTP endpoint, service account credentials, and SigV4 signing.'
+tag: "private preview"
+---
+
+Every drive exposes an S3-compatible HTTP endpoint, so you can read and write its contents directly from any S3 client, such as the AWS CLI, boto3, or the AWS SDK for JavaScript, without mounting the drive into a sandbox first.
+
+Requests must use SigV4 signing and path-style addressing (the bucket in the path, not the hostname). Credentials are a [service account](/Security/Service-accounts)'s [API key](/Security/Access-tokens): `AWS_ACCESS_KEY_ID` is the API key's record ID and `AWS_SECRET_ACCESS_KEY` is its raw secret value — **not** the service account's OAuth client ID/secret pair. Personal API keys and OAuth tokens are not supported for S3 access.
+
+<Warning>
+  Drive permission rules (labels, `path`, `mode`) are **not currently enforced** for S3 access. A valid service-account API key grants full read-write access to every drive in the workspace over S3, regardless of any [drive permissions](/Agent-drive/Permissions) configured on them. Only issue S3 credentials to service accounts you're comfortable giving full access to all drives in the workspace; enforcing permission rules over S3 is planned but not yet available.
+</Warning>
+
+<Note>
+  API keys created before S3 support was added may not work for SigV4 signing and will return `InvalidAccessKeyId`. If you hit this error, create a new API key for the service account (or rotate the existing one) and use the new credentials.
+</Note>
+
+## Find a drive's S3 endpoint and bucket
+
+The endpoint is returned in the drive's state as `s3Url`, in the form `{endpoint}/{bucket}`:
+
+<CodeGroup>
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.get("my-drive");
+console.log(drive.state?.s3Url);
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.get("my-drive")
+state = drive.drive.state
+print(state.s_3_url if state and state.s_3_url else None)  # low-level field name; a higher-level property is planned
+```
+
+</CodeGroup>
+
+The bucket is the last path segment of `s3Url`; the rest of the URL is the endpoint to pass to your S3 client.
+
+<Note>
+  The Blaxel CLI does not currently expose the S3 endpoint via `bl drive get`. Use the TypeScript or Python SDK to retrieve it until CLI support is added.
+</Note>
+
+## Use the AWS CLI
+
+Export the service account's API key as AWS-style credentials, then use standard `aws s3` commands with `--endpoint-url` and `--region` set to the drive's endpoint and region:
+
+```bash
+export AWS_ACCESS_KEY_ID="<api-key-id>"       # the API key's record ID, not the service account's OAuth client ID
+export AWS_SECRET_ACCESS_KEY="<api-key-secret>"  # the API key's raw secret value, not the OAuth client secret
+```
+
+```bash
+aws s3 ls "s3://<bucket>/" \
+  --endpoint-url "<endpoint>" \
+  --region "<drive-region>"
+```
+
+```bash
+aws s3 cp ./local.bin "s3://<bucket>/path/local.bin" \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+aws s3 cp "s3://<bucket>/path/local.bin" ./local.bin \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+```
+
+<Tip>
+  The region passed to the S3 client must match the drive's `region`, and the endpoint must be called with path-style addressing (the default for most S3 clients when a custom endpoint is set).
+</Tip>
