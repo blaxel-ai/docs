@@ -57,14 +57,17 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Tutorials/OpenAI-Agents-SDK",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
-              "Sandboxes/Filesystem",
-              "Sandboxes/MCP",
-              "Sandboxes/Codegen-tools",
+              {
+                "group": "File system",
+                "pages": [
+                  "Sandboxes/Filesystem",
+                  "Sandboxes/Codegen-tools"
+                ]
+              },
               "Sandboxes/Log-streaming",
-              "Sandboxes/Variables-and-secrets",
+              "Sandboxes/Fork",
               {
                 "group": "Ports, previews & sessions",
                 "pages": [
@@ -74,6 +77,7 @@
                   "Sandboxes/Standby-control"
                 ]
               },
+              "Sandboxes/Schedules",
               {
                 "group": "Proxy",
                 "pages": [
@@ -85,8 +89,8 @@
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
               "Sandboxes/Non-root-user",
-              "Sandboxes/Schedules",
-              "Sandboxes/Fork",
+              "Sandboxes/Variables-and-secrets",
+              "Sandboxes/MCP",
               "Sandboxes/best-practices"
             ]
           },
@@ -94,7 +98,8 @@
             "group": "Agent Drive",
             "pages": [
               "Agent-drive/Overview",
-              "Agent-drive/Permissions"
+              "Agent-drive/Permissions",
+              "Agent-drive/S3-endpoint"
             ]
           },
           {
@@ -126,35 +131,6 @@
                 ]
               },
               "Jobs/Variables-and-secrets-jobs"
-            ]
-          },
-          {
-            "group": "Agents Hosting",
-            "pages": [
-              "Agents/Overview",
-              "Agents/Quickstart-agent",
-              {
-                "group": "Development guide",
-                "pages": [
-                  "Agents/Develop-an-agent",
-                  "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py"
-                ]
-              },
-              {
-                "group": "Deploy an agent",
-                "pages": [
-                  "Agents/Deploy-an-agent",
-                  "Agents/Deploy-dockerfile",
-                  "Agents/Deploy-multiple"
-                ]
-              },
-              "Agents/Github-integration",
-              "Agents/Query-agents",
-              "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps",
-              "Agents/Volumes"
             ]
           },
           {
@@ -288,6 +264,7 @@
                 "group": "OpenAI / Codex",
                 "pages": [
                   "Tutorials/Codex",
+                  "Tutorials/OpenAI-Agents-SDK",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
               },

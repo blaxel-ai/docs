@@ -87,6 +87,10 @@ sandbox = await SandboxInstance.create({
 
 </CodeGroup>
 
+<Warning>
+  Adding a proxy config to a sandbox enforces the proxy on **all** outbound requests. If some requests should not go through it, use [proxy bypass](./Proxy-secrets-injection#proxy-bypass).
+</Warning>
+
 ### `SandboxNetwork`
 
 | Field | Type | Description |

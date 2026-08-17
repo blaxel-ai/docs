@@ -7,6 +7,74 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-08-14">
+
+### Method and path matching for sandbox egress rules
+
+[Sandbox domain filtering](/Sandboxes/Proxy-domains#method-and-path-patterns) now supports HTTP method, path prefix, wildcard, and negation patterns, letting you restrict outbound access beyond domain-level allowlists and denylists.
+
+</Update>
+
+<Update label="2026-08-13">
+
+### Dynamic value injection in the sandbox proxy
+
+Proxy routing rules can now [generate UUIDs, timestamps, nonces, and other dynamic values](/Sandboxes/Proxy-secrets-injection#dynamic-value-injection) for every request. Inject them into headers and body fields for idempotency keys, request IDs, and other one-time values.
+
+</Update>
+
+<Update label="2026-07-29">
+
+### S3-compatible access for Agent Drive
+
+Every Agent Drive instance now exposes an [S3-compatible endpoint](/Agent-drive/S3-endpoint), so you can access its contents with the AWS CLI, boto3, or the AWS SDK for JavaScript without mounting the drive into a sandbox.
+
+</Update>
+
+<Update label="2026-07-24">
+
+### Sandbox snapshots and forking
+
+Our biggest update since we launched sandboxes!
+
+In private preview, create point-in-time [snapshots of a sandbox](/Sandboxes/Fork), roll back to an earlier checkpoint, or fork its filesystem, running processes, and memory state into a new sandbox.
+
+### Application Runtime
+
+Introducing Application Runtime in private preview for deploying long-running web servers, APIs, dashboards, and other services on stable public endpoints.
+
+</Update>
+
+<Update label="2026-07-19">
+
+### Ephemeral root storage for sandboxes
+
+In private preview, sandboxes can now provision [disk-backed root storage](/Sandboxes/Overview#memory-and-filesystem) with `storageMb`, adding filesystem capacity without increasing memory. The storage follows the sandbox lifecycle and is deleted with the sandbox.
+
+### Agent-led onboarding
+
+Added a new agent-led onboarding experience that helps you set up projects and manage Blaxel resources via your coding agent.
+
+</Update>
+
+<Update label="2026-07-14">
+
+### Share custom domains across workspaces
+
+Verified preview custom domains can now be [shared with another workspace](/Infrastructure/Custom-domains#share-a-custom-domain). Shared domains remain read-only in target workspaces and can be used for their sandbox previews.
+
+</Update>
+
+<Update label="2026-07-13">
+
+### Mark 3.1 infrastructure
+
+Introducing [Mark 3.1](/Infrastructure/Gens#mark-31)! The latest iteration of Blaxel's microVM-based infrastructure, in private preview.
+
+Mk 3.1 infra enables long-awaited features such as manual snapshotting, forking, and much more!
+
+</Update>
+
 <Update label="2026-06-30">
 
 ### Agent Drive permissions
