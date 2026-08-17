@@ -1,27 +1,39 @@
 ---
-
-title: 'Generations'
-
-description: 'Overview of Blaxel infrastructure generations from Mark 1 through Mark 3, including microVM-based architecture with near-instant cold starts.'
-
+title: Generations
+description: "Overview of Blaxel infrastructure generations from Mark 1 through Mark 3.1."
 ---
 
-By default, deployed workloads run on Mark 3 infrastructure. Mark 3 infrastructure leverages microVMs to run with critical-low cold-starts.
+Blaxel workloads run on one of several infrastructure generations, described below from most to least recent.
 
-Mark 3 infrastructure is currently available to run the following workloads:
+## Mark 3.1
 
-- [sandboxes](../Sandboxes/Overview)
-- [agents](../Agents/Overview)
-- [MCP servers](../Functions/Overview)
-- [batch jobs](../Jobs/Overview)
+Mark 3.1 is the newest Blaxel infrastructure generation. Currently in private preview, it's built directly as an evolution of Mark 3.0: same microVM foundation, same SDK, CLI, and REST surface. It supports many more features than 3.0, including a layer for manually snapshotting and forking sandboxes.
 
-## What about Mark 1
+On Mark 3.0, a sandbox is already snapshotted automatically and invisibly whenever it goes into standby, which is what makes its near-instant resume possible. Mark 3.1 exposes that same underlying mechanism directly, so you can:
 
-Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving’s scale-to-zero capabilities and Kubernetes’ container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed federating multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
+* **Manually snapshot** a sandbox's full memory state (filesystem and running processes) at any point in time, independent of the standby cycle, so you can roll back to that exact state later.
+* **Fork a sandbox**, creating a new sandbox that inherits another one's exact memory state — either its current live state or a previously saved snapshot. Useful for branching a session, exploring several execution paths in parallel, or reproducing an issue from a known checkpoint.
+* **Fork straight into a live application**, turning a sandbox (or a specific snapshot of one) into a new application revision, with canary traffic splitting and custom domain support, so agent-generated code can move from iteration to production without a separate build step.
 
-While it demonstrated reasonable stability even at 20+ requests per second and achieved somewhat acceptable cold starts through runtime optimization, its architecture wasn’t suited for the more lightweight workloads that make up most of autonomous agents: tool calls, agent orchestration, and external model routing.
+See [Snapshots and forking](../Sandboxes/Fork) for the full API reference.
 
-Mark 1 infrastructure was decommissioned in January 2025.
+Mark 3.1 is currently in private preview and is rolling out progressively by region and by workspace, so it isn't yet the default everywhere. A few Mark 3.0 features aren't yet available together with Mark 3.1:
+* Agent Drive
+* Firewalling
+* Dedicated egress IPs
+
+The API is otherwise identical between the two generations, so no code changes are needed to move a workload between them.
+
+## Mark 3.0
+
+By default, deployed workloads run on Mark 3.0 infrastructure. Mark 3.0 infrastructure leverages microVMs to run with critical-low cold-starts.
+
+Mark 3.0 infrastructure is currently available to run the following workloads:
+
+* [sandboxes](../Sandboxes/Overview)
+* [agents](../Agents/Overview)
+* [MCP servers](../Functions/Overview)
+* [batch jobs](../Jobs/Overview)
 
 ## What about Mark 2
 
@@ -29,10 +41,18 @@ Mark 2 infrastructure used containers to run workloads, providing emulation of m
 
 Mark 2 infrastructure was suitable when:
 
-- your workload required system calls not supported by Mk 3 infrastructure
-- boot times of around 5 seconds were suitable for your needs
-- your deployment received consistent traffic that keeps it running warm
-- you needed to run workloads in specific regions for sovereignty or regulatory compliance using [deployment policies](../Model-Governance/Policies)
-- you required revision control for rollbacks or canary deployments
+* your workload required system calls not supported by Mk 3 infrastructure
+* boot times of around 5 seconds were suitable for your needs
+* your deployment received consistent traffic that keeps it running warm
+* you needed to run workloads in specific regions for sovereignty or regulatory compliance using [deployment policies](../Model-Governance/Policies)
+* you required revision control for rollbacks or canary deployments
 
-Mark 2 infrastructure was deprecated in Q4 2025.
+Mark 2 infrastructure was deprecated in Q4 2025 and decommissioned in Q2 2026.
+
+## What about Mark 1
+
+Mark 1 infrastructure was originally designed for serverless ML model inference but proved inadequate for running agentic workloads. Built on Knative Custom Resource Definitions (CRDs) running atop managed Kubernetes clusters, it leveraged KNative Serving's scale-to-zero capabilities and Kubernetes' container orchestration features. The infrastructure utilized pod autoscaling through the Knative Autoscaler (KNA). It also allowed federating multiple clusters via a Blaxel agent that would offload inference requests from one Knative cluster to another based on a usage metric.
+
+While it demonstrated reasonable stability even at 20+ requests per second and achieved satisfying cold starts through runtime optimization, its architecture wasn't suited for the more lightweight workloads that make up most of autonomous agents: tool calls, agent orchestration, and external model routing.
+
+Mark 1 infrastructure was decommissioned in January 2025.
