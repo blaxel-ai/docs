@@ -10,7 +10,7 @@ They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/f
 
 ## Sandbox lifecycle
 
-Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](/Sandboxes/Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
 
 <img
   className="block dark:hidden"
