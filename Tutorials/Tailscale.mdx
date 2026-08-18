@@ -3,7 +3,7 @@ title: 'Run Tailscale in a sandbox'
 description: 'Connect a Blaxel sandbox to your Tailscale tailnet so you can SSH into it from any authorized device, with step-by-step setup instructions.'
 ---
 
-This tutorial shows how to run [Tailscale](https://tailscale.com/) inside a Blaxel sandbox. Once set up, your sandbox is reachable via SSH from any device on your Tailscale network.
+The Blaxel Tailscale image includes Tailscale and connects to your tailnet when the sandbox starts. Provide a Tailscale authentication key to access the sandbox from any authorized device on your tailnet.
 
 ## Prerequisites
 
@@ -12,17 +12,12 @@ Before starting, ensure you have:
 - a [Blaxel account](https://blaxel.ai)
 - a [Tailscale account](https://tailscale.com/)
 - a Tailscale authentication key
+- the [Blaxel CLI](/cli-reference/introduction), logged in to your workspace
 - the Blaxel TypeScript or Python SDK installed in your project
 
-To generate a Tailscale authentication key:
+## 1. Configure a Tailscale authentication key
 
-1. Log in to your Tailscale account and navigate to the administration section.
-2. Click **Generate auth key**
-3. Configure the key:
-   - **Reusable** — enable if you want to use the same key across multiple sandboxes
-   - **Ephemeral** — recommended for sandboxes: the node is automatically removed from your Tailscale network when it disconnects
-   - **Expiry** — set an appropriate duration (e.g. 90 days)
-4. Click **Generate key** and copy the value, typically starting with `tskey-auth-...`
+Follow the [Tailscale authentication key documentation](https://tailscale.com/docs/features/access-control/auth-keys) to create a key.
 
 Then set it as an environment variable:
 
@@ -30,9 +25,92 @@ Then set it as an environment variable:
 export TS_AUTHKEY=tskey-auth-...
 ```
 
-## Create a sandbox
+<Warning>
+  Treat `TS_AUTHKEY` as a secret. Do not commit it to source control or include
+  it directly in application code.
+</Warning>
 
-Tailscale requires iptables, which is not enabled in sandboxes by default. You enable it by passing [`extraArgs` at creation time](/Sandboxes/Overview#kernel-networking).
+## 2. Create the sandbox through the API (recommended)
+
+The image uses userspace networking. You do not need to enable a TUN device or `iptables`.
+
+Use the TypeScript or Python SDK to call the Blaxel API. Create the sandbox with the `blaxel/tailscale:latest` image and pass `TS_AUTHKEY` as a runtime environment variable.
+
+<Warning>
+  The sandbox stops immediately when `TS_AUTHKEY` is missing. An invalid, expired,
+  or revoked key prevents Tailscale from connecting, so the sandbox stops when
+  Tailscale exits or after the 60-second startup timeout.
+</Warning>
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const authKey = process.env.TS_AUTHKEY;
+if (!authKey) throw new Error("TS_AUTHKEY is required");
+
+await SandboxInstance.create({
+  name: "tailscale-sandbox",
+  image: "blaxel/tailscale:latest",
+  envs: [{ name: "TS_AUTHKEY", value: authKey }],
+});
+```
+
+```python Python
+import asyncio
+import os
+
+from blaxel.core import SandboxInstance
+
+async def main():
+    auth_key = os.environ["TS_AUTHKEY"]
+
+    await SandboxInstance.create({
+        "name": "tailscale-sandbox",
+        "image": "blaxel/tailscale:latest",
+        "envs": [{"name": "TS_AUTHKEY", "value": auth_key}],
+    })
+
+asyncio.run(main())
+```
+
+</CodeGroup>
+
+## 3. Verify the Tailscale connection
+
+Connect to the sandbox terminal:
+
+```sh
+bl connect sandbox tailscale-sandbox
+```
+
+Check that the sandbox is connected and retrieve its Tailscale IP address:
+
+```sh
+tailscale status
+tailscale ip
+```
+
+The image uses the first available hostname value in this order: `TS_HOSTNAME`, a manually provided `SANDBOX_NAME`, the Blaxel-provided `BL_NAME`, then `tailscale-sandbox`.
+
+In the standard Blaxel flow, the Tailscale hostname defaults to the sandbox name through `BL_NAME`. Set `TS_HOSTNAME` when creating the sandbox to use a different hostname.
+
+## 4. Connect with Tailscale SSH
+
+From another authorized device on your tailnet, connect with the sandbox hostname or Tailscale IP:
+
+```sh
+tailscale ssh root@tailscale-sandbox
+```
+
+Your [Tailscale SSH access policy](https://tailscale.com/kb/1193/tailscale-ssh) determines which users and devices can connect.
+
+## Appendix: Configure Tailscale manually
+
+### Create a sandbox
+
+This manual setup requires iptables, which is not enabled in sandboxes by default. You enable it by passing [`extraArgs` at creation time](/Sandboxes/Overview#kernel-networking).
 
 <CodeGroup>
 
@@ -56,12 +134,13 @@ sandbox = await SandboxInstance.create({
 
 </CodeGroup>
 
-## Install and configure Tailscale in the sandbox
+### Install and configure Tailscale in the sandbox
 
 Connect to the sandbox terminal:
 
 ```sh
-bl connect tailscale-sandbox
+bl connect sandbox tailscale-sandbox
+export TS_AUTHKEY=tskey-auth-...
 ```
 
 Next, install the `tailscale` and `iptables` packages and start the `tailscaled` daemon as a background process.
@@ -90,7 +169,7 @@ Retrieve the Tailscale IP.
 tailscale ip
 ```
 
-## Connect to the sandbox using Tailscale
+### Connect to the sandbox using Tailscale
 
 Once authenticated, the sandbox is reachable via SSH from any device on your Tailscale network:
 
@@ -100,7 +179,7 @@ ssh root@<tailscale-ip>
 ssh root@my-sandbox
 ```
 
-## Appendix: Using the SDK
+### Using the SDK
 
 It's also possible to create a sandbox and configure Tailscale using the Blaxel SDKs instead of the sandbox terminal:
 
@@ -214,3 +293,17 @@ asyncio.run(setup_tailscale())
 ```
 
 </CodeGroup>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Sandbox overview" href="/Sandboxes/Overview">
+    Create and manage Blaxel sandboxes.
+  </Card>
+  <Card
+    title="Tailscale authentication keys"
+    href="https://tailscale.com/kb/1085/auth-keys"
+  >
+    Configure reusable and ephemeral authentication keys.
+  </Card>
+</CardGroup>
