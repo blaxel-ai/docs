@@ -7,7 +7,7 @@ description: 'Set up a user-facing OAuth flow so end-users can authorize integra
 ---
 
 <Warning>
-  This page covers end-user OAuth: letting your **end users** authorize third-party services (e.g. Gmail) so their integration can be bound to an MCP server you deploy. It is **not** about authenticating a client to a Blaxel MCP endpoint, as deployed Blaxel MCP servers only use bearer tokens, not OAuth.
+  This page covers end-user OAuth: letting your **end users** authorize third-party services (e.g. Gmail) so their integration can be bound to an MCP server you deploy. It is **not** about authenticating a client to a Blaxel MCP endpoint. MCP servers that you deploy on Blaxel authenticate clients with bearer tokens. To sign a client in to the hosted Blaxel MCP server with OAuth, see [Blaxel Skills & MCP](/skills-mcp).
 </Warning>
 
 Some Blaxel integrations support [OAuth](https://oauth.net/2/)-based authentication. You can automate such a flow to allow multiple users (tenants) to go through an OAuth flow and each have their integration.
