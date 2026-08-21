@@ -1,7 +1,7 @@
 ---
 title: 'Blaxel Skills & MCP'
 icon: 'robot'
-description: 'Configure Cursor, Claude Code, Windsurf, or other AI coding assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
+description: 'Configure Codex, Cursor, Claude Code, Windsurf, or other AI coding assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
 ---
 
 Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
@@ -77,7 +77,7 @@ The Blaxel migration skill is also [available as a ZIP file](https://github.com/
 
 ### MCP server for resource management
 
-Blaxel's MCP server lets compatible AI apps (Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
+Blaxel's MCP server lets compatible AI apps (Codex, Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
 
 Talk with your preferred agent to:
 
@@ -89,20 +89,68 @@ Talk with your preferred agent to:
 
 The MCP server is hosted at `https://api.blaxel.ai/v0/mcp`.
 
-Clients connect over HTTP(S) and stream MCP messages. Authentication is provided via headers.
+Clients connect over HTTPS and stream MCP messages. The server supports OAuth 2.1 sign-in and API key authentication.
+
+##### OAuth
+
+Use OAuth when your client supports it. Your client opens Blaxel sign-in in a browser and stores the resulting token.
+
+The server advertises its authorization server at `https://signin.blaxel.ai`. It supports PKCE with the `S256` challenge method, dynamic client registration, Client ID Metadata Documents, and public clients. Requested scopes are `openid`, `email`, `profile`, and `offline_access`.
 
 ##### Authentication headers
 
-Provide your [API key](/Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+For clients without OAuth support, provide your [API key](/Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 
+<Warning>
+  Store your API key in an environment variable. Do not commit it to a repository.
+</Warning>
+
 #### Installation
+
+##### Codex
+
+Add the hosted server. Codex detects OAuth support and starts the sign-in flow:
+
+```bash
+codex mcp add blaxel --url https://api.blaxel.ai/v0/mcp
+```
+
+To sign in again later, run:
+
+```bash
+codex mcp login blaxel
+```
+
+To use an API key instead, set it in your shell and reference it from `~/.codex/config.toml`:
+
+```bash
+export BLAXEL_MCP_API_KEY="<APIKEY>"
+```
+
+```toml
+[mcp_servers.blaxel]
+url = "https://api.blaxel.ai/v0/mcp"
+bearer_token_env_var = "BLAXEL_MCP_API_KEY"
+```
 
 ##### Claude Code
 
 [Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp
+```
+
+Then sign in:
+
+```bash
+claude mcp login blaxel
+```
+
+To use an API key instead, set the headers when you add the server:
 
 ```bash
 claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
@@ -113,6 +161,26 @@ claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
 ##### Cursor
 
 Add the server to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://api.blaxel.ai/v0/mcp"
+    }
+  }
+}
+```
+
+Open Cursor settings, select MCP, then connect `blaxel`. Cursor opens Blaxel sign-in.
+
+Cursor Agent users can start sign-in from a terminal:
+
+```bash
+cursor-agent mcp login blaxel
+```
+
+To use an API key instead, add the headers to the server entry:
 
 ```json
 {
@@ -170,7 +238,9 @@ extensions:
 
 #### Selecting a workspace
 
-If your account has multiple workspaces, set the active workspace by including the `X-Blaxel-Workspace` header. If omitted, your AI app may prompt you to specify one when a tool is invoked.
+Every tool accepts an optional `workspace` argument. Ask your client to use that argument when you want a tool to act on a specific workspace.
+
+If your account has multiple workspaces, you can also set the active workspace by including the `X-Blaxel-Workspace` header. If neither is set, your AI app may prompt you to specify one when a tool is invoked.
 
 #### Example prompts
 
@@ -194,8 +264,8 @@ Prefer using the hosted server at `https://api.blaxel.ai/v0/mcp`. If you must ru
 
 #### Limitations
 
-- The server requires a valid API key.
-- When using multiple workspaces, `X-Blaxel-Workspace` must be provided to disambiguate.
+- The server requires an OAuth sign-in or a valid API key.
+- When using multiple workspaces, set the `workspace` argument or the `X-Blaxel-Workspace` header to disambiguate.
 
 Check out Blaxel MCP server's [source here](https://github.com/blaxel-ai/blaxel-mcp-server).
 
