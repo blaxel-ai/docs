@@ -155,7 +155,7 @@ Once you have the refresh token, create the integration on Blaxel (for an MCP se
 // Create the integration connection on blaxel (store the secrets values)
 curl -X POST https://api.blaxel.ai/v0/integrations/connections \
   -H "Content-Type: application/json" \
-  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_ID"
+  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_ID" \
   -H "Authorization: Bearer BL_API_KEY" \
   -d '{
     "metadata": {
@@ -182,11 +182,11 @@ curl -X POST https://api.blaxel.ai/v0/integrations/connections \
 You can then create the [actual MCP server](../Functions/Overview) that uses this integration connection:
 
 ```bash
-// Create the MCP binded to the integration connection
+// Create the MCP bound to the integration connection
 curl -X POST https://api.blaxel.ai/v0/functions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer BL_API_KEY" \
-  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_ID"
+  -H "X-Blaxel-Workspace: YOUR_WORKSPACE_ID" \
   -d '{
     "metadata": {
       "name": "gmail-mcp-server",
