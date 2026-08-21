@@ -153,6 +153,29 @@ print(execution.status)
 - Overrides apply only to the current execution
 </Note>
 
+### Reject immediately when capacity is unavailable
+
+By default, when your workspace is at its capacity limit, a new execution is accepted, queued, and retried in the background until capacity frees up. Set `allow_queue=False` to instead check capacity synchronously at creation time and get an immediate error if the execution cannot start right now:
+
+```python
+request = CreateJobExecutionRequest(
+    tasks=[{}],
+    allow_queue=False,
+)
+
+# synchronous
+execution_id = job.create_execution(request)
+
+# asynchronous
+execution_id = await job.acreate_execution(request)
+```
+
+<Note>
+- `allow_queue` omitted or `True`: the execution is queued and retried in the background (default behavior)
+- `allow_queue=False`: the request returns a 429 error if capacity is unavailable right now, or a 400 error if the request can never fit within the workspace quota
+- On rejection, no execution is created and nothing is queued, so there is nothing to poll or clean up
+</Note>
+
 ### Complete example
 
 Here is a complete example using synchronous operations:

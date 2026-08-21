@@ -565,6 +565,12 @@ components:
       type: object
       description: Request to create a job execution
       properties:
+        allowQueue:
+          type: boolean
+          description: When false, capacity is checked synchronously and the request
+            is rejected immediately with a 429 error if the execution cannot start
+            right now, instead of being queued and retried in the background. No execution
+            is created on rejection. Defaults to true (queue and retry).
         env:
           type: object
           description: Environment variable overrides (optional, will merge with job's
@@ -3037,6 +3043,13 @@ components:
         resume from standby in under 25ms and automatically scale to zero after inactivity,
         preserving memory state including running processes and filesystem.
       properties:
+        errors:
+          type: array
+          description: Infrastructure failures recorded on the sandbox, oldest first
+            (read-only, managed by the system)
+          items:
+            $ref: '#/components/schemas/SandboxInfrastructureError'
+          readOnly: true
         events:
           $ref: '#/components/schemas/CoreEvents'
         expiresIn:
@@ -3221,6 +3234,27 @@ components:
           enum:
           - sandbox
           - application
+    SandboxInfrastructureError:
+      type: object
+      description: Infrastructure failure the compute plane reported for a sandbox
+      properties:
+        code:
+          type: string
+          description: Stable code of the failure pattern
+          example: VM_NETWORK_FAILURE
+        fatal:
+          type: boolean
+          description: Whether the failure was terminal, putting the sandbox in FAILED,
+            as opposed to being cleared by a restart
+        instance:
+          type: string
+          description: Instance the failure was reported for
+        message:
+          type: string
+          description: Reason reported with the failure
+        time:
+          type: string
+          description: Time at which the failure was recorded
     SandboxLifecycle:
       type: object
       description: Lifecycle configuration controlling automatic sandbox deletion
