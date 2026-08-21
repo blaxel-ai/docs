@@ -460,6 +460,8 @@ Confirm that the sandbox can access the Git host. For a private repository, prov
 
 Allow the domains required by Amp, your Git host, and your dependency registries in the sandbox network policy.
 
+Amp can also report `Network timeout` for a transient service failure. The process exits with a non-zero code and writes no structured events, so retry the same command before you treat the task as failed.
+
 ### A task exits without a successful result
 
 Check the final structured `result` event. Amp can report an error in the event stream, so do not rely only on the process exit code.
