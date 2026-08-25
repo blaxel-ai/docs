@@ -8,9 +8,9 @@ By default, everything inside a sandbox runs as `root`. You can instead declare 
 
 ## Why the sandbox API stays root
 
-The sandbox API is PID 1 in the sandbox. It mounts [agent drives](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
+The sandbox API is PID 1 in the sandbox. It mounts [Agent Drive](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
 
-This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks drive mounts. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
+This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks everything mentioned above. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
 
 <Warning>
   Running the same image locally with `docker run` applies `USER` to the sandbox API, so drive mounts and networking setup fail. Use the entrypoint variant below if you need the image to behave the same way outside Blaxel.
@@ -20,7 +20,7 @@ This is why a plain `USER` directive is not enough on its own: in a plain contai
   This scopes privileges inside the sandbox. It is a defense-in-depth measure: the microVM boundary remains the isolation guarantee between your sandbox and everything else.
 </Note>
 
-## Enable it in your image
+## Declare a user in your image
 
 Create the user in your Dockerfile, declare it with `USER`, and turn the feature on with `BL_SANDBOX_USER_ENABLED`:
 
@@ -57,11 +57,11 @@ exec /usr/local/bin/sandbox-api --user app "$@"
 
 Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and point `ENTRYPOINT` at the script. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
 
-## What runs as your user
+## What runs as your user vs. stays root
 
 | Runs as your user | Stays root |
 |---|---|
-| Processes, startup and background commands | Agent drive mounts |
+| Processes, startup and background commands | Agent Drive mounts |
 | Terminal sessions | Egress and networking setup |
 | Code execution | CA bundle installation |
 | Filesystem API calls (read, write, upload, search) | Keep-alive and standby control |
