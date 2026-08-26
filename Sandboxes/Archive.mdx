@@ -1,0 +1,140 @@
+---
+title: 'Archive and unarchive sandboxes'
+sidebarTitle: 'Archive'
+description: 'Archive a sandbox to keep its filesystem while releasing its compute, and unarchive it later to get it back.'
+tag: "private preview"
+---
+
+<Note>
+  This feature is currently in private preview and is not recommended for production use.
+</Note>
+
+Archiving a sandbox stores the filesystem changes it made over its image and releases its compute. The sandbox keeps its name, its configuration, and its preview URLs, so unarchiving gives you the same sandbox back with its files.
+
+Archiving is not a snapshot: memory is not preserved. Processes are stored with their configuration and start again with new IDs when the sandbox is unarchived.
+
+## Archive a sandbox
+
+The export runs in the background. By default the SDK waits until the sandbox reaches the `ARCHIVED` status.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.archive();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.archive()
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/archive \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+Archive a sandbox by name, without retrieving it first:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.archive("my-sandbox");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+await SandboxInstance.archive("my-sandbox")
+```
+
+</CodeGroup>
+
+## Unarchive a sandbox
+
+Unarchiving recreates the compute and writes the archived filesystem back over the image. The sandbox and its terminal answer while the restore runs, and the SDK waits until the sandbox is `DEPLOYED` again.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.unarchive();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.unarchive()
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/unarchive \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+## Control the wait
+
+An archive and its restore take longer as the filesystem grows. Pass `wait: false` in TypeScript, or `wait=False` in Python, to return as soon as the operation is launched, then read the sandbox status yourself. Set `timeout` and `interval` to change how long the SDK waits and how often it reads the sandbox.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.archive({ wait: false });
+
+await sandbox.unarchive({ timeout: 600_000, interval: 5_000 });
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.archive(wait=False)
+
+await sandbox.unarchive(timeout=600, interval=5)
+```
+
+</CodeGroup>
+
+<Note>
+  TypeScript takes `timeout` and `interval` in milliseconds, Python in seconds.
+</Note>
+
+## Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `ARCHIVING` | The filesystem is being exported and the sandbox is about to be shut down |
+| `ARCHIVED` | The filesystem is stored and no compute is running |
+| `UNARCHIVING` | The compute is back and the archived filesystem is being restored |
+| `DEPLOYED` | The sandbox is running, and the restore is complete |
+
+<Warning>
+  A sandbox keeps a single archive. Archiving a sandbox again replaces the previous archive, and deleting a sandbox deletes its archive, whatever its status.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
+    Learn more about sandbox lifecycle and configuration.
+  </Card>
+  <Card title="Snapshots and forking" icon="copy" href="/Sandboxes/Fork">
+    Checkpoint a sandbox, memory included, and fork it into a new one.
+  </Card>
+</CardGroup>

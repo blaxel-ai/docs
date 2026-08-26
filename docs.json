@@ -68,6 +68,7 @@
               },
               "Sandboxes/Log-streaming",
               "Sandboxes/Fork",
+              "Sandboxes/Archive",
               {
                 "group": "Ports, previews & sessions",
                 "pages": [
