@@ -3043,6 +3043,8 @@ components:
         resume from standby in under 25ms and automatically scale to zero after inactivity,
         preserving memory state including running processes and filesystem.
       properties:
+        archive:
+          $ref: '#/components/schemas/SandboxArchive'
         errors:
           type: array
           description: Infrastructure failures recorded on the sandbox, oldest first
@@ -3083,6 +3085,74 @@ components:
       required:
       - metadata
       - spec
+    SandboxArchive:
+      type: object
+      description: State of the filesystem archive of a sandbox. An archive holds
+        the writable filesystem changes and the process configurations of the sandbox,
+        not its memory, so restoring it produces a sandbox with the same disk state
+        and freshly started processes.
+      properties:
+        createdAt:
+          type: string
+          description: When the archive was created (read-only)
+          readOnly: true
+        generation:
+          type: string
+          description: Infrastructure generation the archive was taken from (read-only)
+          readOnly: true
+          example: mk3.0
+        key:
+          type: string
+          description: Storage key of the archive (read-only)
+          readOnly: true
+          example: my-workspace/my-sandbox.tar
+        restore:
+          $ref: '#/components/schemas/SandboxArchiveRestore'
+        restoreStartedAt:
+          type: string
+          description: When the restore of the archive started, while the sandbox
+            is being unarchived (read-only)
+          readOnly: true
+        size:
+          type: integer
+          description: Size of the archive in bytes (read-only)
+          readOnly: true
+        startedAt:
+          type: string
+          description: When the archive was started, while the filesystem of the sandbox
+            is still being uploaded (read-only)
+          readOnly: true
+    SandboxArchiveRestore:
+      type: object
+      description: Progress of the restore of a sandbox archive. A restore writes
+        the archived filesystem over the image the sandbox booted from, which takes
+        as long as the archive is big; the sandbox answers and its terminal is reachable
+        throughout, but nothing may write to its filesystem until the restore is done.
+      properties:
+        files:
+          type: integer
+          description: Number of files restored so far (read-only)
+          readOnly: true
+        restoredBytes:
+          type: integer
+          description: Bytes of the archive restored so far (read-only)
+          readOnly: true
+        state:
+          type: string
+          description: Phase of the restore (read-only)
+          enum:
+          - downloading
+          - extracting
+          - relaunching
+          - succeeded
+          - failed
+          readOnly: true
+          example: extracting
+        totalBytes:
+          type: integer
+          description: Total size of the archive being restored in bytes, absent when
+            the store did not announce it (read-only)
+          readOnly: true
     SandboxDefinition:
       type: object
       description: Pre-configured sandbox template available in the Sandbox Hub for
@@ -3593,6 +3663,9 @@ components:
       - DEPLOYING
       - DEPLOYED
       - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
       readOnly: true
     Template:
       type: object
@@ -7904,6 +7977,65 @@ paths:
       summary: Update sandbox
       tags:
       - compute
+  /sandboxes/{sandboxName}/archive:
+    post:
+      description: Archives a sandbox. The changes its filesystem accumulated over
+        its image are exported to the archive store, then the sandbox is shut down
+        while its definition is kept, so it can be recreated later with the same disk.
+        Memory and running processes are not preserved, processes are started again
+        from their configuration when the sandbox is unarchived.
+      operationId: ArchiveSandbox
+      parameters:
+      - description: Name of the sandbox to archive
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: Sandbox archived successfully
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to archive this sandbox
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - The sandbox is already archived or is not running
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Archive sandbox
+      tags:
+      - compute
   /sandboxes/{sandboxName}/fork:
     post:
       description: Forks a sandbox into a new sandbox or application. When forking
@@ -8501,6 +8633,64 @@ paths:
         - sandboxes:delete
       - ApiKeyAuth: []
       summary: Delete sandbox snapshot
+      tags:
+      - compute
+  /sandboxes/{sandboxName}/unarchive:
+    post:
+      description: Recreates an archived sandbox from its archive. The recreated sandbox
+        runs the current generation whatever generation it was archived from, restores
+        the archived filesystem before anything starts, and starts the saved processes
+        again with new process identifiers.
+      operationId: UnarchiveSandbox
+      parameters:
+      - description: Name of the sandbox to unarchive
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: Sandbox recreated successfully
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to unarchive this sandbox
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - The sandbox is not archived
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Unarchive sandbox
       tags:
       - compute
   /sandboxes/by-external-id/{externalId}:
