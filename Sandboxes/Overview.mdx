@@ -54,6 +54,16 @@ You are not charged for memory while a sandbox is in standby mode. However, you 
   To prevent a sandbox from going into standby, you can use [process keep-alive](./Processes#sandbox-keep-alive), [WebSocket ping/pong messages](./Standby-control) or [other techniques](./Standby-control) to prevent the timeout.
 </Note>
 
+### Archived mode
+
+Standby keeps a sandbox instantly resumable, memory included, and you keep paying for the storage of its snapshot. When a sandbox is not needed for a long time, [archiving](./Archive) it stores the filesystem changes it made over its image and shuts it down: memory and running processes are lost, and nothing is kept warm for it.
+
+An archived sandbox keeps its name, its configuration, and its preview URLs. Unarchiving it starts the sandbox again from its image and writes the archived filesystem back over it, so you get the same sandbox back with its files, and the saved processes start again from their configuration with new IDs.
+
+<Note>
+  Archiving differs from standby: standby resumes in milliseconds with memory and processes intact, while unarchiving takes as long as the archived filesystem needs to be written back, and only the filesystem comes back. Archiving is also not a [snapshot](./Fork): a snapshot can be forked into other sandboxes, while an archive only ever restores the sandbox it was taken from.
+</Note>
+
 ### Deletion
 
 In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
@@ -75,6 +85,9 @@ During the deployment process, the possible sandbox statuses are:
 - `DEACTIVATED`: The sandbox has been disabled and is not accepting connections.
 - `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
+- `ARCHIVING`: The filesystem is being exported to the archive store and the sandbox is about to be shut down.
+- `ARCHIVED`: The filesystem is stored and the sandbox is shut down. [Unarchive](./Archive) it to use it again.
+- `UNARCHIVING`: The sandbox is running again and its archived filesystem is being restored.
 
 <Note>
   `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox image folder.
