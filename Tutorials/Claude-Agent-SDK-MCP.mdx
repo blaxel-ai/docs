@@ -230,7 +230,7 @@ This creates a Blaxel sandbox named `my-sandbox` and an agent using the Claude A
 - The sandbox exposes a streamable [HTTP MCP server](/Sandboxes/MCP) at the sandbox's base URL: `https://<SANDBOX_BASE_URL>/mcp`. The base URL can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) under `metadata.url` in the sandbox.
 - The agent exposes an HTTP endpoint at `/query` to accept user requests.
 - The agent's HTTP service is bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment.
-- The agent configuration includes the sandbox MCP server URL and uses the Blaxel API key as credential to gain access to it (the `Authorization` header).
+- The agent configuration includes the sandbox MCP server URL and uses the Blaxel API key as a credential to gain access to it (the `Authorization` header).
 
 In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
 

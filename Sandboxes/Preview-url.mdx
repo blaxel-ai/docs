@@ -45,7 +45,7 @@ JavaScript module bundlers handle real-time previewing. Here are the key compati
 - Module bundler **must implement** [ping-pong](https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2).
 - Both [Webpack](https://webpack.js.org/) and [Turbopack](https://nextjs.org/docs/app/api-reference/turbopack) (v16.1.1) have been tested and confirmed to work.
 - Blaxel has a **15-minute connection timeout**. To maintain previews beyond this limit, ensure your bundler implements automatic reconnection.
-- You cannot create a preview on **port 80** which is reserved for system.
+- You cannot create a preview on **port 80** which is reserved for the system.
 
 <Tip>
 Using a Webpack server but unable to hot reload your previews? Check our [troubleshooting page](/troubleshooting) for possible solutions.
