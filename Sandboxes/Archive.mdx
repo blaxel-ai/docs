@@ -130,7 +130,7 @@ await sandbox.unarchive(max_wait=600_000, interval=5_000)
 
 Everything above uses storage managed by Blaxel. The sandbox API that produces those archives is also reachable directly, so you can write the same archive to a bucket you own and restore it into a sandbox later. Use it to keep backups outside Blaxel, to copy a filesystem between workspaces or regions, or to keep several archives of the same sandbox.
 
-The sandbox never holds your storage credentials. You presign the upload or the download yourself, and hand the sandbox the resulting URL.
+The sandbox never holds your storage credentials. You presign the upload or the download yourself, and hand the sandbox the resulting URL. A [presigned URL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html) carries a signature made with your own credentials, granting one request on one object for a limited time — so the sandbox can write or read that single object and nothing else.
 
 Call these endpoints on the sandbox's own URL, available as `sandbox.metadata.url` in the SDKs, with the same authentication as any other [sandbox API](/Sandboxes/Overview) call.
 
