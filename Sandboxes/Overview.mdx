@@ -261,7 +261,7 @@ For maximum performance, Blaxel sandboxes store part of their filesystem in memo
 
 Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
-Use [volumes](/Sandboxes/Volumes) or [Agent Drive](/Agent-drive/Overview) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, while drives can be hot-mounted/-unmounted. Both are slower than the local sandbox filesystem.
+Use [volumes](/Sandboxes/Volumes) or [Agent Drive](/Agent-drive/Overview) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, while drives can be hot-mounted/-unmounted. Both are slower than the local sandbox filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
 
 ### Ports
 

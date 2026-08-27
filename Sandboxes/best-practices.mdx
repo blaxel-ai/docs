@@ -42,6 +42,12 @@ Here's a table to help you decide:
 | Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
 
+Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+<Note>
+  There is no built-in way to bulk-sync files between a sandbox and your local machine. Instead, use [`sandbox.fs.download()`](/Sandboxes/Filesystem#download-file-to-host) for single files, or the zip-upload-unzip pattern in the next section for bulk transfers.
+</Note>
+
 ## Upload many files efficiently
 
 Writing files one by one with `write()` costs one network round trip per file: at ~100ms per call, restoring several hundred files sequentially is minutes of pure latency.
