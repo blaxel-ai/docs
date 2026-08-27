@@ -161,7 +161,6 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
-      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
@@ -200,7 +199,6 @@ async def main():
       "name": "my-sandbox",
       "image": "blaxel/base-image:latest",   # public or custom image
       "memory": 4096,   # in MB
-      "storage_mb": 102400,   # optional; disk-backed root storage in MB
       "ports": [{ "target": 3000 }],   # optional; ports to expose
       "labels": {"env": "dev", "project": "my-project"},  # optional; labels
       "region": "us-pdx-1"   # deployment region
