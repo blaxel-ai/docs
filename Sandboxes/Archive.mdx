@@ -126,6 +126,223 @@ await sandbox.unarchive(max_wait=600_000, interval=5_000)
   A sandbox keeps a single archive. Archiving a sandbox again replaces the previous archive, and deleting a sandbox deletes its archive, whatever its status.
 </Warning>
 
+## Archive to your own storage
+
+Everything above uses storage managed by Blaxel. The sandbox API that produces those archives is also reachable directly, so you can write the same archive to a bucket you own and restore it into a sandbox later. Use it to keep backups outside Blaxel, to copy a filesystem between workspaces or regions, or to keep several archives of the same sandbox.
+
+The sandbox never holds your storage credentials. You presign the upload or the download yourself, and hand the sandbox the resulting URL.
+
+Call these endpoints on the sandbox's own URL, available as `sandbox.metadata.url` in the SDKs, with the same authentication as any other [sandbox API](/Sandboxes/Overview) call.
+
+<Warning>
+  An export stops the workload and freezes the filesystem, and the freeze is not lifted when the export finishes. Treat a sandbox you exported yourself as done, or call `POST /archive/resume` to use it again.
+</Warning>
+
+### Archive contents
+
+An archive is an uncompressed tar of everything the sandbox changed on top of the image it booted from, plus a metadata directory:
+
+| Member | Content |
+|--------|---------|
+| `.blaxel-archive/manifest.json` | What the archive holds and what it was taken from |
+| `.blaxel-archive/processes.json` | The processes that were running, so a restore can start them again |
+| Everything else | One member per added or modified path, relative to `/`, with its mode, ownership and modification time |
+
+Deleted paths cannot travel as tar members, so they are listed in the manifest under `deleted` and applied by the restore.
+
+```json manifest.json
+{
+  "version": 1,
+  "createdAt": "2026-08-27T09:12:44Z",
+  "apiVersion": "v0.1.0",
+  "imageDevice": "/dev/vda",
+  "root": "/",
+  "excludes": ["proc", "sys", "dev", "run", "tmp", "mnt", "etc/resolv.conf"],
+  "added": 1187,
+  "modified": 42,
+  "deleted": ["etc/motd"],
+  "payloadBytes": 3073449,
+  "processes": true
+}
+```
+
+Because it is a plain tar, you can inspect an archive with standard tools:
+
+```bash
+tar tvf archive.tar | head
+tar xf archive.tar .blaxel-archive/manifest.json -O | jq
+```
+
+An archive holds no memory, no `/tmp`, no runtime directory (`/proc`, `/sys`, `/dev`, `/run`, `/mnt`), no host-injected identity (`/etc/resolv.conf`, `/etc/hostname`, `/etc/hosts`, mounted secrets), and nothing from an attached volume or agent drive, which are separate filesystems with their own lifecycle. It also holds nothing from the image itself, so it is only meaningful on a sandbox created from that same image.
+
+### Export to a presigned URL
+
+Presign a `PUT` on your bucket, then hand the URL to the sandbox. Set `async` so the call returns immediately: an archive of a large filesystem takes longer than a request can be held open.
+
+<CodeGroup>
+
+```bash HTTP API
+curl -X POST "$SANDBOX_URL/archive/export" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://my-bucket.s3.amazonaws.com/backups/my-sandbox.tar?X-Amz-Signature=...",
+    "async": true
+  }'
+```
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await fetch(`${sandbox.metadata.url}/archive/export`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.BL_API_KEY}`,
+    "X-Blaxel-Workspace": process.env.BL_WORKSPACE,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ url: presignedPutUrl, async: true }),
+});
+```
+
+</CodeGroup>
+
+These options drive the export:
+
+| Option | Effect |
+|--------|--------|
+| `url` | Presigned `PUT` URL the archive is streamed to |
+| `async` | Start the export and answer `202` right away, then follow it on `/archive/status` |
+| `dryRun` | Report what would be archived, and its exact size, without stopping anything and without uploading |
+| `saveProcesses` | Store the process list in the archive, `true` by default |
+| `excludes` | Paths left out of the archive, added to the ones excluded by default |
+| `headers` | Headers sent with the upload, for example `x-amz-storage-class` |
+| `multipart` | Presigned multipart upload, for an archive above 5 GB |
+
+<Note>
+  On mk3.0 infrastructure, pass `"imageDevice": "/dev/ukp_rom0"`. The default, `/dev/vda`, is where mk3.1 exposes the image the sandbox booted from.
+</Note>
+
+### Size an archive before presigning
+
+A dry run reads the filesystem and reports the exact byte count the upload will have, along with every path it would carry. Nothing is stopped and nothing is uploaded, so you can run it on a live sandbox.
+
+```bash
+curl -X POST "$SANDBOX_URL/archive/export" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{ "dryRun": true }'
+```
+
+The size matters because the archive is streamed, not staged: S3 is told the length before the first byte is sent. Use the dry run to decide how many multipart parts to presign, or to skip an archive that grew beyond what you want to store.
+
+### Archives larger than 5 GB
+
+A single presigned `PUT` accepts 5 GB. Above that, create a multipart upload on your storage, presign one `PUT` per part along with the completion and abort requests, and pass them to the export. The sandbox uses them in order and completes the upload itself.
+
+```json
+{
+  "multipart": {
+    "partUrls": ["https://...part=1", "https://...part=2"],
+    "partSize": 536870912,
+    "completeUrl": "https://...uploadId=...",
+    "abortUrl": "https://...uploadId=..."
+  },
+  "async": true
+}
+```
+
+Parts must be at least 5 MB, and you have to presign enough of them for the archive: the export fails, without uploading, when the size it measured needs more parts than it was given. Extra parts are left unused. Always presign `abortUrl` so a failed export discards the parts it already sent instead of leaving them on your bucket.
+
+### Back up to cold storage
+
+Anything you signed can be sent with the upload through `headers`, which is how an archive lands directly in an archival storage class:
+
+```json
+{
+  "url": "https://my-bucket.s3.amazonaws.com/backups/my-sandbox.tar?X-Amz-Signature=...",
+  "headers": { "x-amz-storage-class": "GLACIER_IR" },
+  "async": true
+}
+```
+
+<Warning>
+  A presigned URL only accepts the headers it was signed for. Sign exactly the headers you send, or the storage rejects the upload as a signature mismatch.
+</Warning>
+
+For a backup that is never restarted, add `"saveProcesses": false`. The archive then holds the filesystem alone.
+
+### Follow an export
+
+`GET /archive/status` reports the freeze and the background export:
+
+```json
+{
+  "state": "quiesced",
+  "reason": "archive export",
+  "readOnlyRoot": true,
+  "stoppedProcesses": ["my-server"],
+  "export": {
+    "state": "running",
+    "startedAt": "2026-08-27T09:12:44Z",
+    "size": 3074211,
+    "uploaded": false
+  }
+}
+```
+
+The export is `running`, then `succeeded` once the storage holds the archive, or `failed` with the reason. A failed export lifts the freeze itself, so the sandbox stays usable. After a successful one, the sandbox is frozen on purpose: delete it, or call `POST /archive/resume` to serve every route again. Resume does not start the stopped processes again.
+
+### Restore an archive into a sandbox
+
+A sandbox restores an archive at boot, before its workload starts. Presign a `GET` on the archive and set it as `BL_ARCHIVE_IMPORT_URL` when you create the sandbox, from the same image the archive was taken from.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-restored-sandbox",
+  image: "blaxel/base-image:latest",
+  envs: [{ name: "BL_ARCHIVE_IMPORT_URL", value: presignedGetUrl }],
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-restored-sandbox",
+    "image": "blaxel/base-image:latest",
+    "envs": [{"name": "BL_ARCHIVE_IMPORT_URL", "value": presigned_get_url}],
+})
+```
+
+</CodeGroup>
+
+The sandbox answers while the restore runs, and refuses the calls that write to the filesystem until it is done. Poll `GET /archive/status` to follow it: `restore.state` goes through `downloading`, `extracting` and `relaunching`, then `succeeded`, and `restore.downloaded` against `restore.size` gives you the progress.
+
+The processes the archive recorded are started again from their command line, with new IDs. Nothing is adopted from the archived sandbox, since its memory and its PIDs are gone.
+
+The archive is applied once. It is recorded on the restored filesystem, so the sandbox API restarting does not undo what the workload has done since, and a sandbox that boots again from the pristine image restores it anew.
+
+<Warning>
+  A restore that fails after it has written to the filesystem leaves a mix of the image's files and the archive's. The sandbox quarantines itself instead of starting the workload on that mix: the root is remounted read-only and the failure is reported on `/archive/status`. Recreate the sandbox rather than trying to repair it.
+</Warning>
+
+### What to keep in mind
+
+- A presigned URL is a credential. It is never logged by the sandbox and never appears in an error, and it should have the shortest lifetime that fits your transfer.
+- A transfer is bounded to one hour, so presign for at least as long as uploading or downloading your archive takes.
+- Restore into a sandbox created from the image the archive was taken from. An archive holds only the difference with that image.
+- Archives declare a format version. A sandbox refuses an archive newer than the format it understands, and reads gzip-compressed archives as well as plain ones.
+- One export runs at a time per sandbox, dry runs included. A second one is answered `409`.
+
 <CardGroup cols={2}>
   <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
     Learn more about sandbox lifecycle and configuration.
