@@ -157,7 +157,11 @@ Deleted paths cannot travel as tar members, so they are listed in the manifest u
   "apiVersion": "v0.1.0",
   "imageDevice": "/dev/vda",
   "root": "/",
-  "excludes": ["proc", "sys", "dev", "run", "tmp", "mnt", "etc/resolv.conf"],
+  "excludes": [
+    "proc", "sys", "dev", "run", "tmp", "mnt",
+    "etc/resolv.conf", "etc/hostname", "etc/hosts",
+    "run/secrets", "var/run/secrets"
+  ],
   "added": 1187,
   "modified": 42,
   "deleted": ["etc/motd"],
@@ -173,7 +177,7 @@ tar tvf archive.tar | head
 tar xf archive.tar .blaxel-archive/manifest.json -O | jq
 ```
 
-An archive holds no memory, no `/tmp`, no runtime directory (`/proc`, `/sys`, `/dev`, `/run`, `/mnt`), no host-injected identity (`/etc/resolv.conf`, `/etc/hostname`, `/etc/hosts`, mounted secrets), and nothing from an attached volume or agent drive, which are separate filesystems with their own lifecycle. It also holds nothing from the image itself, so it is only meaningful on a sandbox created from that same image.
+An archive holds no memory, no `/tmp`, no runtime directory (`/proc`, `/sys`, `/dev`, `/run`, `/mnt`), no host-injected identity (`/etc/resolv.conf`, `/etc/hostname`, `/etc/hosts`, mounted secrets), nothing from the sandbox runtime's own directories, which the manifest lists alongside the excludes above, and nothing from an attached volume or agent drive, which are separate filesystems with their own lifecycle. It also holds nothing from the image itself, so it is only meaningful on a sandbox created from that same image.
 
 ### Export to a presigned URL
 
