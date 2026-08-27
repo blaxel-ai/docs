@@ -52,7 +52,7 @@ COPY . .
 # Set env variable to use the virtual environment
 ENV PATH="/blaxel/python/.venv/bin:$PATH"
 
-# Command to run when container starts, it need to provide a server running on port 80 for agent and MCP server
+# Command to run when container starts, it needs to provide a server running on port 80 for agent and MCP server
 ENTRYPOINT [".venv/bin/python3", "-m", "src"]
 ```
 
@@ -71,7 +71,7 @@ RUN npx pnpm install
 # Copy application code
 COPY . .
 
-# Command to run when container starts, it need to provide a server running on port 80 for agent and MCP server
+# Command to run when container starts, it needs to provide a server running on port 80 for agent and MCP server
 ENTRYPOINT ["npx", "pnpm", "start"]
 ```
 
