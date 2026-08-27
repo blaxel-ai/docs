@@ -222,10 +222,6 @@ These options drive the export:
 | `headers` | Headers sent with the upload, for example `x-amz-storage-class` |
 | `multipart` | Presigned multipart upload, for an archive above 5 GB |
 
-<Note>
-  On mk3.0 infrastructure, pass `"imageDevice": "/dev/ukp_rom0"`. The default, `/dev/vda`, is where mk3.1 exposes the image the sandbox booted from.
-</Note>
-
 ### Size an archive before presigning
 
 A dry run reads the filesystem and reports the exact byte count the upload will have, along with every path it would carry. Nothing is stopped and nothing is uploaded, so you can run it on a live sandbox.
