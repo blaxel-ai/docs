@@ -79,7 +79,7 @@ await blTools(['Tool-Server-name-on-Blaxel'])
 
 Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool)), `vercel` ([Vercel AI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling)) and `mastra` ([Mastra](https://mastra.ai/docs/reference/agents/createTool)).
 
-You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
+You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which makes maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
 1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](../Functions/Create-MCP-server))
 2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")

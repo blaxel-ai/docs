@@ -78,7 +78,7 @@ await bl_tools(['Tool-Server-name-on-Blaxel'])
 
 Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangGraph/Langchain](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.structured.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/tools/)), `crewai` ([CrewAI](https://docs.crewai.com/concepts/tools)), `openai` ([OpenAI Agents](https://github.com/openai/openai-agents-python)), `pydantic` ([PydanticAI Agents](https://github.com/pydantic/pydantic-ai)) and `googleadk` ([Google ADK](https://github.com/google/adk-python/blob/main/src/google/adk/tools/base_tool.py)).
 
-You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
+You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which makes maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
 1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](../Functions/Create-MCP-server))
 2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")
@@ -484,7 +484,7 @@ python src/main.py
 fastapi dev
 ```
 
-This `entrypoint` section is optional. If not specified, Blaxel will automatically detect in the agent’s content and configure your agent startup settings.
+This `entrypoint` section is optional. If not specified, Blaxel will automatically detect the agent’s content and configure your agent startup settings.
 
 ## Troubleshooting
 

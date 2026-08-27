@@ -107,7 +107,7 @@ If you wish to call the Blaxel API directly from a client Web application, you w
 
 The solution is to add authentication middleware between your client application and the Blaxel API. The middleware serves as a secure "translator", which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
 
-This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects it into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
+This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects them into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
 
 Here is a sample implementation of this catch-all route implemented in Next.js:
 
