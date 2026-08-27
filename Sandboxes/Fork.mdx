@@ -95,6 +95,44 @@ curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/snap_abc1
 </CodeGroup>
 
 
+## Restore a sandbox to a snapshot
+
+Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbox keeps its name, its URLs, its previews and its configuration: only the instance behind it is torn down and rebuilt from the snapshot, on the same machine the snapshot was taken on.
+
+<Warning>
+  Everything the sandbox wrote after the snapshot was taken is lost — files, running processes and memory state. Take a new snapshot first if you want to be able to come back to the current state.
+</Warning>
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.restore("snap_abc123");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.restore("snap_abc123")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/snap_abc123/restore \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+The restore returns as soon as it is accepted, without waiting for the sandbox to be back up. The sandbox answers again once its instance has been rebuilt, so retry your first calls while it resumes.
+
+Only a snapshot of that same sandbox can be restored, and only once it is `ready`. To roll back onto a *different* sandbox, [fork from the snapshot](#fork-from-a-snapshot) instead.
+
+You can also restore from the Blaxel console: open your sandbox, go to the **Snapshots** tab, and use the **Restore** action on the snapshot you want to go back to.
+
 ## Fork a sandbox
 
 Forking creates a new sandbox from an existing one, forking its entire memory state (files + running processes). The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
