@@ -296,7 +296,7 @@ process = await sandbox.process.exec({
 
 ## Sandbox keep-alive
 
-By default, sandboxes automatically switch to standby when there is no active connection to save resources. However, it is possible to adjust this behavior and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a long-running task actively run within the sandbox environment even when it is not serving requests.
+By default, sandboxes automatically switch to standby when there is no active connection to save resources. However, it is possible to adjust this behavior and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a long-running task actively running within the sandbox environment even when it is not serving requests.
 
 You can include additional keep-alive metadata when launching a new process:
 
