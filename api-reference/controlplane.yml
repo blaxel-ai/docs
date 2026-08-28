@@ -3385,6 +3385,21 @@ components:
           description: Subnet name for the sandbox. Takes priority over any subnet
             derived from egress config. Defaults to "default" when absent.
           example: default
+    SandboxRestoreResponse:
+      type: object
+      description: Result of restoring a sandbox to one of its snapshots. The sandbox
+        keeps its name and URLs; everything it held since the snapshot was taken is
+        gone.
+      properties:
+        name:
+          type: string
+          description: Name of the restored sandbox
+        snapshotId:
+          type: string
+          description: Snapshot the sandbox was restored from
+      required:
+      - name
+      - snapshotId
     SandboxRuntime:
       type: object
       description: Runtime configuration defining how the sandbox VM is provisioned
@@ -3456,6 +3471,10 @@ components:
             Once reached, recording a new execution deletes the oldest. Defaults to
             100.
           example: 100
+        sandbox:
+          type: string
+          description: Name of the sandbox this schedule belongs to.
+          readOnly: true
         type:
           type: string
           description: Type of schedule timing. 'cron' for recurring (5-field expression),
@@ -3485,9 +3504,9 @@ components:
           $ref: '#/components/schemas/PaginationMeta'
     SandboxScheduleExecution:
       type: object
-      description: One recorded execution of a sandbox schedule. statusCode is the
-        HTTP status from submitting the command to the sandbox (the scheduler does
-        not wait for the command to finish). Stored in the dedicated scheduleexecutions
+      description: One recorded execution of a sandbox schedule. status and statusCode
+        describe whether the scheduler's process submission was accepted; the scheduler
+        does not wait for the process to finish. Stored in the dedicated scheduleexecutions
         table.
       properties:
         createdAt:
@@ -3513,10 +3532,22 @@ components:
           description: Name of the process started in the sandbox for this execution,
             used to look up its logs.
           example: training-job
+        sandbox:
+          type: string
+          description: Name of the sandbox this execution belongs to.
+          readOnly: true
         scheduleId:
           type: string
           description: Id of the schedule this execution belongs to.
           example: schedule-0
+        status:
+          type: string
+          description: Whether submitting the process request was accepted. This is
+            not the process completion status.
+          enum:
+          - succeeded
+          - failed
+          readOnly: true
         statusCode:
           type: integer
           description: HTTP status code returned when the scheduled command was submitted
@@ -3541,6 +3572,16 @@ components:
             $ref: '#/components/schemas/SandboxScheduleExecution'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
+    SandboxScheduleExecutionStatusMetrics:
+      type: object
+      description: Schedule execution counts grouped by submission acceptance status.
+      properties:
+        failed:
+          type: integer
+          description: Number of process submissions that were not accepted.
+        succeeded:
+          type: integer
+          description: Number of process submissions accepted by the sandbox.
     SandboxScheduleInput:
       type: object
       description: Process execution configuration for a scheduled sandbox task
@@ -3574,6 +3615,29 @@ components:
           type: string
           description: Working directory for the command
           example: /app
+    SandboxScheduleMetrics:
+      type: object
+      description: Workspace sandbox scheduling metrics for a UTC minute window. since
+        is inclusive and until is exclusive.
+      properties:
+        executions:
+          type: integer
+          description: Number of schedule execution submissions in the selected window.
+        executionsByStatus:
+          $ref: '#/components/schemas/SandboxScheduleExecutionStatusMetrics'
+        sandboxes:
+          type: integer
+          description: Number of active sandboxes in the workspace.
+        schedules:
+          type: integer
+          description: Number of schedules in the workspace.
+        since:
+          type: string
+          description: Inclusive beginning of the metrics window, normalized to a
+            UTC minute.
+        until:
+          type: string
+          description: Exclusive end of the metrics window, normalized to a UTC minute.
     SandboxSnapshot:
       type: object
       description: A point-in-time snapshot of a sandbox that can be used for forking
@@ -8352,7 +8416,15 @@ paths:
           minimum: 1
           type: integer
       - $ref: '#/components/parameters/PaginationCursor'
-      - $ref: '#/components/parameters/PaginationSort'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
       - $ref: '#/components/parameters/PaginationQuery'
       responses:
         "200":
@@ -8393,7 +8465,15 @@ paths:
           minimum: 1
           type: integer
       - $ref: '#/components/parameters/PaginationCursor'
-      - $ref: '#/components/parameters/PaginationSort'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
       - $ref: '#/components/parameters/PaginationQuery'
       - description: Filter schedules by timing type. Only cron and at are stored
           (sleep resolves to at on creation); any other value is ignored.
@@ -8635,6 +8715,52 @@ paths:
       summary: Delete sandbox snapshot
       tags:
       - compute
+  /sandboxes/{sandboxName}/snapshots/{snapshotId}/restore:
+    post:
+      description: Restores a sandbox to one of its own snapshots. The running sandbox
+        is torn down and rebuilt from the snapshot under the same name and URLs, so
+        everything it held since the snapshot was taken is lost unless it was itself
+        snapshotted.
+      operationId: RestoreSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox to restore
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: ID of the snapshot to restore the sandbox to
+        in: path
+        name: snapshotId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxRestoreResponse'
+          description: Sandbox restored successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox or snapshot does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Restore sandbox from snapshot
+      tags:
+      - compute
   /sandboxes/{sandboxName}/unarchive:
     post:
       description: Recreates an archived sandbox from its archive. The recreated sandbox
@@ -8743,6 +8869,179 @@ paths:
       required: true
       schema:
         type: string
+  /schedule-executions:
+    get:
+      description: Returns schedule execution submissions across the workspace, newest
+        first by default. Status describes submission acceptance, not process completion.
+        since and until are inclusive RFC 3339 bounds on creation time.
+      operationId: ListScheduleExecutions
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter by process submission acceptance status. Historical rows
+          without status do not match this filter.
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - succeeded
+          - failed
+          type: string
+      - description: Filter by sandbox name.
+        in: query
+        name: sandbox
+        required: false
+        schema:
+          type: string
+      - description: Filter by schedule id.
+        in: query
+        name: schedule
+        required: false
+        schema:
+          type: string
+      - description: Inclusive beginning of the createdAt window, as RFC 3339.
+        in: query
+        name: since
+        required: false
+        schema:
+          format: date-time
+          type: string
+      - description: Inclusive end of the createdAt window, as RFC 3339.
+        in: query
+        name: until
+        required: false
+        schema:
+          format: date-time
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleExecutionList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Workspace Schedule Executions
+      tags:
+      - compute
+  /schedules:
+    get:
+      description: Returns schedule definitions across the workspace, newest first
+        by default.
+      operationId: ListSchedules
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter by sandbox name.
+        in: query
+        name: sandbox
+        required: false
+        schema:
+          type: string
+      - description: Filter schedules by stored timing type. sleep resolves to at
+          before persistence.
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - cron
+          - at
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntryList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Workspace Schedules
+      tags:
+      - compute
+  /schedules/metrics:
+    get:
+      description: Returns active sandbox and scheduling metrics for a UTC minute
+        window. since is inclusive and until is exclusive. The default window is the
+        last 24 hours and the maximum is 7 days. Execution status describes submission
+        acceptance, not process completion. Execution totals begin accumulating when
+        metrics collection is enabled and can lag recent firings briefly.
+      operationId: GetSandboxScheduleMetrics
+      parameters:
+      - description: Inclusive beginning of the metrics window, as RFC 3339. Normalized
+          down to a UTC minute, must be within the last 7 days, and defaults to 24
+          hours before until.
+        in: query
+        name: since
+        required: false
+        schema:
+          format: date-time
+          type: string
+      - description: Exclusive end of the metrics window, as RFC 3339. Normalized
+          down to a UTC minute and defaults to the current minute.
+        in: query
+        name: until
+        required: false
+        schema:
+          format: date-time
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleMetrics'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Scheduling Metrics
+      tags:
+      - compute
   /service_accounts:
     get:
       description: Returns all service accounts in the workspace. Service accounts
