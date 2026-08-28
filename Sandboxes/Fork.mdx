@@ -97,10 +97,10 @@ curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/snap_abc1
 
 ## Restore a sandbox to a snapshot
 
-Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbox keeps its name, its URLs, its previews and its configuration: only the instance behind it is torn down and rebuilt from the snapshot, on the same machine the snapshot was taken on.
+Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbox keeps its name, its URLs, its previews, and its configuration: only the instance behind it is torn down and rebuilt from the snapshot, on the same machine the snapshot was taken on.
 
 <Warning>
-  Everything the sandbox wrote after the snapshot was taken is lost — files, running processes and memory state. Take a new snapshot first if you want to be able to come back to the current state.
+  Everything the sandbox wrote after the snapshot was taken is lost: files, running processes, and memory state. Take a new snapshot first if you want to be able to come back to the current state.
 </Warning>
 
 <CodeGroup>
@@ -137,7 +137,7 @@ You can also restore from the Blaxel console: open your sandbox, go to the **Sna
 
 Forking creates a new sandbox from an existing one, forking its entire memory state (files + running processes). The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
 
-Calling `fork()` automatically snapshots the source sandbox's current state and forks from it — you don't need to create a snapshot first.
+Calling `fork()` automatically snapshots the source sandbox's current state and forks from it. You don't need to create a snapshot first.
 
 <CodeGroup>
 
