@@ -10,7 +10,7 @@ They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/f
 
 ## Sandbox lifecycle
 
-Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](/Sandboxes/Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is its fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](/Sandboxes/Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
 
 <img
   className="block dark:hidden"
@@ -66,7 +66,7 @@ An archived sandbox keeps its name, its configuration, and its preview URLs. Una
 
 ### Deletion
 
-In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live limits (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
 
 <Note>
   Automatic deletion differs from automatic standby (_scale-to-zero_). Deleted sandboxes cannot be recovered, while sandboxes in standby mode can be resumed instantly.
@@ -106,7 +106,7 @@ Some examples of use cases include:
 
 ### Using the SDKs
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system) and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Learn more about authentication on Blaxel">
 
@@ -255,7 +255,7 @@ It is also possible to build your own [custom images](/Sandboxes/Templates) to c
 
 ### Memory and filesystem
 
-For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly-efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
+For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
 
 Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
