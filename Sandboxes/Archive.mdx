@@ -11,7 +11,7 @@ tag: "private preview"
 
 Archiving a sandbox stores the filesystem changes it made over its image, then shuts the sandbox down: nothing runs and no memory is kept, and you stop paying for it. The sandbox keeps its name, its configuration, and its preview URLs, so unarchiving gives you the same sandbox back with its files.
 
-Archiving is not a snapshot: memory is not preserved. Processes are stored with their configuration and start again with new IDs when the sandbox is unarchived.
+Archiving is not a snapshot: memory is not preserved. All processes that were running are restarted automatically from their configuration, with new IDs, when the sandbox is unarchived.
 
 ## Archive a sandbox
 
@@ -61,7 +61,7 @@ await SandboxInstance.archive("my-sandbox")
 
 ## Unarchive a sandbox
 
-Unarchiving starts the sandbox again from its image and writes the archived filesystem back over it. The sandbox and its terminal answer while the restore runs, and the SDK waits until the sandbox is `DEPLOYED` again.
+Unarchiving starts the sandbox again from its image and writes the archived filesystem back over it. All processes that were running are restarted automatically. The sandbox and its terminal answer while the restore runs, and the SDK waits until the sandbox is `DEPLOYED` again.
 
 <CodeGroup>
 
