@@ -216,6 +216,62 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 </CodeGroup>
 
 
+### Fork with new environment variables
+
+Pass `envs` to give the fork a different environment from its source. Each variable the source already carries takes the value you pass, each variable it does not carry is added, and every other variable of the source is inherited. The source sandbox is left untouched.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const result = await sandbox.fork("my-sandbox-copy", {
+  envs: [
+    { name: "NODE_ENV", value: "staging" },
+    { name: "FEATURE_FLAG", value: "1" },
+  ],
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+from blaxel.core.client.models.env import Env
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork(
+    "my-sandbox-copy",
+    envs=[
+        Env(name="NODE_ENV", value="staging"),
+        Env(name="FEATURE_FLAG", value="1"),
+    ],
+)
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-sandbox-copy",
+    "envs": [
+      { "name": "NODE_ENV", "value": "staging" },
+      { "name": "FEATURE_FLAG", "value": "1" }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+The fork starts with the new environment already applied, so processes you launch in it read the new values. Processes that were already running in the source when it was snapshotted keep the environment they were started with, as an environment change cannot reach a process that is already running.
+
+<Note>
+  `envs` only sets and adds variables. A variable of the source cannot be removed through a fork.
+</Note>
+
+`envs` works the same way when forking from a snapshot.
 
 ## Fork request parameters
 
@@ -225,6 +281,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 | `targetName` | string | Name of the sandbox to create |
 | `port` | integer | Port to expose |
 | `snapshotId` | string | Fork from a specific snapshot instead of current state |
+| `envs` | array | Environment variables the fork runs with, on top of the ones inherited from the source |
 
 <CardGroup cols={1}>
   <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
