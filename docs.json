@@ -296,6 +296,7 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/DeepSeek-Harness",
               "Tutorials/OpenClaw",
               "Tutorials/Vercel-AI",
               "Tutorials/Mastra",
