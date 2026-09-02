@@ -3,7 +3,7 @@ title: 'Run Amp in a sandbox'
 description: 'Run Amp inside a Blaxel sandbox, stream coding tasks, and continue a thread after reconnecting.'
 ---
 
-This tutorial shows you how to run [Amp](https://ampcode.com) in a Blaxel sandbox. You will create a sandbox with Amp pre-installed, clone a repository, stream a coding task, and continue the same thread later.
+This tutorial shows you how to run [Amp](https://ampcode.com) in a Blaxel sandbox. You will create a sandbox, install the Amp CLI, clone a repository, stream a coding task, and continue the same thread later.
 
 ## Prerequisites
 
@@ -76,23 +76,24 @@ function shellQuote(value: string): string {
 
 const sandbox = await SandboxInstance.createIfNotExists({
   name: "amp-sandbox",
-  image: "blaxel/amp:latest",
+  image: "blaxel/node-slim:latest",
   memory: 8192,
   region: "us-pdx-1",
   ttl: "2h",
   envs: [{ name: "AMP_API_KEY", value: ampApiKey }],
 });
 
-const cloneResult = await sandbox.process.exec({
+const setupResult = await sandbox.process.exec({
   command: [
+    "command -v amp >/dev/null || npm install -g @ampcode/cli --silent",
     `mkdir -p ${shellQuote(repositoryDir)}`,
     `test -d ${shellQuote(`${repositoryDir}/.git`)} || git clone --depth 1 ${shellQuote(repositoryUrl)} ${shellQuote(repositoryDir)}`,
   ].join(" && "),
   waitForCompletion: true,
   timeout: 300,
 });
-if (cloneResult.exitCode !== 0) {
-  throw new Error(`Git clone failed with exit code ${cloneResult.exitCode}`);
+if (setupResult.exitCode !== 0) {
+  throw new Error(`Sandbox setup failed with exit code ${setupResult.exitCode}`);
 }
 
 console.log(`Amp sandbox ready: ${sandbox.metadata.name}`);
@@ -121,7 +122,7 @@ async def main() -> None:
     sandbox = await SandboxInstance.create_if_not_exists(
         {
             "name": "amp-sandbox",
-            "image": "blaxel/amp:latest",
+            "image": "blaxel/node-slim:latest",
             "memory": 8192,
             "region": "us-pdx-1",
             "ttl": "2h",
@@ -129,10 +130,11 @@ async def main() -> None:
         }
     )
 
-    clone_result = await sandbox.process.exec(
+    setup_result = await sandbox.process.exec(
         {
             "command": " && ".join(
                 [
+                    "command -v amp >/dev/null || npm install -g @ampcode/cli --silent",
                     f"mkdir -p {shlex.quote(REPOSITORY_DIR)}",
                     f"test -d {shlex.quote(f'{REPOSITORY_DIR}/.git')} || git clone --depth 1 {shlex.quote(repository_url)} {shlex.quote(REPOSITORY_DIR)}",
                 ]
@@ -141,8 +143,8 @@ async def main() -> None:
             "timeout": 300,
         }
     )
-    if clone_result.exit_code != 0:
-        raise RuntimeError(f"Git clone failed with exit code {clone_result.exit_code}")
+    if setup_result.exit_code != 0:
+        raise RuntimeError(f"Sandbox setup failed with exit code {setup_result.exit_code}")
 
     print(f"Amp sandbox ready: {sandbox.metadata.name}")
 
@@ -164,7 +166,7 @@ python main.py
 ```
 </CodeGroup>
 
-The `blaxel/amp:latest` image includes Amp, Git, and the Blaxel sandbox API. The sandbox keeps its memory and files when it enters standby.
+The `blaxel/node-slim:latest` image ships Node.js 24, npm, Git, and the Blaxel sandbox API on Debian. The setup command installs the Amp CLI from npm on the first run and skips the install when `amp` is already present. The sandbox keeps its memory and files when it enters standby.
 
 <Note>
   `createIfNotExists` reuses a sandbox with the same name. Delete and recreate the sandbox after you rotate `AMP_API_KEY`.
