@@ -275,6 +275,12 @@
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
               },
+              {
+                "group": "Amp",
+                "pages": [
+                  "Tutorials/Amp"
+                ]
+              },
               "Examples/Overview"
             ]
           },
