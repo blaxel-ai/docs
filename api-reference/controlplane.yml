@@ -8,6 +8,16 @@ components:
       required: false
       schema:
         type: string
+    ExternalIdFilter:
+      description: Filter resources by metadata.externalId. When set, only resources
+        matching this caller-owned external ID are returned.
+      in: query
+      name: externalId
+      required: false
+      schema:
+        maxLength: 64
+        pattern: ^[a-zA-Z0-9-]*$
+        type: string
     ListingStatus:
       description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`).
         Values are case-insensitive; unknown values are rejected with a 400. Selecting
@@ -2220,6 +2230,13 @@ components:
             page's filters. Lets the UI render "page X of Y" without walking the cursor
             chain. Computed from the hash-only metadata.workspace GSI count, so search
             (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count.
+            Counting a very large workspace is bounded so the listing stays fast,
+            and this flag says the real number is higher. Clients must not derive
+            a page count from `total` when this is set — keep paging with `nextCursor`
+            until `hasMore` is false.
     PendingImageShare:
       type: object
       description: Pending cross-account image share awaiting approval from the destination
@@ -3260,6 +3277,14 @@ components:
         customDomain:
           type: string
           description: Custom domain for the application
+        envs:
+          type: array
+          description: Environment variables the fork runs with, on top of the ones
+            the source has. A variable the source already carries takes this value
+            in the fork, one it does not is added, and every other variable of the
+            source is kept.
+          items:
+            $ref: '#/components/schemas/Env'
         port:
           type: integer
           description: Port to expose from the sandbox
@@ -4461,6 +4486,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
@@ -5802,6 +5828,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
@@ -6443,6 +6470,8 @@ paths:
         Each connection stores credentials and settings for an external service (LLM
         provider, API, database).
       operationId: ListIntegrationConnections
+      parameters:
+      - $ref: '#/components/parameters/ExternalIdFilter'
       responses:
         "200":
           content:
@@ -6772,6 +6801,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
@@ -7184,6 +7214,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       - $ref: '#/components/parameters/ListingStatus'
       responses:
         "200":
@@ -7560,6 +7591,7 @@ paths:
       - $ref: '#/components/parameters/PaginationSort'
       - $ref: '#/components/parameters/PaginationQuery'
       - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       responses:
         "200":
           content:
