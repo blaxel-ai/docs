@@ -218,10 +218,6 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 ### Fork with new environment variables
 
-<Note>
-  This is available on the new sandbox generation and is currently in preview.
-</Note>
-
 Pass `envs` to give the fork a different environment from its source. Each variable the source already carries takes the value you pass, each variable it does not carry is added, and every other variable of the source is inherited. The source sandbox is left untouched.
 
 <CodeGroup>
