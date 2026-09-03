@@ -271,6 +271,7 @@
                 "group": "OpenAI / Codex",
                 "pages": [
                   "Tutorials/Codex",
+                  "Tutorials/OpenAI-Agents-API",
                   "Tutorials/OpenAI-Agents-SDK",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
