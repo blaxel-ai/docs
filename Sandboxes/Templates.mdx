@@ -143,7 +143,7 @@ PYTHON_ENV = "development"
 ```
 
 <Note>
-  It is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs. See the [variables and secrets](/Sandboxes/Variables-and-secrets) documentation for details.
+  Variables defined here are baked into the image. Variables can also be [updated on a running sandbox](/Sandboxes/Variables-and-secrets#update-variables-on-an-existing-sandbox), or given a new value when you [fork a sandbox](/Sandboxes/Fork#fork-with-new-environment-variables). See the [variables and secrets](/Sandboxes/Variables-and-secrets) documentation for details.
 </Note>
 
 ##### 4. Define initialization
