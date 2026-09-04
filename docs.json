@@ -96,6 +96,12 @@
             ]
           },
           {
+            "group": "Snapshots",
+            "pages": [
+              "Snapshots/Overview"
+            ]
+          },
+          {
             "group": "Agent Drive",
             "pages": [
               "Agent-drive/Overview",
@@ -620,6 +626,14 @@
     {
       "source": "/Sandboxes/Volumes-templates",
       "destination": "/Volumes/Volumes-templates"
+    },
+    {
+      "source": "/Sandboxes/Snapshots",
+      "destination": "/Snapshots/Overview"
+    },
+    {
+      "source": "/snapshots",
+      "destination": "/Snapshots/Overview"
     },
     {
       "source": "/Sandboxes/Drives",
