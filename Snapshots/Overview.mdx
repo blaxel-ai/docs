@@ -73,14 +73,14 @@ You can also capture a snapshot from the sandbox itself, which is the same opera
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshot = await sandbox.snapshot("my-snapshot");
+const snapshot = await sandbox.snapshots.create("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshot = await sandbox.snapshot("my-snapshot")
+snapshot = await sandbox.snapshots.create("my-snapshot")
 ```
 
 </CodeGroup>
@@ -166,14 +166,14 @@ To list only the snapshots captured from one sandbox, list from the sandbox inst
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshots = await sandbox.listSnapshots();
+const snapshots = await sandbox.snapshots.list();
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshots = await sandbox.list_snapshots()
+snapshots = await sandbox.snapshots.list()
 ```
 
 ```bash HTTP API
@@ -231,14 +231,14 @@ Restoring rolls a running sandbox back to a snapshot in place, keeping its name,
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.restore("my-snapshot");
+await sandbox.snapshots.restore("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.restore("my-snapshot")
+await sandbox.snapshots.restore("my-snapshot")
 ```
 
 ```bash HTTP API

@@ -193,7 +193,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.get("my-sandbox");
 
 // 1. Snapshot the sandbox while it is in the state you want to serve.
-const snapshot = await sandbox.snapshot("release-candidate");
+const snapshot = await sandbox.snapshots.create("release-candidate");
 
 // 2. Later, fork that snapshot into an application.
 const result = await sandbox.fork("my-app", {
@@ -208,7 +208,7 @@ from blaxel.core import SandboxInstance
 sandbox = await SandboxInstance.get("my-sandbox")
 
 # 1. Snapshot the sandbox while it is in the state you want to serve.
-snapshot = await sandbox.snapshot("release-candidate")
+snapshot = await sandbox.snapshots.create("release-candidate")
 
 # 2. Later, fork that snapshot into an application.
 result = await sandbox.fork(
@@ -240,7 +240,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
-List your existing snapshots with `sandbox.listSnapshots()` / `sandbox.list_snapshots()`. See [Snapshots and fork](/Sandboxes/Fork) for the full snapshot lifecycle.
+List your existing snapshots with `sandbox.snapshots.list()`. See [Snapshots and fork](/Sandboxes/Fork) for the full snapshot lifecycle.
 
 ### Attach a custom domain at fork time
 

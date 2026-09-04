@@ -23,14 +23,14 @@ Create a snapshot of an existing sandbox. The snapshot captures the filesystem, 
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshot = await sandbox.snapshot("my-snapshot");
+const snapshot = await sandbox.snapshots.create("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshot = await sandbox.snapshot("my-snapshot")
+snapshot = await sandbox.snapshots.create("my-snapshot")
 ```
 
 ```bash HTTP API
@@ -59,14 +59,14 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshots = await sandbox.listSnapshots();
+const snapshots = await sandbox.snapshots.list();
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshots = await sandbox.list_snapshots()
+snapshots = await sandbox.snapshots.list()
 ```
 
 ```bash HTTP API
@@ -87,14 +87,14 @@ A snapshot belongs to the workspace, and a sandbox only links to it. Deleting a 
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.deleteSnapshot("my-snapshot");
+await sandbox.snapshots.delete("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.delete_snapshot("my-snapshot")
+await sandbox.snapshots.delete("my-snapshot")
 ```
 
 ```bash HTTP API
@@ -122,14 +122,14 @@ Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbo
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.restore("my-snapshot");
+await sandbox.snapshots.restore("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.restore("my-snapshot")
+await sandbox.snapshots.restore("my-snapshot")
 ```
 
 ```bash HTTP API
