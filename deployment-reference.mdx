@@ -38,6 +38,24 @@ The format of Blaxel's configuration file is described below.
 # defaults to true
 # slim = true
 
+# memory of the environment the image is built in (MB, optional)
+# not the memory of the deployed resource, see [runtime] below
+# memoryMb = 8192
+
+# disk attached to the build for its intermediate layers (MB, optional)
+# unset means the build runs in memory, set it for large images
+# volumeMb = 30000
+
+# region the image is built in (optional)
+# defaults to the platform's build region
+# region = "us-was-1"
+
+# Agent Drive used as a persistent layer cache (optional)
+# must be in the same workspace and in the build region above
+# Agent Drive is in private preview and only available in us-was-1
+# unset means every build starts without a cache
+# cacheDrive = "my-build-cache"
+
 # build-time variables (optional)
 # should be used for non-secret values only
 # [build.args]
@@ -123,3 +141,19 @@ The format of Blaxel's configuration file is described below.
 # callback URL (only for trigger type="http-async")
 # callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
 ```
+
+Learn more about the commands and resources this file configures.
+
+<CardGroup cols={3}>
+<Card title="bl deploy" icon="terminal" href="/cli-reference/commands/bl_deploy">
+Deploy a resource from its blaxel.toml.
+</Card>
+
+<Card title="Agent Drive" icon="hard-drive" href="/Agent-drive/Overview">
+Shared filesystems you can mount into sandboxes and use as a build cache.
+</Card>
+
+<Card title="Volumes" icon="database" href="/Volumes/Overview">
+Block storage attached to a single sandbox at creation.
+</Card>
+</CardGroup>
