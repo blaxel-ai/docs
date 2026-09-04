@@ -16,7 +16,11 @@ Blaxel Volumes provide persistent storage that survives sandbox destruction and 
 
 ## Attach a volume to a sandbox
 
-<Warning>At this time, you can only attach one volume to a sandbox. A volume can also only be attached to one sandbox at a time.</Warning>
+<Warning>At this time, you can only attach one persistent volume to a sandbox. A volume can also only be attached to one sandbox at a time.</Warning>
+
+<Tip>
+  For temporary scratch space that is destroyed with the sandbox, use [ephemeral volumes](/Volumes/Ephemeral-volumes) instead. You can attach several of them alongside a persistent volume.
+</Tip>
 
 To use a volume, attach it **when you create a sandbox** by passing an array of volume configurations to the `volumes` property.
 
