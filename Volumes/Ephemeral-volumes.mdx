@@ -85,10 +85,6 @@ sandbox = await SandboxInstance.create({
 
 Files written under `/scratch` are stored on the ephemeral disk and are deleted with the sandbox.
 
-<Note>
-  Ephemeral volumes on sandboxes are available on the latest sandbox infrastructure generation. Contact Blaxel support if creating a sandbox with an ephemeral volume returns an error stating the feature is not enabled for your workspace.
-</Note>
-
 ## Attach an ephemeral volume to a job
 
 Declare the volume in the `blaxel.toml` file of the job. Each task of the job execution gets its own disk.
