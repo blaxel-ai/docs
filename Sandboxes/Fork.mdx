@@ -11,7 +11,7 @@ tag: "private preview"
 
 Snapshots capture the current state of a sandbox at a point in time. Use snapshots to checkpoint sandbox state to allow rollbacks after making changes, or as the basis for forking a sandbox into a new sandbox.
 
-A snapshot is a workspace resource of its own: it survives the deletion of the sandbox it was captured from, and it can be managed and forked without that sandbox. This page covers the snapshot operations available on a sandbox. Refer to [snapshots](/Snapshots/Overview) for the workspace-level API.
+A snapshot is a workspace resource of its own: it survives the deletion of the sandbox it was captured from, and it can be managed and forked without that sandbox. This page covers the snapshot operations available on a sandbox. Refer to [snapshots](/Snapshots/Overview) to manage snapshots at workspace level.
 
 ## Create a snapshot
 
@@ -47,7 +47,7 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
 </CodeGroup>
 
 <Note>
-  `POST /sandboxes/{name}/snapshots` remains available as a shortcut and always generates the snapshot name for you, so it cannot collide with a name already used in the workspace. Use `POST /snapshots` to choose the name.
+  `POST /sandboxes/{name}/snapshots` is a shortcut that generates the snapshot name for you, so it cannot collide with a name already used in the workspace. Use `POST /snapshots` with a `source` to choose the name.
 </Note>
 
 
@@ -105,7 +105,7 @@ curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapsh
 
 </CodeGroup>
 
-Deleting the sandbox does not delete its snapshots. They stay in your workspace and remain forkable, with their source marked as deleted. Refer to [snapshot lifecycle and sandbox deletion](/Snapshots/Overview#snapshot-lifecycle-and-sandbox-deletion).
+Deleting the sandbox does not delete its snapshots. They stay in your workspace and stay forkable, with their source marked as deleted. Refer to [snapshot lifecycle and sandbox deletion](/Snapshots/Overview#snapshot-lifecycle-and-sandbox-deletion).
 
 
 ## Restore a sandbox to a snapshot

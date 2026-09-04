@@ -20,7 +20,7 @@ A snapshot has a `name` that is unique in your workspace and that every operatio
 | Field | Description |
 |---|---|
 | `name` | Workspace-unique name you address the snapshot by. Generated when you do not pass one |
-| `id` | Internal identifier of the stored snapshot. Read-only, and accepted wherever a snapshot name is expected |
+| `id` | Internal identifier of the stored snapshot. Read-only, and usable anywhere a snapshot name is expected |
 | `source` | Object the snapshot was captured from: `kind` (`sandbox`), `name`, and `deleted` |
 | `spec` | Configuration a fork runs with: `image`, `memory`, `ports`, `generation`, `region`, and `volumes` |
 | `status` | `ready` once the snapshot can be forked or restored |
