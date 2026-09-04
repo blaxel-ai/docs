@@ -1,0 +1,311 @@
+---
+title: 'Snapshots'
+sidebarTitle: 'Overview'
+description: 'Manage Blaxel snapshots as workspace resources that outlive the sandbox they were captured from, and fork or restore them into new sandboxes and applications.'
+tag: "private preview"
+---
+
+<Note>
+  This feature is currently in private preview and is not recommended for production use.
+</Note>
+
+A snapshot captures the state of a sandbox at a point in time: its filesystem, its running processes, and its memory. Snapshots are workspace resources of their own, so a snapshot stays available after you delete the sandbox it was captured from, and it carries everything needed to create a new sandbox or application from it.
+
+Use snapshots to checkpoint a sandbox before a risky change, to keep a warm starting point for new sandboxes, or to keep a template of a fully booted environment long after the sandbox that produced it is gone.
+
+## Snapshot identity
+
+A snapshot has a `name` that is unique in your workspace and that every operation addresses it by. Pick the name at creation time, or let Blaxel generate one:
+
+| Field | Description |
+|---|---|
+| `name` | Workspace-unique name you address the snapshot by. Generated when you do not pass one |
+| `id` | Internal identifier of the stored snapshot. Read-only, and accepted wherever a snapshot name is expected |
+| `source` | Object the snapshot was captured from: `kind` (`sandbox`), `name`, and `deleted` |
+| `spec` | Configuration a fork runs with: `image`, `memory`, `ports`, `generation`, `region`, and `volumes` |
+| `status` | `ready` once the snapshot can be forked or restored |
+| `createdAt` | When the snapshot was captured |
+
+Creating a snapshot with a name that is already taken in the workspace fails with a `409` error. Delete the existing snapshot first, or pick another name.
+
+## Create a snapshot
+
+A snapshot always has a source. Pass the object to capture as `source`, and a `name` if you want to choose it:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SnapshotInstance } from "@blaxel/core";
+
+const snapshot = await SnapshotInstance.create({
+  name: "before-migration",
+  source: { kind: "sandbox", name: "my-sandbox" },
+});
+```
+
+```python Python
+from blaxel.core import SnapshotInstance
+
+snapshot = await SnapshotInstance.create({
+    "name": "before-migration",
+    "source": {"kind": "sandbox", "name": "my-sandbox"},
+})
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "before-migration",
+    "source": { "kind": "sandbox", "name": "my-sandbox" }
+  }'
+```
+
+</CodeGroup>
+
+You can also capture a snapshot from the sandbox itself, which is the same operation with the source filled in for you:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const snapshot = await sandbox.snapshot("before-migration");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+snapshot = await sandbox.snapshot("before-migration")
+```
+
+</CodeGroup>
+
+<Note>
+  `kind` is `sandbox` today. It exists so other kinds of sources can be captured later without changing the shape of a snapshot.
+</Note>
+
+## Retrieve a snapshot
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SnapshotInstance } from "@blaxel/core";
+
+const snapshot = await SnapshotInstance.get("before-migration");
+console.log(snapshot.source.name, snapshot.source.deleted);
+```
+
+```python Python
+from blaxel.core import SnapshotInstance
+
+snapshot = await SnapshotInstance.get("before-migration")
+print(snapshot.source.name, snapshot.source.deleted)
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/snapshots/before-migration \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+## List snapshots
+
+Listing at the workspace level returns every snapshot, including the ones whose source sandbox no longer exists.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SnapshotInstance } from "@blaxel/core";
+
+const snapshots = await SnapshotInstance.list({ limit: 50 });
+for await (const snapshot of snapshots) {
+  console.log(snapshot.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import SnapshotInstance
+
+async def main():
+    snapshots = await SnapshotInstance.list(limit=50)
+    async for snapshot in snapshots.auto_paging_iter():
+        print(snapshot.name)
+
+asyncio.run(main())
+```
+
+```shell Blaxel CLI
+bl get snapshots
+```
+
+</CodeGroup>
+
+The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter:
+
+```bash
+curl 'https://api.blaxel.ai/v0/snapshots?limit=50&q=migration' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`. For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+
+To list only the snapshots captured from one sandbox, list from the sandbox instead:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const snapshots = await sandbox.listSnapshots();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+snapshots = await sandbox.list_snapshots()
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+## Fork a snapshot into a new sandbox
+
+A snapshot carries the image, the memory size, the ports, the infrastructure generation, the region, and the volumes of what it captured, so you can fork it into a new sandbox even after its source sandbox is deleted.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SnapshotInstance } from "@blaxel/core";
+
+const snapshot = await SnapshotInstance.get("before-migration");
+const result = await snapshot.fork("my-new-sandbox");
+```
+
+```python Python
+from blaxel.core import SnapshotInstance
+
+snapshot = await SnapshotInstance.get("before-migration")
+result = await snapshot.fork("my-new-sandbox")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/snapshots/before-migration/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-new-sandbox"
+  }'
+```
+
+</CodeGroup>
+
+Set `targetType` to `application` to start an [application](/Applications/Overview) from the snapshot instead of a sandbox, and pass `envs` to give the fork a different environment. Both work the same way as when [forking a sandbox](/Sandboxes/Fork).
+
+When the source sandbox still exists, the fork also inherits what the snapshot does not carry, such as environment variables, lifecycle policies, and network configuration. When the source sandbox is gone, the fork runs with the configuration stored on the snapshot.
+
+## Restore a sandbox to a snapshot
+
+Restoring rolls a running sandbox back to a snapshot in place, keeping its name, its URLs, and its previews. Refer to [restoring a sandbox](/Sandboxes/Fork#restore-a-sandbox-to-a-snapshot) for the full behavior.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.restore("before-migration");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.restore("before-migration")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/before-migration/restore \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+## Delete a snapshot
+
+There is a single snapshot object, so deleting it removes it for the whole workspace. Deleting it from the sandbox it was captured from does the same thing.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SnapshotInstance } from "@blaxel/core";
+
+await SnapshotInstance.delete("before-migration");
+```
+
+```python Python
+from blaxel.core import SnapshotInstance
+
+await SnapshotInstance.delete("before-migration")
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/snapshots/before-migration \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+```shell Blaxel CLI
+bl delete snapshot before-migration
+```
+
+</CodeGroup>
+
+Deleting a snapshot is the only thing that removes it. Snapshots have no expiration, and Blaxel never prunes them for you.
+
+## Snapshot lifecycle and sandbox deletion
+
+Deleting a sandbox does not delete its snapshots. The snapshots stay in your workspace, keep their names, and stay usable. The only visible change is on the link back to the source, whose `deleted` field becomes `true`:
+
+```json
+{
+  "name": "before-migration",
+  "status": "ready",
+  "source": {
+    "kind": "sandbox",
+    "name": "my-sandbox",
+    "deleted": true
+  }
+}
+```
+
+<Warning>
+  Snapshots keep consuming storage after their source sandbox is deleted, and they count against your workspace snapshot quota. Delete the snapshots you no longer need. Refer to [quotas](/Security/Quotas) for the limits that apply to your workspace.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Snapshots and forking for sandboxes" icon="clone" href="/Sandboxes/Fork">
+    Snapshot, restore, and fork from the sandbox side.
+  </Card>
+  <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
+    Learn more about sandbox lifecycle and configuration.
+  </Card>
+</CardGroup>
