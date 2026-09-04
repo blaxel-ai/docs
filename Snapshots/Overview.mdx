@@ -21,7 +21,7 @@ A snapshot has a `name` that is unique in your workspace and that every operatio
 |---|---|
 | `name` | Workspace-unique name you address the snapshot by. Generated when you do not pass one |
 | `id` | Internal identifier of the stored snapshot. Read-only, and usable anywhere a snapshot name is expected |
-| `source` | Object the snapshot was captured from: `kind` (`sandbox`), `name`, and `deleted` |
+| `source` | Object the snapshot was captured from: `name`, `kind` (`sandbox`), and `deleted` |
 | `spec` | Configuration a fork runs with: `image`, `memory`, `ports`, `generation`, `region`, and `volumes` |
 | `status` | `ready` once the snapshot can be forked or restored |
 | `createdAt` | When the snapshot was captured |
@@ -30,25 +30,25 @@ Creating a snapshot with a name that is already taken in the workspace fails wit
 
 ## Create a snapshot
 
-A snapshot always has a source. Pass the object to capture as `source`, and a `name` if you want to choose it:
+A snapshot always has a source. Pass the name of the object to capture as `source`, and a `name` if you want to choose it:
 
 <CodeGroup>
 
 ```typescript TypeScript
-import { SnapshotInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-const snapshot = await SnapshotInstance.create({
+const snapshot = await Snapshot.create({
   name: "my-snapshot",
-  source: { kind: "sandbox", name: "my-sandbox" },
+  source: { name: "my-sandbox" },
 });
 ```
 
 ```python Python
-from blaxel.core import SnapshotInstance
+from blaxel.core import Snapshot
 
-snapshot = await SnapshotInstance.create({
+snapshot = await Snapshot.create({
     "name": "my-snapshot",
-    "source": {"kind": "sandbox", "name": "my-sandbox"},
+    "source": {"name": "my-sandbox"},
 })
 ```
 
@@ -59,7 +59,7 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
   -H "Content-Type: application/json" \
   -d '{
     "name": "my-snapshot",
-    "source": { "kind": "sandbox", "name": "my-sandbox" }
+    "source": { "name": "my-sandbox" }
   }'
 ```
 
@@ -86,7 +86,7 @@ snapshot = await sandbox.snapshot("my-snapshot")
 </CodeGroup>
 
 <Note>
-  `kind` is `sandbox` today. It exists so other kinds of sources can be captured later without changing the shape of a snapshot.
+  `source.kind` defaults to `sandbox`, the only kind of object you can capture today. It exists so other kinds of sources can be captured later without changing the shape of a snapshot.
 </Note>
 
 ## Retrieve a snapshot
@@ -94,16 +94,16 @@ snapshot = await sandbox.snapshot("my-snapshot")
 <CodeGroup>
 
 ```typescript TypeScript
-import { SnapshotInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-const snapshot = await SnapshotInstance.get("my-snapshot");
+const snapshot = await Snapshot.get("my-snapshot");
 console.log(snapshot.source.name, snapshot.source.deleted);
 ```
 
 ```python Python
-from blaxel.core import SnapshotInstance
+from blaxel.core import Snapshot
 
-snapshot = await SnapshotInstance.get("my-snapshot")
+snapshot = await Snapshot.get("my-snapshot")
 print(snapshot.source.name, snapshot.source.deleted)
 ```
 
@@ -122,9 +122,9 @@ Listing at the workspace level returns every snapshot, including the ones whose 
 <CodeGroup>
 
 ```typescript TypeScript
-import { SnapshotInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-const snapshots = await SnapshotInstance.list({ limit: 50 });
+const snapshots = await Snapshot.list({ limit: 50 });
 for await (const snapshot of snapshots) {
   console.log(snapshot.name);
 }
@@ -132,10 +132,10 @@ for await (const snapshot of snapshots) {
 
 ```python Python
 import asyncio
-from blaxel.core import SnapshotInstance
+from blaxel.core import Snapshot
 
 async def main():
-    snapshots = await SnapshotInstance.list(limit=50)
+    snapshots = await Snapshot.list(limit=50)
     async for snapshot in snapshots.auto_paging_iter():
         print(snapshot.name)
 
@@ -191,16 +191,16 @@ A snapshot carries the image, the memory size, the ports, the infrastructure gen
 <CodeGroup>
 
 ```typescript TypeScript
-import { SnapshotInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-const snapshot = await SnapshotInstance.get("my-snapshot");
+const snapshot = await Snapshot.get("my-snapshot");
 const result = await snapshot.fork("my-new-sandbox");
 ```
 
 ```python Python
-from blaxel.core import SnapshotInstance
+from blaxel.core import Snapshot
 
-snapshot = await SnapshotInstance.get("my-snapshot")
+snapshot = await Snapshot.get("my-snapshot")
 result = await snapshot.fork("my-new-sandbox")
 ```
 
@@ -256,15 +256,15 @@ There is a single snapshot object, so deleting it removes it for the whole works
 <CodeGroup>
 
 ```typescript TypeScript
-import { SnapshotInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-await SnapshotInstance.delete("my-snapshot");
+await Snapshot.delete("my-snapshot");
 ```
 
 ```python Python
-from blaxel.core import SnapshotInstance
+from blaxel.core import Snapshot
 
-await SnapshotInstance.delete("my-snapshot")
+await Snapshot.delete("my-snapshot")
 ```
 
 ```bash HTTP API
