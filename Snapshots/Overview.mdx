@@ -38,7 +38,7 @@ A snapshot always has a source. Pass the object to capture as `source`, and a `n
 import { SnapshotInstance } from "@blaxel/core";
 
 const snapshot = await SnapshotInstance.create({
-  name: "before-migration",
+  name: "my-snapshot",
   source: { kind: "sandbox", name: "my-sandbox" },
 });
 ```
@@ -47,7 +47,7 @@ const snapshot = await SnapshotInstance.create({
 from blaxel.core import SnapshotInstance
 
 snapshot = await SnapshotInstance.create({
-    "name": "before-migration",
+    "name": "my-snapshot",
     "source": {"kind": "sandbox", "name": "my-sandbox"},
 })
 ```
@@ -58,7 +58,7 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
   -H "X-Blaxel-Workspace: my-workspace" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "before-migration",
+    "name": "my-snapshot",
     "source": { "kind": "sandbox", "name": "my-sandbox" }
   }'
 ```
@@ -73,14 +73,14 @@ You can also capture a snapshot from the sandbox itself, which is the same opera
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshot = await sandbox.snapshot("before-migration");
+const snapshot = await sandbox.snapshot("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshot = await sandbox.snapshot("before-migration")
+snapshot = await sandbox.snapshot("my-snapshot")
 ```
 
 </CodeGroup>
@@ -96,19 +96,19 @@ snapshot = await sandbox.snapshot("before-migration")
 ```typescript TypeScript
 import { SnapshotInstance } from "@blaxel/core";
 
-const snapshot = await SnapshotInstance.get("before-migration");
+const snapshot = await SnapshotInstance.get("my-snapshot");
 console.log(snapshot.source.name, snapshot.source.deleted);
 ```
 
 ```python Python
 from blaxel.core import SnapshotInstance
 
-snapshot = await SnapshotInstance.get("before-migration")
+snapshot = await SnapshotInstance.get("my-snapshot")
 print(snapshot.source.name, snapshot.source.deleted)
 ```
 
 ```bash HTTP API
-curl https://api.blaxel.ai/v0/snapshots/before-migration \
+curl https://api.blaxel.ai/v0/snapshots/my-snapshot \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
@@ -151,7 +151,7 @@ bl get snapshots
 The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter:
 
 ```bash
-curl 'https://api.blaxel.ai/v0/snapshots?limit=50&q=migration' \
+curl 'https://api.blaxel.ai/v0/snapshots?limit=50&q=my-snapshot' \
   -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
   -H 'Blaxel-Version: 2026-04-28'
 ```
@@ -193,19 +193,19 @@ A snapshot carries the image, the memory size, the ports, the infrastructure gen
 ```typescript TypeScript
 import { SnapshotInstance } from "@blaxel/core";
 
-const snapshot = await SnapshotInstance.get("before-migration");
+const snapshot = await SnapshotInstance.get("my-snapshot");
 const result = await snapshot.fork("my-new-sandbox");
 ```
 
 ```python Python
 from blaxel.core import SnapshotInstance
 
-snapshot = await SnapshotInstance.get("before-migration")
+snapshot = await SnapshotInstance.get("my-snapshot")
 result = await snapshot.fork("my-new-sandbox")
 ```
 
 ```bash HTTP API
-curl -X POST https://api.blaxel.ai/v0/snapshots/before-migration/fork \
+curl -X POST https://api.blaxel.ai/v0/snapshots/my-snapshot/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
   -H "Content-Type: application/json" \
@@ -231,18 +231,18 @@ Restoring rolls a running sandbox back to a snapshot in place, keeping its name,
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.restore("before-migration");
+await sandbox.restore("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.restore("before-migration")
+await sandbox.restore("my-snapshot")
 ```
 
 ```bash HTTP API
-curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/before-migration/restore \
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot/restore \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
@@ -258,23 +258,23 @@ There is a single snapshot object, so deleting it removes it for the whole works
 ```typescript TypeScript
 import { SnapshotInstance } from "@blaxel/core";
 
-await SnapshotInstance.delete("before-migration");
+await SnapshotInstance.delete("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SnapshotInstance
 
-await SnapshotInstance.delete("before-migration")
+await SnapshotInstance.delete("my-snapshot")
 ```
 
 ```bash HTTP API
-curl -X DELETE https://api.blaxel.ai/v0/snapshots/before-migration \
+curl -X DELETE https://api.blaxel.ai/v0/snapshots/my-snapshot \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
 
 ```shell Blaxel CLI
-bl delete snapshot before-migration
+bl delete snapshot my-snapshot
 ```
 
 </CodeGroup>
@@ -287,7 +287,7 @@ Deleting a sandbox does not delete its snapshots. The snapshots stay in your wor
 
 ```json
 {
-  "name": "before-migration",
+  "name": "my-snapshot",
   "status": "ready",
   "source": {
     "kind": "sandbox",

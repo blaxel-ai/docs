@@ -23,14 +23,14 @@ Create a snapshot of an existing sandbox. The snapshot captures the filesystem, 
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-const snapshot = await sandbox.snapshot("before-migration");
+const snapshot = await sandbox.snapshot("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-snapshot = await sandbox.snapshot("before-migration")
+snapshot = await sandbox.snapshot("my-snapshot")
 ```
 
 ```bash HTTP API
@@ -39,7 +39,7 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
   -H "X-Blaxel-Workspace: my-workspace" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "before-migration",
+    "name": "my-snapshot",
     "source": { "kind": "sandbox", "name": "my-sandbox" }
   }'
 ```
@@ -87,18 +87,18 @@ A snapshot belongs to the workspace, and a sandbox only links to it. Deleting a 
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.deleteSnapshot("before-migration");
+await sandbox.deleteSnapshot("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.delete_snapshot("before-migration")
+await sandbox.delete_snapshot("my-snapshot")
 ```
 
 ```bash HTTP API
-curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/before-migration \
+curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
@@ -122,18 +122,18 @@ Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbo
 import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.restore("before-migration");
+await sandbox.restore("my-snapshot");
 ```
 
 ```python Python
 from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.restore("before-migration")
+await sandbox.restore("my-snapshot")
 ```
 
 ```bash HTTP API
-curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/before-migration/restore \
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot/restore \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
@@ -199,7 +199,7 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.get("my-sandbox");
 const result = await sandbox.fork("my-sandbox-copy", {
   targetType: "sandbox",
-  snapshotId: "before-migration",
+  snapshotId: "my-snapshot",
 });
 ```
 
@@ -210,7 +210,7 @@ sandbox = await SandboxInstance.get("my-sandbox")
 result = await sandbox.fork(
     "my-sandbox-copy",
     target_type="sandbox",
-    snapshot_id="before-migration",
+    snapshot_id="my-snapshot",
 )
 ```
 
@@ -222,7 +222,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
   -d '{
     "targetType": "sandbox",
     "targetName": "my-sandbox-copy",
-    "snapshotId": "before-migration"
+    "snapshotId": "my-snapshot"
   }'
 ```
 
