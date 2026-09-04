@@ -18,10 +18,6 @@ Blaxel Volumes provide persistent storage that survives sandbox destruction and 
 
 <Warning>At this time, you can only attach one persistent volume to a sandbox. A volume can also only be attached to one sandbox at a time.</Warning>
 
-<Tip>
-  For temporary scratch space that is destroyed with the sandbox, use [ephemeral volumes](/Volumes/Ephemeral-volumes) instead. You can attach several of them alongside a persistent volume.
-</Tip>
-
 To use a volume, attach it **when you create a sandbox** by passing an array of volume configurations to the `volumes` property.
 
 Each configuration must include the `name` of the volume to attach and the `mountPath` where it will be accessible inside the sandbox's filesystem. The mount path **will override the existing content** of a directory.
@@ -73,6 +69,34 @@ At this time, you cannot detach a volume from a sandbox.
 Each volume returned from the API includes a `state.attachedTo` field indicating which sandbox the volume is currently attached to.
 
 When a sandbox is deleted, Blaxel automatically clears this field on the volume. You can therefore check `state.attachedTo` directly to determine whether a volume is free to attach to a new sandbox.
+
+## Ephemeral volumes
+
+Ephemeral volumes are temporary disks created with the sandbox and destroyed when it terminates. They give a sandbox extra writable disk space without creating a volume resource beforehand, and they do not count toward the one-persistent-volume limit: you can attach several ephemeral volumes alongside a persistent one.
+
+Declare an ephemeral volume in the same `volumes` list, with `type` set to `ephemeral` and a `sizeMb`:
+
+<CodeGroup>
+```typescript TypeScript
+volumes: [{
+  name: "scratch",
+  mountPath: "/scratch",
+  type: "ephemeral",
+  sizeMb: 10240
+}]
+```
+
+```python Python
+"volumes": [{
+  "name": "scratch",
+  "mount_path": "/scratch",
+  "type": "ephemeral",
+  "size_mb": 10240
+}]
+```
+</CodeGroup>
+
+Data written to an ephemeral volume is lost when the sandbox is deleted. Read [Ephemeral volumes](/Volumes/Ephemeral-volumes) for the full configuration reference, root filesystem mounts, and limits.
 
 <CardGroup cols={2}>
   <Card title="Learn more about volumes" icon="box" href="/Volumes/Overview">
