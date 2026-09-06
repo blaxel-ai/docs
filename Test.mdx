@@ -1,0 +1,52 @@
+---
+title: 'Test page'
+description: 'A sample Blaxel documentation page used to validate the docs build, navigation, and style guide conventions.'
+---
+
+This page is a sample used to verify that the documentation pipeline works end to end. It exercises frontmatter, navigation, callouts, code blocks, and page endings without documenting a real Blaxel feature.
+
+<Note>
+  This page carries no product information. Remove it once the check it was created for is complete.
+</Note>
+
+## What this page checks
+
+- The page renders with the title and description from its frontmatter
+- The page resolves from its entry in `docs.json` navigation
+- Mintlify components and code blocks render as expected
+- Internal links resolve to existing pages
+
+## Run the docs locally
+
+Preview the documentation from the repository root, where `docs.json` lives:
+
+```bash
+npx mint dev
+```
+
+Open the printed local URL and go to `/Test` to confirm the page renders.
+
+## Check a code sample
+
+The following samples do nothing beyond printing a value. They confirm that `<CodeGroup>` renders both language variants.
+
+<CodeGroup>
+
+```typescript TypeScript
+console.log("Blaxel docs test page");
+```
+
+```python Python
+print("Blaxel docs test page")
+```
+
+</CodeGroup>
+
+<CardGroup cols={2}>
+  <Card title="Overview" href="/Overview">
+    Read what Blaxel provides and how the platform fits together.
+  </Card>
+  <Card title="Get started" href="/Get-started">
+    Deploy your first workload on Blaxel.
+  </Card>
+</CardGroup>
