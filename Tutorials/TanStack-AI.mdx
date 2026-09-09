@@ -1,0 +1,113 @@
+---
+title: 'Build apps with TanStack AI and Blaxel'
+sidebarTitle: 'TanStack AI'
+description: 'Use TanStack AI to run a model and tool loop or Claude Code inside a Blaxel sandbox, with an interactive private preview.'
+---
+
+Build an app from a prompt and inspect its live preview beside the conversation. TanStack AI manages the conversation and tool events, Claude Code edits the app, and Blaxel runs the code in a remote sandbox.
+
+## Prerequisites
+
+- Node.js 22.12 or later and pnpm 11.9.0
+- A [Blaxel account and API key](/Security/Access-tokens) with sandbox access
+- An Anthropic Console API key with model access and available credits
+- Git to clone the [TanStack AI cookbook](https://github.com/blaxel-ai/blaxel-tanstack-ai-cookbook)
+
+<Warning>
+The playground runs on your computer and accepts local requests. Keep its control server on loopback. It does not provide accounts or isolation between multiple web users.
+</Warning>
+
+## 1. Install the cookbook
+
+```shell
+git clone https://github.com/blaxel-ai/blaxel-tanstack-ai-cookbook.git
+cd blaxel-tanstack-ai-cookbook
+pnpm install --frozen-lockfile
+cp .env.example .env
+```
+
+The lockfile records the tested dependencies. See the cookbook README for the exact provider artifact and release status.
+
+## 2. Configure credentials
+
+Set your Blaxel workspace and API key in `.env`:
+
+```dotenv
+BL_WORKSPACE=your-workspace
+BL_API_KEY=your-blaxel-api-key
+BL_REGION=us-was-1
+```
+
+You can also use an existing `bl login` session with the provider version that supports CLI authentication. Keep one Blaxel workspace configuration per server process.
+
+Start the playground:
+
+```shell
+pnpm dev
+```
+
+Open the local URL printed by Vite. Open **Session settings**, select **Use my own Anthropic key**, and enter your key. Select a model and its supported thinking level, then save.
+
+<Note>
+The key stays in local server memory and the sandbox environment. It is excluded from browser storage and chat messages. Code inside the sandbox can access its environment. Use a development key and start a new project to change credentials.
+</Note>
+
+## 3. Build and change an app
+
+Send a prompt such as:
+
+```text
+Build a kanban board with Todo, Doing, and Done columns. Let me add and move cards. Save the board in browser storage.
+```
+
+Watch the tool events on the left. Use the generated app in the private Blaxel preview on the right. Ask for a change and check that it uses the same sandbox.
+
+<img className="block dark:hidden" src="/img/tanstack-ai/playground-light.webp" alt="TanStack AI conversation beside an interactive app running in a private Blaxel preview" />
+<img className="hidden dark:block" src="/img/tanstack-ai/playground-dark.webp" alt="Dark TanStack AI playground with Claude Code activity and a private Blaxel app preview" />
+
+Model and thinking changes apply to your next message. Preview access uses a local proxy that keeps the Blaxel preview token on the server. The preview refreshes after a completed turn.
+
+## 4. Choose an agent approach
+
+The cookbook includes two approaches:
+
+| Approach | TanStack AI | Blaxel |
+| --- | --- | --- |
+| Model and tools | Calls the model and dispatches the tools you define | Executes code and file operations requested by those tools |
+| Claude Code playground | Streams the Claude Code adapter's conversation and tool events | Runs the Claude Code CLI and serves the generated app |
+
+Set `ANTHROPIC_API_KEY` in `.env`, then run the cookbook's model/tool example to inspect the smaller integration without the web interface:
+
+```shell
+pnpm example:tools
+```
+
+In the playground, the Claude Code CLI is installed at runtime inside the sandbox. Your Anthropic key authenticates that CLI. The example does not use a Claude subscription login.
+
+## 5. Stop and clean up
+
+Use **Stop** during a run to cancel it and delete its sandbox. Completed playground sandboxes expire after 15 minutes. To remove one immediately, delete its displayed sandbox ID in the Blaxel console. Closing the local server or selecting **New project** does not delete a completed sandbox.
+
+The default playground stores conversation metadata in memory. Browser refresh can reconnect within that server process; restarting the server discards that state. A deployment that needs restart recovery requires persistent stores and distributed run ownership.
+
+## Troubleshooting
+
+| Symptom | Action |
+| --- | --- |
+| Missing Blaxel credentials | Set `BL_API_KEY` and `BL_WORKSPACE`, or check your CLI session |
+| Anthropic rejects the key | Check the key, model access, and available credits |
+| Preview is preparing | Wait for the app's server to listen, then refresh the preview |
+| Project expired | Start a new project |
+| Unsupported feature | Check the provider capability table before using snapshots, fork, or writable stdin |
+
+## Resources
+
+<Card title="TanStack AI cookbook" icon="github" href="https://github.com/blaxel-ai/blaxel-tanstack-ai-cookbook">
+  Run the playground and the smaller model/tool example.
+</Card>
+<Card title="TanStack sandbox providers" icon="code" href="https://tanstack.com/ai/latest/docs/sandbox/providers">
+  Check provider configuration and supported capabilities.
+</Card>
+<Card title="Blaxel previews" icon="browser" href="/Sandboxes/Preview-url">
+  Learn how preview access and expiration work.
+</Card>

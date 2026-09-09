@@ -256,6 +256,7 @@
                 "pages": [
                   "Tutorials/Claude-Managed-Agents",
                   "Tutorials/Claude-Code",
+                  "Tutorials/TanStack-AI",
                   {
                     "group": "Advanced examples",
                     "pages": [
