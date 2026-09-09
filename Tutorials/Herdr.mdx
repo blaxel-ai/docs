@@ -14,7 +14,7 @@ Use [Herdr](https://herdr.dev) to run a coding agent in a persistent Blaxel sand
 - The [Blaxel CLI](/cli-reference/introduction#install) installed locally; this walkthrough is verified with `0.1.110`
 - Access to Codex through an account or an `OPENAI_API_KEY` for the agent running inside the sandbox
 
-The plugin installs the selected coding agent inside the sandbox. You do not need to install Codex locally or provide credentials to the invoice application.
+This walkthrough uses Codex. The plugin also supports Claude Code, OpenCode, and Pi. It installs the selected coding tool inside the sandbox; you do not need the tool installed locally or credentials in the invoice application.
 
 ## 1. Install the plugin and connect to Blaxel
 
@@ -37,7 +37,16 @@ Confirm that Blaxel Sandbox appears, with actions for Start, reconnect, applying
 
 ## 2. Configure the agent and previews
 
-Find the plugin's configuration directory:
+Open the dashboard and press `t` to choose Codex, Claude Code, OpenCode, or Pi. Press `w` to choose the workspace for new sandboxes. Existing sandboxes keep their original tool and workspace.
+
+```bash
+herdr plugin action invoke dashboard --plugin blaxel.sandbox
+```
+
+<img className="block dark:hidden" src="/img/herdr/tool-chooser.webp" alt="Herdr tool chooser offering Codex, Claude Code, OpenCode, and Pi over a dimmed dashboard" />
+<img className="hidden dark:block" src="/img/herdr/tool-chooser.webp" alt="Herdr tool chooser offering Codex, Claude Code, OpenCode, and Pi over a dimmed dashboard" />
+
+For this Codex walkthrough, find the plugin's configuration directory:
 
 ```bash
 herdr plugin config-dir blaxel.sandbox
@@ -58,7 +67,7 @@ The plugin uses your current Blaxel CLI workspace, a `blaxel/ts-app:latest` sand
 For agent authentication, complete the Codex login inside the sandbox when prompted. If `OPENAI_API_KEY` is already available to the Herdr process, the plugin passes it as an encrypted sandbox secret and signs Codex in with it. It does not copy local coding-agent sessions or credential files.
 
 <Note>
-  Keep credentials out of `config.json` and `agentArgs`. The [configuration reference](https://github.com/blaxel-ai/herdr-blaxel-sandbox-plugin/blob/main/docs/configuration.md) also covers Claude Code, OpenCode, regions, upload limits, and expiration settings.
+  Keep credentials out of `config.json` and `agentArgs`. The [configuration reference](https://github.com/blaxel-ai/herdr-blaxel-sandbox-plugin/blob/main/docs/configuration.md) also covers Claude Code, OpenCode, Pi, regions, upload limits, and expiration settings.
 </Note>
 
 ## 3. Prepare the invoice project
@@ -110,8 +119,8 @@ herdr plugin action invoke dashboard --plugin blaxel.sandbox
 
 Select the invoice project's sandbox. Check its workspace, agent, and state. Press `Enter` or `c` to connect to its agent pane.
 
-<img className="block dark:hidden" src="/img/herdr/dashboard.webp" alt="Herdr dashboard showing two independent Blaxel sandboxes with Connect, Apply, Previews, Stop, and Delete controls" />
-<img className="hidden dark:block" src="/img/herdr/dashboard.webp" alt="Herdr dashboard showing two independent Blaxel sandboxes with Connect, Apply, Previews, Stop, and Delete controls" />
+<img className="block dark:hidden" src="/img/herdr/dashboard.webp" alt="Herdr dashboard showing a running Pi sandbox and Connect, Apply, Previews, Stop, and Delete controls" />
+<img className="hidden dark:block" src="/img/herdr/dashboard.webp" alt="Herdr dashboard showing a running Pi sandbox and Connect, Apply, Previews, Stop, and Delete controls" />
 
 ## 5. Update and test the invoice summary
 
@@ -170,10 +179,10 @@ In the local Herdr dashboard, select the same sandbox and press `p` for Previews
 
 Ask the agent to show `git diff` and finish any file edits before applying. In the local dashboard, select the sandbox and press `a` for Apply.
 
-The plugin exports the remote changes against the upload baseline, checks the patch against your current local files, and shows a changed-file summary. Review the summary, then answer `y` when you want to apply the changes.
+The plugin exports the remote changes against the upload baseline, checks the patch against your current local files, and shows the complete patch with colored additions and deletions. Use Page Up and Page Down to review it, then answer `y` to apply or press Escape to cancel. Exports larger than 1 MiB are refused before download or local changes; reduce the remote changes before retrying.
 
-<img className="block dark:hidden" src="/img/herdr/apply-changes.webp" alt="Herdr displaying the checked patch summary and asking for approval before changing the local worktree" />
-<img className="hidden dark:block" src="/img/herdr/apply-changes.webp" alt="Herdr displaying the checked patch summary and asking for approval before changing the local worktree" />
+<img className="block dark:hidden" src="/img/herdr/apply-changes.webp" alt="Herdr displaying a checked patch with colored additions and deletions before local Apply approval" />
+<img className="hidden dark:block" src="/img/herdr/apply-changes.webp" alt="Herdr displaying a checked patch with colored additions and deletions before local Apply approval" />
 
 Back in the local invoice project, verify the result:
 
@@ -203,7 +212,7 @@ Refresh the dashboard and confirm that the mapping is gone. If you started more 
 | Start cannot resolve a Blaxel workspace | Run `bl login` and `bl workspaces --current` in your local shell; check any configured `workspace` value |
 | Start reports that the snapshot changed | Return to the intended local project pane and rerun Start after file edits have stopped |
 | The agent asks for authentication | Complete login inside the sandbox; local coding-agent credentials are not copied |
-| The terminal fails with `websocket: bad handshake` | Check `bl --version` and update to the current released CLI, then reconnect to the existing sandbox |
+| The terminal fails with `websocket: bad handshake` | With CLI `0.1.110`, run `bl login <workspace>` for the workspace selected in the plugin, then reconnect; this updates the CLI current workspace |
 | Reconnect reports a missing sandbox | Check whether it expired or was deleted; Start creates a new sandbox from your current local files |
 | Port 3000 has no preview or the link expired | Keep the server running on `0.0.0.0:3000`, check `previewPorts`, and reopen Previews for a fresh link |
 | Apply reports a conflict | Resolve or stash conflicting local edits, then retry; do not force-apply the exported patch |
