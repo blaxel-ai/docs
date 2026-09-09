@@ -11,7 +11,7 @@ Use [Herdr](https://herdr.dev) to run a coding agent in a persistent Blaxel sand
 - A [Blaxel account](https://app.blaxel.ai) and workspace with permission to create sandboxes
 - [Herdr](https://herdr.dev/docs/) `0.8.0` or newer on macOS or Linux
 - [Node.js](https://nodejs.org/en/download) `22` or newer, with npm and Git available locally
-- The [Blaxel CLI](/cli-reference/introduction#install) installed locally
+- The [Blaxel CLI](/cli-reference/introduction#install) installed locally; this walkthrough is verified with `0.1.110`
 - Access to Codex through an account or an `OPENAI_API_KEY` for the agent running inside the sandbox
 
 The plugin installs the selected coding agent inside the sandbox. You do not need to install Codex locally or provide credentials to the invoice application.
@@ -158,6 +158,8 @@ createServer((request, response) => {
 
 Ask the agent to start `node server.mjs`, keep it running, and verify `http://127.0.0.1:3000/` from inside the sandbox. The server must listen on `0.0.0.0` for Blaxel to route preview traffic to it.
 
+If Codex requests permission to bind the port or make a local HTTP request, review and approve that command in the remote agent pane.
+
 In the local Herdr dashboard, select the same sandbox and press `p` for Previews. Open the temporary URL shown for port `3000`. Your browser should display the JSON summary, including the overdue balance.
 
 <Note>
@@ -201,6 +203,7 @@ Refresh the dashboard and confirm that the mapping is gone. If you started more 
 | Start cannot resolve a Blaxel workspace | Run `bl login` and `bl workspaces --current` in your local shell; check any configured `workspace` value |
 | Start reports that the snapshot changed | Return to the intended local project pane and rerun Start after file edits have stopped |
 | The agent asks for authentication | Complete login inside the sandbox; local coding-agent credentials are not copied |
+| The terminal fails with `websocket: bad handshake` | Check `bl --version` and update to the current released CLI, then reconnect to the existing sandbox |
 | Reconnect reports a missing sandbox | Check whether it expired or was deleted; Start creates a new sandbox from your current local files |
 | Port 3000 has no preview or the link expired | Keep the server running on `0.0.0.0:3000`, check `previewPorts`, and reopen Previews for a fresh link |
 | Apply reports a conflict | Resolve or stash conflicting local edits, then retry; do not force-apply the exported patch |
