@@ -194,6 +194,7 @@
               {
                 "group": "Agent frameworks and tools",
                 "pages": [
+                  "Integrations/OpenAI-Agents-API",
                   "Integrations/AgentMail",
                   "Integrations/Rippletide"
                 ]
