@@ -3294,8 +3294,9 @@ components:
           description: URL prefix for the application
         snapshotId:
           type: string
-          description: Snapshot ID to fork from. When set, the application revision
-            references this snapshot.
+          description: Snapshot ID to fork from. When set, the fork is created from
+            this existing snapshot. When omitted, a sandbox fork copies the source
+            sandbox's live state directly, without persisting a snapshot in between.
         targetName:
           type: string
           description: Name of the target application to create or update
@@ -3322,7 +3323,9 @@ components:
           description: Name of the created or updated resource
         snapshotId:
           type: string
-          description: The snapshot ID the fork was created from
+          description: The snapshot the fork was created from. Set only when the fork
+            went through a snapshot - an explicit snapshotId, or a fork into an application
+            - and empty for a direct sandbox fork.
         type:
           type: string
           description: Type of resource that was created (sandbox or application)

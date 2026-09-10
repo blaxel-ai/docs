@@ -7,6 +7,16 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-09-09">
+
+### Forking a sandbox no longer leaves a snapshot behind
+
+[Forking a sandbox into a new sandbox](/Sandboxes/Fork#fork-a-sandbox) now copies the source's live state straight into the fork, instead of snapshotting the source first and creating the fork from that snapshot. No snapshot is created, persisted, or listed under the source sandbox, and the fork's `snapshotId` in the response is empty.
+
+Pass a `snapshotId` to fork from a checkpoint you took earlier, as before. Forking into an application still records a snapshot, since the application revision references it so you can re-activate that revision later.
+
+</Update>
+
 <Update label="2026-09-08">
 
 ### Herdr sandbox tutorial
