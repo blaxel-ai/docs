@@ -3294,8 +3294,11 @@ components:
           description: URL prefix for the application
         snapshotId:
           type: string
-          description: Snapshot ID to fork from. When set, the application revision
-            references this snapshot.
+          description: Snapshot ID to fork from. When set, the fork is created from
+            that existing snapshot (and an application revision references it). When
+            omitted, a fork to a sandbox copies the source sandbox's live state directly
+            and no snapshot is persisted; a fork to an application still takes a snapshot,
+            since its revision references one.
         targetName:
           type: string
           description: Name of the target application to create or update
@@ -3322,7 +3325,10 @@ components:
           description: Name of the created or updated resource
         snapshotId:
           type: string
-          description: The snapshot ID the fork was created from
+          description: The snapshot ID the fork was created from. Set only when the
+            fork went through a snapshot, meaning an explicit snapshotId was supplied
+            or the fork target is an application. Empty when the fork copied the source
+            sandbox's live state directly.
         type:
           type: string
           description: Type of resource that was created (sandbox or application)
@@ -8137,8 +8143,10 @@ paths:
       description: Forks a sandbox into a new sandbox or application. When forking
         to a sandbox, the target must not already exist (409 if it does). When forking
         to an application, a new revision is added if the app already exists, or a
-        new application is created. This is a WIP endpoint — the full implementation
-        depends on the execution plane.
+        new application is created. With no snapshotId, a fork to a sandbox copies
+        the source sandbox's live state directly and no snapshot is persisted, while
+        a fork to an application takes a snapshot its revision then references. This
+        is a WIP endpoint — the full implementation depends on the execution plane.
       operationId: ForkSandbox
       parameters:
       - description: Name of the sandbox to fork

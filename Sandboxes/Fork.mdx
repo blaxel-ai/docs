@@ -9,7 +9,7 @@ tag: "private preview"
   This feature is currently in private preview and is not recommended for production use.
 </Note>
 
-Snapshots capture the current state of a sandbox at a point in time. Use snapshots to checkpoint sandbox state to allow rollbacks after making changes, or as the basis for forking a sandbox into a new sandbox.
+Snapshots capture the current state of a sandbox at a point in time. Use snapshots to checkpoint sandbox state to allow rollbacks after making changes, or to fork a new sandbox from a checkpoint you picked. Forking a sandbox into another sandbox does not require a snapshot: it copies the source's live state directly.
 
 ## Create a snapshot
 
@@ -137,7 +137,7 @@ You can also restore from the Blaxel console: open your sandbox, go to the **Sna
 
 Forking creates a new sandbox from an existing one, forking its entire memory state (files + running processes). The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
 
-Calling `fork()` automatically snapshots the source sandbox's current state and forks from it. You don't need to create a snapshot first.
+Calling `fork()` copies the source sandbox's live state straight into the new sandbox. No snapshot is created, persisted, or listed under the source sandbox.
 
 <CodeGroup>
 
@@ -172,11 +172,13 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
+A fork lands on the same node as its source. Forking a running sandbox pauses it for the moment its memory is captured, then both sandboxes run on. A sandbox in standby is not woken to be forked.
 
+Forking into an application (`targetType: "application"`) still goes through a snapshot, because the application revision references that snapshot durably so you can re-activate the revision later. See [create an application from a sandbox fork](/Applications/Overview#create-an-application-from-a-sandbox-fork).
 
 ### Fork from a snapshot
 
-To create a sandbox from a snapshot you took earlier, pass its `snapshotId`. The fork is created from that snapshot instead of the source sandbox's current state:
+To fork from a checkpoint instead of the source's live state, pass the `snapshotId` of a snapshot you took earlier. The fork is created from that snapshot, and nothing is captured from the source, so a running source is not paused:
 
 <CodeGroup>
 
@@ -265,7 +267,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
-The fork starts with the new environment already applied, so processes you launch in it read the new values. Processes that were already running in the source when it was snapshotted keep the environment they were started with, as an environment change cannot reach a process that is already running.
+The fork starts with the new environment already applied, so processes you launch in it read the new values. Processes that were already running in the source when its state was captured keep the environment they were started with, as an environment change cannot reach a process that is already running.
 
 <Note>
   `envs` only sets and adds variables. A variable of the source cannot be removed through a fork.
@@ -280,8 +282,16 @@ The fork starts with the new environment already applied, so processes you launc
 | `targetType` | string | Target resource type: `sandbox` |
 | `targetName` | string | Name of the sandbox to create |
 | `port` | integer | Port to expose |
-| `snapshotId` | string | Fork from a specific snapshot instead of current state |
+| `snapshotId` | string | Fork from a snapshot you took earlier, instead of from the source's live state |
 | `envs` | array | Environment variables the fork runs with, on top of the ones inherited from the source |
+
+## Fork response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Name of the created sandbox or application |
+| `type` | string | What was created: `sandbox` or `application` |
+| `snapshotId` | string | The snapshot the fork was created from. Set only when the fork went through a snapshot — you passed a `snapshotId`, or you forked into an application — and empty for a direct sandbox fork |
 
 <CardGroup cols={1}>
   <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
