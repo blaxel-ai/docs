@@ -3,3 +3,105 @@
   height: 2.5rem;
   width: auto;
 }
+
+/* Place the announcement after the logo row and documentation tabs. */
+#navbar:has(#banner) {
+  display: flex;
+  flex-direction: column;
+}
+
+#navbar:has(#banner) > .max-w-8xl {
+  width: 100%;
+}
+
+/* The banner now takes up space in the header's normal flow. */
+#navbar:has(#banner) > div[aria-hidden="true"] {
+  display: none;
+}
+
+/* Include the card's surrounding space in Mintlify's measured height. */
+#banner {
+  position: relative;
+  inset: auto;
+  order: 1;
+  padding: 1.25rem 3rem;
+  background: transparent;
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+#banner > div {
+  width: 100%;
+  max-width: 70rem;
+  margin: 0;
+  padding: 1rem 3.5rem 1rem 1.75rem;
+  border: 1px solid #394655;
+  border-radius: 0.75rem;
+  background:
+    radial-gradient(ellipse at 50% 0, rgb(99 216 226 / 12%), transparent 70%),
+    linear-gradient(110deg, #121b29, #081827 52%, #141925);
+  box-shadow:
+    0 12px 32px -16px rgb(7 11 17 / 40%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+#banner > button {
+  right: max(4rem, calc((100% - 70rem) / 2 + 1rem));
+}
+
+#banner p {
+  color: #dbdbdb !important;
+  line-height: 1.5;
+}
+
+#banner a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+  color: #fff !important;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#banner a::after {
+  content: "";
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: #eb7229;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='black' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9h12M10 4l5 5-5 5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+#banner a:hover {
+  text-decoration: underline;
+  text-decoration-color: #fff;
+}
+
+#banner a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid #eb7229;
+  outline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+  #banner {
+    padding: 1rem;
+    text-align: left;
+  }
+
+  #banner > div {
+    padding: 1rem 2.75rem 1rem 1rem;
+  }
+
+  #banner a {
+    display: flex;
+    width: fit-content;
+    margin: 0.375rem 0 0;
+  }
+
+  #banner > button {
+    top: 1.75rem;
+    right: 1.75rem;
+    transform: none;
+  }
+}

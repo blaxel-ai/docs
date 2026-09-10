@@ -8,6 +8,10 @@
     "dark": "#F0652D"
   },
   "favicon": "/favicon.svg",
+  "banner": {
+    "content": "Blaxel has joined Baseten to build the future of agentic infrastructure! [Read our announcement.](https://www.baseten.co/blog/blaxel-is-joining-baseten-to-build-the-future-of-agentic-cloud/)",
+    "dismissible": true
+  },
   "contextual": {
     "options": [
       "copy",
