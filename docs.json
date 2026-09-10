@@ -7,7 +7,7 @@
     "light": "#FD7B35",
     "dark": "#F0652D"
   },
-  "favicon": "/favicon.webp",
+  "favicon": "/favicon.svg",
   "contextual": {
     "options": [
       "copy",
@@ -462,7 +462,7 @@
   },
   "logo": {
     "light": "/images/logo-light.svg",
-    "dark": "/images/logo-dark.webp"
+    "dark": "/images/logo-dark.svg"
   },
   "navbar": {
     "links": [

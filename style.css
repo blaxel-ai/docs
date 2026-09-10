@@ -1,0 +1,5 @@
+/* Keep the complete Blaxel/Baseten lockup readable in the docs header. */
+#navbar .nav-logo {
+  height: 2.5rem;
+  width: auto;
+}
