@@ -94,7 +94,7 @@ These are cookbook defaults and behavior, not platform-wide limits.
 | Application-managed Sandbox lifetime | 15 minutes from creation |
 | `WORKER_TTL` | Webhook workers default to `2h` from creation |
 | `CONTROLLER_TTL` | The controller defaults to `24h` from creation; restarting its process does not renew this lifetime |
-| `OPENAI_WEBHOOK_RESOURCE_PREFIX` | Selects a separate controller and worker namespace; use the same prefix for deployment and reconnection |
+| Resource namespace | `OPENAI_WEBHOOK_RESOURCE_PREFIX` selects a separate controller and worker namespace; use the same prefix for deployment and reconnection |
 | Client and executor | The cookbook refreshes the OpenAI preview client from `main` and installs Codex from the `alpha` npm tag; its README records the last verified versions |
 
 The baseline can complete with temporary storage when Agent Drive access is unavailable. The fresh-session handoff, team example, and file-preserving reconnection check require Agent Drive. With temporary storage, a replacement worker starts with an empty filesystem.
