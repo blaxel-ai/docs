@@ -15,7 +15,7 @@ A snapshot outlives the sandbox it was captured from: it stays usable, and forka
 
 ## Create a snapshot
 
-Capture a snapshot from the sandbox you want to checkpoint. Snapshot names are unique across your workspace, and creating a snapshot with a name that is already taken fails with a `409` error.
+Capture a snapshot from the sandbox you want to checkpoint. Snapshot names are unique within a sandbox, and creating a snapshot with a name the sandbox already uses fails with a `409` error. Every snapshot also gets an `id`, unique across your workspace, which the operations that do not go through the sandbox take instead of the name.
 
 <CodeGroup>
 
@@ -77,7 +77,7 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
 </CodeGroup>
 
 <Note>
-  `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with an existing one. Use `POST /snapshots` with a `source` to choose the name.
+  `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with an existing one. Use `POST /snapshots` with a `source` to choose the name. Sandbox-side operations take the snapshot name, workspace-side operations take `snapshot.id`.
 </Note>
 
 ## List snapshots
@@ -259,26 +259,26 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
-A snapshot carries the image, the memory size, the ports, the infrastructure generation, the region, and the volumes of what it captured, so you can also fork it directly, even after its source sandbox is deleted:
+A snapshot carries the image, the memory size, the ports, the infrastructure generation, the region, and the volumes of what it captured, so you can also fork it directly by its `id`, even after its source sandbox is deleted:
 
 <CodeGroup>
 
 ```typescript TypeScript
 import { Snapshot } from "@blaxel/core";
 
-const snapshot = await Snapshot.get("my-snapshot");
+const snapshot = await Snapshot.get(snapshotId);
 const result = await snapshot.fork("my-new-sandbox");
 ```
 
 ```python Python
 from blaxel.core import Snapshot
 
-snapshot = await Snapshot.get("my-snapshot")
+snapshot = await Snapshot.get(snapshot_id)
 result = await snapshot.fork("my-new-sandbox")
 ```
 
 ```bash HTTP API
-curl -X POST https://api.blaxel.ai/v0/snapshots/my-snapshot/fork \
+curl -X POST https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
   -H "Content-Type: application/json" \
@@ -363,36 +363,56 @@ The fork starts with the new environment already applied, so processes you launc
 
 ## Delete a snapshot
 
-Deleting a snapshot from the sandbox it was captured from, or by its name, does the same thing: the snapshot is gone.
+Delete a snapshot by its name from the sandbox it was captured from:
 
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance, Snapshot } from "@blaxel/core";
+import { SandboxInstance } from "@blaxel/core";
 
 const sandbox = await SandboxInstance.get("my-sandbox");
 await sandbox.snapshots.delete("my-snapshot");
-
-await Snapshot.delete("my-snapshot");
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance, Snapshot
+from blaxel.core import SandboxInstance
 
 sandbox = await SandboxInstance.get("my-sandbox")
 await sandbox.snapshots.delete("my-snapshot")
-
-await Snapshot.delete("my-snapshot")
 ```
 
 ```bash HTTP API
-curl -X DELETE https://api.blaxel.ai/v0/snapshots/my-snapshot \
+curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+Or by its `id`, which also works once the sandbox is deleted:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+await Snapshot.delete(snapshotId);
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+await Snapshot.delete(snapshot_id)
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace"
 ```
 
 ```shell Blaxel CLI
-bl delete snapshot my-snapshot
+bl delete snapshot $SNAPSHOT_ID
 ```
 
 </CodeGroup>
