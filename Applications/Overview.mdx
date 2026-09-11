@@ -240,7 +240,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
-List your existing snapshots with `sandbox.snapshots.list()`. See [Snapshots and fork](/Sandboxes/Fork) for the full snapshot lifecycle.
+List your existing snapshots with `sandbox.snapshots.list()`. See [Snapshots and forking](/Sandboxes/Fork) for the full snapshot lifecycle.
 
 ### Attach a custom domain at fork time
 
@@ -295,7 +295,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 If an application with `targetName` already exists, forking updates its compute so the backend generates a fresh revision serving the forked sandbox's state. Otherwise a new application is created. Forking into an application requires the Application Runtime feature to be enabled on your workspace.
 </Note>
 
-For more on sandbox snapshots and forking sandboxes into new sandboxes, see [Sandbox snapshots and fork](/Sandboxes/Fork).
+For more on sandbox snapshots and forking sandboxes into new sandboxes, see [Sandbox snapshots and forking](/Sandboxes/Fork).
 
 ## Retrieve an application
 
@@ -716,7 +716,7 @@ During the deployment process, the possible application statuses are:
 - `FAILED`: An error occurred during the build or deployment.
 
 <CardGroup cols={2}>
-  <Card title="Sandbox snapshots and fork" icon="code-fork" href="/Sandboxes/Fork">
+  <Card title="Sandbox snapshots and forking" icon="code-fork" href="/Sandboxes/Fork">
     Create snapshots and fork sandboxes into applications or new sandboxes.
   </Card>
   <Card title="Variables and secrets" icon="key" href="/Agents/Variables-and-secrets">
