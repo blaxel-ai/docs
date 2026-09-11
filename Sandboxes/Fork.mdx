@@ -1,7 +1,7 @@
 ---
 title: 'Snapshots and forking'
 sidebarTitle: 'Snapshots & forking'
-description: 'Create point-in-time snapshots of sandboxes, roll them back to a previous checkpoint, and fork them into new sandboxes.'
+description: 'Create point-in-time snapshots of sandboxes, roll a sandbox back to a checkpoint, and fork a sandbox or a snapshot into a new sandbox.'
 tag: "private preview"
 ---
 
@@ -9,13 +9,13 @@ tag: "private preview"
   This feature is currently in private preview and is not recommended for production use.
 </Note>
 
-Snapshots capture the current state of a sandbox at a point in time. Use snapshots to checkpoint sandbox state to allow rollbacks after making changes, or as the basis for forking a sandbox into a new sandbox.
+A snapshot captures the state of a sandbox at a point in time: its filesystem, its running processes, and its memory. Use snapshots to checkpoint a sandbox before a risky change, to roll it back later, or as the basis for forking a new sandbox.
 
-A snapshot is a workspace resource of its own: it survives the deletion of the sandbox it was captured from, and it can be managed and forked without that sandbox. This page covers the snapshot operations available on a sandbox. Refer to [snapshots](/Snapshots/Overview) to manage snapshots at workspace level.
+A snapshot outlives the sandbox it was captured from: it stays usable, and forkable, after that sandbox is deleted.
 
 ## Create a snapshot
 
-Create a snapshot of an existing sandbox. The snapshot captures the filesystem, running processes, and memory state, and the name you pass identifies it in your whole workspace.
+Capture a snapshot from the sandbox you want to checkpoint. Snapshot names are unique within a sandbox, and creating a snapshot with a name the sandbox already uses fails with a `409` error. Every snapshot also gets an `id`, unique across your workspace, which the operations that do not go through the sandbox take instead of the name.
 
 <CodeGroup>
 
@@ -34,6 +34,36 @@ snapshot = await sandbox.snapshots.create("my-snapshot")
 ```
 
 ```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+You can also create a snapshot without retrieving the sandbox first, by passing it as `source`:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+const snapshot = await Snapshot.create({
+  name: "my-snapshot",
+  source: { name: "my-sandbox" },
+});
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+snapshot = await Snapshot.create({
+    "name": "my-snapshot",
+    "source": {"name": "my-sandbox"},
+})
+```
+
+```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/snapshots \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: my-workspace" \
@@ -47,11 +77,12 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
 </CodeGroup>
 
 <Note>
-  `POST /sandboxes/{name}/snapshots` is a shortcut that generates the snapshot name for you, so it cannot collide with a name already used in the workspace. Use `POST /snapshots` with a `source` to choose the name.
+  `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with an existing one. Use `POST /snapshots` with a `source` to choose the name. Sandbox-side operations take the snapshot name, workspace-side operations take `snapshot.id`.
 </Note>
 
-
 ## List snapshots
+
+List from a sandbox to get only the snapshots captured from it:
 
 <CodeGroup>
 
@@ -77,36 +108,38 @@ curl https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
 
 </CodeGroup>
 
-## Delete a snapshot
-
-A snapshot belongs to the workspace, and a sandbox only links to it. Deleting a snapshot from a sandbox deletes the snapshot itself, for everyone.
+List all your snapshots to also get the ones whose source sandbox no longer exists:
 
 <CodeGroup>
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { Snapshot } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox");
-await sandbox.snapshots.delete("my-snapshot");
+const snapshots = await Snapshot.list({ limit: 50 });
+for await (const snapshot of snapshots) {
+  console.log(snapshot.name);
+}
 ```
 
 ```python Python
-from blaxel.core import SandboxInstance
+import asyncio
+from blaxel.core import Snapshot
 
-sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.snapshots.delete("my-snapshot")
+async def main():
+    snapshots = await Snapshot.list(limit=50)
+    async for snapshot in snapshots.auto_paging_iter():
+        print(snapshot.name)
+
+asyncio.run(main())
 ```
 
-```bash HTTP API
-curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot \
-  -H "Authorization: Bearer $BL_API_KEY" \
-  -H "X-Blaxel-Workspace: my-workspace"
+```shell Blaxel CLI
+bl get snapshots
 ```
 
 </CodeGroup>
 
-Deleting the sandbox does not delete its snapshots. They stay in your workspace and stay forkable, with their source marked as deleted. Refer to [snapshot lifecycle and sandbox deletion](/Snapshots/Overview#snapshot-lifecycle-and-sandbox-deletion).
-
+The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter. Refer to the [API reference documentation](/api-reference/introduction#pagination) for how to page through the results.
 
 ## Restore a sandbox to a snapshot
 
@@ -185,8 +218,6 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
-
-
 ### Fork from a snapshot
 
 To create a sandbox from a snapshot you took earlier, pass its name as `snapshotId`. The fork is created from that snapshot instead of the source sandbox's current state:
@@ -228,6 +259,40 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
+A snapshot carries the image, the memory size, the ports, the infrastructure generation, the region, and the volumes of what it captured, so you can also fork it directly by its `id`, even after its source sandbox is deleted:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+const snapshot = await Snapshot.get(snapshotId);
+const result = await snapshot.fork("my-new-sandbox");
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+snapshot = await Snapshot.get(snapshot_id)
+result = await snapshot.fork("my-new-sandbox")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-new-sandbox"
+  }'
+```
+
+</CodeGroup>
+
+Set `targetType` to `application` to start an [application](/Applications/Overview) from the snapshot instead of a sandbox.
+
+When the source sandbox still exists, the fork also inherits what the snapshot does not carry, such as environment variables, lifecycle policies, and network configuration. When the source sandbox is gone, the fork runs with the configuration stored on the snapshot.
 
 ### Fork with new environment variables
 
@@ -286,21 +351,85 @@ The fork starts with the new environment already applied, so processes you launc
 
 `envs` works the same way when forking from a snapshot.
 
-## Fork request parameters
+### Fork request parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `targetType` | string | Target resource type: `sandbox` |
-| `targetName` | string | Name of the sandbox to create |
+| `targetType` | string | Target resource type: `sandbox` or `application` |
+| `targetName` | string | Name of the resource to create |
 | `port` | integer | Port to expose |
 | `snapshotId` | string | Name of the snapshot to fork from, instead of the current state |
 | `envs` | array | Environment variables the fork runs with, on top of the ones inherited from the source |
 
-Forking from a snapshot whose source sandbox is deleted is done from the snapshot itself. Refer to [forking a snapshot into a new sandbox](/Snapshots/Overview#fork-a-snapshot-into-a-new-sandbox).
+## Delete a snapshot
+
+Delete a snapshot by its name from the sandbox it was captured from:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.snapshots.delete("my-snapshot");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.snapshots.delete("my-snapshot")
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
+Or by its `id`, which also works once the sandbox is deleted:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+await Snapshot.delete(snapshotId);
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+await Snapshot.delete(snapshot_id)
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+```shell Blaxel CLI
+bl delete snapshot $SNAPSHOT_ID
+```
+
+</CodeGroup>
+
+Deleting a snapshot is the only thing that removes it. Snapshots have no expiration, and Blaxel never prunes them for you.
+
+## Snapshots and sandbox deletion
+
+Deleting a sandbox does not delete its snapshots. They keep their names and stay forkable, with `source.deleted` set to `true` to tell you their sandbox is gone.
+
+<Warning>
+  Snapshots keep consuming storage after their source sandbox is deleted, and they count against your workspace snapshot quota. Delete the snapshots you no longer need. Refer to [quotas](/Security/Quotas) for the limits that apply to your workspace.
+</Warning>
 
 <CardGroup cols={2}>
-  <Card title="Snapshots" icon="clone" href="/Snapshots/Overview">
-    Manage snapshots at workspace level, independently of their source sandbox.
+  <Card title="Archive a sandbox" icon="box-archive" href="/Sandboxes/Archive">
+    Keep a sandbox's filesystem while shutting it down, and get it back later.
   </Card>
   <Card title="Sandbox overview" icon="cube" href="/Sandboxes/Overview">
     Learn more about sandbox lifecycle and configuration.

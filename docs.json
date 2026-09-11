@@ -100,12 +100,6 @@
             ]
           },
           {
-            "group": "Snapshots",
-            "pages": [
-              "Snapshots/Overview"
-            ]
-          },
-          {
             "group": "Agent Drive",
             "pages": [
               "Agent-drive/Overview",
@@ -636,11 +630,19 @@
     },
     {
       "source": "/Sandboxes/Snapshots",
-      "destination": "/Snapshots/Overview"
+      "destination": "/Sandboxes/Fork"
     },
     {
       "source": "/snapshots",
-      "destination": "/Snapshots/Overview"
+      "destination": "/Sandboxes/Fork"
+    },
+    {
+      "source": "/Snapshots/Overview",
+      "destination": "/Sandboxes/Fork"
+    },
+    {
+      "source": "/Snapshots/:slug*",
+      "destination": "/Sandboxes/Fork"
     },
     {
       "source": "/Sandboxes/Drives",
