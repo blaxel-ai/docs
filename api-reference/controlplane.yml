@@ -3665,8 +3665,9 @@ components:
           description: Exclusive end of the metrics window, normalized to a UTC minute.
     SandboxSnapshot:
       type: object
-      description: A point-in-time snapshot of a sandbox that can be used for forking
-        into a new sandbox or application.
+      description: 'A point-in-time snapshot of a sandbox. It is a workspace-level
+        object: it outlives the sandbox it was captured from, and can be restored
+        onto a sandbox or forked into a new sandbox or application on its own.'
       properties:
         createdAt:
           type: string
@@ -3676,37 +3677,108 @@ components:
           description: Who created the snapshot
         id:
           type: string
-          description: Unique snapshot identifier
+          description: Identifier of the snapshot, unique in the workspace. Workspace-level
+            routes address the snapshot by it.
+          readOnly: true
           example: snap_abc123
         name:
           type: string
-          description: Optional human-readable name for the snapshot
-          example: before-migration
+          description: Display name of the snapshot, unique among the snapshots of
+            the sandbox it was captured from. Defaults to the identifier.
+          example: my-snapshot
         sandboxName:
           type: string
-          description: Name of the source sandbox
+          description: Name of the source sandbox. Kept for compatibility, read source.name
+            instead.
+        source:
+          $ref: '#/components/schemas/SandboxSnapshotSource'
+        spec:
+          $ref: '#/components/schemas/SandboxSnapshotSpec'
         status:
           type: string
           description: Status of the snapshot (pending, ready, failed)
           example: ready
         workspace:
           type: string
-          description: Workspace of the source sandbox
+          description: Workspace owning the snapshot
       required:
       - workspace
-      - sandboxName
+      - name
       - id
       - createdAt
       - status
+    SandboxSnapshotList:
+      type: object
+      description: Cursor-paginated list of snapshots. Returned starting with API
+        version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of snapshots.
+          items:
+            $ref: '#/components/schemas/SandboxSnapshot'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
     SandboxSnapshotRequest:
       type: object
-      description: Request body for creating a snapshot of a sandbox. Captures the
-        current sandbox state.
+      description: Request body for creating a snapshot. The source object is required
+        at the root endpoint and implied by the path on the nested one.
       properties:
         name:
           type: string
-          description: Optional human-readable name for the snapshot
-          example: before-migration
+          description: Display name of the snapshot, unique among the snapshots of
+            the sandbox it is captured from; the same name may be reused on another
+            sandbox. Defaults to the snapshot identifier when absent.
+          example: my-snapshot
+        source:
+          $ref: '#/components/schemas/SandboxSnapshotSource'
+    SandboxSnapshotSource:
+      type: object
+      description: The object a snapshot was captured from.
+      properties:
+        deleted:
+          type: boolean
+          description: Whether the source object has since been deleted. The snapshot
+            stays usable, the link is only kept for context.
+          readOnly: true
+        kind:
+          type: string
+          description: Kind of the object the snapshot was captured from. Defaults
+            to sandbox, the only kind that can be captured today.
+          enum:
+          - sandbox
+          example: sandbox
+          default: sandbox
+        name:
+          type: string
+          description: Name of the object the snapshot was captured from
+      required:
+      - name
+    SandboxSnapshotSpec:
+      type: object
+      description: The configuration a snapshot carries, so a sandbox or an application
+        can be created from it once its source object is gone.
+      properties:
+        generation:
+          type: string
+          description: Infrastructure generation the snapshot was captured on. A snapshot
+            only restores on the generation it came from.
+          enum:
+          - mk2
+          - mk3
+        image:
+          type: string
+          description: Image the source object ran
+        memory:
+          type: integer
+          description: Memory in MB the source object ran with
+        ports:
+          $ref: '#/components/schemas/Ports'
+        region:
+          type: string
+          description: Region holding the snapshot. Restores and forks land in it.
+        volumes:
+          $ref: '#/components/schemas/VolumeAttachments'
     SandboxSnapshots:
       type: array
       items:
@@ -8710,7 +8782,8 @@ paths:
       - compute
   /sandboxes/{sandboxName}/snapshots/{snapshotId}:
     delete:
-      description: Deletes a snapshot of a sandbox by its ID.
+      description: Deletes a snapshot of a sandbox, addressed by its name among that
+        sandbox's snapshots (or by its ID).
       operationId: DeleteSandboxSnapshot
       parameters:
       - description: Name of the sandbox
@@ -8719,7 +8792,9 @@ paths:
         required: true
         schema:
           type: string
-      - description: ID of the snapshot to delete
+      - description: Name of the snapshot among the sandbox's snapshots. A snapshot
+          ID is also accepted and resolves within the whole workspace, so it reaches
+          a snapshot whose source sandbox is another one or was deleted.
         in: path
         name: snapshotId
         required: true
@@ -8761,7 +8836,9 @@ paths:
         required: true
         schema:
           type: string
-      - description: ID of the snapshot to restore the sandbox to
+      - description: Name of the snapshot among the sandbox's snapshots. A snapshot
+          ID is also accepted and resolves within the whole workspace, so it reaches
+          a snapshot whose source sandbox is another one or was deleted.
         in: path
         name: snapshotId
         required: true
@@ -9358,6 +9435,188 @@ paths:
       required: true
       schema:
         type: string
+  /snapshots:
+    get:
+      description: Returns the snapshots of the workspace, newest first by default,
+        including the ones whose source object has been deleted. Starting with API
+        version 2026-04-28 the response is wrapped in `{data, meta}` and supports
+        cursor pagination via the `cursor` and `limit` query parameters; older versions
+        keep returning a bare array.
+      operationId: ListSnapshots
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshotList'
+          description: successful operation
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List snapshots
+      tags:
+      - compute
+    post:
+      description: Captures a snapshot from a source object. The snapshot belongs
+        to the workspace rather than to its source, so it survives the deletion of
+        the object it was captured from, and carries what creating a sandbox or an
+        application from it needs.
+      operationId: CreateSnapshot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxSnapshotRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: Snapshot created successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Source object does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create snapshot
+      tags:
+      - compute
+  /snapshots/{snapshotName}:
+    delete:
+      description: Deletes a snapshot. There is a single snapshot object, so this
+        removes it for the whole workspace, whether or not the object it was captured
+        from still exists.
+      operationId: DeleteSnapshot
+      parameters:
+      - description: ID of the snapshot
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Snapshot deleted successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete snapshot
+      tags:
+      - compute
+    get:
+      description: Returns a snapshot of the workspace by ID.
+      operationId: GetSnapshot
+      parameters:
+      - description: ID of the snapshot
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get snapshot
+      tags:
+      - compute
+  /snapshots/{snapshotName}/fork:
+    post:
+      description: Creates a new sandbox or application from a snapshot. The snapshot
+        is enough on its own, so this works after the object it was captured from
+        has been deleted.
+      operationId: ForkSnapshot
+      parameters:
+      - description: ID of the snapshot to create the resource from
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxForkRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxForkResponse'
+          description: Resource created successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Fork snapshot
+      tags:
+      - compute
   /templates:
     get:
       description: Returns all deployment templates available for creating agents,
