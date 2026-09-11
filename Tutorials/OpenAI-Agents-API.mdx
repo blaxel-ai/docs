@@ -44,6 +44,7 @@ export BL_API_KEY='<blaxel-api-key>'
 <Note>
   The default `auto` mode uses Agent Drive when available. Set `BL_AGENT_DRIVE_MODE=off` before the run for completely disposable storage.
 </Note>
+
 The launcher creates a virtual environment and installs public dependencies. The source is a fictional billing incident with counts, owners, deadlines, and a missing-data caveat. The agent reads `sample_report.txt` and writes `summary.md`.
 
 OpenAI manages the agent session. Blaxel supplies the computer that runs its commands. The executor connects outbound to OpenAI; the first run requires no webhook deployment or public worker port.
@@ -92,6 +93,7 @@ Both `summary.md` and `review.md` remain in the same Agent Drive run directory. 
 <Info>
   Agent Drive shares inspectable files. It does not copy model memory, conversation history, or session state.
 </Info>
+
 Open `outputs/<run-id>/summary.md` and `outputs/<run-id>/review.md` from this run. Both local copies share the original run's directory.
 
 The handoff requires Agent Drive in `us-was-1`. It refuses `BL_AGENT_DRIVE_MODE=off` and reports an access or region error when persistence is unavailable.
