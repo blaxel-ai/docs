@@ -1,7 +1,7 @@
 ---
 title: 'Snapshots and forking'
 sidebarTitle: 'Snapshots & forking'
-description: 'Create point-in-time snapshots of sandboxes, manage them as workspace resources, roll a sandbox back to a checkpoint, and fork snapshots into new sandboxes.'
+description: 'Create point-in-time snapshots of sandboxes, roll a sandbox back to a checkpoint, and fork a sandbox or a snapshot into a new sandbox.'
 tag: "private preview"
 ---
 
@@ -11,26 +11,11 @@ tag: "private preview"
 
 A snapshot captures the state of a sandbox at a point in time: its filesystem, its running processes, and its memory. Use snapshots to checkpoint a sandbox before a risky change, to roll it back later, or as the basis for forking a new sandbox.
 
-A snapshot is a workspace resource of its own. It stays available after you delete the sandbox it was captured from, and it carries everything needed to create a new sandbox or application from it.
-
-## Snapshot identity
-
-A snapshot has a `name` that is unique in your workspace and that every operation addresses it by. Pick the name at creation time, or let Blaxel generate one:
-
-| Field | Description |
-|---|---|
-| `name` | Workspace-unique name you address the snapshot by. Generated when you do not pass one |
-| `id` | Internal identifier of the stored snapshot. Read-only, and usable anywhere a snapshot name is expected |
-| `source` | Object the snapshot was captured from: `name`, `kind` (`sandbox`), and `deleted` |
-| `spec` | Configuration a fork runs with: `image`, `memory`, `ports`, `generation`, `region`, and `volumes` |
-| `status` | `ready` once the snapshot can be forked or restored |
-| `createdAt` | When the snapshot was captured |
-
-Creating a snapshot with a name that is already taken in the workspace fails with a `409` error. Delete the existing snapshot first, or pick another name.
+A snapshot outlives the sandbox it was captured from: it stays usable, and forkable, after that sandbox is deleted.
 
 ## Create a snapshot
 
-Capture a snapshot from the sandbox you want to checkpoint. The name you pass identifies the snapshot in your whole workspace.
+Capture a snapshot from the sandbox you want to checkpoint. Snapshot names are unique across your workspace, and creating a snapshot with a name that is already taken fails with a `409` error.
 
 <CodeGroup>
 
@@ -56,7 +41,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
 
 </CodeGroup>
 
-The same snapshot can be created at workspace level, by passing the object to capture as `source`:
+You can also create a snapshot without retrieving the sandbox first, by passing it as `source`:
 
 <CodeGroup>
 
@@ -92,34 +77,8 @@ curl -X POST https://api.blaxel.ai/v0/snapshots \
 </CodeGroup>
 
 <Note>
-  `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with a name already used in the workspace. Use `POST /snapshots` with a `source` to choose the name. `source.kind` defaults to `sandbox`, the only kind of object you can capture today.
+  `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with an existing one. Use `POST /snapshots` with a `source` to choose the name.
 </Note>
-
-## Retrieve a snapshot
-
-<CodeGroup>
-
-```typescript TypeScript
-import { Snapshot } from "@blaxel/core";
-
-const snapshot = await Snapshot.get("my-snapshot");
-console.log(snapshot.source.name, snapshot.source.deleted);
-```
-
-```python Python
-from blaxel.core import Snapshot
-
-snapshot = await Snapshot.get("my-snapshot")
-print(snapshot.source.name, snapshot.source.deleted)
-```
-
-```bash HTTP API
-curl https://api.blaxel.ai/v0/snapshots/my-snapshot \
-  -H "Authorization: Bearer $BL_API_KEY" \
-  -H "X-Blaxel-Workspace: my-workspace"
-```
-
-</CodeGroup>
 
 ## List snapshots
 
@@ -149,7 +108,7 @@ curl https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
 
 </CodeGroup>
 
-Listing at workspace level returns every snapshot, including the ones whose source sandbox no longer exists:
+List all your snapshots to also get the ones whose source sandbox no longer exists:
 
 <CodeGroup>
 
@@ -180,15 +139,7 @@ bl get snapshots
 
 </CodeGroup>
 
-The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter:
-
-```bash
-curl 'https://api.blaxel.ai/v0/snapshots?limit=50&q=my-snapshot' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
-```
-
-Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`. For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter. Refer to the [API reference documentation](/api-reference/introduction#pagination) for how to page through the results.
 
 ## Restore a sandbox to a snapshot
 
@@ -412,7 +363,7 @@ The fork starts with the new environment already applied, so processes you launc
 
 ## Delete a snapshot
 
-There is a single snapshot object, so deleting it removes it for the whole workspace, whether you delete it from the sandbox it was captured from or at workspace level.
+Deleting a snapshot from the sandbox it was captured from, or by its name, does the same thing: the snapshot is gone.
 
 <CodeGroup>
 
@@ -448,21 +399,9 @@ bl delete snapshot my-snapshot
 
 Deleting a snapshot is the only thing that removes it. Snapshots have no expiration, and Blaxel never prunes them for you.
 
-## Snapshot lifecycle and sandbox deletion
+## Snapshots and sandbox deletion
 
-Deleting a sandbox does not delete its snapshots. They stay in your workspace, keep their names, and stay forkable. The only visible change is on the link back to the source, whose `deleted` field becomes `true`:
-
-```json
-{
-  "name": "my-snapshot",
-  "status": "ready",
-  "source": {
-    "kind": "sandbox",
-    "name": "my-sandbox",
-    "deleted": true
-  }
-}
-```
+Deleting a sandbox does not delete its snapshots. They keep their names and stay forkable, with `source.deleted` set to `true` to tell you their sandbox is gone.
 
 <Warning>
   Snapshots keep consuming storage after their source sandbox is deleted, and they count against your workspace snapshot quota. Delete the snapshots you no longer need. Refer to [quotas](/Security/Quotas) for the limits that apply to your workspace.
