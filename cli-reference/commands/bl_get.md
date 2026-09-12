@@ -15,6 +15,7 @@ A "resource" in Blaxel refers to any deployable or manageable entity:
 - functions/mcp: Model Context Protocol servers (tool providers)
 - jobs: Batch processing tasks
 - sandboxes: Isolated execution environments
+- snapshots: Point-in-time captures a sandbox or application can be created from
 - applications: Application deployments with revision-based traffic management
 - models: AI model configurations
 - policies: Access control policies
@@ -80,6 +81,12 @@ The command can list all resources of a type or get details for a specific one.
   # List pre-built MCP servers from the Hub
   bl get mcp-hub
   bl get mcp-hub -o json
+
+  # List snapshots in the workspace
+  bl get snapshots
+
+  # Get a specific snapshot by id (from bl get snapshots)
+  bl get snapshot 6f1c2e3a-8b4d-4c2e-9f0a-1d2e3f4a5b6c
 
   # Monitor sandbox status
   bl get sandbox my-sandbox --watch
@@ -158,6 +165,7 @@ The command can list all resources of a type or get details for a specific one.
 * [bl get previewtokens](/cli-reference/commands/bl_get_previewtokens)	 - List all previewtokens or get details of a specific one
 * [bl get sandbox-hub](/cli-reference/commands/bl_get_sandbox-hub)	 - List pre-built sandbox images available in the Blaxel Hub
 * [bl get sandboxes](/cli-reference/commands/bl_get_sandboxes)	 - List all sandboxes or get details of a specific one
+* [bl get snapshots](/cli-reference/commands/bl_get_snapshots)	 - List all snapshots or get details of a specific one
 * [bl get templates](/cli-reference/commands/bl_get_templates)	 - List available project templates
 * [bl get volumes](/cli-reference/commands/bl_get_volumes)	 - List all volumes or get details of a specific one
 * [bl get volumetemplates](/cli-reference/commands/bl_get_volumetemplates)	 - List all volumetemplates or get details of a specific one
