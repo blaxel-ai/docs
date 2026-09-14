@@ -71,22 +71,22 @@ The format of Blaxel's configuration file is described below.
 # maxRetries = 0
 
 # volumes (optional, for resource type="agent", "sandbox", "volume-template", "job")
-# attaches persistent storage to the resource
-# the resource must be pinned to the same region as the volume
+# attaches persistent or ephemeral storage to the resource
+# for persistent volumes, the resource must be pinned to the same region as the volume
 # [[volumes]]
-# volume name
+# volume name (for persistent volumes, the name of an existing volume)
 # name = "my-volume"
 
-# volume type (only for resource type="job")
-# possible values: ["ephemeral"]
+# volume type
+# possible values: ["persistent", "ephemeral"]
+# "persistent" (default) is valid for resource type="agent" and "sandbox"
+# "ephemeral" is valid for resource type="sandbox" and "job"
 # type = "ephemeral"
 
 # volume mount path
-# for resource type="agent" and "sandbox", attaches persistent storage
-# for resource type="job", attaches ephemeral storage
 # mountPath = "/data"
 
-# volume size in MB (only valid for resource type="job" and volume type="ephemeral")
+# volume size in MB (required for volume type="ephemeral", ignored otherwise)
 # sizeMb = 10240
 
 # volume templates directory (only valid for resource type="volume-template")
