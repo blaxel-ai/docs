@@ -1,7 +1,7 @@
 ---
-title: 'Snapshots and forking'
-sidebarTitle: 'Snapshots & forking'
-description: 'Create point-in-time snapshots of sandboxes, roll a sandbox back to a checkpoint, and fork a sandbox or a snapshot into a new sandbox.'
+title: "Snapshots and forking"
+sidebarTitle: "Snapshots & forking"
+description: "Create point-in-time snapshots of sandboxes, roll them back to a checkpoint, and fork them into new sandboxes."
 tag: "private preview"
 ---
 
@@ -41,7 +41,7 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
 
 </CodeGroup>
 
-You can also create a snapshot without retrieving the sandbox first, by passing it as `source`:
+You can also create a snapshot directly through the snapshot API, by passing the name of the sandbox to snapshot as `source`:
 
 <CodeGroup>
 
