@@ -13,15 +13,7 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
 
 The [OpenAI Agents API integration reference](/Integrations/OpenAI-Agents-API) covers running OpenAI-hosted agents in Blaxel Sandboxes, keeping files on Agent Drive, and reconnecting workers through a webhook handler. It includes credentials, shared files for agent teams, lifecycle rules, configuration, and cleanup. The cookbook currently requires Agents API preview access.
 
-</Update>
-
-<Update label="2026-09-09">
-
-### Forking a sandbox no longer leaves a snapshot behind
-
-[Forking a sandbox into a new sandbox](/Sandboxes/Fork#fork-a-sandbox) now copies the source's live state straight into the fork, instead of snapshotting the source first and creating the fork from that snapshot. No snapshot is created, persisted, or listed under the source sandbox, and the fork's `snapshotId` in the response is empty.
-
-Pass a `snapshotId` to fork from a checkpoint you took earlier, as before. Forking into an application still records a snapshot, since the application revision references it so you can re-activate that revision later.
+Follow the [tutorial](/Tutorials/OpenAI-Agents-API) to run the public cookbook, hand files to a fresh agent, coordinate parallel specialists, and verify a replacement worker reads the previous worker's files.
 
 </Update>
 
@@ -30,6 +22,14 @@ Pass a `snapshotId` to fork from a checkpoint you took earlier, as before. Forki
 ### Herdr sandbox tutorial
 
 The [Herdr tutorial](/Tutorials/Herdr) walks through running a coding agent in a persistent Blaxel sandbox, reconnecting to its session, opening a private application preview, and applying reviewed changes to a local Git worktree. It includes an invoice summary example and static screenshots of the dashboard and apply workflow.
+
+</Update>
+
+<Update label="2026-09-04">
+
+### Snapshots as workspace resources
+
+[Snapshots](/Sandboxes/Fork) have their own name and API at workspace level. A snapshot outlives the sandbox it was captured from, and carries the configuration needed to fork it into a new sandbox or application once its source is gone.
 
 </Update>
 
