@@ -212,6 +212,7 @@
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",
+                  "Security/Baseten-managed-workspaces",
                   "Security/Service-accounts"
                 ]
               },
