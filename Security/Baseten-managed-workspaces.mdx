@@ -1,0 +1,75 @@
+---
+title: 'Baseten managed workspaces'
+description: 'Connect your Baseten organization to a managed Blaxel workspace and manage access and account settings.'
+---
+
+Signing in with Baseten connects you to the Blaxel workspace for your Baseten organization. Baseten is the source of truth for organization membership, while Blaxel provides the workspace where your team runs resources.
+
+## Organization and account mapping
+
+Each Baseten organization maps to one dedicated Blaxel workspace and one dedicated Blaxel account.
+
+The Blaxel account is created for the organization. It holds the managed workspace and its account-level settings, including usage, quotas, and billing. Blaxel creates a new account upon login. Your existing account, if you have one, is not used.
+
+<Note>
+  A Baseten managed account can only contain its managed workspace. You cannot create another workspace in that account or delete the managed workspace from Blaxel.
+</Note>
+
+## Connect your organization
+
+A Baseten organization admin must sign in once before anyone else in the organization can use Blaxel.
+
+- Open the [Blaxel Console](https://app.blaxel.ai)
+- Select Continue with Baseten
+- Sign in as a Baseten organization admin
+
+<img src="/img/security/baseten-continue-with-baseten.png" alt="Blaxel login page showing the Continue with Baseten button" />
+
+During this first sign-in, Blaxel identifies the admin's Baseten organization, provisions its managed account and workspace, and gives the admin Blaxel workspace admin access. Each later Baseten sign-in connects the user to the workspace mapped to their organization.
+
+If provisioning does not finish, an organization admin can sign in again to retry it. A non-admin cannot create the workspace. They must wait for a Baseten organization admin to initialize the account first.
+
+## Access and roles
+
+Blaxel checks the user's Baseten organization membership every time they sign in with Baseten. It grants the corresponding Blaxel workspace role and updates a role that changed in Baseten.
+
+| Baseten organization role | Blaxel workspace role | Access |
+| --- | --- | --- |
+| Admin | Admin | Full workspace access, except member management, which stays in Baseten |
+| Creator | Member | Standard member access to workspace resources |
+
+If a user joins a different Baseten organization, their next Baseten sign-in connects them to the new organization's Blaxel workspace. Blaxel removes their access to any previous Baseten managed workspace during that sign-in.
+
+## Add members
+
+Add people to the Baseten organization, not to the Blaxel workspace. Follow the [Baseten access-control documentation](https://docs.baseten.co/organization/access) to invite or change organization members.
+
+- Sign in to [Baseten](https://app.baseten.co) and add the user to your organization as an admin or creator
+- Have the user open the Blaxel Console and select Continue with Baseten
+
+Blaxel automatically gives the user access to the organization's managed workspace when they sign in. Do not invite the user from the Blaxel workspace team page, CLI, or API. Blaxel rejects membership changes there because they would not be reflected in Baseten.
+
+## Remove members
+
+Remove the user from the Baseten organization first. Follow the [Baseten access-control documentation](https://docs.baseten.co/organization/access) to manage organization members. This prevents them from signing in to the managed workspace with Baseten, and Blaxel removes stale managed-workspace access if the user later attempts a Baseten sign-in.
+
+To complete offboarding immediately, manually delete the user's Blaxel workspace access on the Blaxel side. This deletion is not an immediate reverse sync from Baseten. Managed workspace membership cannot be edited from the Blaxel Console, CLI, or API, so contact [Blaxel support](mailto:support@blaxel.ai) to remove the access manually. For standard Blaxel workspaces, see [Remove a member](/Security/Workspace-access-control#remove-a-member).
+
+<Warning>
+  Removing a user from Baseten does not delete their Blaxel user identity. Remove their Baseten membership and request the manual Blaxel access deletion when you need access revoked immediately.
+</Warning>
+
+## Manage the Blaxel account
+
+The first Baseten admin to initialize the organization becomes the owner of its Blaxel account. That ownership is separate from the Baseten workspace role. Later Baseten admins receive Blaxel workspace admin access when they sign in, but they do not automatically become Blaxel account admins or replace the account owner.
+
+The Blaxel account owner can manage account-level settings and add Blaxel account admins when others need to manage those settings. Changing a user's role or removing them in Baseten changes their workspace access on their next Baseten sign-in. It does not transfer Blaxel account ownership.
+
+<CardGroup cols={2}>
+  <Card title="Workspaces, users and roles" href="/Security/Workspace-access-control">
+    Learn about access control for standard Blaxel workspaces.
+  </Card>
+  <Card title="Quotas and usage" href="/Security/Quotas">
+    Review account-level quotas, credits, and usage analytics.
+  </Card>
+</CardGroup>
