@@ -1,7 +1,7 @@
 ---
 title: 'Blaxel Skills & MCP'
 icon: 'robot'
-description: 'Configure Codex, Cursor, Claude Code, Windsurf, or other AI coding assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
+description: 'Connect Claude, Codex, Cursor, Claude Code, Windsurf, or other AI assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
 ---
 
 Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
@@ -110,6 +110,31 @@ For clients without OAuth support, provide your [API key](/Security/Access-token
 
 #### Installation
 
+<Accordion title="Claude.ai and Claude Desktop">
+  You need a Claude account, a Blaxel account, and access to a Blaxel workspace. Custom connectors are available on individual Claude accounts as well as Team and Enterprise plans. Organization policies can restrict which connectors you can add.
+
+  <Steps>
+    <Step title="Add the connector">
+      In Claude, open Customize → Connectors and select Add custom connector.
+      Enter `Blaxel` as the name and `https://api.blaxel.ai/v0/mcp` as the remote MCP server URL.
+    </Step>
+    <Step title="Use automatic OAuth setup">
+      Leave OAuth Client ID and OAuth Client Secret blank. Keep Individual sign-in enabled if Claude shows that option.
+    </Step>
+    <Step title="Sign in to Blaxel">
+      Add the connector and select Connect if prompted. Complete Blaxel sign-in and review the authorization screen before continuing back to Claude.
+    </Step>
+    <Step title="Verify a read operation">
+      Enable Blaxel in a conversation and ask: "Use Blaxel to list the agents in workspace YOUR_WORKSPACE_NAME."
+      Replace `YOUR_WORKSPACE_NAME` with your workspace name. Confirm that the response identifies resources from that workspace.
+    </Step>
+  </Steps>
+
+  Available actions depend on your Blaxel workspace role. Service-account management requires an admin or owner. Review the workspace and resource names before approving write actions. Starting a batch job returns execution details; it does not wait for the execution to finish.
+
+  If your account has several workspaces, name the intended workspace in your request. To reconnect after an authorization error, open the connector in Claude's Connectors settings and complete sign-in again.
+</Accordion>
+
 ##### Codex
 
 Add the hosted server. Codex detects OAuth support and starts the sign-in flow:
@@ -144,11 +169,7 @@ bearer_token_env_var = "BLAXEL_MCP_API_KEY"
 claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp
 ```
 
-Then sign in:
-
-```bash
-claude mcp login blaxel
-```
+Start Claude Code, run `/mcp`, select `blaxel`, and follow the authentication prompts in your browser.
 
 To use an API key instead, set the headers when you add the server:
 

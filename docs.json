@@ -658,6 +658,10 @@
     {
       "source": "/cli-reference/blaxel_apply",
       "destination": "/cli-reference/commands/bl_apply"
+    },
+    {
+      "source": "/Agents/Run-an-agent",
+      "destination": "/Agents/Query-agents"
     }
   ]
 }
