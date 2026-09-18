@@ -5515,8 +5515,9 @@ paths:
       - drives
   /drives/{driveName}:
     delete:
-      description: Deletes a drive immediately. The drive record is removed from the
-        database synchronously.
+      description: Starts the deletion of a drive. The drive is marked DELETING and
+        its storage is wiped asynchronously; the drive disappears from listings once
+        the cleanup completes.
       operationId: DeleteDrive
       parameters:
       - in: path
@@ -5531,10 +5532,13 @@ paths:
               schema:
                 properties:
                   message:
-                    example: Drive deleted successfully
+                    example: Drive deletion started
                     type: string
                   name:
                     example: my-drive
+                    type: string
+                  status:
+                    example: DELETING
                     type: string
                 type: object
           description: successful operation
