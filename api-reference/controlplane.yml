@@ -1803,8 +1803,8 @@ components:
             $ref: '#/components/schemas/Env'
         generation:
           type: string
-          description: 'Infrastructure generation: mk2 (containers, 2-10s cold starts)
-            or mk3 (microVMs, sub-25ms cold starts)'
+          description: Infrastructure generation. Jobs always run on mk3 (microVMs);
+            any value sent on input is ignored.
           enum:
           - mk2
           - mk3
