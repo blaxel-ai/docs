@@ -422,6 +422,33 @@ sandbox = await SandboxInstance.create({
 
 For a complete example of using iptables to run Tailscale inside a sandbox, see the [Tailscale tutorial](/Tutorials/Tailscale).
 
+### Creation timeout and retries
+
+Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call fails with a `CREATION_TIMEOUT` error.
+
+When `timeout` is set, you can also set `retry` to start fresh creation attempts after a timeout. Each attempt uses the same configuration and the same deadline. Only creation timeouts are retried: any other error is thrown immediately.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists(
+  {
+    name: "my-sandbox",
+    image: "blaxel/base-image:latest",
+    memory: 4096,
+    region: "us-pdx-1",
+  },
+  {
+    timeout: 30, // fail the attempt if the sandbox is not ready after 30 seconds
+    retry: 2,    // optional; start up to 2 new attempts after a timeout
+  }
+);
+```
+
+<Note>
+  `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it. `retry` requires `timeout` to be set and defaults to 0. These options are currently available in the TypeScript SDK.
+</Note>
+
 ### Expiration
 
 Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions.
