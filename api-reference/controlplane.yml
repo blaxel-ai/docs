@@ -3170,6 +3170,25 @@ components:
           description: Total size of the archive being restored in bytes, absent when
             the store did not announce it (read-only)
           readOnly: true
+    SandboxCreationOptions:
+      type: object
+      description: Optional Hub template settings applied by the console without additional
+        sandbox creation lookups.
+      properties:
+        extraArgs:
+          maxProperties: 8
+          type: object
+          description: Kernel selection arguments copied into runtime.extraArgs. At
+            most 8 entries.
+          additionalProperties:
+            type: string
+        volumes:
+          maxItems: 5
+          type: array
+          description: Volume attachments included in the creation request. At most
+            5 attachments per template.
+          items:
+            $ref: '#/components/schemas/VolumeAttachment'
     SandboxDefinition:
       type: object
       description: Pre-configured sandbox template available in the Sandbox Hub for
@@ -3185,6 +3204,8 @@ components:
           type: boolean
           description: If the definition is coming soon
           example: false
+        creationOptions:
+          $ref: '#/components/schemas/SandboxCreationOptions'
         description:
           type: string
           description: Description of the definition
@@ -3450,7 +3471,9 @@ components:
         extraArgs:
           type: object
           description: 'Extra arguments for kernel selection. Supported keys: ''iptables'',
-            ''nfs'' (mk3.0), ''tun'' (mk3.1). Values: ''enabled'' or ''disabled''.
+            ''nfs'' (mk3.0), ''tun'' and ''android'' (mk3.1). The android variant
+            includes tun and iptables and cannot be combined with nfs. Android requests
+            are rejected if routing selects mk3.0. Values: ''enabled'' or ''disabled''.
             Determines which kernel variant the workload runs on. Immutable after
             creation.'
           additionalProperties:
