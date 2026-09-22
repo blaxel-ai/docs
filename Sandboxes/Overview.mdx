@@ -422,31 +422,38 @@ sandbox = await SandboxInstance.create({
 
 For a complete example of using iptables to run Tailscale inside a sandbox, see the [Tailscale tutorial](/Tutorials/Tailscale).
 
-### Creation timeout and retries
+### Creation timeout
 
-Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call fails with a `CREATION_TIMEOUT` error.
+Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call throws a `SandboxCreationTimeoutError`.
 
-When `timeout` is set, you can also set `retry` to start fresh creation attempts after a timeout. Each attempt uses the same configuration and the same deadline. Only creation timeouts are retried: any other error is thrown immediately.
+Because the sandbox has already been removed, its name is free again and you can safely start the creation over. Catch the error with `isCreationTimeoutError()` and retry with your own policy:
 
 ```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { SandboxInstance, isCreationTimeoutError } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.createIfNotExists(
-  {
-    name: "my-sandbox",
-    image: "blaxel/base-image:latest",
-    memory: 4096,
-    region: "us-pdx-1",
-  },
-  {
-    timeout: 30, // fail the attempt if the sandbox is not ready after 30 seconds
-    retry: 2,    // optional; start up to 2 new attempts after a timeout
+const config = {
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+};
+
+let sandbox: SandboxInstance | undefined;
+for (let attempt = 1; attempt <= 3 && !sandbox; attempt++) {
+  try {
+    // Fail this attempt if the sandbox is not ready after 30 seconds
+    sandbox = await SandboxInstance.createIfNotExists(config, { timeout: 30 });
+  } catch (error) {
+    if (!isCreationTimeoutError(error)) throw error; // any other error is not retried
+    console.warn(`Sandbox creation timed out (attempt ${attempt}), retrying...`);
   }
-);
+}
 ```
 
+`SandboxCreationTimeoutError` exposes `code` (`"CREATION_TIMEOUT"`), `status` (`408`), `sandboxName` and `timeout` so you can log or branch on the failure.
+
 <Note>
-  `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it. `retry` requires `timeout` to be set and defaults to 0. These options are currently available in the TypeScript SDK.
+  `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it. This option is currently available in the TypeScript SDK.
 </Note>
 
 ### Expiration
