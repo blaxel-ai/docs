@@ -424,9 +424,11 @@ For a complete example of using iptables to run Tailscale inside a sandbox, see 
 
 ### Creation timeout
 
-Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call throws a `SandboxCreationTimeoutError`.
+Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call raises a `SandboxCreationTimeoutError`.
 
-Catch the error with `isCreationTimeoutError()` to handle a slow creation explicitly, for example by reporting it to the user or falling back to another region:
+Catch that error to handle a slow creation explicitly, for example by reporting it to the user or falling back to another region:
+
+<CodeGroup>
 
 ```typescript TypeScript
 import { SandboxInstance, isCreationTimeoutError } from "@blaxel/core";
@@ -451,10 +453,30 @@ try {
 }
 ```
 
-`SandboxCreationTimeoutError` exposes `code` (`"CREATION_TIMEOUT"`), `status` (`408`), `sandboxName` and `timeout` so you can log or branch on the failure. The sandbox has already been removed when the error is thrown, so its name is free again if you decide to create it again.
+```python Python
+from blaxel.core import SandboxCreationTimeoutError, SandboxInstance
+
+try:
+    sandbox = await SandboxInstance.create_if_not_exists(
+        {
+            "name": "my-sandbox",
+            "image": "blaxel/base-image:latest",
+            "memory": 4096,
+            "region": "us-pdx-1",
+        },
+        timeout=30,  # fail if the sandbox is not ready after 30 seconds
+    )
+except SandboxCreationTimeoutError as error:
+    # The sandbox was removed: log, alert, or fall back to another region.
+    print(f"Sandbox {error.sandbox_name} was not ready after {error.timeout}s")
+```
+
+</CodeGroup>
+
+`SandboxCreationTimeoutError` exposes the error code (`"CREATION_TIMEOUT"`), the HTTP status (`408`), the sandbox name and the requested `timeout` so you can log or branch on the failure (`code`/`status`/`sandboxName` in TypeScript, `code`/`status_code`/`sandbox_name` in Python, where it is a subclass of `SandboxAPIError`). The sandbox has already been removed when the error is raised, so its name is free again if you decide to create it again.
 
 <Note>
-  `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it. This option is currently available in the TypeScript SDK.
+  `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it.
 </Note>
 
 ### Expiration
