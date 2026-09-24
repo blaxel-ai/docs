@@ -1335,6 +1335,25 @@ components:
           description: List of tags available for this image.
           items:
             $ref: '#/components/schemas/ImageTag'
+    ImageSummary:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+        spec:
+          $ref: '#/components/schemas/ImageSummarySpec'
+      required:
+      - metadata
+      - spec
+    ImageSummarySpec:
+      type: object
+      properties:
+        size:
+          type: integer
+          readOnly: true
+        tagCount:
+          type: integer
+          readOnly: true
     ImageTag:
       type: object
       properties:
@@ -6233,18 +6252,45 @@ paths:
       tags:
       - images
     get:
-      description: Returns all container images stored in the workspace registry,
-        grouped by repository with their available tags. Images are created during
-        deployments of agents, functions, sandboxes, and jobs.
+      description: Returns paginated image summaries starting with API version 2026-09-22.
+        Older versions return a bare array including all tags.
       operationId: ListImages
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+      - in: query
+        name: limit
+        schema:
+          default: 50
+          maximum: 100
+          type: integer
+      - in: query
+        name: sort
+        schema:
+          type: string
+      - description: Case-sensitive name prefix. Selects name order.
+        in: query
+        name: q
+        schema:
+          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Image'
-                type: array
+                properties:
+                  data:
+                    items:
+                      $ref: '#/components/schemas/ImageSummary'
+                    type: array
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - meta
+                type: object
           description: successful operation
       security:
       - OAuth2:
@@ -6343,15 +6389,21 @@ paths:
       tags:
       - images
     get:
-      description: Returns detailed information about a container image including
-        all available tags, creation dates, and size information.
+      description: Returns a bounded image summary starting with API version 2026-09-22.
+        Older versions return the image with all tags.
       operationId: GetImage
+      parameters:
+      - description: Owner workspace for an account-shared image.
+        in: query
+        name: sourceWorkspace
+        schema:
+          type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Image'
+                $ref: '#/components/schemas/ImageSummary'
           description: successful operation
       security:
       - OAuth2:
@@ -6500,6 +6552,82 @@ paths:
       required: true
       schema:
         type: string
+  /images/{resourceType}/{imageName}/tags:
+    get:
+      description: Returns a bounded page of image tags. Search by prefix or exact
+        name. Tags are ordered by name only. Send Blaxel-Version 2026-09-22 with image
+        catalog requests.
+      operationId: ListImageTags
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+      - in: query
+        name: limit
+        schema:
+          default: 50
+          maximum: 100
+          type: integer
+      - description: Order by tag name. Creation-time sorting is not supported.
+        in: query
+        name: sort
+        schema:
+          default: name:asc
+          enum:
+          - name:asc
+          - name:desc
+          type: string
+      - description: Case-sensitive name prefix. Selects name order.
+        in: query
+        name: q
+        schema:
+          type: string
+      - description: Exact tag name, mutually exclusive with q.
+        in: query
+        name: name
+        schema:
+          type: string
+      - description: Owner workspace for an account-shared image.
+        in: query
+        name: sourceWorkspace
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      $ref: '#/components/schemas/ImageTag'
+                    type: array
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - meta
+                type: object
+          description: A page of tags
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: List image tags
+      tags:
+      - images
+    parameters:
+    - in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
   /images/{resourceType}/{imageName}/tags/{tagName}:
     delete:
       description: Deletes a specific tag from a container image. The underlying image
@@ -6513,6 +6641,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Image'
           description: successful operation
+        "204":
+          description: Tag deleted (API version 2026-09-22 and later).
         "400":
           description: tag is in use
         "404":
