@@ -1,15 +1,15 @@
 ---
 title: Generations
-description: "Overview of Blaxel infrastructure generations from Mark 1 through Mark 3.1."
+description: "Overview of Blaxel infrastructure generations from Mark 1 through Carbon."
 ---
 
 Blaxel workloads run on one of several infrastructure generations, described below from most to least recent.
 
-## Mark 3.1
+## Carbon (a.k.a. Mark 3.1)
 
-Mark 3.1 is the newest Blaxel infrastructure generation. Currently in private preview, it's built directly as an evolution of Mark 3.0: same microVM foundation, same SDK, CLI, and REST surface. It supports many more features than 3.0, including a layer for manually snapshotting and forking sandboxes.
+Carbon is the newest Blaxel infrastructure generation. Currently in private preview, it's built directly as an evolution of Mark 3.0: same microVM foundation, same SDK, CLI, and REST surface. It supports many more features than 3.0, including a layer for manually snapshotting and forking sandboxes.
 
-On Mark 3.0, a sandbox is already snapshotted automatically and invisibly whenever it goes into standby, which is what makes its near-instant resume possible. Mark 3.1 exposes that same underlying mechanism directly, so you can:
+On Mark 3.0, a sandbox is already snapshotted automatically and invisibly whenever it goes into standby, which is what makes its near-instant resume possible. Carbon exposes that same underlying mechanism directly, so you can:
 
 * **Manually snapshot** a sandbox's full memory state (filesystem and running processes) at any point in time, independent of the standby cycle, so you can roll back to that exact state later.
 * **Fork a sandbox**, creating a new sandbox that inherits another one's exact memory state — either its current live state or a previously saved snapshot. Useful for branching a session, exploring several execution paths in parallel, or reproducing an issue from a known checkpoint.
@@ -17,7 +17,7 @@ On Mark 3.0, a sandbox is already snapshotted automatically and invisibly whenev
 
 See [Snapshots and forking](../Sandboxes/Fork) for the full API reference.
 
-Mark 3.1 is currently in private preview and is rolling out progressively by region and by workspace, so it isn't yet the default everywhere. A few Mark 3.0 features aren't yet available together with Mark 3.1:
+Carbon is currently in private preview and is rolling out progressively by region and by workspace, so it isn't yet the default everywhere. A few Mark 3.0 features aren't yet available together with Carbon:
 * Agent Drive
 * Firewalling
 * Dedicated egress IPs
