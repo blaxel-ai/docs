@@ -11,7 +11,7 @@ tag: 'public preview'
 Domain filtering lets you control which external domains a sandbox can reach. You can define an allowlist (only listed domains are reachable) or a denylist (all domains except listed ones are reachable). Domain filtering and proxy routing are **independent configurations** — you do not need to duplicate domains across both. A domain can appear in the allowlist without having a proxy routing rule, and vice versa.
 
 <Warning>
-  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore these variables will not be filtered. Routing-level enforcement is planned for a future release.
+  Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore proxy environment variables will not be filtered unless [domain filter enforcement](#domain-filter-enforcement) is enabled.
 </Warning>
 
 ## Allowlist
@@ -172,6 +172,44 @@ Forbidden rules always take precedence over allow rules. An empty `allowedDomain
 ## Backward compatibility
 
 Plain-domain entries behave exactly as before, so existing configurations keep working without changes. The method, path, and negation syntax is opt-in: put the richer strings into the same `allowedDomains` and `forbiddenDomains` arrays. There are no new fields.
+
+## Domain filter enforcement
+
+By default, domain filtering depends on the sandbox's tools respecting `HTTP_PROXY` and `HTTPS_PROXY`. To enforce filtering even for tools that bypass those variables, add a `firewall` config with `rulesets: ["proxy"]`. This locks down the sandbox's egress at the network level so that all outbound traffic must flow through the proxy.
+
+<CodeGroup>
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "enforced-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    firewall: { rulesets: ["proxy"] },
+    allowedDomains: ["httpbin.org"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "enforced-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "firewall": {"rulesets": ["proxy"]},
+        "allowedDomains": ["httpbin.org"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+</CodeGroup>
+
+<Note>
+  Firewall rulesets can only be set when the sandbox is created; changing them on an existing sandbox is rejected. Enforcement is not enabled automatically when a proxy is configured — you must opt in with the `firewall` config. Firewalled sandboxes run on Mark 3.0 infrastructure; this feature is not yet available on [Carbon (Mark 3.1)](../Infrastructure/Gens#carbon-aka-mark-31).
+</Note>
 
 ## Firewall + proxy combined
 

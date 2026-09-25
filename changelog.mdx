@@ -7,6 +7,14 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-09-25">
+
+### Network-level domain filter enforcement
+
+Sandboxes can now enforce [domain filtering](/Sandboxes/Proxy-domains#domain-filter-enforcement) at the network level with `network.firewall: { rulesets: ["proxy"] }`, so traffic from tools that ignore `HTTP_PROXY`/`HTTPS_PROXY` is still filtered. Available on Mark 3.0 infrastructure.
+
+</Update>
+
 <Update label="2026-09-10">
 
 ### OpenAI Agents API on Blaxel
