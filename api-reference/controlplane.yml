@@ -4413,6 +4413,12 @@ components:
         given_name:
           type: string
           description: Workspace user given name
+        mfa_enabled:
+          type: boolean
+          description: Whether the user has at least one verified MFA factor. Omitted
+            when the caller is not entitled to see it (only workspace admins and owners
+            see other members' MFA status) and for pending invitations, which have
+            no account yet.
         role:
           type: string
           description: Workspace user role
@@ -6300,31 +6306,53 @@ paths:
       tags:
       - images
     post:
-      description: Builds a container image without creating a deployment. Returns
-        a presigned URL for uploading source code. After upload, the image will be
-        built and stored in the registry, but no agent, function, sandbox, or job
-        will be created or updated.
+      description: Builds or imports a container image without creating a deployment.
+        Provide a registry image reference to download and convert an existing image,
+        or omit image to receive a presigned URL for uploading source code. Registry
+        imports can specify memoryMb and volumeMb for the import worker. These settings
+        do not change the resources of workloads using the image.
       operationId: CreateImage
       requestBody:
         content:
           application/json:
             schema:
               properties:
+                dockerConfig:
+                  description: Docker configuration JSON containing credentials for
+                    the source registry.
+                  type: string
                 generation:
                   description: Runtime generation (e.g., mk3). Defaults to mk3 if
                     not specified.
                   type: string
                 image:
                   description: A pre-built Docker image reference (e.g., docker.io/myorg/myimage:latest).
-                    When provided, the build step is skipped and the image is used
-                    directly as the source for the resource runtime.
+                    References with a registry hostname start an asynchronous import
+                    that downloads and converts the image for the resource runtime.
                   type: string
+                memoryMb:
+                  description: Memory for the registry import worker in MiB. Only
+                    supported when image is a registry reference. When omitted, the
+                    platform default is used.
+                  example: 16384
+                  maximum: 32768
+                  minimum: 1
+                  type: integer
                 name:
                   description: Name of the image to build
                   type: string
                 resourceType:
                   description: Resource type (agent, function, sandbox, job)
                   type: string
+                volumeMb:
+                  description: Temporary scratch disk for the registry import worker
+                    in MiB. Only supported when image is a registry reference. When
+                    omitted, the platform default is used. Set to 0 to use memory-backed
+                    scratch. Positive values are not supported for HIPAA workspaces.
+                  example: 32768
+                  maximum: 131072
+                  minimum: 0
+                  type: integer
               required:
               - resourceType
               - name
