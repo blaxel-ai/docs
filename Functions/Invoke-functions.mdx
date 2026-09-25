@@ -119,7 +119,7 @@ tools = await bl_tools(['blaxel-search'])
 Add the MCP server to MCP-aware applications and tools. This section has instructions for some popular applications.
 
 <Note>
-You must provide your [Blaxel API key](../Security) in the `Authorization` header. If you have access to multiple workspaces, include the workspace header as well.
+Blaxel MCP endpoints do not support OAuth. Use bearer-token authentication only. You must provide your [Blaxel API key](../Security) in the `Authorization` header. If you have access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`

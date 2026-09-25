@@ -1,0 +1,149 @@
+---
+title: 'Give an OpenAI agent a computer and keep its work'
+sidebarTitle: 'OpenAI Agents API'
+description: 'Create a report with an OpenAI-hosted agent on Blaxel, inspect the result, and let a fresh session review the saved file through Agent Drive.'
+---
+
+Run an OpenAI-hosted agent on a Blaxel computer to turn a source report into a summary. Then use Agent Drive to let a fresh agent review the saved file after the first computer is deleted.
+
+## Prerequisites
+
+- Python 3.11 through 3.14 and Git
+- An OpenAI project with Agents API access and two keys in the same organization, project, and owner:
+  - `OPENAI_API_KEY`, the project key. It stays with your application.
+  - `OPENAI_EXECUTOR_API_KEY`, a separate restricted executor key created in the same project by the same owner. It is required in every agent mode and is the only OpenAI key passed to worker Sandboxes.
+- A Blaxel workspace, using an [installed Blaxel CLI](/cli-reference/introduction) with `bl login`, or provided as `BL_WORKSPACE` and `BL_API_KEY` ([API keys](/Security/Access-tokens#api-keys))
+- Public PyPI access to install the cookbook dependencies with `./run.sh`
+
+Agent Drive access in `us-was-1` is optional for the first run and required for the optional fresh-session handoff.
+
+<Info>
+  The Agents API is a public beta. This walkthrough uses the public `openai` package and `client.beta.agents`. It is separate from the [OpenAI Agents SDK tutorial](/Tutorials/OpenAI-Agents-SDK).
+</Info>
+
+Create `OPENAI_API_KEY` on the [API keys page](https://platform.openai.com/api-keys) with Agents read/write and Responses write permissions. Create a separate `OPENAI_EXECUTOR_API_KEY` on the [Agents environment-key page](https://platform.openai.com/agents?tab=environments&environment_view=keys), in the same organization, project, and user or service account as the session. Set all other permissions to None. The environment key permits connecting the executor only; a generic restricted API key with List models access does not establish that permission.
+
+Both keys are required. Missing or identical keys fail before a worker is provisioned. The application key stays outside workers; only the environment key is passed as `CODEX_API_KEY` to `codex exec-server`. Follow the [OpenAI self-hosted setup](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted#authentication) for the current dashboard flow.
+
+These examples create hosted resources and invoke a model. Your local script creates a session and a computer, runs the file task, verifies the result, and deletes the temporary resources.
+
+## 1. Configure and run the cookbook
+
+```bash
+git clone https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook.git
+cd blaxel-openai-agents-api-cookbook
+
+export OPENAI_API_KEY='<openai-project-key>'
+export OPENAI_EXECUTOR_API_KEY='<openai-environment-key>'
+export BL_WORKSPACE='<blaxel-workspace>'
+export BL_API_KEY='<blaxel-api-key>'
+
+./run.sh
+```
+
+<Note>
+  The default `auto` mode uses Agent Drive when available. Set `BL_AGENT_DRIVE_MODE=off` before the run for completely disposable storage.
+</Note>
+
+The launcher creates a virtual environment and installs public dependencies. The source is a fictional billing incident with counts, owners, deadlines, and a missing-data caveat. The agent reads `sample_report.txt` and writes `summary.md`.
+
+OpenAI manages the agent session. Blaxel supplies the computer that runs its commands. The executor connects outbound to OpenAI; the first run requires no webhook deployment or public worker port.
+
+## 2. Open your summary
+
+Open the printed `outputs/<run-id>/summary.md` path in your editor. Check how the agent summarizes the failures, assigns follow-up work, and handles the missing-data caveat.
+
+The script verifies file use before saving the local copy. It also confirms that its new turn completed and both temporary resources were deleted. These are selected output lines; the run also prints the local output and retained Drive paths:
+
+```text
+final status: idle
+confirmed generated file .../summary.md
+verified deletion of OpenAI session sess_...
+verified deletion of Blaxel sandbox openai-agents-api-...
+```
+
+Generated analysis still needs your judgment. The automated check confirms that the agent recovered a fresh verification marker from the source file.
+
+| Resource | After the run |
+| --- | --- |
+| OpenAI session and Blaxel computer | Deleted and verified absent or terminated |
+| Local summary | Retained in `outputs/<run-id>/summary.md` |
+| Agent Drive files | Retained when Drive is enabled |
+
+Without Agent Drive access, the baseline uses temporary storage and still saves your local summary before deleting the computer.
+
+## 3. Continue in a fresh session
+
+Agent Drive becomes most useful when another agent continues from an explicit file instead of copied conversation history.
+
+```bash
+./run.sh --handoff
+```
+
+This command runs the full two-stage example; an earlier baseline run is not required. The first session writes `summary.md`, then its session and Sandbox are deleted. A fresh session and Sandbox mount the same Drive, read that file, and write `review.md`:
+
+```text
+session A + Sandbox A -> summary.md -> deleted
+                                   |
+session B + Sandbox B -> review.md -> deleted
+```
+
+Both `summary.md` and `review.md` remain in the same Agent Drive run directory. The second agent must read the original verification marker before its review passes.
+
+<Info>
+  Agent Drive shares inspectable files. It does not copy model memory, conversation history, or session state.
+</Info>
+
+Open `outputs/<run-id>/summary.md` and `outputs/<run-id>/review.md` from this run. Both local copies share the original run's directory.
+
+The handoff requires Agent Drive in `us-was-1`. It refuses `BL_AGENT_DRIVE_MODE=off` and reports an access or region error when persistence is unavailable.
+
+## 4. Adapt the task
+
+Replace `sample_report.txt` with your own document. Change the first agent's prompt and output check in `main.py`, and the follow-up task in `handoff.py`. Keep a check tied to your input so a completed turn alone cannot pass as useful work.
+
+The cookbook keeps session creation, computer setup, the task, verification, and cleanup visible. The baseline uses one session and computer. Handoff adds a second pair only after the first is gone.
+
+### Prompt your coding agent
+
+After configuring the credentials above, you can give a coding agent this task:
+
+```text
+Clone https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook.git and read AGENTS.md.
+
+Check that Python 3.11 through 3.14, OPENAI_API_KEY, a distinct OPENAI_EXECUTOR_API_KEY, and Blaxel credentials are configured. Do not print or save secrets. Stop before creating resources if a prerequisite is missing.
+
+Run ./run.sh without changing source. Open its local outputs/<run-id>/summary.md, report what the agent produced, and confirm that the OpenAI session and worker were deleted. If Agent Drive is available, run ./run.sh --handoff, open the summary and review from that run, and verify that a fresh session and computer continued from the saved file after the first pair was deleted.
+
+Report the local output paths, retained Drive, and cleanup result. If a run fails, use its documented recovery path and report the exact failure. Do not patch source, resend uncertain input, deploy webhooks, or touch unrelated resources.
+```
+
+## 5. Review cleanup
+
+The scripts delete their temporary sessions and computers. Local files in `outputs/` and files on Agent Drive are retained intentionally. Inspect or export the Drive's files before deleting it.
+
+For an interrupted run, use the exact printed receipt from the same Blaxel workspace and endpoint:
+
+```bash
+.venv/bin/python cleanup_run.py .runs/<run-id>.json
+```
+
+Recovery preserves local output and Agent Drive. Verify session and worker deletion in its result. Keep the receipt if cleanup fails; a computer's expiration time is a backstop, not confirmation of cleanup.
+
+### Troubleshooting
+
+| Symptom | Next action |
+| --- | --- |
+| Missing key or executor permission error | Check the separate application/environment keys and their organization, project, and owner |
+| Agent Drive unavailable | Follow the printed access link; use `BL_AGENT_DRIVE_MODE=off` for the baseline or obtain access for handoff |
+| Installation or connection fails | Read the reported process error and exact worker identity; check the cookbook's tested versions |
+| Input submission times out | Inspect the recorded session; do not blindly resend input that may already have been accepted |
+| Cleanup fails or the target differs | Keep the receipt, select its original workspace and endpoint, and run recovery |
+
+## Resources
+
+<Card title="OpenAI Agents API integration reference" href="/Integrations/OpenAI-Agents-API">Review credentials, storage policy, execution modes, and lifecycle behavior.</Card>
+
+<Card title="Cookbook and optional examples" href="https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook">Adapt the baseline, or explore the separate team and webhook guides.</Card>
+
+<Card title="Agent Drive" href="/Agent-drive/Overview">Configure persistent files and access permissions.</Card>

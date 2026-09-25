@@ -1,0 +1,223 @@
+---
+title: 'Sandbox schedules'
+sidebarTitle: 'Schedule'
+description: 'Run a command inside a Blaxel sandbox on a recurring cron schedule, a future datetime, or after a delay, with execution history per run.'
+---
+
+Schedules run a process inside a sandbox automatically, without you triggering it from your client. Use them for recurring jobs (a nightly cleanup, a periodic sync), a one-off task at a future time, or a task that runs once after a delay. Each schedule fires a command through the sandbox process API and records the outcome in an execution history.
+
+A sandbox can hold up to 100 schedules.
+
+## Schedule types
+
+Every schedule has a `type` and a `value` that together define when it fires:
+
+- `cron`: recurring. `value` is a 5-field cron expression (e.g. `0 8 * * 1-5` for 8am on weekdays). Cron granularity is one minute.
+- `at`: one-off. `value` is an RFC 3339 datetime (e.g. `2026-07-01T09:00:00Z`). The schedule fires once, then deletes itself.
+- `sleep`: one-off. `value` is a duration from now (e.g. `2h`, `30m`, `7d`). On creation it is resolved to an `at` schedule, so a created `sleep` is returned with `type: at` and a concrete datetime.
+
+One-off schedules (`at` and `sleep`) are removed automatically after they fire. A `cron` schedule keeps firing until you delete it.
+
+## Schedule input
+
+The `input` object configures the process that each firing starts:
+
+| Field | Type | Description |
+|---|---|---|
+| `command` | string | Shell command to run inside the sandbox. Required. |
+| `name` | string | Optional process name, used to look up status and logs. |
+| `env` | object | Environment variables for the process. Values are encrypted at rest and masked in API responses. |
+| `workingDir` | string | Working directory for the command. |
+| `keepAlive` | boolean | Keep the sandbox awake (disable scale-to-zero) while the process runs. Defaults to `true`. |
+| `timeout` | integer | Process timeout in seconds. Defaults to `600`. Set to `0` for no timeout. |
+
+## Create a schedule
+
+Create a recurring schedule on an existing sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const schedule = await sandbox.schedules.create({
+  type: "cron",
+  value: "0 8 * * 1-5",
+  input: {
+    command: "python cleanup.py",
+    env: { TARGET: "staging" },
+  },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+schedule = await sandbox.schedules.create({
+    "type": "cron",
+    "value": "0 8 * * 1-5",
+    "input": {
+        "command": "python cleanup.py",
+        "env": {"TARGET": "staging"},
+    },
+})
+```
+
+```bash REST
+curl -X POST "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "cron",
+    "value": "0 8 * * 1-5",
+    "input": { "command": "python cleanup.py", "env": { "TARGET": "staging" } }
+  }'
+```
+
+</CodeGroup>
+
+Create a one-off task that runs once, 2 hours from now:
+
+<CodeGroup>
+
+```typescript TypeScript
+const schedule = await sandbox.schedules.create({
+  type: "sleep",
+  value: "2h",
+  input: { command: "python report.py" },
+});
+// Returned resolved to type "at" with a concrete datetime
+```
+
+```python Python
+schedule = await sandbox.schedules.create({
+    "type": "sleep",
+    "value": "2h",
+    "input": {"command": "python report.py"},
+})
+# Returned resolved to type "at" with a concrete datetime
+```
+
+```bash REST
+curl -X POST "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{ "type": "sleep", "value": "2h", "input": { "command": "python report.py" } }'
+```
+
+</CodeGroup>
+
+## List and manage schedules
+
+Read, update, and delete schedules by their `id`:
+
+<CodeGroup>
+
+```typescript TypeScript
+// List schedules (one page; iterate with `for await` to walk every page)
+const schedules = await sandbox.schedules.list({ limit: 50 });
+for (const schedule of schedules.data) {
+  console.log(schedule.id);
+}
+
+// Get one by id
+const schedule = await sandbox.schedules.get("schedule-0");
+
+// Update it
+await sandbox.schedules.update("schedule-0", {
+  type: "cron",
+  value: "0 9 * * 1-5",
+  input: { command: "python cleanup.py" },
+});
+
+// Delete it (stops further firings)
+await sandbox.schedules.delete("schedule-0");
+```
+
+```python Python
+# List schedules (one page; use auto_paging_iter() to walk every page)
+schedules = await sandbox.schedules.list(limit=50)
+for schedule in schedules.data:
+    print(schedule.id)
+
+# Get one by id
+schedule = await sandbox.schedules.get("schedule-0")
+
+# Update it
+await sandbox.schedules.update("schedule-0", {
+    "type": "cron",
+    "value": "0 9 * * 1-5",
+    "input": {"command": "python cleanup.py"},
+})
+
+# Delete it (stops further firings)
+await sandbox.schedules.delete("schedule-0")
+```
+
+```bash REST
+# List
+curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+
+# Delete
+curl -X DELETE "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules/schedule-0" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+</CodeGroup>
+
+Deleting a schedule removes it from the underlying scheduler, so no further runs fire.
+
+## Execution history
+
+Each firing records one execution. The `statusCode` is the HTTP status returned when the command was submitted to the sandbox, not the command's own exit code: the scheduler does not wait for the command to finish. A 2xx or 3xx status means the command was accepted.
+
+List the execution history of a sandbox. It returns the runs of every schedule on the sandbox, newest first:
+
+<CodeGroup>
+
+```typescript TypeScript
+const executions = await sandbox.schedules.executions({ limit: 50 });
+
+for await (const execution of executions) {
+  console.log(execution.scheduleId, execution.statusCode, execution.processName);
+}
+```
+
+```python Python
+executions = await sandbox.schedules.executions(limit=50)
+
+async for execution in executions.auto_paging_iter():
+    print(execution.schedule_id, execution.status_code, execution.process_name)
+```
+
+```bash REST
+curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedule-executions" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+</CodeGroup>
+
+Each record carries `scheduleId`, `statusCode`, `executedAt`, and the `processName` used to start the process, so you can look up its logs (see [Log streaming](/Sandboxes/Log-streaming)). History is a ring buffer per schedule: once it reaches `maxExecutions` (default 100), recording a new run drops the oldest.
+
+## Manage from the console
+
+You can create and inspect schedules from the [Blaxel Console](https://app.blaxel.ai), on the **Schedules** tab of a sandbox. The tab lists every schedule with its type, timing, and command, and shows the execution history for each one.
+
+<CardGroup>
+  <Card title="Processes and commands" icon="terminal" href="/Sandboxes/Processes">
+    Execute and manage processes in sandboxes.
+  </Card>
+  <Card title="Log streaming" icon="table-list" href="/Sandboxes/Log-streaming">
+    Access logs generated in a sandbox.
+  </Card>
+  <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
+    Automatically delete sandboxes based on specific conditions.
+  </Card>
+</CardGroup>

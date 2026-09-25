@@ -12,7 +12,7 @@ This tutorial demonstrates by creating a sandbox-aware agent using the [Claude A
 
 - An Anthropic API key, required by Claude Agent SDK. If not, [sign up for an Anthropic account](https://platform.claude.com/) and obtain an API key.
 - A Blaxel account and API key. If not, [sign up for a Blaxel account](https://blaxel.ai) and [obtain an API key](/Security/Access-tokens#api-keys).
-- The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction)
+- The Blaxel CLI. If not, [download and install the Blaxel CLI](../cli-reference/introduction).
 
 ## 1. Install required dependencies
 
@@ -75,7 +75,7 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import express from "express";
 import { SandboxInstance } from "@blaxel/core";
 
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "::";
 const port = parseInt(process.env.PORT || "8000");
 
 const app = express();
@@ -154,7 +154,7 @@ from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, Result
 from blaxel.core import SandboxInstance
 import uvicorn
 
-host = os.getenv("HOST", "0.0.0.0")
+host = os.getenv("HOST", "::")
 port = int(os.getenv("PORT", "8000"))
 
 app = FastAPI()
@@ -230,7 +230,7 @@ This creates a Blaxel sandbox named `my-sandbox` and an agent using the Claude A
 - The sandbox exposes a streamable [HTTP MCP server](/Sandboxes/MCP) at the sandbox's base URL: `https://<SANDBOX_BASE_URL>/mcp`. The base URL can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) under `metadata.url` in the sandbox.
 - The agent exposes an HTTP endpoint at `/query` to accept user requests.
 - The agent's HTTP service is bound to the host and port provided by Blaxel. Blaxel automatically injects these values as `HOST` and `PORT` variables into the runtime environment.
-- The agent configuration includes the sandbox MCP server URL and uses the Blaxel API key as credential to gain access to it (the `Authorization` header).
+- The agent configuration includes the sandbox MCP server URL and uses the Blaxel API key as a credential to gain access to it (the `Authorization` header).
 
 In TypeScript, entrypoints are managed in the `scripts` section of the `package.json` file. Update your `package.json` to ensure that `start` and `dev` scripts are defined in the `scripts` section (TypeScript only).
 
@@ -271,11 +271,11 @@ The following resources will help you go further:
   Complete tutorial for building an agent with Claude Agent SDK and deploying it on Blaxel as a serverless auto-scalable API.
 </Card>
 
-<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="/Agents/Develop-an-agent-ts">
+<Card title="Give compute to your agent with the TypeScript SDK" icon="square-js" href="/Agents/Develop-an-agent-ts">
   Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
 </Card>
 
-<Card title="Give compute to your agent with the Python SDK " icon="python" href="/Agents/Develop-an-agent-py">
+<Card title="Give compute to your agent with the Python SDK" icon="python" href="/Agents/Develop-an-agent-py">
   Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
 </Card>
 

@@ -14,7 +14,11 @@ Blaxel employs two main authentication paradigms: **short-lived tokens** (OAuth)
 
 Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console.
 
-**OAuth tokens** are recommended for security reasons, as their duration is only of 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
+**OAuth tokens** are recommended for security reasons, as their duration is only 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
+
+<Note>
+  A personal API key or personal OAuth login grants access to every [workspace](/Security/Workspace-access-control) your account belongs to, while a service account's API key or client-credentials token only grants access to the single workspace that service account belongs to. If a request fails with a 403 error even though the credential is valid, this usually means the credential doesn't have access to the specified workspace.
+</Note>
 
 ## API keys
 
@@ -28,7 +32,7 @@ API keys can be used in the Blaxel APIs, CLI and SDK.
 2. your machine's environment variables
 3. the local configuration file created when you log in through the CLI (see below)
 
-**To authenticate in the CLI** use this command
+**To authenticate in the CLI**, use this command:
 
 ```bash
 export BL_API_KEY=YOUR-API-KEY
@@ -103,7 +107,7 @@ If you wish to call the Blaxel API directly from a client Web application, you w
 
 The solution is to add authentication middleware between your client application and the Blaxel API. The middleware serves as a secure "translator", which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
 
-This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects it into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
+This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects them into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
 
 Here is a sample implementation of this catch-all route implemented in Next.js:
 
@@ -229,6 +233,10 @@ curl 'https://api.blaxel.ai/v0/models' \
   -H 'X-Blaxel-Authorization: Bearer YOUR_TOKEN'
 ```
 
+<Note>
+  **Common errors**: a missing or incorrect `grant_type` value, or an invalid/missing `client_secret`, both return a `400` error describing the specific parameter that's invalid or missing. Double check the *client ID* and *client secret* were copied correctly — the secret is only shown once at creation and can't be retrieved again.
+</Note>
+
 ### (Advanced) Use OAuth tokens in the APIs
 
 <Note>This section assumes you are a developer experienced with OAuth 2.0. For a simpler guide of how to use short-lived tokens in Blaxel APIs, read the [section on authenticating service accounts](/Security/Access-tokens).</Note>
@@ -244,10 +252,10 @@ Through the endpoints discoverable in the aforementioned URL, you can implement 
 Alternatively, you can retrieve a token using the SDK:
 
 ```tsx
-import { settings } from ´blaxel/core’
+import { settings } from "@blaxel/core"
 
 await settings.authenticate() // Refreshes the token only if needed
 console.log(settings.token)
 ```
 
-*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [is done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*
+*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [are done automatically based on either being authenticated with CLI or using environment variables](../sdk-reference/introduction).*

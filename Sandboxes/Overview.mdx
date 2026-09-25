@@ -4,13 +4,13 @@ sidebarTitle: "Overview"
 description: "Run LLM-generated code in lightweight, sandboxed virtual machines with sub-25ms cold starts, file system, processes, and an MCP server for agents."
 ---
 
-Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
+Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs, making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
 
 They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](./MCP) that makes these capabilities available as tool calls.
 
 ## Sandbox lifecycle
 
-Unlike traditional sandbox infrastructure, Blaxel's standout feature is fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is its fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](/Sandboxes/Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](/Agent-drive/Overview).
 
 <img
   className="block dark:hidden"
@@ -54,9 +54,19 @@ You are not charged for memory while a sandbox is in standby mode. However, you 
   To prevent a sandbox from going into standby, you can use [process keep-alive](./Processes#sandbox-keep-alive), [WebSocket ping/pong messages](./Standby-control) or [other techniques](./Standby-control) to prevent the timeout.
 </Note>
 
+### Archived mode
+
+Standby keeps a sandbox instantly resumable, memory included, and you keep paying for the storage of its snapshot. When a sandbox is not needed for a long time, [archiving](./Archive) it stores the filesystem changes it made over its image and shuts it down: memory is not preserved, and nothing is kept warm for it.
+
+An archived sandbox keeps its name, its configuration, and its preview URLs. Unarchiving it starts the sandbox again from its image and writes the archived filesystem back over it, so you get the same sandbox back with its files. All processes that were running are restarted automatically from their configuration, with new process IDs.
+
+<Note>
+  Archiving differs from standby: standby resumes in milliseconds with memory and processes intact, while unarchiving takes as long as the archived filesystem needs to be written back. Memory is not restored; all processes that were running are restarted automatically. Archiving is also not a [snapshot](./Fork): a snapshot can be forked into other sandboxes, while an archive only ever restores the sandbox it was taken from.
+</Note>
+
 ### Deletion
 
-In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](./Expiration). Starter quotas enforce time-to-live limits (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
 
 <Note>
   Automatic deletion differs from automatic standby (_scale-to-zero_). Deleted sandboxes cannot be recovered, while sandboxes in standby mode can be resumed instantly.
@@ -71,8 +81,13 @@ During the deployment process, the possible sandbox statuses are:
 - `DEPLOYING`: The sandbox deployment is in progress.
 - `DEPLOYED`: The sandbox is ready to use. It is either in active mode or standby mode.
 - `FAILED`: An error occurred during the build or deployment of the sandbox.
+- `DEACTIVATING`: The sandbox is being disabled, either because it was explicitly disabled or because a previous revision is being superseded by a new deployment.
+- `DEACTIVATED`: The sandbox has been disabled and is not accepting connections.
 - `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
 - `DELETING`: A deletion request has been triggered and the deletion is in progress.
+- `ARCHIVING`: The filesystem is being exported to the archive store and the sandbox is about to be shut down.
+- `ARCHIVED`: The filesystem is stored and the sandbox is shut down. [Unarchive](./Archive) it to use it again.
+- `UNARCHIVING`: The sandbox is running again and its archived filesystem is being restored.
 
 <Note>
   `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox image folder.
@@ -91,7 +106,7 @@ Some examples of use cases include:
 
 ### Using the SDKs
 
-Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system), and **443** & **8080** (sandbox API) are reserved by Blaxel.
+Create a new sandbox using the [Blaxel SDK](../sdk-reference/introduction) by specifying a name, image to use, [deployment region](../Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system) and **443** & **8080** (sandbox API) are reserved by Blaxel.
 
 <Accordion title="Learn more about authentication on Blaxel">
 
@@ -240,11 +255,11 @@ It is also possible to build your own [custom images](/Sandboxes/Templates) to c
 
 ### Memory and filesystem
 
-For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly-efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
+For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
 
 Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
 
-To avoid out-of-memory errors or if additional storage is required, one option is to add storage using [volumes](/Sandboxes/Volumes). However, this requires deleting and recreating the sandbox first. In addition, volumes are not as fast as the native in-memory filesystem.
+Use [volumes](/Sandboxes/Volumes) or [Agent Drive](/Agent-drive/Overview) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, while drives can be hot-mounted/-unmounted. Both are slower than the local sandbox filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
 
 ### Ports
 
@@ -305,6 +320,75 @@ You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Con
 # Get sandboxes with specific label (e.g., env=dev)
 bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
 ```
+
+### External ID
+
+External IDs let you tag sandboxes with your own identifier so you can retrieve them later without scanning your entire workspace. Use them to index sandboxes by session ID, user ID, conversation ID, or any caller-owned key.
+
+<Note>
+  Requires `@blaxel/core` ≥ 0.2.93 (TypeScript) or `blaxel` ≥ 0.2.57 (Python).
+</Note>
+
+External IDs are backed by a dedicated database index, making lookups fast regardless of how many sandboxes exist in the workspace.
+
+Rules for `externalId`:
+
+- Max 64 characters, alphanumeric and dashes only (`a-z`, `A-Z`, `0-9`, `-`)
+- Not unique: multiple sandboxes can share the same value
+- Mutable: can be changed after creation
+- Omitting it on update preserves the current value
+
+Set `externalId` in metadata at creation time:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  externalId: "session-abc-123",
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "external_id": "session-abc-123",
+    "region": "us-pdx-1"
+})
+```
+
+</CodeGroup>
+
+Retrieve the most recent non-terminated sandbox matching an external ID:
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.getByExternalId("session-abc-123");
+```
+
+```python Python
+sandbox = await SandboxInstance.get_by_external_id("session-abc-123")
+```
+
+</CodeGroup>
+
+List all sandboxes with a given external ID (paginated, hides terminated sandboxes by default):
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandboxes = await SandboxInstance.list({ externalId: "session-abc-123" });
+```
+
+```python Python
+sandboxes = await SandboxInstance.list(external_id="session-abc-123")
+```
+
+</CodeGroup>
 
 ### Kernel networking
 
@@ -370,46 +454,38 @@ sandbox = await SandboxInstance.get("my-sandbox")
 
 ## List sandboxes
 
-To retrieve all sandboxes in your workspace, use the Management API list endpoint with pagination.
+To retrieve all sandboxes in your workspace, use the built-in SDK pagination helper functions.
 
 <Note>
   Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
 </Note>
 
-Request the first page:
+<CodeGroup>
 
-```bash
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
-```
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
 
-The response includes a `data` array and a `meta` object:
-
-```json
-{
-  "data": [ ... ],
-  "meta": {
-    "hasMore": true,
-    "nextCursor": "...",
-    "total": 312
-  }
+const sandboxes = await SandboxInstance.list({ limit: 50 });
+for await (const sandbox of sandboxes) {
+  console.log(sandbox.metadata?.name);
 }
 ```
 
-Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
 
-```bash
-curl 'https://api.blaxel.ai/v0/sandboxes?limit=50&cursor=NEXT_CURSOR' \
-  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
-  -H 'Blaxel-Version: 2026-04-28'
+async def main():
+    sandboxes = await SandboxInstance.list(limit=50)
+    async for sandbox in sandboxes.auto_paging_iter():
+        print(sandbox.metadata.name)
+
+asyncio.run(main())
 ```
 
-<Tip>
-  For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
-</Tip>
+</CodeGroup>
 
-For more information, refer to the [API reference documentation](/api-reference/introduction#pagination).
+Pagination is also available via the Management API list endpoint. For more information, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
 ## Delete a sandbox
 
@@ -439,7 +515,7 @@ Delete a sandbox by calling:
   ```
 
   </CodeGroup>
-- by calling the instance-level `delete()` method:
+- the instance-level `delete()` method:
 
   <CodeGroup>
 

@@ -1,0 +1,36 @@
+name: OpenAI Agents API docs
+
+on:
+  pull_request:
+    paths:
+      - 'Integrations/OpenAI-Agents-API.mdx'
+      - 'Tutorials/OpenAI-Agents-API.mdx'
+      - '.github/workflows/check-openai-agents-docs.yml'
+      - 'docs.json'
+  push:
+    branches: [main]
+    paths:
+      - 'Integrations/OpenAI-Agents-API.mdx'
+      - 'Tutorials/OpenAI-Agents-API.mdx'
+      - '.github/workflows/check-openai-agents-docs.yml'
+      - 'docs.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Mintlify CLI
+        run: npm install --global mint@4
+      - name: Validate MDX and navigation
+        run: mint validate
+      - name: Check internal links
+        run: mint broken-links

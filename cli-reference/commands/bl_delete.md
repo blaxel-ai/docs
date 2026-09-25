@@ -48,6 +48,9 @@ bl delete [flags]
   bl delete volume vol1 vol2 vol3
   bl delete agent agent1 agent2
 
+  # Delete a snapshot (removed from the workspace, source sandbox untouched)
+  bl delete snapshot 6f1c2e3a-8b4d-4c2e-9f0a-1d2e3f4a5b6c
+
   # Delete a sandbox preview
   bl delete sandbox my-sandbox preview my-preview
 
@@ -105,6 +108,7 @@ bl delete [flags]
 
 * [bl](/cli-reference/commands/bl)	 - Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 * [bl delete agent](/cli-reference/commands/bl_delete_agent)	 - Delete one or more agents
+* [bl delete application](/cli-reference/commands/bl_delete_application)	 - Delete one or more applications
 * [bl delete drive](/cli-reference/commands/bl_delete_drive)	 - Delete one or more drives
 * [bl delete function](/cli-reference/commands/bl_delete_function)	 - Delete one or more functions
 * [bl delete image](/cli-reference/commands/bl_delete_image)	 - Delete images or image tags
@@ -115,6 +119,7 @@ bl delete [flags]
 * [bl delete preview](/cli-reference/commands/bl_delete_preview)	 - Delete one or more previews
 * [bl delete previewtoken](/cli-reference/commands/bl_delete_previewtoken)	 - Delete one or more previewtokens
 * [bl delete sandbox](/cli-reference/commands/bl_delete_sandbox)	 - Delete one or more sandboxes
+* [bl delete snapshot](/cli-reference/commands/bl_delete_snapshot)	 - Delete one or more snapshots
 * [bl delete volume](/cli-reference/commands/bl_delete_volume)	 - Delete one or more volumes
 * [bl delete volumetemplate](/cli-reference/commands/bl_delete_volumetemplate)	 - Delete one or more volumetemplates
 

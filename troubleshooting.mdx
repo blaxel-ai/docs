@@ -1,5 +1,6 @@
 ---
-title: "Troubleshooting"
+title: "Troubleshoot Blaxel deployments, runtime, and CLI errors"
+sidebarTitle: "Troubleshoot common errors"
 description: "Resolve common issues with Blaxel deployments including build failures, runtime errors, connectivity problems, and CLI authentication."
 ---
 
@@ -13,20 +14,20 @@ This page describes common issues and how to troubleshoot them. If your issue is
 
 This error occurs when the application server is either not running inside the sandbox, or is running but binding to `localhost`. In the latter case, it is only reachable inside the sandbox and the external preview URL will not be able to access it.
 
-To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to IP address `0.0.0.0`, so that it listens on all available network interfaces. Once this is done, restart the application server. To avoid IPv4/IPv6 compatibility issues, we recommend using the environment variable `HOST` instead of setting the address to a static value.
+To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to the address provided by the `HOST` environment variable, which Blaxel injects into the sandbox, rather than a static value. Once this is done, restart the application server. If you need a static fallback (for example when running the same code outside a sandbox), use `::` so it listens on all available network interfaces over both IPv4 and IPv6 (use `0.0.0.0` only if you specifically need to restrict the server to IPv4).
 
 For example, in code:
 
 <CodeGroup>
 ```tsx TypeScript
-const host = process.env.HOST || '0.0.0.0';
+const host = process.env.HOST || '::';
 app.listen(3000, host, () => {
   console.log(`Server is running`);
 });
 ```
 
 ```python Python
-host = os.environ.get("HOST", "0.0.0.0")
+host = os.environ.get("HOST", "::")
 app.run(host=host, port=3000)
 ```
 </CodeGroup>
@@ -35,15 +36,21 @@ or at the command line:
 
 <CodeGroup>
 ```tsx TypeScript
-npm run dev -- --host 0.0.0.0
+npm run dev -- --host $HOST
 # or
-npm serve -- --host 0.0.0.0
+npm serve -- --host $HOST
 ```
 
 ```python Python
-python main.py --host 0.0.0.0
+python main.py --host $HOST
 ```
 </CodeGroup>
+
+## Preview URL requests fail on the browser's CORS preflight (OPTIONS) request
+
+This error occurs when calling a preview URL from browser-based JavaScript on a different origin, and the browser's CORS preflight (`OPTIONS`) request doesn't get the expected headers back. It typically shows up as a CORS error in the browser console, and the actual request never reaches your sandbox.
+
+To resolve this error, configure `responseHeaders` on the preview with the appropriate CORS headers. Make sure `Access-Control-Allow-Origin` matches the calling origin exactly, and that `Access-Control-Allow-Headers` includes every custom header your client sends, including any authentication-related headers.
 
 ## Sandbox commands return a `502 Bad Gateway` server error
 
@@ -61,6 +68,16 @@ The sandbox logs will typically contain additional information to identify the r
 Deleting and recreating will cause the current state of the sandbox to be lost.
 </Note>
 
+## Sandbox creation returns a `504 Gateway Timeout`
+
+This error occurs when a sandbox creation request takes longer than CloudFront's edge timeout (approximately 60 seconds) to complete. CloudFront closes the connection to the origin and returns an HTML `504 Gateway Time-out` page rather than a Blaxel JSON error. This does **not** mean sandbox creation failed; the build and deployment continue in the background.
+
+To resolve this error, poll the sandbox's `status` field until it reaches `DEPLOYED` or `FAILED`, using the polling pattern shown in the [custom image deployment guide](/Sandboxes/Templates#4-monitor-deployment-status).
+
+<Note>
+  The TypeScript SDK's `SandboxInstance.create()` handles this automatically by falling back to polling on a 504, so this only needs manual handling when calling the REST API directly or using other language SDKs.
+</Note>
+
 ## Sandbox deployment fails with `STARTUP TCP probe failed` or `DEADLINE_EXCEEDED` error
 
 This error occurs when the server running inside the sandbox is not binding to the correct host and port.
@@ -72,7 +89,7 @@ For example:
 <CodeGroup>
 ```tsx TypeScript
 const port = parseInt(env.PORT || "80");
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "::";
 app.listen(port, host, () => {
   console.log(`Server is running`);
 });
@@ -80,12 +97,12 @@ app.listen(port, host, () => {
 
 ```python Python
 port = os.environ.get("PORT", "80")
-host = os.environ.get("HOST", "0.0.0.0")
+host = os.environ.get("HOST", "::")
 app.run(host=host, port=port)
 ```
 </CodeGroup>
 
-## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code.
+## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code
 
 This error indicates that the maximum memory limit for the account has been reached in the current tier.
 
@@ -108,22 +125,38 @@ To resolve this error, you have two options:
 - Increase the available memory allocation for the sandbox, which also increases the available filesystem storage.
 
     <Note>
-    Increasing memory also increases CPU allocation
+    Increasing memory also increases CPU allocation.
     - 8GB memory = 4 CPU cores
     - 16GB memory = 6 CPU cores
     </Note>
 
-- Add storage using [volumes](/Sandboxes/Volumes). Adding storage requires deleting and recreating the sandbox first.
+- Add storage using [volumes](/Sandboxes/Volumes) when data should live at a specific mount path or persist independently from the sandbox lifecycle. Adding storage requires deleting and recreating the sandbox first.
 
     <Note>
-    Volumes are slower than the in-memory filesystem.
+    Volumes are slower than the in-memory filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for our benchmarks.
     </Note>
+
+## API requests fail with a 403 error even though the credentials are valid
+
+This error occurs when the credentials themselves (API key or OAuth token) are valid, but the user or service account they belong to doesn't have sufficient privileges in the specified workspace.
+
+Two related errors can also occur:
+- A `400` error if the request doesn't specify a workspace at all where one is required.
+- A `400` or `404` error if the credential has access to zero or multiple workspaces and none was specified, since Blaxel can't determine which one to use.
+
+<Note>
+  This is distinct from a `401 Unauthorized` error, which means the [credentials themselves are missing or invalid](/troubleshooting/error-codes).
+</Note>
+
+To resolve this error, first confirm the workspace name in your request matches a workspace you (or the service account) have access to. Also check your [role in that workspace](/Security/Workspace-access-control) and ask a workspace administrator to grant the required role if it's missing or insufficient.
+
+Personal API keys and OAuth logins grant access to every workspace you belong to, while [service account](/Security/Service-accounts) API keys and client-credentials tokens are scoped to a single workspace. Ensure that you're using credentials that are actually valid for the workspace you're targeting.
 
 ## Sandbox commands return a `404 WORKSPACE_NOT_FOUND` error
 
 This error occurs when a [workspace is not provisioned correctly](/troubleshooting/error-codes).
 
-To resolve this error, please contact us for support via [Discord](https://discord.gg/G3NqzUPcHP) or [online contact form](https://blaxel.ai/contact).
+To resolve this error, please contact us for support via [Discord](https://discord.gg/CsWKUZUHFQ) or our [online contact form](https://blaxel.ai/contact).
 
 ## Volume creation fails with a 403 error
 
@@ -133,7 +166,7 @@ This error could occur when:
 - total volume size exceeds maximum allowed total size.
 
 To resolve this error, you can:
-- Enable volumes (if not enabled)
+- Enable volumes (if not enabled).
 - Reduce the size of your volumes.
 - Contact us to increase your volume size limits.
 

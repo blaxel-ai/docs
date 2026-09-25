@@ -26,6 +26,10 @@ The following options are available for sandbox expiry and deletion:
   If these parameters are absent, sandboxes will not be deleted.
 </Note>
 
+<Warning>
+  For `ttl-idle`, "activity" is counted as either a **resume** or a **suspend** — not anything in between. If a sandbox hasn't been in standby since it was last woken up, the idle timer starts from the time of that first wake-up. This means that if your session runs continuously for longer than the idle TTL without going into standby, the sandbox will be deleted once the TTL elapses, even if it is actively in use.
+</Warning>
+
 The sandbox metadata includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
 
 ## Configure sandbox expiry rules at creation
@@ -34,7 +38,7 @@ You can define a sandbox's time-to-live (TTL) configuration at creation time:
 
 <CodeGroup>
 
-```typescript TypeScript {11,12,13,14,15,16,17,18,19,20,21,22,23}
+```typescript TypeScript highlight={11-23}
 import { SandboxInstance } from "@blaxel/core";
 
 // Create a new sandbox
@@ -60,8 +64,7 @@ const sandbox = await SandboxInstance.create({
 });
 ```
 
-
-```python Python {11,12,13,14,15,16,17,18,19,20,21,22,23}
+```python Python highlight={11-23}
 from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
 
 # Create a new sandbox
@@ -108,7 +111,6 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
 ```
 
-
 ```python Python
 from blaxel.core import SandboxInstance
 
@@ -132,7 +134,6 @@ await SandboxInstance.updateLifecycle("my-sandbox", {
   ]
 });
 ```
-
 
 ```python Python
 from blaxel.core import SandboxInstance
@@ -165,7 +166,6 @@ import { SandboxInstance } from "@blaxel/core";
 const sandbox = await SandboxInstance.updateTtl("my-sandbox", null);
 ```
 
-
 ```python Python
 from blaxel.core import SandboxInstance
 
@@ -185,7 +185,6 @@ import { SandboxInstance } from "@blaxel/core";
 // Remove all expiration policies
 await SandboxInstance.updateLifecycle("my-sandbox", null);
 ```
-
 
 ```python Python
 from blaxel.core import SandboxInstance

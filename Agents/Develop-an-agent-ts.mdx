@@ -24,7 +24,7 @@ In the generated folder, you'll find a standard server in the entrypoint file `i
 
 ### Requirements & limitations
 
-Agents Hosting have few requirements or limitations:
+Agents Hosting has few requirements or limitations:
 
 - The only requirement to deploy an app on Agents Hosting is that it exposes an HTTP API server which is bound on `HOST` (for the host) and `PORT` (for the port). **These two environment variables are required for the host+port combo.**
     - You can use [express](https://expressjs.com/), [fastify](https://fastify.dev/), [FastAPI](https://fastapi.tiangolo.com/), etc. for this.
@@ -52,11 +52,11 @@ const model = await blModel("Model-name-on-Blaxel");
 
 The model is automatically converted to your chosen framework's format based on the `FRAMEWORK_NAME` specified in the import.
 
-Available frameworks :
+Available frameworks:
 
-- [LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html) : `langgraph`
-- [LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool) : `llamaindex`
-- [VercelAI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling) : `vercel`
+- [LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.language_models_chat_models.BaseChatModel.html): `langgraph`
+- [LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool): `llamaindex`
+- [VercelAI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling): `vercel`
 - [Mastra](https://mastra.ai/docs/reference/agents/createTool): `mastra`
 
 For example, to connect to model `my-model` in a *LlamaIndex* agent:
@@ -79,7 +79,7 @@ await blTools(['Tool-Server-name-on-Blaxel'])
 
 Like for a model, the retrieved tools are automatically converted to the format of the framework you want to use based on the Blaxel SDK package imported. Available frameworks are `langgraph` ([LangChain/LangGraph](https://v03.api.js.langchain.com/classes/_langchain_core.tools.StructuredTool.html)), `llamaindex` ([LlamaIndex](https://ts.llamaindex.ai/docs/llamaindex/modules/tool)), `vercel` ([Vercel AI](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling)) and `mastra` ([Mastra](https://mastra.ai/docs/reference/agents/createTool)).
 
-You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which make maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
+You can develop agents by **mixing tools defined locally in your agents, and tools defined as remote servers**. Using separated tools prevents monolithic designs which makes maintenance easier in the long run. Let's look at a practical example combining remote and local tools. The code below uses two tools:
 
 1. `blaxel-search`: A remote tool server on Blaxel providing web search functionality (learn how to create your own MCP servers [here](../Functions/Create-MCP-server))
 2. `weather`: A local tool that accepts a city parameter and returns a mock weather response (always "sunny")

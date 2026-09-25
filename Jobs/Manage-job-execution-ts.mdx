@@ -124,6 +124,23 @@ console.log(execution.status)
 - Overrides apply only to the current execution
 </Note>
 
+### Reject immediately when capacity is unavailable
+
+By default, when your workspace is at its capacity limit, a new execution is accepted, queued, and retried in the background until capacity frees up. Set `allowQueue: false` to instead check capacity synchronously at creation time and get an immediate error if the execution cannot start right now:
+
+```typescript
+const executionId = await job.createExecution({
+  tasks: [{}],
+  allowQueue: false,
+});
+```
+
+<Note>
+- `allowQueue` omitted or `true`: the execution is queued and retried in the background (default behavior)
+- `allowQueue: false`: the request returns a 429 error if capacity is unavailable right now, or a 400 error if the request can never fit within the workspace quota
+- On rejection, no execution is created and nothing is queued, so there is nothing to poll or clean up
+</Note>
+
 ### Complete example
 
 Here is a complete example:

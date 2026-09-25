@@ -1,5 +1,6 @@
 ---
-title: "Best practices"
+title: "Sandbox best practices"
+sidebarTitle: "Best practices"
 description: "Recommended practices for sandbox lifecycle management, scale-to-zero behavior, persistent storage, agent architecture, and MCP server design."
 ---
 
@@ -9,7 +10,7 @@ Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up an
 
 **Treat sandboxes as persistent computers**, rather than thinking of them as ephemeral runtimes that must be wiped clean after every interaction. Just as your laptop isn't reformatted every time you close the lid, you shouldn't destroy a sandbox's state simply because a session ended. Blaxel Sandboxes are designed to maintain persistent storage and system state, allowing agents to retain context, shell history, and installed dependencies indefinitely.
 
-The most efficient way to manage lifecycle is to let the sandbox suspend automatically when idle, rather than explicitly destroying it. Auto-suspend happens automatically after 15s inactivity. Resuming a standby sandbox is orders of magnitude faster than cold-booting a new box and re-running setup scripts (like `npm install` or `apt-get`). By relying on suspension, you ensure that when an agent returns (whether in ten minutes or ten weeks) the environment is restored exactly as it was left, enabling a seamless instant resume experience that saves both time and compute costs.
+The most efficient way to manage lifecycle is to let the sandbox suspend automatically when idle, rather than explicitly destroying it. Auto-suspend happens automatically after 15s of inactivity. Resuming a standby sandbox is orders of magnitude faster than cold-booting a new box and re-running setup scripts (like `npm install` or `apt-get`). By relying on suspension, you ensure that when an agent returns (whether in ten minutes or ten weeks) the environment is restored exactly as it was left, enabling a seamless instant resume experience that saves both time and compute costs.
 
 <Note>
   The definition of a session is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for 7-60 days -- see down below.
@@ -34,12 +35,18 @@ Here's a table to help you decide:
 |   | Sandbox Filesystem |  Volume |  Agent Drive |
 |---|---|---|---|
 | Persistence | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
-| Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated)
+| Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated) |
 | Access type | Single | Single | Multiple |
 | Hot-attach | N/A | No | Yes |
 | Interface | POSIX | POSIX | POSIX + S3 |
-| Size | ~50% of sandbox memory | User-defined at creation, expandable | No size limit |
+| Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
 | Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
+
+Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+<Note>
+  There is no built-in way to bulk-sync files between a sandbox and your local machine. Instead, use [`sandbox.fs.download()`](/Sandboxes/Filesystem#download-file-to-host) for single files, or the zip-upload-unzip pattern in the next section for bulk transfers.
+</Note>
 
 ## Upload many files efficiently
 
@@ -87,6 +94,8 @@ The TypeScript example uses the `adm-zip` package; any zip library works. The ex
 
 For small file sets, `writeTree()` (TypeScript) / `write_tree()` (Python) in the [filesystem API](/Sandboxes/Filesystem) writes multiple files in one batched call and is simpler. Use the zip pattern when the file count is large enough that per-call latency dominates.
 
+If the resulting zip archive exceeds 5 MB, `writeBinary()` / `write_binary()` automatically splits it into multipart uploads. Refer to [the sandbox filesystem documentation](/Sandboxes/Filesystem#write-binary-file) for details.
+
 ## Automate cleanup with TTLs
 
 In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (completed tasks, abandoned user sessions, etc.). These can unnecessarily consume storage and add to your cost.
@@ -101,8 +110,54 @@ The sandbox metadata also includes a read-only parameter, `expiresIn`, that comp
 
 ## Use pagination for sandbox listings
 
-Requesting a list of all sandboxes in a single API call forces the platform to scan the full workspace, which is slow and resource-intensive at scale. Use the `cursor` and `limit` parameters to [retrieve sandboxes in pages](/Sandboxes/Overview#list-sandboxes) instead.
+Requesting a list of all sandboxes in a single API call forces the platform to scan the full workspace, which is slow and resource-intensive at scale. Use the `cursor` and `limit` parameters to [retrieve sandboxes in pages](/Sandboxes/Overview#list-sandboxes) instead. For more information and examples, refer to the [API](/api-reference/introduction#pagination) and [SDK](/sdk-reference/introduction#pagination) reference documentation.
 
+## Index sandboxes with external IDs
+
+When you manage many sandboxes per workspace (hundreds or thousands), retrieving the right one by name alone becomes impractical. You often need to find a sandbox by a caller-owned identifier: a session ID, user ID, or conversation ID from your application.
+
+Use `externalId` to create a fast, indexed lookup without maintaining a separate mapping database. Unlike labels (which require client-side filtering), `externalId` is backed by a dedicated database index and returns results in constant time.
+
+Common patterns:
+
+- **One sandbox per user session**: Tag each sandbox with your session ID. When the user returns, call `getByExternalId` to reconnect to the same environment instantly.
+- **Idempotent provisioning**: Before creating a new sandbox, check if one already exists for your workflow ID. This avoids duplicate sandbox creation in retry scenarios.
+- **Multi-tenant isolation**: Tag sandboxes with tenant or user IDs for quick per-tenant enumeration via `list({ externalId })`.
+
+<CodeGroup>
+
+```typescript TypeScript
+// Reconnect to the user's sandbox, or create one if none exists
+let sandbox = await SandboxInstance.getByExternalId(sessionId);
+if (!sandbox) {
+  sandbox = await SandboxInstance.createIfNotExists({
+    name: uniqueName(),
+    image: "blaxel/base-image:latest",
+    externalId: sessionId,
+    region: "us-pdx-1"
+  });
+}
+```
+
+```python Python
+# Reconnect to the user's sandbox, or create one if none exists
+sandbox = await SandboxInstance.get_by_external_id(session_id)
+if not sandbox:
+    sandbox = await SandboxInstance.create_if_not_exists({
+        "name": unique_name(),
+        "image": "blaxel/base-image:latest",
+        "external_id": session_id,
+        "region": "us-pdx-1"
+    })
+```
+
+</CodeGroup>
+
+<Note>
+  `externalId` is not unique. If multiple live sandboxes share the same value, `getByExternalId` returns the most recently created one. Use `list` with the `externalId` filter to retrieve all matches.
+</Note>
+
+Combine external IDs with [TTL policies](/Sandboxes/Expiration) and [labels](/Sandboxes/Overview#labels) for a complete sandbox management strategy: external IDs for fast lookup, labels for categorization, and TTLs for automatic cleanup.
 
 ## Reduce cold start times with a pre-warmed pool
 

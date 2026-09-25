@@ -1,7 +1,7 @@
 ---
 title: 'Blaxel Skills & MCP'
 icon: 'robot'
-description: 'Configure Cursor, Claude Code, Windsurf, or other AI coding assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
+description: 'Connect Claude, Codex, Cursor, Claude Code, Windsurf, or other AI assistants to manage your Blaxel resources and search the Blaxel docs via MCP.'
 ---
 
 Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
@@ -77,7 +77,7 @@ The Blaxel migration skill is also [available as a ZIP file](https://github.com/
 
 ### MCP server for resource management
 
-Blaxel's MCP server lets compatible AI apps (Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
+Blaxel's MCP server lets compatible AI apps (Codex, Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
 
 Talk with your preferred agent to:
 
@@ -89,20 +89,89 @@ Talk with your preferred agent to:
 
 The MCP server is hosted at `https://api.blaxel.ai/v0/mcp`.
 
-Clients connect over HTTP(S) and stream MCP messages. Authentication is provided via headers.
+Clients connect over HTTPS and stream MCP messages. The server supports OAuth 2.1 sign-in and API key authentication.
+
+##### OAuth
+
+Use OAuth when your client supports it. Your client opens Blaxel sign-in in a browser and stores the resulting token.
+
+The server advertises its authorization server at `https://signin.blaxel.ai`. It supports PKCE with the `S256` challenge method, dynamic client registration, Client ID Metadata Documents, and public clients. Requested scopes are `openid`, `email`, `profile`, and `offline_access`.
 
 ##### Authentication headers
 
-Provide your [API key](Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+For clients without OAuth support, provide your [API key](/Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
 
 - Required: `Authorization: Bearer <APIKEY>`
 - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
 
+<Warning>
+  Store your API key in an environment variable. Do not commit it to a repository.
+</Warning>
+
 #### Installation
+
+<Accordion title="Claude.ai and Claude Desktop">
+  You need a Claude account, a Blaxel account, and access to a Blaxel workspace. Custom connectors are available on individual Claude accounts as well as Team and Enterprise plans. Organization policies can restrict which connectors you can add.
+
+  <Steps>
+    <Step title="Add the connector">
+      In Claude, open Customize → Connectors and select Add custom connector.
+      Enter `Blaxel` as the name and `https://api.blaxel.ai/v0/mcp` as the remote MCP server URL.
+    </Step>
+    <Step title="Use automatic OAuth setup">
+      Leave OAuth Client ID and OAuth Client Secret blank. Keep Individual sign-in enabled if Claude shows that option.
+    </Step>
+    <Step title="Sign in to Blaxel">
+      Add the connector and select Connect if prompted. Complete Blaxel sign-in and review the authorization screen before continuing back to Claude.
+    </Step>
+    <Step title="Verify a read operation">
+      Enable Blaxel in a conversation and ask: "Use Blaxel to list the agents in workspace YOUR_WORKSPACE_NAME."
+      Replace `YOUR_WORKSPACE_NAME` with your workspace name. Confirm that the response identifies resources from that workspace.
+    </Step>
+  </Steps>
+
+  Available actions depend on your Blaxel workspace role. Service-account management requires an admin or owner. Review the workspace and resource names before approving write actions. Starting a batch job returns execution details; it does not wait for the execution to finish.
+
+  If your account has several workspaces, name the intended workspace in your request. To reconnect after an authorization error, open the connector in Claude's Connectors settings and complete sign-in again.
+</Accordion>
+
+##### Codex
+
+Add the hosted server. Codex detects OAuth support and starts the sign-in flow:
+
+```bash
+codex mcp add blaxel --url https://api.blaxel.ai/v0/mcp
+```
+
+To sign in again later, run:
+
+```bash
+codex mcp login blaxel
+```
+
+To use an API key instead, set it in your shell and reference it from `~/.codex/config.toml`:
+
+```bash
+export BLAXEL_MCP_API_KEY="<APIKEY>"
+```
+
+```toml
+[mcp_servers.blaxel]
+url = "https://api.blaxel.ai/v0/mcp"
+bearer_token_env_var = "BLAXEL_MCP_API_KEY"
+```
 
 ##### Claude Code
 
 [Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp
+```
+
+Start Claude Code, run `/mcp`, select `blaxel`, and follow the authentication prompts in your browser.
+
+To use an API key instead, set the headers when you add the server:
 
 ```bash
 claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
@@ -113,6 +182,26 @@ claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
 ##### Cursor
 
 Add the server to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://api.blaxel.ai/v0/mcp"
+    }
+  }
+}
+```
+
+Open Cursor settings, select MCP, then connect `blaxel`. Cursor opens Blaxel sign-in.
+
+Cursor Agent users can start sign-in from a terminal:
+
+```bash
+cursor-agent mcp login blaxel
+```
+
+To use an API key instead, add the headers to the server entry:
 
 ```json
 {
@@ -170,7 +259,9 @@ extensions:
 
 #### Selecting a workspace
 
-If your account has multiple workspaces, set the active workspace by including the `X-Blaxel-Workspace` header. If omitted, your AI app may prompt you to specify one when a tool is invoked.
+Every tool accepts an optional `workspace` argument. Ask your client to use that argument when you want a tool to act on a specific workspace.
+
+If your account has multiple workspaces, you can also set the active workspace by including the `X-Blaxel-Workspace` header. If neither is set, your AI app may prompt you to specify one when a tool is invoked.
 
 #### Example prompts
 
@@ -194,8 +285,8 @@ Prefer using the hosted server at `https://api.blaxel.ai/v0/mcp`. If you must ru
 
 #### Limitations
 
-- The server requires a valid API key.
-- When using multiple workspaces, `X-Blaxel-Workspace` must be provided to disambiguate.
+- The server requires an OAuth sign-in or a valid API key.
+- When using multiple workspaces, set the `workspace` argument or the `X-Blaxel-Workspace` header to disambiguate.
 
 Check out Blaxel MCP server's [source here](https://github.com/blaxel-ai/blaxel-mcp-server).
 
@@ -230,6 +321,23 @@ claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
   }
 }
 ```
+
+### MCP server for sandboxes
+
+Every Blaxel sandbox also exposes its own built-in [MCP server](/Sandboxes/MCP), hosted via streamable HTTP at `https://<SANDBOX_BASE_URL>/mcp`, so agents can operate that specific sandbox directly.
+
+### MCP server hosting
+
+Blaxel also lets you deploy and host your [own MCP servers](/Functions/Overview) as serverless, autoscaling endpoints.
+
+### MCP endpoints at a glance
+
+| Surface | Endpoint pattern | Purpose | Persistence |
+| --- | --- | --- | --- |
+| Resource management | `https://api.blaxel.ai/v0/mcp` | Manage your Blaxel workspace (create/list/delete resources) from a coding assistant | Fixed platform endpoint |
+| Documentation | `https://docs.blaxel.ai/mcp` | Give a coding assistant real-time access to this documentation | Fixed platform endpoint |
+| Per deployed MCP server | `https://run.blaxel.ai/{workspace}/functions/{server-name}/mcp` | Call tools exposed by an MCP server deployed by you | Fixed so long as the function's name is unchanged |
+| Per deployed sandbox | `https://<SANDBOX_BASE_URL>/mcp` | Let an agent operate a sandbox deployed by you | Tied to the sandbox's `name`; fixed across standby/resume. |
 
 ## llms-full.txt
 

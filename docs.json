@@ -7,7 +7,23 @@
     "light": "#FD7B35",
     "dark": "#F0652D"
   },
-  "favicon": "/favicon.webp",
+  "favicon": "/favicon.svg",
+  "banner": {
+    "content": "Blaxel has joined Baseten to build the future of agentic infrastructure! [Read our announcement.](https://www.baseten.co/blog/blaxel-is-joining-baseten-to-build-the-future-of-agentic-cloud/)",
+    "dismissible": true
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "devin",
+      "download-spec"
+    ],
+    "display": "header"
+  },
   "navigation": {
     "global": {
       "anchors": [
@@ -20,6 +36,11 @@
           "anchor": "Blaxel Skills & MCP",
           "icon": "robot",
           "href": "/skills-mcp"
+        },
+        {
+          "anchor": "Community",
+          "icon": "discord",
+          "href": "/Community"
         }
       ]
     },
@@ -32,21 +53,26 @@
             "pages": [
               "Overview",
               "Get-started",
-              "skills-mcp"
+              "skills-mcp",
+              "Community"
             ]
           },
           {
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
-              "Tutorials/OpenAI-Agents-SDK",
               "Sandboxes/Expiration",
               "Sandboxes/Processes",
-              "Sandboxes/Filesystem",
-              "Sandboxes/MCP",
-              "Sandboxes/Codegen-tools",
+              {
+                "group": "File system",
+                "pages": [
+                  "Sandboxes/Filesystem",
+                  "Sandboxes/Codegen-tools"
+                ]
+              },
               "Sandboxes/Log-streaming",
-              "Sandboxes/Variables-and-secrets",
+              "Sandboxes/Fork",
+              "Sandboxes/Archive",
               {
                 "group": "Ports, previews & sessions",
                 "pages": [
@@ -56,6 +82,7 @@
                   "Sandboxes/Standby-control"
                 ]
               },
+              "Sandboxes/Schedules",
               {
                 "group": "Proxy",
                 "pages": [
@@ -66,13 +93,18 @@
               },
               "Sandboxes/Volumes",
               "Sandboxes/Templates",
+              "Sandboxes/Non-root-user",
+              "Sandboxes/Variables-and-secrets",
+              "Sandboxes/MCP",
               "Sandboxes/best-practices"
             ]
           },
           {
             "group": "Agent Drive",
             "pages": [
-              "Agent-drive/Overview"
+              "Agent-drive/Overview",
+              "Agent-drive/Permissions",
+              "Agent-drive/S3-endpoint"
             ]
           },
           {
@@ -107,32 +139,9 @@
             ]
           },
           {
-            "group": "Agents Hosting",
+            "group": "Applications",
             "pages": [
-              "Agents/Overview",
-              "Agents/Quickstart-agent",
-              {
-                "group": "Development guide",
-                "pages": [
-                  "Agents/Develop-an-agent",
-                  "Agents/Develop-an-agent-ts",
-                  "Agents/Develop-an-agent-py"
-                ]
-              },
-              {
-                "group": "Deploy an agent",
-                "pages": [
-                  "Agents/Deploy-an-agent",
-                  "Agents/Deploy-dockerfile",
-                  "Agents/Deploy-multiple"
-                ]
-              },
-              "Agents/Github-integration",
-              "Agents/Query-agents",
-              "Agents/Variables-and-secrets",
-              "Agents/Asynchronous-triggers",
-              "Agents/Integrate-in-apps",
-              "Agents/Volumes"
+              "Applications/Overview"
             ]
           },
           {
@@ -189,6 +198,7 @@
               {
                 "group": "Agent frameworks and tools",
                 "pages": [
+                  "Integrations/OpenAI-Agents-API",
                   "Integrations/AgentMail",
                   "Integrations/Rippletide"
                 ]
@@ -202,6 +212,7 @@
                 "group": "Workspaces and permissions",
                 "pages": [
                   "Security/Workspace-access-control",
+                  "Security/Baseten-managed-workspaces",
                   "Security/Service-accounts"
                 ]
               },
@@ -241,6 +252,7 @@
       {
         "tab": "Tutorials and Examples",
         "pages": [
+          "Tutorials/Overview",
           {
             "group": "Popular templates",
             "pages": [
@@ -265,9 +277,18 @@
                 "group": "OpenAI / Codex",
                 "pages": [
                   "Tutorials/Codex",
+                  "Tutorials/OpenAI-Agents-API",
+                  "Tutorials/OpenAI-Agents-SDK",
                   "Tutorials/OpenAI-Agents-SDK-Deployment"
                 ]
-              }
+              },
+              {
+                "group": "Amp",
+                "pages": [
+                  "Tutorials/Amp"
+                ]
+              },
+              "Examples/Overview"
             ]
           },
           {
@@ -288,6 +309,8 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/DeepSeek-Harness",
+              "Tutorials/Herdr",
               "Tutorials/OpenClaw",
               "Tutorials/Vercel-AI",
               "Tutorials/Mastra",
@@ -298,12 +321,6 @@
               "Tutorials/PydanticAI",
               "Tutorials/n8n",
               "Tutorials/Custom-Agents"
-            ]
-          },
-          {
-            "group": "Complete examples",
-            "pages": [
-              "Examples/Overview"
             ]
           }
         ]
@@ -373,6 +390,7 @@
                   "/cli-reference/commands/bl_connect_sandbox",
                   "/cli-reference/commands/bl_delete",
                   "/cli-reference/commands/bl_delete_agent",
+                  "/cli-reference/commands/bl_delete_application",
                   "/cli-reference/commands/bl_delete_drive",
                   "/cli-reference/commands/bl_delete_function",
                   "/cli-reference/commands/bl_delete_image",
@@ -383,6 +401,7 @@
                   "/cli-reference/commands/bl_delete_preview",
                   "/cli-reference/commands/bl_delete_previewtoken",
                   "/cli-reference/commands/bl_delete_sandbox",
+                  "/cli-reference/commands/bl_delete_snapshot",
                   "/cli-reference/commands/bl_delete_volume",
                   "/cli-reference/commands/bl_delete_volumetemplate",
                   "/cli-reference/commands/bl_deploy",
@@ -394,8 +413,10 @@
                   "/cli-reference/commands/bl_drive_mount",
                   "/cli-reference/commands/bl_drive_mounts",
                   "/cli-reference/commands/bl_drive_unmount",
+                  "/cli-reference/commands/bl_fork",
                   "/cli-reference/commands/bl_get",
                   "/cli-reference/commands/bl_get_agents",
+                  "/cli-reference/commands/bl_get_applications",
                   "/cli-reference/commands/bl_get_drives",
                   "/cli-reference/commands/bl_get_functions",
                   "/cli-reference/commands/bl_get_image",
@@ -408,6 +429,7 @@
                   "/cli-reference/commands/bl_get_previewtokens",
                   "/cli-reference/commands/bl_get_sandbox-hub",
                   "/cli-reference/commands/bl_get_sandboxes",
+                  "/cli-reference/commands/bl_get_snapshots",
                   "/cli-reference/commands/bl_get_templates",
                   "/cli-reference/commands/bl_get_volumes",
                   "/cli-reference/commands/bl_get_volumetemplates",
@@ -447,23 +469,38 @@
   },
   "logo": {
     "light": "/images/logo-light.svg",
-    "dark": "/images/logo-dark.webp"
+    "dark": "/images/logo-dark.svg"
   },
   "navbar": {
     "links": [
       {
         "label": "Changelog",
+        "icon": "calendar",
         "href": "/changelog"
       },
       {
         "label": "Agent Skill",
+        "icon": "robot",
         "href": "/skills-mcp"
+      },
+      {
+        "label": "Community",
+        "icon": "discord",
+        "href": "/Community"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Blaxel Console",
       "href": "https://app.blaxel.ai"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/blaxel-ai",
+      "linkedin": "https://www.linkedin.com/company/blaxel-ai",
+      "twitter": "https://x.com/blaxelai",
+      "discord": "https://discord.gg/CsWKUZUHFQ"
     }
   },
   "description": "Blaxel documentation: cloud sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway for building and deploying AI-powered applications.",
@@ -595,6 +632,22 @@
       "destination": "/Volumes/Volumes-templates"
     },
     {
+      "source": "/Sandboxes/Snapshots",
+      "destination": "/Sandboxes/Fork"
+    },
+    {
+      "source": "/snapshots",
+      "destination": "/Sandboxes/Fork"
+    },
+    {
+      "source": "/Snapshots/Overview",
+      "destination": "/Sandboxes/Fork"
+    },
+    {
+      "source": "/Snapshots/:slug*",
+      "destination": "/Sandboxes/Fork"
+    },
+    {
       "source": "/Sandboxes/Drives",
       "destination": "/Agent-drive/Overview"
     },
@@ -605,6 +658,10 @@
     {
       "source": "/cli-reference/blaxel_apply",
       "destination": "/cli-reference/commands/bl_apply"
+    },
+    {
+      "source": "/Agents/Run-an-agent",
+      "destination": "/Agents/Query-agents"
     }
   ]
 }

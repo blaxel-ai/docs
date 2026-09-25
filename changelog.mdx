@@ -7,19 +7,157 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-09-25">
+
+### Network-level domain filter enforcement
+
+Sandboxes can now enforce [domain filtering](/Sandboxes/Proxy-domains#domain-filter-enforcement) at the network level with `network.firewall: { rulesets: ["proxy"] }`, so traffic from tools that ignore `HTTP_PROXY`/`HTTPS_PROXY` is still filtered. Available on Mark 3.0 infrastructure.
+
+</Update>
+
+<Update label="2026-09-10">
+
+### OpenAI Agents API on Blaxel
+
+The [OpenAI Agents API integration reference](/Integrations/OpenAI-Agents-API) covers running OpenAI-hosted agents in Blaxel Sandboxes, keeping files on Agent Drive, and reconnecting workers through a webhook handler. It includes credentials, shared files for agent teams, lifecycle rules, configuration, and cleanup. The cookbook currently requires Agents API preview access.
+
+Follow the [tutorial](/Tutorials/OpenAI-Agents-API) to run the public cookbook, hand files to a fresh agent, coordinate parallel specialists, and verify a replacement worker reads the previous worker's files.
+
+</Update>
+
+<Update label="2026-09-08">
+
+### Herdr sandbox tutorial
+
+The [Herdr tutorial](/Tutorials/Herdr) walks through running a coding agent in a persistent Blaxel sandbox, reconnecting to its session, opening a private application preview, and applying reviewed changes to a local Git worktree. It includes an invoice summary example and static screenshots of the dashboard and apply workflow.
+
+</Update>
+
+<Update label="2026-09-04">
+
+### Snapshots as workspace resources
+
+[Snapshots](/Sandboxes/Fork) have their own name and API at workspace level. A snapshot outlives the sandbox it was captured from, and carries the configuration needed to fork it into a new sandbox or application once its source is gone.
+
+</Update>
+
+<Update label="2026-09-02">
+
+### DeepSeek Harness sandbox plugin
+
+[`@blaxel/dsh-sandbox`](https://github.com/blaxel-ai/deepseek-harness-blaxel-sandbox) runs DeepSeek Harness filesystem, Bash, and terminal tools inside a Blaxel sandbox while the DSH interface, model requests, and credentials stay on your computer. Move a session to Blaxel and back with a conflict-checked return. See the [tutorial](/Tutorials/DeepSeek-Harness).
+
+</Update>
+
+<Update label="2026-08-14">
+
+### Method and path matching for sandbox egress rules
+
+[Sandbox domain filtering](/Sandboxes/Proxy-domains#method-and-path-patterns) now supports HTTP method, path prefix, wildcard, and negation patterns, letting you restrict outbound access beyond domain-level allowlists and denylists.
+
+</Update>
+
+<Update label="2026-08-13">
+
+### Dynamic value injection in the sandbox proxy
+
+Proxy routing rules can now [generate UUIDs, timestamps, nonces, and other dynamic values](/Sandboxes/Proxy-secrets-injection#dynamic-value-injection) for every request. Inject them into headers and body fields for idempotency keys, request IDs, and other one-time values.
+
+</Update>
+
+<Update label="2026-07-29">
+
+### S3-compatible access for Agent Drive
+
+Every Agent Drive instance now exposes an [S3-compatible endpoint](/Agent-drive/S3-endpoint), so you can access its contents with the AWS CLI, boto3, or the AWS SDK for JavaScript without mounting the drive into a sandbox.
+
+</Update>
+
+<Update label="2026-07-24">
+
+### Sandbox snapshots and forking
+
+Our biggest update since we launched sandboxes!
+
+In private preview, create point-in-time [snapshots of a sandbox](/Sandboxes/Fork), roll back to an earlier checkpoint, or fork its filesystem, running processes, and memory state into a new sandbox.
+
+### Application Runtime
+
+Introducing Application Runtime in private preview for deploying long-running web servers, APIs, dashboards, and other services on stable public endpoints.
+
+</Update>
+
+<Update label="2026-07-19">
+
+### Agent-led onboarding
+
+Added a new agent-led onboarding experience that helps you set up projects and manage Blaxel resources via your coding agent.
+
+</Update>
+
+<Update label="2026-07-14">
+
+### Share custom domains across workspaces
+
+Verified preview custom domains can now be [shared with another workspace](/Infrastructure/Custom-domains#share-a-custom-domain). Shared domains remain read-only in target workspaces and can be used for their sandbox previews.
+
+</Update>
+
+<Update label="2026-07-13">
+
+### Carbon (a.k.a. Mark 3.1) infrastructure
+
+Introducing [Carbon](/Infrastructure/Gens#carbon-aka-mark-31)! The latest iteration of Blaxel's microVM-based infrastructure, in private preview.
+
+Carbon infrastructure enables long-awaited features such as manual snapshotting, forking, and much more!
+
+</Update>
+
+<Update label="2026-06-30">
+
+### Agent Drive permissions
+
+Added support for restricting read/write access to Agent Drive files and folders using [label-based ACL rules](/Agent-drive/Permissions).
+
+</Update>
+
+<Update label="2026-06-30">
+
+### Pagination support in SDKs
+
+Added [pagination support](/sdk-reference/introduction#pagination) for list operations in all SDKs.
+
+### Pagination support in Management API
+
+Added [pagination support](/api-reference/introduction#pagination) for list operations in Management API.
+
+### Sandbox schedules
+
+Run a command inside a sandbox on a [fixed schedule](/Sandboxes/Schedules): recurring cron, at a future date, or after a delay.
+
+</Update>
+
 <Update label="2026-06-19">
 
 ### Clear sandbox TTL and lifecycle policies
 
-The SDKs can now clear a sandbox's expiration rules without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again. See [Clear sandbox expiry rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules).
+The SDKs can now [clear a sandbox's expiration rules](/Sandboxes/Expiration#clear-sandbox-expiry-rules) without recreating it. Pass `null`/`None` (or an empty string for the TTL) to `updateTtl` and `updateLifecycle` to make a sandbox persist again.
 
 </Update>
 
-<Update label="2026-06-13">
+<Update label="2026-06-18">
 
-### Proxy-based firewall support
+### Sandbox runtime telemetry
 
-Sandboxes can now enforce domain filtering at the network level.
+The sandbox API now reports internal errors to Sentry for improved reliability monitoring. All telemetry is anonymized. Opt out via the `--disable-telemetry` flag or by setting `TELEMETRY_ENABLED=false`. See [Sandbox runtime error reporting](/Security/Data-collection-and-privacy#sandbox-runtime-error-reporting).
+
+</Update>
+
+<Update>
+
+### External IDs for sandboxes
+
+Added support for user-supplied external identifiers for sandboxes (your session ID, user ID, or application-related ID). Benefit from a fast, indexed lookup without needing to maintain a separate mapping database.
 
 </Update>
 
@@ -31,7 +169,7 @@ Sandboxes can now enforce domain filtering at the network level.
 <img src="/images/changelog/2026/billing-explorer.webp" alt="New Billing Explorer interface" />
 </Frame>
 
-The Billing Explorer is now available in the Blaxel Console with a refreshed UI and exhaustive filters and cost breakdowns
+The Billing Explorer is now available in the Blaxel Console with a refreshed UI and exhaustive filters and cost breakdowns.
 
 </Update>
 
@@ -926,7 +1064,7 @@ They are powered by our brand-new Mark 3 infrastructure generation that pushes t
 
 - Boot time under 20ms
 - Persistent filesystem across sessions
-- Operable via both [Python/TypeScript SDK](Sandboxes/Overview) and MCP server
+- Operable via both [Python/TypeScript SDK](/Sandboxes/Overview) and MCP server
 
 Sandboxes and Mk 3 infrastructure are currently in private Alpha release. [Contact us](http://blaxel.ai/contact?purpose=sandbox) to get access.
 
@@ -984,7 +1122,7 @@ Added support for PydanticAI framework
 <img src="/images/changelog/2025/sdk010.webp" alt="SDK v0.1.0 release" />
 </Frame>
 
-- Released a new [major version of our SDK](Agents/Develop-an-agent) to give you access to lower-level features:
+- Released a new [major version of our SDK](/Agents/Develop-an-agent) to give you access to lower-level features:
     - host custom MCP servers
     - connect to LLM via Blaxel gateway
     - connect to tools hosted on Blaxel
@@ -1083,7 +1221,7 @@ We are discontinuing Beamlit environments. Stay tuned for an upcoming major upda
 <img src="/images/changelog/2025/pricing.webp" alt="New pricing plans overview" />
 </Frame>
 
-Beamlit officially launched new pricing plans. Learn more about the pricing plans on [our website](https://blaxel.ai/), or login to the [Beamlit console](https://app.blaxel.ai/main/global-agentic-network) to start your free tier or upgrade.
+Beamlit officially launched new pricing plans. Learn more about the pricing plans on [our website](https://blaxel.ai/), or log in to the [Beamlit console](https://app.blaxel.ai/main/global-agentic-network) to start your free tier or upgrade.
 
 </Update>
 
@@ -1120,8 +1258,8 @@ Connect to DeepSeek models from Beamlit
 <img src="/images/changelog/2025/azure-ai-foundry.webp" alt="Azure AI Foundry integration setup" />
 </Frame>
 
-- New [integration](Integrations/Azure-AI-Foundry): **Azure AI Services** (for OpenAI models and others)
-- New [integration](Integrations/Azure-AI-Foundry): **Azure Marketplace** (for Llama models and others)
+- New [integration](/Integrations/Azure-AI-Foundry): **Azure AI Services** (for OpenAI models and others)
+- New [integration](/Integrations/Azure-AI-Foundry): **Azure Marketplace** (for Llama models and others)
 
 </Update>
 
@@ -1133,7 +1271,7 @@ Connect to DeepSeek models from Beamlit
 <img src="/images/changelog/2025/mcp-functions.webp" alt="Pre-built MCP server toolkits" />
 </Frame>
 
-Added 9 new prebuilt templates of [functions](Functions/Overview):
+Added 9 new prebuilt templates of [functions](/Functions/Overview):
 
 - Brave Search
 - Google Maps
@@ -1155,7 +1293,7 @@ Added 9 new prebuilt templates of [functions](Functions/Overview):
 <img src="/images/changelog/2025/chart-token.webp" alt="Token usage cost control chart" />
 </Frame>
 
-New [policy](Model-Governance/Policies) type: maximum token usage
+New [policy](/Model-Governance/Policies) type: maximum token usage
 
 </Update>
 
@@ -1198,7 +1336,7 @@ Beamlit is currently in private alpha. Join our [waitlist for access today](http
 <img src="/images/changelog/2025/chart-latencies.webp" alt="Latency metrics chart" />
 </Frame>
 
-Added a new set of metrics is available for your agents, functions and models: **end-to-end latencies (average, p50, p90, p99)**.
+A new set of metrics is available for your agents, functions and models: **end-to-end latencies (average, p50, p90, p99)**.
 
 Beamlit is currently in private alpha. Join our [waitlist for access today](https://beamlit.com/beta-signup).
 

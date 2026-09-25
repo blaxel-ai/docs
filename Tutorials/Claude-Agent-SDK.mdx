@@ -79,7 +79,7 @@ In your project directory, create a file named `index.ts` (TypeScript) or `main.
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import express from "express";
 
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "::";
 const port = parseInt(process.env.PORT || "8000");
 
 const app = express();
@@ -125,7 +125,7 @@ from fastapi import FastAPI, HTTPException, Request
 from claude_agent_sdk import query, ClaudeAgentOptions
 import uvicorn
 
-host = os.getenv("HOST", "0.0.0.0")
+host = os.getenv("HOST", "::")
 port = int(os.getenv("PORT", "8000"))
 
 app = FastAPI()
@@ -316,11 +316,11 @@ Want more info on developing and deploying agents on Blaxel? Check out the follo
   Deploy a self-hosted Claude Managed Agents environment on Blaxel.
 </Card>
 
-<Card title="Give compute to your agent with the TypeScript SDK " icon="square-js" href="../Agents/Develop-an-agent-ts">
+<Card title="Give compute to your agent with the TypeScript SDK" icon="square-js" href="../Agents/Develop-an-agent-ts">
   Complete tutorial for using the TypeScript SDK to develop an agent using Blaxel services.
 </Card>
 
-<Card title="Give compute to your agent with the Python SDK " icon="python" href="../Agents/Develop-an-agent-py">
+<Card title="Give compute to your agent with the Python SDK" icon="python" href="../Agents/Develop-an-agent-py">
   Complete tutorial for using the Python SDK to develop an agent using Blaxel services.
 </Card>
 

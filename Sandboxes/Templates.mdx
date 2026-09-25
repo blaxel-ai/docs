@@ -143,7 +143,7 @@ PYTHON_ENV = "development"
 ```
 
 <Note>
-  It is not possible to add or update environment variables for a sandbox after it is created. Ensure that any required environment variables are defined in your Dockerfile, your `blaxel.toml` file, or at sandbox creation time using the Blaxel SDKs. See the [variables and secrets](/Sandboxes/Variables-and-secrets) documentation for details.
+  Variables set here apply to every sandbox created from this image. On the new sandbox generation, you can also [update variables on a running sandbox](/Sandboxes/Variables-and-secrets#update-variables-on-an-existing-sandbox) or [give them a new value when you fork a sandbox](/Sandboxes/Fork#fork-with-new-environment-variables). See the [variables and secrets](/Sandboxes/Variables-and-secrets) documentation for details.
 </Note>
 
 ##### 4. Define initialization
@@ -821,7 +821,7 @@ const mlImage = base
 const webImage = base
   .pipInstall("fastapi", "uvicorn", "sqlalchemy")
   .expose(8000)
-  .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0");
+  .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "::");
 
 // Build both independently
 const mlSandbox = await mlImage.build({ name: "ml-sandbox", memory: 16384 });
@@ -847,7 +847,7 @@ web_image = (
     base
     .pip_install("fastapi", "uvicorn", "sqlalchemy")
     .expose(8000)
-    .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0")
+    .entrypoint("python", "-m", "uvicorn", "main:app", "--host", "::")
 )
 
 # Build both independently
@@ -1045,7 +1045,7 @@ HTTP/2 200
 x-blaxel-upload-url: https://controlplane-prod-build-sources...
 ```
 
-Refer to the documentation on [sandbox configuration parameters](#understand-sandbox-configuration) for more information on the body of the POST request.
+Refer to the documentation on [sandbox configuration parameters](/Sandboxes/Overview#understand-sandbox-configuration) for more information on the body of the POST request.
 
 ##### 3. Upload ZIP archive
 
@@ -1079,7 +1079,8 @@ The `status` field of the response will progress through these values:
 | `DEPLOYING` | Container is being deployed to the cluster |
 | `DEPLOYED` | Sandbox is ready to use |
 | `FAILED` | Deployment failed (check build logs) |
-| `DEACTIVATED` | Sandbox has been deactivated |
+
+See [sandbox deployment statuses](/Sandboxes/Overview#sandbox-deployment-statuses) for the full list of statuses a sandbox can report outside of this initial deployment flow.
 
 Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILED`.
 
@@ -1626,10 +1627,10 @@ You can then push or deploy the image using `bl push` or `bl deploy` as usual.
 
 To configure registry credentials, you have three options (listed in priority order):
 
-1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-creds` flag
+1. Pass the credentials inline to `bl push` or `bl deploy` with the `--registry-cred` flag
 
     ```shell
-    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-creds "docker.io=myuser:mypassword"
+    bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox  --registry-cred "docker.io=myuser:mypassword"
     ```
 
 2. Pass the credentials from a different configuration file to `bl push` or `bl deploy` with the `--docker-config` flag
@@ -1700,6 +1701,18 @@ sandbox = await SandboxInstance.create({
 ```
 
 </CodeGroup>
+
+### Run the workload as a non-root user
+
+Everything in a sandbox runs as `root` by default. To scope processes, terminals and filesystem operations to an unprivileged user while the sandbox API keeps the privileges it needs, declare the user in your Dockerfile and enable the feature:
+
+```docker
+RUN adduser -D -u 10001 -h /blaxel app
+USER app
+ENV BL_SANDBOX_USER_ENABLED=true
+```
+
+See [running sandbox workloads as a non-root user](/Sandboxes/Non-root-user) for the entrypoint variant, what stays privileged, and the limitations.
 
 ### Update a custom image
 

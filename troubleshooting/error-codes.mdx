@@ -1,5 +1,5 @@
 ---
-title: "Error codes"
+title: "Error codes reference"
 description: "Reference for structured error codes returned by Blaxel API responses, including the JSON body format and headers designed for LLMs and coding agents."
 ---
 
@@ -49,3 +49,4 @@ Every error has a consistent JSON body and response header, as shown below:
 | `BAD_REQUEST` | 400 | No | Malformed request |
 | `USAGE_LIMIT_EXCEEDED` | 402 | No | Plan quota reached |
 | `POLICY_VIOLATION` | varies | No | Policy rule rejection |
+| `REQUEST_ENTITY_TOO_LARGE` | 413 | No | Request body exceeds [upload limit](/Sandboxes/Filesystem#write-binary-file) |

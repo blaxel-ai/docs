@@ -147,7 +147,7 @@ This approach is ideal for long-running processes where you need to monitor prog
 ```typescript TypeScript
 await sandbox.process.exec({
   name: "streaming-demo",
-  command: "echo 'Starting process'; sleep 2; echo 'Processing...'; sleep 2; echo 'Completed!
+  command: "echo 'Starting process'; sleep 2; echo 'Processing...'; sleep 2; echo 'Completed!'",
   onLog: (log) => {
     console.log(`LOG: ${JSON.stringify(log)}`);
   }
