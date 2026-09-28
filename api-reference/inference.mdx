@@ -56,7 +56,7 @@ Showing the full request, with the input payload:
 <Tab title="Query sandbox">
 
 ```http
-curl -X GET "https://sbx-{your-sandbox}-{your-workspace}.{region}.bl.run/filesystem/tree/etc" \
+curl -X GET "https://sbx-{your-sandbox}-{your-workspace}.{region}.bl.run/filesystem/tree/%2Fetc" \
 -H "Content-Type: application/json" \
 -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>"
 ```
@@ -64,10 +64,12 @@ curl -X GET "https://sbx-{your-sandbox}-{your-workspace}.{region}.bl.run/filesys
 If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
 
 ```http
-curl -X GET "https://sbx-{your-sandbox}-$(bl workspace --current).{region}.bl.run/filesystem/tree/etc" \
+curl -X GET "https://sbx-{your-sandbox}-$(bl workspace --current).{region}.bl.run/filesystem/tree/%2Fetc" \
 -H "Content-Type: application/json" \
 -H "X-Blaxel-Authorization: Bearer $(bl token)"
 ```
+
+`%2Fetc` addresses the absolute path `/etc`. Without the encoded leading slash, `etc` is resolved relative to the filesystem service's working directory. See [Address file paths over HTTP](/Sandboxes/Filesystem#address-file-paths-over-http) for details and multipart upload examples.
 
 </Tab>
 <Tab title="Query agent">

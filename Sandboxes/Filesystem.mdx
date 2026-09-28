@@ -41,6 +41,51 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 </Accordion>
 
+### Address file paths over HTTP
+
+Filesystem paths are part of the URL when you call the sandbox API directly over HTTP. The API resolves a path without a leading slash relative to the filesystem service's working directory. To address an absolute path, URL-encode the leading slash as `%2F`.
+
+For example, if the filesystem working directory is `/app`:
+
+| Request path | Resolved filesystem path |
+| --- | --- |
+| `/filesystem/workspace` | `/app/workspace` |
+| `/filesystem/%2Fworkspace` | `/workspace` |
+
+The CLI's double-slash form, such as `--path /filesystem//workspace`, is the CLI equivalent for an absolute path. For a direct HTTP request, use `%2F` for the leading slash:
+
+```bash
+curl -X GET \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem/%2Fworkspace" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>"
+```
+
+The same rule applies when initiating a multipart upload. The following example starts an upload to the absolute path `/workspace/archive.tar`, uploads one part, and completes the upload. Repeat the part request with increasing `partNumber` values for additional parts, then include every returned `etag` in the completion request.
+
+```bash
+# Initiate an upload to /workspace/archive.tar.
+curl -X POST \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/initiate/%2Fworkspace/archive.tar" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"permissions":"0644"}'
+
+# Use the uploadId returned above to upload each part.
+curl -X PUT \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/<UPLOAD_ID>/part?partNumber=1" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -F "file=@archive.part-1"
+
+# Complete the upload with the etag returned for each part.
+curl -X POST \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/<UPLOAD_ID>/complete" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"parts":[{"partNumber":1,"etag":"<PART_1_ETAG>"}]}'
+```
+
+This URL-encoding requirement applies only when the filesystem path is embedded in an HTTP URL. SDK filesystem methods accept normal paths such as `/workspace`.
+
 ### Create directory
 
 Create a new directory at a specific path in the sandbox:
