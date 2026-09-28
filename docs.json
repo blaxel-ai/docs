@@ -309,6 +309,7 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/OpenShell",
               "Tutorials/DeepSeek-Harness",
               "Tutorials/Herdr",
               "Tutorials/OpenClaw",
