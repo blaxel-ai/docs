@@ -101,6 +101,8 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
+`workingDir` is a JSON request-body field, not a URL path. Pass a normal absolute filesystem path such as `"/workspace"`; do not URL-encode it as `"%2Fworkspace"`. In Python, the equivalent field is `working_dir`.
+
 ### Use process names
 
 When starting a process (running a command), you can specify a **process name**. This lets you interact with the process—such as retrieving logs or process information—without needing to store the process ID on your end.

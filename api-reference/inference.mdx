@@ -69,6 +69,8 @@ curl -X GET "https://sbx-{your-sandbox}-$(bl workspace --current).{region}.bl.ru
 -H "X-Blaxel-Authorization: Bearer $(bl token)"
 ```
 
+`etc` is resolved relative to the filesystem service's working directory. To address the absolute path `/etc`, URL-encode the leading slash as `%2Fetc`. See [Address file paths over HTTP](/Sandboxes/Filesystem#address-file-paths-over-http) for details and multipart upload examples.
+
 </Tab>
 <Tab title="Query agent">
 
