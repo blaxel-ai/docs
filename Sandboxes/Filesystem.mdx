@@ -41,7 +41,48 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 </Accordion>
 
-### Address file paths over HTTP
+### Create directory
+
+Create a new directory at a specific path in the sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.fs.mkdir("/blaxel/app/uploads");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.fs.mkdir("/blaxel/app/uploads")
+```
+
+</CodeGroup>
+
+### List files
+
+List files in a specific path:
+
+<CodeGroup>
+
+```typescript TypeScript
+const { subdirectories, files } = await sandbox.fs.ls("/blaxel/app");
+```
+
+```python Python
+result = await sandbox.fs.ls("/blaxel/app")
+directories = result.subdirectories
+files = result.files
+```
+
+</CodeGroup>
+
+#### Address file paths over HTTP
 
 Filesystem paths are part of the URL when you call the sandbox API directly over HTTP. The API resolves a path without a leading slash relative to the filesystem service's working directory. To address an absolute path, URL-encode the leading slash as `%2F`.
 
@@ -85,47 +126,6 @@ curl -X POST \
 ```
 
 This URL-encoding requirement applies only when the filesystem path is embedded in an HTTP URL. SDK filesystem methods accept normal paths such as `/workspace`.
-
-### Create directory
-
-Create a new directory at a specific path in the sandbox:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-const sandbox = await SandboxInstance.get("my-sandbox");
-
-await sandbox.fs.mkdir("/blaxel/app/uploads");
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-sandbox = await SandboxInstance.get("my-sandbox")
-await sandbox.fs.mkdir("/blaxel/app/uploads")
-```
-
-</CodeGroup>
-
-### List files
-
-List files in a specific path:
-
-<CodeGroup>
-
-```typescript TypeScript
-const { subdirectories, files } = await sandbox.fs.ls("/blaxel/app");
-```
-
-```python Python
-result = await sandbox.fs.ls("/blaxel/app")
-directories = result.subdirectories
-files = result.files
-```
-
-</CodeGroup>
 
 ### Find files and directories
 
