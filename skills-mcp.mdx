@@ -6,11 +6,49 @@ description: 'Connect Claude, Codex, Cursor, Claude Code, Windsurf, or other AI 
 
 Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
 
-1. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP servers on Blaxel using simple prompts, with support for both command-line (CLI) and code-driven (SDK) operations.
-2. The Blaxel **resource management MCP server** lets your coding agent directly manage your Blaxel resources using natural language.
-3. The Blaxel **documentation MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
-4. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
-5. A **native AI assistant** built into this documentation portal.
+1. The Blaxel **plugin** for Claude Code, Codex, and Cursor installs the agent skills and the resource management MCP server together.
+2. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP servers on Blaxel using simple prompts, with support for both command-line (CLI) and code-driven (SDK) operations.
+3. The Blaxel **resource management MCP server** lets your coding agent directly manage your Blaxel resources using natural language.
+4. The Blaxel **documentation MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
+5. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
+6. A **native AI assistant** built into this documentation portal.
+
+## Blaxel plugin
+
+The Blaxel plugin installs the `blaxel-cli` and `blaxel-sdk` [agent skills](#blaxel-skills) and the [resource management MCP server](#mcp-server-for-resource-management) in one step. The MCP server signs you in with OAuth, so no API key goes in your configuration.
+
+Add the Blaxel marketplace first, then install the plugin from it:
+
+<Tabs>
+<Tab title="Claude Code">
+```shell
+claude plugin marketplace add blaxel-ai/agent-skills
+claude plugin install blaxel@blaxel
+```
+
+Then run `/mcp` in Claude Code, select `plugin:blaxel:blaxel`, and sign in to Blaxel in your browser.
+</Tab>
+<Tab title="Codex">
+```shell
+codex plugin marketplace add blaxel-ai/agent-skills
+codex plugin add blaxel@blaxel
+codex mcp login blaxel
+```
+
+The last command opens Blaxel sign-in in your browser.
+</Tab>
+<Tab title="Cursor">
+```shell
+cursor-agent plugin marketplace add https://github.com/blaxel-ai/agent-skills
+```
+
+Then install **Blaxel** from the marketplace in Cursor and approve the Blaxel sign-in prompt.
+</Tab>
+</Tabs>
+
+<Note>
+  In Claude Code, running only the install command fails with `Plugin "blaxel" not found in any configured marketplace`. Add the marketplace first.
+</Note>
 
 ## Agent skills
 
@@ -45,6 +83,8 @@ npx skills add blaxel-ai/agent-skills
 ```
 
 You'll be prompted to choose skills and select your coding agent and installation location.
+
+To install the skills together with the resource management MCP server in Claude Code, Codex, or Cursor, use the [Blaxel plugin](#blaxel-plugin).
 
 The Blaxel skills are also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
 
