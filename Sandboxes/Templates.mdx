@@ -8,6 +8,8 @@ Sandbox images allow you to create customized & reusable sandbox environments. T
 
 Images are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR reviews agent, etc.).
 
+To free storage occupied by images you no longer use, see [clean up unused images](#clean-up-unused-images).
+
 ## What are sandbox images?
 
 Sandbox images are pre-configured container images that serve as blueprints for creating sandboxes. Each image includes:
@@ -1727,6 +1729,26 @@ bl push
 ```
 
 The new revision becomes available while the old one remains accessible.
+
+## Clean up unused images
+
+Use the Blaxel Console to delete unused image tags in bulk and free image storage. This is useful after repeated builds or when you approach your total image-size quota. Check your account's limits on the [Quotas page](https://app.blaxel.ai/account/quotas).
+
+Cleanup applies to the selected workspace, across resource types, not only sandbox images. Image tags referenced by existing resources are kept, including those used by sandboxes on standby. Unused tags can be deleted even when another tag of the same image is still in use.
+
+<Warning>
+  Cleanup permanently deletes unused image tags and cannot be undone. An image pushed with `bl push` but not referenced by a resource can be deleted, even if you plan to use it later. Review any images or old tags you want to keep for future deployments before confirming.
+</Warning>
+
+To clean up images:
+
+1. Open the [Blaxel Console](https://app.blaxel.ai) and select the workspace you want to clean up.
+2. In the sidebar, open Sandboxes > Images. Review the images and their Total size values.
+3. Click Cleanup Unused to open the Cleanup Unused Images dialog.
+4. Review the warning and type `cleanup` in the confirmation field.
+5. Click Cleanup Images to delete unused image tags.
+
+The image list refreshes after cleanup. If image storage is still near your quota, review the remaining images and their tags to identify what you still need. Cleanup does not delete your sandboxes or other resources.
 
 ## Share images across workspaces and accounts
 
