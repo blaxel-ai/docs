@@ -77,7 +77,7 @@ The Blaxel migration skill is also [available as a ZIP file](https://github.com/
 
 ### MCP server for resource management
 
-Blaxel's MCP server lets compatible AI apps (Codex, Cursor, Claude Code, Windsurf, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
+Blaxel's MCP server lets compatible AI apps (Claude, Codex, Claude Code, Cursor, Devin Desktop, Goose, OpenCode, VS Code, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
 
 Talk with your preferred agent to:
 
@@ -163,18 +163,24 @@ bearer_token_env_var = "BLAXEL_MCP_API_KEY"
 
 ##### Claude Code
 
-[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+[Add the remote HTTP server to Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) with user scope, so it is available in all your projects:
 
 ```bash
-claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp
+claude mcp add --scope user --transport http blaxel https://api.blaxel.ai/v0/mcp
 ```
 
-Start Claude Code, run `/mcp`, select `blaxel`, and follow the authentication prompts in your browser.
+Sign in to Blaxel in your browser:
+
+```bash
+claude mcp login blaxel
+```
+
+You can also run `/mcp` in Claude Code, select `blaxel`, and follow the authentication prompts.
 
 To use an API key instead, set the headers when you add the server:
 
 ```bash
-claude mcp add --transport http blaxel https://api.blaxel.ai/v0/mcp \
+claude mcp add --scope user --transport http blaxel https://api.blaxel.ai/v0/mcp \
   --header "Authorization: Bearer <APIKEY>" \
   --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
 ```
@@ -217,45 +223,57 @@ To use an API key instead, add the headers to the server entry:
 }
 ```
 
-##### Windsurf
+##### Devin Desktop (formerly Windsurf)
 
-Add to `~/.codeium/windsurf/mcp_config.json`:
+Add the server to `~/.config/devin/mcp_config.json` (Windows: `%APPDATA%\devin\mcp_config.json`). Windsurf releases from before the rename use `~/.codeium/windsurf/mcp_config.json`.
 
 ```json
 {
   "mcpServers": {
     "blaxel": {
-      "url": "https://api.blaxel.ai/v0/mcp",
-      "headers": {
-        "Authorization": "Bearer <APIKEY>",
-        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
-      }
+      "serverUrl": "https://api.blaxel.ai/v0/mcp"
     }
   }
 }
 ```
 
+Refresh the MCP servers in Cascade and complete the Blaxel sign-in in your browser. To use an API key instead, add a `headers` object with the [authentication headers](#how-it-works).
+
 ##### Goose
 
-Add to `~/.config/goose/config.yaml`:
+Add the server to `~/.config/goose/config.yaml` (Windows: `%APPDATA%\Block\goose\config\config.yaml`):
 
 ```yaml
 extensions:
-  blaxel-api:
+  blaxel:
     enabled: true
     type: streamable_http
-    name: blaxel-api
-    description: Blaxel API MCP Server
+    name: blaxel
+    description: Blaxel resource management
     uri: https://api.blaxel.ai/v0/mcp
-    envs: {}
-    env_keys: []
-    headers:
-      Authorization: Bearer <APIKEY>
-      X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>
     timeout: 300
-    bundled: null
-    available_tools: []
 ```
+
+Goose opens Blaxel sign-in in your browser the first time it connects. To use an API key instead, add a `headers` map with the [authentication headers](#how-it-works).
+
+##### OpenCode
+
+Add the hosted server to your global OpenCode config, then sign in:
+
+```bash
+opencode mcp add blaxel --url https://api.blaxel.ai/v0/mcp
+opencode mcp auth blaxel
+```
+
+##### VS Code
+
+Add the hosted server to your VS Code user profile:
+
+```bash
+code --add-mcp '{"name":"blaxel","type":"http","url":"https://api.blaxel.ai/v0/mcp"}'
+```
+
+VS Code prompts you to sign in to Blaxel when it starts the server.
 
 #### Selecting a workspace
 
@@ -301,7 +319,7 @@ Connect your coding assistant directly to the Blaxel documentation via MCP at `h
 [Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
 
 ```bash
-claude mcp add --transport http blaxel-docs https://docs.blaxel.ai/mcp
+claude mcp add --scope user --transport http blaxel-docs https://docs.blaxel.ai/mcp
 ```
 
 #### Cursor
