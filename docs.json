@@ -38,6 +38,11 @@
           "href": "/skills-mcp"
         },
         {
+          "anchor": "Integrations directory",
+          "icon": "puzzle-piece",
+          "href": "https://blaxel.ai/integrations"
+        },
+        {
           "anchor": "Community",
           "icon": "discord",
           "href": "/Community"
@@ -483,6 +488,11 @@
         "label": "Agent Skill",
         "icon": "robot",
         "href": "/skills-mcp"
+      },
+      {
+        "label": "Integrations",
+        "icon": "puzzle-piece",
+        "href": "https://blaxel.ai/integrations"
       },
       {
         "label": "Community",
