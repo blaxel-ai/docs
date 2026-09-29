@@ -8121,8 +8121,10 @@ paths:
         state including running processes and filesystem.
       operationId: CreateSandbox
       parameters:
-      - description: If true, return existing sandbox instead of 409 error when sandbox
-          exists and is not in FAILED/TERMINATED/TERMINATING state
+      - description: If true, return the existing sandbox instead of a 409 when one
+          with this name is alive. A name held by a FAILED or TERMINATED sandbox is
+          reused, and a deletion or a concurrent creation still in flight is waited
+          for (with backoff) so the response is the sandbox, not a conflict to retry.
         in: query
         name: createIfNotExist
         required: false
