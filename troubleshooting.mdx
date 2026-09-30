@@ -50,7 +50,7 @@ python main.py --host $HOST
 
 This error occurs when calling a preview URL from browser-based JavaScript on a different origin, and the browser's CORS preflight (`OPTIONS`) request doesn't get the expected headers back. It typically shows up as a CORS error in the browser console, and the actual request never reaches your sandbox.
 
-To resolve this error, configure `responseHeaders` on the preview with the appropriate CORS headers. Make sure `Access-Control-Allow-Origin` matches the calling origin exactly, and that `Access-Control-Allow-Headers` includes every custom header your client sends, including any authentication-related headers.
+To resolve this error, configure `responseHeaders` on the preview with the appropriate CORS headers. Make sure `Access-Control-Allow-Origin` matches the calling origin exactly, and that `Access-Control-Allow-Headers` includes every custom header your client sends, including any authentication-related headers. See [Handle CORS on Blaxel](/Sandboxes/CORS) for details.
 
 ## Sandbox commands return a `502 Bad Gateway` server error
 
