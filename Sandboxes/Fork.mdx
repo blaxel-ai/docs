@@ -388,6 +388,10 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 
 </CodeGroup>
 
+<Note>
+  The Python SDK's `fork()` does not take `lifecycle` yet. From Python, a fork inherits its source's expiration.
+</Note>
+
 `lifecycle` works the same way when forking from a snapshot.
 
 ### Fork request parameters
