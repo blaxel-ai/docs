@@ -370,6 +370,20 @@ const result = await sandbox.fork("my-sandbox-copy", {
 });
 ```
 
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork(
+    "my-sandbox-copy",
+    lifecycle={
+        "expirationPolicies": [
+            {"type": "ttl-max-age", "value": "45m", "action": "delete"},
+        ],
+    },
+)
+```
+
 ```bash HTTP API
 curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
   -H "Authorization: Bearer $BL_API_KEY" \
@@ -387,10 +401,6 @@ curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
 ```
 
 </CodeGroup>
-
-<Note>
-  The Python SDK's `fork()` does not take `lifecycle` yet. From Python, a fork inherits its source's expiration.
-</Note>
 
 `lifecycle` works the same way when forking from a snapshot.
 
