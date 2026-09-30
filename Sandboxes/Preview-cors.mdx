@@ -1,0 +1,182 @@
+---
+title: 'CORS with credentials on preview URLs'
+sidebarTitle: 'Preview CORS with credentials'
+description: 'Configure a Blaxel preview URL so browser requests sent with credentials: "include" pass the CORS preflight, and verify it with curl and the browser.'
+---
+
+Browser requests sent to a [preview URL](./Preview-url) with `credentials: "include"` fail with a CORS error unless the preview returns your frontend's exact origin. This page explains why, how to configure the preview, and how to verify the result.
+
+## Why credentialed requests fail
+
+Blaxel answers every `OPTIONS` preflight sent to a preview URL itself. The preflight never reaches your application. By default, the preflight response contains:
+
+```text
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: Content-Type, Authorization, X-Blaxel-Preview-Token
+```
+
+Browsers reject `Access-Control-Allow-Origin: *` on credentialed requests (`fetch(..., { credentials: "include" })`), so the call fails with a CORS error.
+
+## Set the allowed origin on the preview
+
+Headers set in the preview's `responseHeaders` override the Blaxel defaults, both on the preflight and on normal responses. Set:
+
+- `Access-Control-Allow-Origin` to your frontend's exact origin (scheme, host and port, without a trailing slash)
+- `Access-Control-Allow-Headers` to every request header your frontend sends
+
+```json
+{
+  "Access-Control-Allow-Origin": "https://app.example.com",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header"
+}
+```
+
+Blaxel already adds `Access-Control-Allow-Credentials: true`, so you do not need to set it.
+
+<Warning>
+Your `Access-Control-Allow-Headers` value replaces the default list. If your frontend sends the `X-Blaxel-Preview-Token` header to a private preview, add it to the list.
+</Warning>
+
+### Blaxel SDK
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const preview = await sandbox.previews.create({
+  metadata: { name: "app" },
+  spec: {
+    port: 3000,
+    public: false,
+    responseHeaders: {
+      "Access-Control-Allow-Origin": "https://app.example.com",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header",
+    },
+  },
+});
+console.log(preview.spec.url);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+preview = await sandbox.previews.create({
+    "metadata": {"name": "app"},
+    "spec": {
+        "port": 3000,
+        "public": False,
+        "responseHeaders": {
+            "Access-Control-Allow-Origin": "https://app.example.com",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header",
+        },
+    },
+})
+print(preview.spec.url)
+```
+
+</CodeGroup>
+
+### Blaxel API
+
+To update an existing preview, send a `PUT` request with the full spec: `port`, `public` and `responseHeaders`.
+
+```bash
+curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox/previews/app" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {"name": "app"},
+    "spec": {
+      "port": 3000,
+      "public": false,
+      "responseHeaders": {
+        "Access-Control-Allow-Origin": "https://app.example.com",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header"
+      }
+    }
+  }'
+```
+
+Updates apply within a few seconds.
+
+## Verify the preflight
+
+Send a preflight with curl. Preflights on private previews do not need a token, because Blaxel answers them before checking authentication.
+
+```bash
+PREVIEW_URL="https://<id>.preview.bl.run"   # from preview.spec.url
+ORIGIN="https://app.example.com"
+
+curl -si -X OPTIONS "$PREVIEW_URL/api/anything" \
+  -H "Origin: $ORIGIN" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: content-type,x-your-header" \
+  | grep -i '^access-control'
+```
+
+The output contains your origin and your header list:
+
+```text
+access-control-allow-origin: https://app.example.com
+access-control-allow-methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+access-control-allow-headers: Content-Type, Authorization, X-Your-Header
+access-control-allow-credentials: true
+access-control-max-age: 86400
+access-control-expose-headers: X-Blaxel-Source, X-Blaxel-Error-Code, X-Blaxel-Dispatch-State, Retry-After
+```
+
+If you still see `access-control-allow-origin: *`, the preview does not have the headers. Check `preview.spec.responseHeaders`.
+
+## Verify a normal response
+
+Send a regular request with the same origin. For a private preview, pass a [preview token](./Preview-url#private-preview-urls), otherwise you get the `401` response described in the [limitations](#limitations).
+
+```bash
+curl -si "$PREVIEW_URL/api/anything" \
+  -H "Origin: $ORIGIN" \
+  -H "X-Blaxel-Preview-Token: $PREVIEW_TOKEN" \
+  | grep -i '^access-control-allow-origin'
+```
+
+The response also returns your origin. If your application sets its own `Access-Control-Allow-Origin` header on normal responses, Blaxel keeps your application's value.
+
+## Verify in the browser
+
+Open your frontend at `$ORIGIN`. For a private preview, first open `<PREVIEW_URL>/?bl_preview_token=<token>` in the same browser: Blaxel sets a `bl_preview_token` cookie that the credentialed request then sends. Run the following in the devtools console:
+
+```javascript
+await fetch("<PREVIEW_URL>/api/anything", {
+  method: "POST",
+  credentials: "include",
+  headers: { "Content-Type": "application/json", "X-Your-Header": "1" },
+  body: "{}",
+}).then(r => r.status);
+```
+
+The call returns a status code, with no CORS error. In the Network tab, the `OPTIONS` request shows your origin in `access-control-allow-origin`.
+
+## Limitations
+
+- One origin per preview. The value is static, so you cannot allow several origins (for example staging and production) on the same preview. Create one preview per origin instead.
+- Static header list. Every request header your frontend sends must be listed in `Access-Control-Allow-Headers`.
+- Blaxel answers `OPTIONS` requests. Your application never sees preflights, so CORS logic in your application only applies to normal responses.
+- Authentication failures look like CORS errors. When a request to a private preview fails authentication, the `401` response carries `Access-Control-Allow-Origin: *`, so the browser reports a CORS error instead of a readable `401`. If the preflight passes but the real request shows a CORS error, check your credentials first.
+- Browsers cache preflights for up to 24 hours (`Access-Control-Max-Age: 86400`). After changing the headers, hard-reload the page or test in a new private window.
+
+<Note>
+Blaxel is working on echoing the request origin or passing preflights through to your application, which will remove these limitations.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Real-time previews" href="./Preview-url">
+    Create public and private preview URLs for a sandbox.
+  </Card>
+  <Card title="Custom domains" href="../Infrastructure/Custom-domains">
+    Serve a preview on your own domain.
+  </Card>
+</CardGroup>
