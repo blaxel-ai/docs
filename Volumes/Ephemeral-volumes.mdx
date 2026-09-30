@@ -1,0 +1,135 @@
+---
+
+title: 'Ephemeral volumes'
+
+description: 'Attach temporary disk-backed scratch storage to sandboxes and batch jobs, sized on demand and destroyed with the workload.'
+
+---
+
+Ephemeral volumes are temporary disks created together with a sandbox or a job and destroyed when it terminates. Use them when a workload needs more writable disk space than its default filesystem provides, without keeping the data afterwards.
+
+## How ephemeral volumes work
+
+An ephemeral volume is declared inline in the workload configuration. There is no volume resource to create, attach, or delete: you specify a name, a mount path, and a size, and Blaxel provisions the disk when the workload starts.
+
+- The disk exists for the lifetime of the sandbox or job execution and is deleted when it terminates. Data on it is not recoverable afterwards.
+- The volume is not tied to a region. It is created wherever the workload runs.
+- You can attach several ephemeral volumes to the same workload, each at a different mount path.
+- The volume is billed on its provisioned size for as long as the workload runs, not on the space actually used.
+
+<Warning>
+  Ephemeral volumes are scratch space. Anything you need to keep after the sandbox or job is gone must be stored on a [volume](/Volumes/Overview) or an [Agent Drive](/Agent-drive/Overview).
+</Warning>
+
+## Compare with persistent volumes
+
+|   | Ephemeral volume | Persistent volume |
+|---|---|---|
+| Creation | Declared inline on the sandbox or job | Created as a standalone resource, then attached |
+| Lifetime | Destroyed with the workload | Survives sandbox deletion |
+| Region | Follows the workload | Pins the sandbox to the volume's region |
+| Attachments | Several per workload | One per sandbox |
+| Size | Set with `sizeMb` at declaration | Set at creation, expandable |
+| Available on | Sandboxes, batch jobs | Sandboxes, agents |
+
+Read [Choose the right storage](/Sandboxes/best-practices#choose-the-right-storage) for guidance on when to prefer the sandbox filesystem, volumes, or Agent Drive.
+
+## Configuration
+
+Each ephemeral volume takes the following fields:
+
+- `name`: identifier for the volume, unique within the workload. Use lowercase letters, digits, and hyphens, up to 63 characters
+- `mountPath`: absolute path where the disk is mounted inside the workload
+- `type`: set to `ephemeral`. Without it, the entry is treated as a persistent volume attachment
+- `sizeMb`: capacity of the disk in megabytes. Required, and must be greater than 0
+
+If the mount path already exists in the image, the existing content stays visible and all writes go to the ephemeral disk. If it does not exist, the disk is mounted as an empty directory.
+
+## Attach an ephemeral volume to a sandbox
+
+Add the ephemeral volume to the `volumes` list when you create the sandbox. You can mix it with a persistent volume attachment in the same list.
+
+<CodeGroup>
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  volumes: [{
+    name: "scratch",
+    mountPath: "/scratch",
+    type: "ephemeral",
+    sizeMb: 10240
+  }]
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "memory": 4096,
+  "volumes": [{
+    "name": "scratch",
+    "mount_path": "/scratch",
+    "type": "ephemeral",
+    "size_mb": 10240
+  }]
+})
+```
+</CodeGroup>
+
+Files written under `/scratch` are stored on the ephemeral disk and are deleted with the sandbox.
+
+## Attach an ephemeral volume to a job
+
+Declare the volume in the `blaxel.toml` file of the job. Each task of the job execution gets its own disk.
+
+```toml
+[[volumes]]
+name = "scratch"
+mountPath = "/scratch"
+type = "ephemeral"
+sizeMb = 10240
+```
+
+Read [Deploy a job](/Jobs/Deploy-a-job) for the full job configuration reference.
+
+## Mount on the root filesystem
+
+Set `mountPath` to `/` to back the entire writable filesystem of the workload with the ephemeral disk. The image content stays readable, and every write anywhere in the filesystem goes to the disk instead of the default in-memory storage.
+
+```toml
+[[volumes]]
+name = "root"
+mountPath = "/"
+type = "ephemeral"
+sizeMb = 20480
+```
+
+Use this when a workload writes to many locations, such as package caches, build outputs, or temporary directories, and you cannot predict which path will run out of space.
+
+## Limits
+
+Ephemeral volumes have their own quotas, separate from persistent volumes:
+
+- a maximum size per ephemeral volume
+- for jobs, a maximum total size of ephemeral volumes used concurrently across all running executions
+
+Both limits depend on your [tier](https://app.blaxel.ai/account/quotas). A request that exceeds the per-volume limit is rejected at creation with an error naming the volume.
+
+<CardGroup cols={2}>
+  <Card title="Persistent volumes" icon="box" href="/Volumes/Overview">
+    Create persistent block storage that survives sandbox deletion.
+  </Card>
+  <Card title="Deploy a job" icon="rocket" href="/Jobs/Deploy-a-job">
+    Configure and deploy batch jobs with blaxel.toml.
+  </Card>
+  <Card title="Sandbox best practices" icon="lightbulb" href="/Sandboxes/best-practices">
+    Choose the right storage for your sandbox data.
+  </Card>
+</CardGroup>
