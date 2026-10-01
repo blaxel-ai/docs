@@ -11,10 +11,12 @@ Blaxel is the **infrastructure for autonomous agents**. Our platform lets you ke
 <Callout icon="lightbulb" color="#a3e0c5" iconType="solid">
 **Using Cursor, Claude Code, Codex, Goose, or another AI coding agent?**
 
-Install the [Blaxel Skill](./skills-mcp) to give your agent the ability to deploy AI agents, create sandboxes for code execution, host MCP servers, run batch jobs, and more...all using simple prompts, zero code required!
+The [Blaxel skills](./skills-mcp) give your agent the ability to deploy AI agents, create sandboxes for code execution, host MCP servers, run batch jobs, and more...all using simple prompts, zero code required!
+
+Installing the Blaxel CLI (step 1 below) installs them for the coding agents on your machine. If you already have the CLI, run:
 
 ```shell
-npx skills add blaxel-ai/agent-skills
+bl skills install
 ```
 </Callout>
 
@@ -109,6 +111,10 @@ Alternatively, you can use Windows Subsystem for Linux (WSL) and follow the Linu
 </Accordion>
 
 </AccordionGroup>
+
+<Note>
+The installer also sets up the [Blaxel skills](./skills-mcp#blaxel-skills) for your coding agents. The cURL installer asks first, Windows installs them automatically, and Homebrew installs them the first time you run `bl`. This needs Node.js 22.20+, npm and git. Set `BL_INSTALL_SKILLS=false` to skip, and run `bl skills install` at any time to install or refresh them.
+</Note>
 
 </Step>
 
