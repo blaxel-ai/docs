@@ -44,8 +44,6 @@ When you set CORS headers:
 - List every request header your frontend sends in `Access-Control-Allow-Headers`. Your value replaces the default list, so add `X-Blaxel-Preview-Token` back if your frontend sends it.
 - Omit `Access-Control-Allow-Credentials`, because Blaxel already adds `Access-Control-Allow-Credentials: true`.
 
-### Blaxel SDK
-
 <CodeGroup>
 
 ```typescript TypeScript
@@ -84,13 +82,8 @@ preview = await sandbox.previews.create({
 print(preview.spec.url)
 ```
 
-</CodeGroup>
-
-### Blaxel API
-
-To update an existing preview, send a `PUT` request with the full spec: `port`, `public` and `responseHeaders`. Changes apply within a few seconds.
-
 ```bash
+# To update an existing preview, send a `PUT` request with the full spec: `port`, `public` and `responseHeaders`. Changes apply within a few seconds.
 curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox/previews/app" \
   -H "Authorization: Bearer $BL_API_KEY" \
   -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
@@ -107,6 +100,9 @@ curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox/previews/app" \
     }
   }'
 ```
+
+</CodeGroup>
+
 
 ## Handle CORS in your application
 
