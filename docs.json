@@ -83,6 +83,7 @@
                 "pages": [
                   "Sandboxes/Ports",
                   "Sandboxes/Preview-url",
+                  "Sandboxes/CORS",
                   "Sandboxes/Sessions",
                   "Sandboxes/Standby-control"
                 ]
