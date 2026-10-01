@@ -246,27 +246,68 @@ Set a long completion duration if your process is expected to take longer.
 
 ### Wait for ports
 
-In some cases, you may want to wait for a port to be opened while running — for example if you are running `npm run dev` and want to wait for port 3000 to be open.
+In some cases, you may want to wait for a port to be opened while running — for example if you are running `npm run dev` and want to wait for port 3000 to be open. `exec` returns as soon as the ports are open, and the process keeps running in the background.
 
 <CodeGroup>
 
 ```typescript TypeScript
 const process = await sandbox.process.exec({
   name: "dev-server",
-  command: "npm run dev -- --port 3000 &",
-  waitForPorts: [3000]
+  command: "npm run dev -- --host $HOST --port 3000",
+  waitForPorts: [3000],
+  timeout: 60
 });
 ```
 
 ```python Python
 process = await sandbox.process.exec({
   "name": "dev-server",
-  "command": "npm run dev -- --port 3000 &",
-  "wait_for_ports": [3000]
+  "command": "npm run dev -- --host $HOST --port 3000",
+  "wait_for_ports": [3000],
+  "timeout": 60
 })
 ```
 
 </CodeGroup>
+
+A port counts as open once the server listens on the address in `HOST` (or on all interfaces). A server bound only to `localhost` isn't reachable from outside the sandbox, so it doesn't count.
+
+`timeout` bounds how long the call waits for the ports. Keep it under 120 seconds: a request that stays open that long is cut off by the gateway with a 504 error instead of the timeout error. If the process fails before its ports open (it exits with a non-zero code or is killed), the call fails right away instead of waiting out the timeout. The error includes the exit code and the last lines of the process's output:
+
+<CodeGroup>
+
+```typescript TypeScript
+try {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --host $HOST --port 3000",
+    waitForPorts: [3000],
+    timeout: 60
+  });
+} catch (error) {
+  // e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
+  console.error(error.message);
+}
+```
+
+```python Python
+try:
+    await sandbox.process.exec({
+        "name": "dev-server",
+        "command": "npm run dev -- --host $HOST --port 3000",
+        "wait_for_ports": [3000],
+        "timeout": 60
+    })
+except Exception as error:
+    # e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
+    print(error)
+```
+
+</CodeGroup>
+
+<Note>
+  Don't end the command with `&`. The shell exits straight away and the server it put in the background isn't tracked as part of the process, so the call waits until `timeout` and a startup crash isn't reported. Failing fast needs sandbox-api 0.2.62 or later; custom images pick it up when rebuilt.
+</Note>
 
 ## Auto-restart
 
