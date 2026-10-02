@@ -1,7 +1,7 @@
 ---
 title: 'Run sandbox workloads as a non-root user'
 sidebarTitle: 'Non-root user'
-description: 'Scope everything a sandbox runs on your behalf to an unprivileged user while the sandbox API keeps the privileges it needs.'
+description: 'Scope everything a sandbox runs on your behalf to an unprivileged user, and refuse calls from that user to the sandbox API.'
 ---
 
 By default, everything inside a sandbox runs as `root`. You can instead declare an unprivileged user in your image, so processes, terminals and filesystem operations run as that user while the sandbox API keeps the privileges it needs for drive mounts, networking and keep-alive.
@@ -66,13 +66,52 @@ Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and p
 | Code execution | CA bundle installation |
 | Filesystem API calls (read, write, upload, search) | Keep-alive and standby control |
 
-Calls to the sandbox API from inside a sandbox process keep the same identity. There is no parameter or environment variable that asks for root, so a process cannot use the API to escalate its own privileges. To refuse those calls altogether, turn on [API isolation](/Sandboxes/API-isolation).
+Calls to the sandbox API from inside a sandbox process keep the same identity. There is no parameter or environment variable that asks for root, so a process cannot use the API to escalate its own privileges. To refuse those calls altogether, [isolate the sandbox API](#isolate-the-sandbox-api).
+
+## Isolate the sandbox API
+
+Calls to the sandbox API through Blaxel require credentials. Calls from inside the sandbox to `localhost:8080` do not. Set `BL_SANDBOX_API_ISOLATION` to refuse connections from your workload to the sandbox API, so code running in the sandbox cannot use it to run commands, read files or open terminals:
+
+```docker
+USER app
+
+ENV HOME=/blaxel
+ENV BL_SANDBOX_API_ISOLATION=true
+```
+
+`BL_SANDBOX_API_ISOLATION` also runs your workload as the image `USER`, without `BL_SANDBOX_USER_ENABLED`.
+
+At boot, before your workload starts, the sandbox API installs firewall rules on its port. Refused connections get a TCP reset. The sandbox does not start when the rules cannot be installed.
+
+| Caller | Result |
+|---|---|
+| Authenticated calls through Blaxel (SDK, CLI, console, API) | Allowed |
+| Root processes inside the sandbox | Allowed |
+| Non-root processes inside the sandbox, on `localhost`, `127.0.0.1`, `::1` or any address of the sandbox | Refused |
+| Containers, tunnels or bridges running inside the sandbox | Refused |
+
+Only the sandbox API port is filtered. [Preview URLs](/Sandboxes/Preview-url) and your application ports are not affected.
+
+To check it, open a terminal in the sandbox and run:
+
+```bash
+id -un
+curl localhost:8080/health
+```
+
+`id -un` prints your image user, and `curl` fails with `Connection refused`. The same call through Blaxel with your credentials still succeeds.
+
+Without a `USER` directive, or with `USER root`, the sandbox API installs the rules, logs a warning and runs your workload as root.
+
+<Warning>
+  A workload running as root can bypass API isolation. Root callers are allowed by the rules, and root can remove them or stop the sandbox API. API isolation only protects the sandbox API from workloads running as a non-root `USER`.
+</Warning>
 
 ## Limitations
 
 - Access granted only through a supplementary group of your user is not honored on filesystem API calls, which apply the primary group.
 - Files that already exist in the image and belong to root stay read-only for your workload. Change their ownership at build time or in a root entrypoint.
-- With `BL_SANDBOX_USER_ENABLED` unset, the sandbox behaves exactly as before and runs everything as root.
+- With neither `BL_SANDBOX_USER_ENABLED` nor `BL_SANDBOX_API_ISOLATION` set, the sandbox runs everything as root.
 
 <CardGroup cols={2}>
   <Card title="Build a sandbox image" href="/Sandboxes/Templates">
