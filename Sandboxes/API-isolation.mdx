@@ -1,0 +1,74 @@
+---
+title: 'Isolate the sandbox API from sandbox workloads'
+sidebarTitle: 'API isolation'
+description: 'Refuse calls from processes running inside a sandbox to the sandbox API, while authenticated calls through Blaxel keep working.'
+---
+
+Calls to the sandbox API through Blaxel require credentials. Calls from inside the sandbox to `localhost:8080` do not. With API isolation on, the sandbox API refuses connections from your workload, so code running in the sandbox cannot use the API to run commands, read files or open terminals.
+
+## Turn on API isolation
+
+Create an unprivileged user in your Dockerfile, declare it with `USER`, and set `BL_SANDBOX_API_ISOLATION`:
+
+```docker
+FROM node:24-alpine
+
+RUN adduser -D -u 10001 -h /blaxel app
+WORKDIR /blaxel
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+USER app
+
+ENV HOME=/blaxel
+ENV BL_SANDBOX_API_ISOLATION=true
+
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+`BL_SANDBOX_API_ISOLATION` also runs your workload as the image `USER`, without `BL_SANDBOX_USER_ENABLED`. Processes, terminals and filesystem operations run as that user. See [running sandbox workloads as a non-root user](/Sandboxes/Non-root-user) for what runs as your user and what stays root.
+
+## What is refused
+
+At boot, before your workload starts, the sandbox API installs firewall rules on its port. Refused connections get a TCP reset.
+
+| Caller | Result |
+|---|---|
+| Authenticated calls through Blaxel (SDK, CLI, console, API) | Allowed |
+| Root processes inside the sandbox | Allowed |
+| Non-root processes inside the sandbox, on `localhost`, `127.0.0.1`, `::1` or any address of the sandbox | Refused |
+| Containers, tunnels or bridges running inside the sandbox | Refused |
+
+Only the sandbox API port is filtered. [Preview URLs](/Sandboxes/Preview-url) and your application ports are not affected.
+
+## Check that it works
+
+Open a terminal in the sandbox and run:
+
+```bash
+id -un
+curl localhost:8080/health
+```
+
+`id -un` prints your image user, and `curl` fails with `Connection refused`. The same call through Blaxel with your credentials still succeeds.
+
+## Root workloads
+
+Without a `USER` directive, or with `USER root`, the sandbox API installs the rules, logs a warning and runs your workload as root.
+
+<Warning>
+  A workload running as root can bypass API isolation. Root callers are allowed by the rules, and root can remove them or stop the sandbox API. API isolation only protects the sandbox API from workloads running as a non-root `USER`.
+</Warning>
+
+## Startup failure
+
+The sandbox does not start when the rules cannot be installed. On a restart of the sandbox API, the rules installed at the previous start stay in place.
+
+<CardGroup cols={2}>
+  <Card title="Non-root user" href="/Sandboxes/Non-root-user">
+    Run sandbox workloads as an unprivileged user.
+  </Card>
+  <Card title="Build a sandbox image" href="/Sandboxes/Templates">
+    Create reusable sandbox images with Dockerfiles.
+  </Card>
+</CardGroup>

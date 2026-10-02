@@ -66,7 +66,7 @@ Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and p
 | Code execution | CA bundle installation |
 | Filesystem API calls (read, write, upload, search) | Keep-alive and standby control |
 
-Calls to the sandbox API from inside a sandbox process keep the same identity. There is no parameter or environment variable that asks for root, so a process cannot use the API to escalate its own privileges.
+Calls to the sandbox API from inside a sandbox process keep the same identity. There is no parameter or environment variable that asks for root, so a process cannot use the API to escalate its own privileges. To refuse those calls altogether, turn on [API isolation](/Sandboxes/API-isolation).
 
 ## Limitations
 
