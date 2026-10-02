@@ -1,0 +1,53 @@
+Run the installer in a terminal:
+
+<CodeGroup>
+
+```shell macOS and Linux
+curl -fsSL https://blaxel.ai/install.sh | sh
+```
+
+```powershell Windows
+irm https://blaxel.ai/install.ps1 | iex
+```
+
+</CodeGroup>
+
+The installer checks the Blaxel CLI (`bl`) against the release checksums, installs it, and adds it to your `PATH` with shell completions. It then runs [`bl setup`](/cli-reference/commands/bl_setup), which shows what it found and installs it when you press Enter: the [Blaxel skills](/skills-mcp#blaxel-skills) and MCP servers for the coding agents on your machine (Claude Code, Codex, Cursor and others), then the browser login. Run it again at any time to add what is missing.
+
+<AccordionGroup>
+
+<Accordion title="Install with Homebrew" icon="beer-mug-empty">
+
+```shell
+brew install blaxel-ai/blaxel/blaxel
+bl setup
+```
+
+Homebrew 6.0.0+ requires explicit trust for non-official taps, so use the fully qualified formula name.
+
+</Accordion>
+
+<Accordion title="Installer options" icon="sliders">
+
+On macOS and Linux, set these variables for `sh`:
+
+| Variable | Effect |
+|---|---|
+| `VERSION=v0.1.119` | Install that release instead of the latest |
+| `BINDIR=/usr/local/bin` | Install to that folder instead of `~/.local/bin` |
+| `BL_INSTALL_SETUP=false` | Install the CLI only, and run `bl setup` later |
+| `BL_INSTALL_SKILLS=false` | Leave your coding agents alone |
+| `BL_INSTALL_PATH=false` | Do not add `bl` to your `PATH` |
+| `BL_INSTALL_COMPLETION=false` | Skip the shell completions |
+
+For example, to install a specific release for all users:
+
+```shell
+curl -fsSL https://blaxel.ai/install.sh | sudo VERSION=v0.1.119 BINDIR=/usr/local/bin sh
+```
+
+Under `sudo`, the installer still sets up your own shell, coding agents and login. In CI, it installs the CLI only and leaves the shell configuration and coding agents alone. On Windows, run `$env:BL_INSTALL_SETUP = "false"` before the installer to install the CLI only.
+
+</Accordion>
+
+</AccordionGroup>

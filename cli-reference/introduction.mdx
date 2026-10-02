@@ -4,85 +4,13 @@ sidebarTitle: "Overview"
 description: "Install the Blaxel CLI (bl) to manage sandboxes, agents, MCP servers, jobs, and other resources from your terminal, with auth and command reference."
 ---
 
+import InstallBlaxel from '/snippets/install-blaxel.mdx';
+
 Blaxel CLI (`bl`) is a command line tool to interact with the Blaxel APIs.
 
 ## Install
 
-<AccordionGroup>
-  <Accordion title="Install on Mac" icon="apple">
-    <Warning>
-      To install Blaxel CLI with Homebrew, make sure [Homebrew](https://brew.sh/) is installed on your machine. Homebrew 6.0.0+ requires explicit trust for non-official taps, so use the fully qualified formula name below. We are currently in the process of supporting additional installers. Check out the cURL method down below for general installation.
-    </Warning>
-
-    Install Blaxel CLI by running the following command in a terminal:
-
-    ```shell
-    brew install blaxel-ai/blaxel/blaxel
-    ```
-  </Accordion>
-
-  <Accordion title="Install on Linux" icon="linux">
-    Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | BINDIR=/usr/local/bin sudo -E sh
-    ```
-
-    If you need a non-sudo alternative (**it will ask you questions to configure**):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | sh
-    ```
-
-    If you need to install a specific version (e.g. v0.1.21):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | VERSION=v0.1.21 sh
-    ```
-  </Accordion>
-
-  <Accordion title="Install with cURL" icon="code">
-    Install Blaxel CLI by running the following command in a terminal (non-sudo alternatives below):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | BINDIR=/usr/local/bin sudo -E sh
-    ```
-
-    If you need a non-sudo alternative (**it will ask you questions to configure**):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | sh
-    ```
-
-    If you need to install a specific version (e.g. v0.1.21):
-
-    ```shell
-    curl -fsSL \
-    https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh \
-    | VERSION=v0.1.21 sh
-    ```
-  </Accordion>
-
-  <Accordion title="Install on Windows" icon="windows">
-    Run the following command in PowerShell:
-
-    ```powershell
-    powershell -Command "irm https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.ps1 | iex"
-    ```
-
-    Alternatively, you can use Windows Subsystem for Linux (WSL) and follow the Linux installation instructions.
-  </Accordion>
-</AccordionGroup>
+<InstallBlaxel />
 
 ## Update
 
@@ -122,21 +50,17 @@ Blaxel CLI (`bl`) is a command line tool to interact with the Blaxel APIs.
   </Accordion>
 
   <Accordion title="Update on Windows" icon="windows">
-    For the most reliable solution, we recommend adapting the aforementioned Linux commands by using Windows Subsystem for Linux.
+    Run the installer again in PowerShell. It installs the latest release and sets up anything new:
 
-    First make sure WSL (Windows Subsystem for Linux) is installed if not already. This can be done by:
-
-    - Opening PowerShell as Administrator
-    - Running: `wsl --install -d Ubuntu-20.04`
-    - Restarting the computer
-    - From the Microsoft Store, install the Ubuntu app
-    - Run the command line using the aforementioned Linux installation process. Make sure to install using **sudo**.
+    ```powershell
+    irm https://blaxel.ai/install.ps1 | iex
+    ```
   </Accordion>
 </AccordionGroup>
 
 ## Shell autocompletion
 
-To enable shell autocompletion for Blaxel CLI commands, run one of the following:
+The installer sets up autocompletion for zsh, bash and fish. To set it up yourself, or for PowerShell, run one of the following:
 
 <CodeGroup>
 
@@ -163,7 +87,7 @@ Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | I
 
 ## Get started
 
-First, create a [workspace](../Security/Workspace-access-control) on the Blaxel console. Then, log in to Blaxel:
+First, create a [workspace](../Security/Workspace-access-control) on the Blaxel console. The installer logs you in; to log in again, run:
 
 ```bash
 bl login

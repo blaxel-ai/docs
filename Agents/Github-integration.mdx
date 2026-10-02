@@ -49,9 +49,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Blaxel CLI
-        run: curl -fsSL https://raw.githubusercontent.com/blaxel-ai/toolkit/main/install.sh | BINDIR=/usr/local/bin sh
-        # for security, pin to a tagged release and/or verify a checksum, e.g.:
-        # run: https://raw.githubusercontent.com/blaxel-ai/toolkit/v0.1.90/install.sh
+        # The installer checks the download against the release checksums. To pin a release, use `| VERSION=v0.1.119 sh`.
+        run: |
+          curl -fsSL https://blaxel.ai/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Deploy to Blaxel
         env:

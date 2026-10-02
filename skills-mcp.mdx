@@ -13,6 +13,10 @@ Blaxel provides LLM-accessible tools that you can connect to your coding assista
 5. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
 6. A **native AI assistant** built into this documentation portal.
 
+<Tip>
+  To set up the skills and both MCP servers at once, [install Blaxel](./Get-started) with `curl -fsSL https://blaxel.ai/install.sh | sh` (on Windows, `irm https://blaxel.ai/install.ps1 | iex`). It adds them to the coding agents on your machine and logs you in. If you already have the Blaxel CLI, run `bl setup`.
+</Tip>
+
 ## Blaxel plugin
 
 The Blaxel plugin installs the `blaxel-cli` and `blaxel-sdk` [agent skills](#blaxel-skills) and the [resource management MCP server](#mcp-server-for-resource-management) in one step. The MCP server signs you in with OAuth, so no API key goes in your configuration.
@@ -76,13 +80,13 @@ Two skills are currently available:
   Use the `blaxel-cli` skill when you're troubleshooting, or bootstrapping a project on Blaxel. Use the `blaxel-sdk` skill when building agents or MCP servers on Blaxel, or when you need to programmatically manage Blaxel resources.
 </Tip>
 
-The [Blaxel CLI](./Get-started) installs the Blaxel skills when you install or upgrade it. They go to `~/.agents/skills`, which Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and other agents read, and to Claude Code and other coding agents detected on your machine. To install or refresh them at any time, run:
+The [Blaxel installer](./Get-started) sets up the Blaxel skills, and `bl upgrade` keeps them up to date. They go to `~/.agents/skills`, which Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and other agents read, and to Claude Code and other coding agents detected on your machine. To install or refresh them at any time, run:
 
 ```shell
 bl skills install
 ```
 
-This needs Node.js 22.20+, npm and git. Set `BL_INSTALL_SKILLS=false` to stop the CLI installer and upgrades from installing them automatically.
+To set up the MCP servers too, run `bl setup` instead. Neither needs Node.js. Set `BL_INSTALL_SKILLS=false` to stop the installer and upgrades from installing the skills automatically.
 
 Without the Blaxel CLI, add the skills with the command below. You'll be prompted to choose skills and select your coding agent and installation location.
 
@@ -124,6 +128,8 @@ The Blaxel migration skill is also [available as a ZIP file](https://github.com/
 ### MCP server for resource management
 
 Blaxel's MCP server lets compatible AI apps (Claude, Codex, Claude Code, Cursor, Devin Desktop, Goose, OpenCode, VS Code, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
+
+The [Blaxel installer](./Get-started) and `bl setup` add it, with the [documentation MCP server](#mcp-server-for-documentation), to Claude Code, Codex, Cursor, Gemini CLI, OpenCode, Windsurf and Devin Desktop on your machine, and tell you how to sign each one in. To add it to another client, or by hand, follow the steps below.
 
 Talk with your preferred agent to:
 
