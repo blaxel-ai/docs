@@ -35,7 +35,9 @@ Blaxel CLI - manage and deploy AI agents, sandboxes, and resources
 * [bl push](/cli-reference/commands/bl_push)	 - Build and push a container image to the Blaxel registry
 * [bl run](/cli-reference/commands/bl_run)	 - Execute a resource (agent, model, job, function, sandbox)
 * [bl serve](/cli-reference/commands/bl_serve)	 - Start a local development server for your project
+* [bl setup](/cli-reference/commands/bl_setup)	 - Set up Blaxel for your coding agents and log in
 * [bl share](/cli-reference/commands/bl_share)	 - Share a resource with another workspace
+* [bl skills](/cli-reference/commands/bl_skills)	 - Manage Blaxel skills for coding agents
 * [bl token](/cli-reference/commands/bl_token)	 - Retrieve authentication token for a workspace
 * [bl unshare](/cli-reference/commands/bl_unshare)	 - Unshare a resource from another workspace
 * [bl upgrade](/cli-reference/commands/bl_upgrade)	 - Upgrade the Blaxel CLI to the latest version
