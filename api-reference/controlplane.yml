@@ -1244,10 +1244,11 @@ components:
           example: Engineering
         role:
           type: string
-          description: Role to assign in this workspace (admin or member)
+          description: Role to assign in this workspace (admin, member or viewer)
           enum:
           - admin
           - member
+          - viewer
           example: admin
     Image:
       type: object
@@ -3244,6 +3245,14 @@ components:
         icon:
           type: string
           description: Icon of the definition
+        iconDark:
+          type: string
+          description: Nonempty dark-mode icon URL in responses. Blank inputs use
+            the resolved light-mode icon.
+        iconLight:
+          type: string
+          description: Nonempty light-mode icon URL in responses. Blank inputs use
+            icon, iconDark, then the default Hub icon.
         image:
           type: string
           description: Image of the Sandbox definition
@@ -3325,6 +3334,8 @@ components:
             source is kept.
           items:
             $ref: '#/components/schemas/Env'
+        lifecycle:
+          $ref: '#/components/schemas/SandboxLifecycle'
         port:
           type: integer
           description: Port to expose from the sandbox
@@ -4265,6 +4276,11 @@ components:
           accountId:
             type: string
             description: Workspace account id
+          basetenTeamId:
+            type: string
+            description: Baseten team this workspace was provisioned for; absent on
+              native workspaces
+            readOnly: true
           displayName:
             type: string
             description: Workspace display name
@@ -9864,7 +9880,7 @@ paths:
   /users:
     get:
       description: Returns all team members in the workspace including their roles
-        (admin or member) and invitation status.
+        (admin, member or viewer) and invitation status.
       operationId: ListWorkspaceUsers
       responses:
         "200":
