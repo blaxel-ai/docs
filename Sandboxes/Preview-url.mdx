@@ -98,6 +98,8 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 The recommended pattern for preview creation is `createIfNotExists()` / `create_if_not_exists()`. Blaxel first checks for an existing preview with the provided `name` and either returns it or creates a new one using your specified configuration.
 
+Preview names only need to be unique within a sandbox. Use a constant name such as `"app"` across all your sandboxes to reuse one preview per sandbox. If you omit the name, each create call makes a new preview.
+
 Create and manage a sandbox’s public preview URL:
 
 <CodeGroup>
@@ -161,31 +163,35 @@ url = preview.spec.url
 To call a preview URL from a frontend on another origin, see [Handle CORS on Blaxel](./CORS).
 </Tip>
 
-Or create a private preview:
+For a private preview, list its tokens and reuse one that remains valid long enough for your session. Create a new token only when none qualifies. This example requires at least one hour of remaining validity and otherwise creates a token valid for one day. Expired tokens are deleted automatically.
+
+Run your application on port 3000 before opening the URL.
 
 <CodeGroup>
 
 ```typescript TypeScript
 import { SandboxInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox");
+const sandbox = await SandboxInstance.createIfNotExists({
+    name: "my-app",
+    region: "us-was-1"
+});
 
 // Create private preview
 const preview = await sandbox.previews.createIfNotExists({
-    metadata: { name: "private-preview" },
+    metadata: { name: "app" },
     spec: {
       port: 3000,
       public: false
     }
 });
 
-// Create access token (10 minutes expiry)
-const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-const token = await preview.tokens.create(expiresAt);
+const token = (await preview.tokens.list()).find(
+    t => !t.expired && +new Date(t.expiresAt) > Date.now() + 3_600_000
+) ?? await preview.tokens.create(new Date(Date.now() + 86_400_000));
 
-// How to access the preview with the token
-const url = preview.spec?.url;
-const response = await fetch(`${url}/health?bl_preview_token=${token.value}`);
+const url = `${preview.spec.url}?bl_preview_token=${token.value}`;
+const response = await fetch(url);
 ```
 
 ```python Python
@@ -194,28 +200,36 @@ import httpx
 from blaxel.core import SandboxInstance
 from datetime import datetime, timedelta, UTC
 
-sandbox = await SandboxInstance.get("my-sandbox")
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-app",
+    "region": "us-was-1"
+})
 
 # Create private preview
 preview = await sandbox.previews.create_if_not_exists({
-    "metadata": {"name": "private-preview"},
+    "metadata": {"name": "app"},
     "spec": {
         "port": 3000,
         "public": False
     }
 })
 
-# Create access token (10 minutes expiry)
-expires_at = datetime.now(UTC) + timedelta(minutes=10)
-token = await preview.tokens.create(expires_at)
+min_expiry = datetime.now(UTC) + timedelta(hours=1)
+token = next((
+    t for t in await preview.tokens.list()
+    if datetime.fromisoformat(t.expires_at.replace("Z", "+00:00")) > min_expiry
+), None)
+if token is None:
+    token = await preview.tokens.create(datetime.now(UTC) + timedelta(days=1))
 
-# How to access the preview with the token
-url = preview.spec.url
+url = f"{preview.spec.url}?bl_preview_token={token.value}"
 async with httpx.AsyncClient() as client:
-    response = await client.get(f"{url}/health?bl_preview_token={token.value}")
+    response = await client.get(url)
 ```
 
 </CodeGroup>
+
+Treat token-bearing URLs as credentials. Share them only with users who should have access to the preview.
 
 An alternative is to use `create()`, which raises an error when a preview with the specified name already exists:
 
@@ -246,7 +260,9 @@ preview = await sandbox.previews.create({
 
 ### URL prefix
 
-You can customize the preview URL with a custom string prefix using the `prefixUrl` argument:
+`prefixUrl` (`prefix_url` in Python) is optional. Without it, Blaxel builds a stable URL from your workspace, sandbox, and preview names. The same names produce the same URL, so you do not need to generate a unique prefix for each sandbox.
+
+Set `prefixUrl` only when you want a custom string prefix:
 
 <CodeGroup>
 ```typescript TypeScript
@@ -270,7 +286,7 @@ preview = await sandbox.previews.create_if_not_exists({
     "spec": {
         "port": 3000,
         "public": True,
-        "prefixUrl": "my-prefix"
+        "prefix_url": "my-prefix"
     }
 })
 ```

@@ -172,6 +172,10 @@ if __name__ == "__main__":
 
 </CodeGroup>
 
+Attach [volumes](./Volumes) in the create call with `volumes: [{ name: "my-volume", mountPath: "/mnt/data" }]` (Python: `"volumes": [{"name": "my-volume", "mount_path": "/mnt/data"}]`). Drives cannot be attached at creation. Create or get a drive in the sandbox's region, then call `sandbox.drives.mount(...)` as shown in [Mount a drive to a sandbox](/Agent-drive/Overview#mount-a-drive-to-a-sandbox).
+
+For [real-time previews](./Preview-url#blaxel-sdk), use a constant preview name such as `"app"` with `sandbox.previews.createIfNotExists()` / `create_if_not_exists()`. Names are scoped to each sandbox. Omit `prefixUrl` to get a stable URL without generating your own prefix.
+
 An alternative is to use `create()`, which raises an error when a sandbox with the specified name already exists:
 
 <CodeGroup>
