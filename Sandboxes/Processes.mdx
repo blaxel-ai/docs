@@ -341,6 +341,160 @@ except Exception as error:
   Don't end the command with `&`. The shell exits straight away and the server it put in the background isn't tracked as part of the process, so the call waits until `timeout` and a startup crash isn't reported. Failing fast needs sandbox-api 0.2.62 or later; custom images pick it up when rebuilt.
 </Note>
 
+## Process stdin
+
+By default, a process has no stdin: it reads end-of-file as soon as it starts. Start it with `stdin: true` to give it a writable pipe, then send input with `writeStdin` and close the pipe with `closeStdin`. Use this to drive programs that read from stdin, such as stdio MCP servers and other JSON-RPC programs.
+
+The pipe passes your bytes through unchanged. Unlike the [interactive terminal](/Sandboxes/Overview#connect-to-a-sandbox-with-an-interactive-terminal), there is no TTY in between, so nothing is echoed back or rewritten.
+
+<Note>
+  Process stdin needs `@blaxel/core` 0.3.19 or later in TypeScript, `blaxel` 0.4.9 or later in Python, and sandbox-api 0.2.56 or later in the sandbox. Custom images pick it up when rebuilt.
+</Note>
+
+### Write to a process
+
+Start the process with a name and `stdin: true`, write to it, then close stdin to send end-of-file:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "sort",
+  command: "sort",
+  stdin: true
+});
+
+await sandbox.process.writeStdin("sort", "cherry\napple\nbanana\n");
+await sandbox.process.closeStdin("sort");
+
+await sandbox.process.wait("sort");
+const output = await sandbox.process.logs("sort", "stdout");
+// "apple\nbanana\ncherry\n"
+```
+
+```python Python
+await sandbox.process.exec({
+  "name": "sort",
+  "command": "sort",
+  "stdin": True
+})
+
+await sandbox.process.write_stdin("sort", "cherry\napple\nbanana\n")
+await sandbox.process.close_stdin("sort")
+
+await sandbox.process.wait("sort")
+output = await sandbox.process.logs("sort", "stdout")
+# "apple\nbanana\ncherry\n"
+```
+
+</CodeGroup>
+
+`writeStdin` (`write_stdin` in Python) takes a string or bytes and writes them as is, so include the trailing newline your program expects. `closeStdin` (`close_stdin` in Python) can be called more than once.
+
+### Run a stdio MCP server
+
+A stdio MCP server reads JSON-RPC messages from stdin and writes one reply per line to stdout. Send each message with `writeStdin`, and read the replies by [streaming the process's stdout](/Sandboxes/Log-streaming):
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "mcp-fs",
+  command: "npx -y @modelcontextprotocol/server-filesystem /tmp",
+  stdin: true
+});
+
+// Each stdout line is one JSON-RPC message from the server
+const pending = new Map<number, (message: any) => void>();
+const stream = sandbox.process.streamLogs("mcp-fs", {
+  onStdout: (line) => {
+    const message = JSON.parse(line);
+    pending.get(message.id)?.(message);
+  }
+});
+
+const send = (message: object) =>
+  sandbox.process.writeStdin("mcp-fs", JSON.stringify(message) + "\n");
+const request = (id: number, method: string, params: object = {}) =>
+  new Promise<any>((resolve) => {
+    pending.set(id, resolve);
+    void send({ jsonrpc: "2.0", id, method, params });
+  });
+
+await request(1, "initialize", {
+  protocolVersion: "2025-06-18",
+  capabilities: {},
+  clientInfo: { name: "my-client", version: "1.0.0" }
+});
+await send({ jsonrpc: "2.0", method: "notifications/initialized" });
+const tools = await request(2, "tools/list");
+
+// Closing stdin shuts the server down
+await sandbox.process.closeStdin("mcp-fs");
+stream.close();
+```
+
+```python Python
+import asyncio
+import json
+
+await sandbox.process.exec({
+  "name": "mcp-fs",
+  "command": "npx -y @modelcontextprotocol/server-filesystem /tmp",
+  "stdin": True
+})
+
+# Each stdout line is one JSON-RPC message from the server
+pending = {}
+
+def on_stdout(line):
+    message = json.loads(line)
+    reply = pending.pop(message.get("id"), None)
+    if reply:
+        reply.set_result(message)
+
+stream = sandbox.process.stream_logs("mcp-fs", {"on_stdout": on_stdout})
+
+async def send(message):
+    await sandbox.process.write_stdin("mcp-fs", json.dumps(message) + "\n")
+
+async def request(request_id, method, params=None):
+    reply = asyncio.get_running_loop().create_future()
+    pending[request_id] = reply
+    await send({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params or {}})
+    return await reply
+
+await request(1, "initialize", {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {},
+    "clientInfo": {"name": "my-client", "version": "1.0.0"}
+})
+await send({"jsonrpc": "2.0", "method": "notifications/initialized"})
+tools = await request(2, "tools/list")
+
+# Closing stdin shuts the server down
+await sandbox.process.close_stdin("mcp-fs")
+stream.close()
+```
+
+</CodeGroup>
+
+The first `npx` run downloads the server package, so the first reply can take several seconds.
+
+### Stdin errors and restarts
+
+Writes keep their order, and two concurrent writes never mix inside a message. The SDK does not retry a failed write, since a duplicate would corrupt the stream. A write fails with:
+
+- `409` if the process was started without `stdin: true`, or its stdin is closed
+- `413` if the data is larger than 8 MiB
+- `503` if the process stopped reading and the pipe stayed full for 10 seconds
+
+After a `503`, part of the data may have gone through, so restart the process.
+
+The pipe survives sandbox standby and resume. With [`restartOnFailure`](#restart-process-on-failure), each restart gets a new pipe, and data written between the failure and the restart is lost. If the sandbox API itself restarts, the process reads end-of-file and writes fail with `409`: restart the process and redo your protocol's handshake.
+
+Over the Sandbox API, start the process with `"stdin": true` on `POST /process`, then [write to its stdin](/api-reference/process/write-to-a-processs-stdin) with `POST /process/{identifier}/stdin` and the raw bytes as the request body, and [close its stdin](/api-reference/process/close-a-processs-stdin) with `DELETE /process/{identifier}/stdin`.
+
 ## Auto-restart
 
 ### Restart process on failure
