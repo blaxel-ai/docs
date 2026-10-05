@@ -1,0 +1,49 @@
+---
+title: 'Sandbox inactivity with long-running processes'
+description: 'Keep long-running sandbox processes active by waiting, polling from a backend, or using an external agent architecture.'
+---
+
+Blaxel sandboxes enter standby when they have no active connections, even if processes are still running. This prevents background processes such as development servers from keeping sandboxes active indefinitely.
+
+## Standby behavior
+
+A sandbox can enter standby during a running command when:
+
+- No active connections remain
+- No API requests poll the sandbox for updates
+
+This behavior also applies to `sandbox.process.exec` with `waitForCompletion: false`. The process can enter standby before it finishes.
+
+## Wait for the process
+
+Use `sandbox.process.wait` to maintain polling while a long-running process executes. Set a maximum wait duration appropriate for your workload and choose a polling interval that meets your latency requirements.
+
+```typescript
+await sandbox.process.exec({
+  name: "long-task",
+  command: "run-long-task",
+  waitForCompletion: false,
+});
+
+await sandbox.process.wait("long-task", {
+  maxWait: 600000,
+  interval: 5000,
+});
+```
+
+## Poll from your backend
+
+Use a backend service for polling instead of relying entirely on a browser. Backend polling continues if a user closes the browser and prevents the sandbox from entering standby during a critical process.
+
+## Use an external agent
+
+You can move the agent outside the sandbox and connect it to the sandbox through tools. This architecture can provide more direct lifecycle control, but it may be more complex depending on your use case and toolchain.
+
+<CardGroup cols={2}>
+  <Card title="Long-running processes" href="/Sandboxes/Processes#long-running-processes">
+    Wait for processes and configure keep-alive behavior.
+  </Card>
+  <Card title="Sandbox standby control" href="/Sandboxes/Standby-control">
+    Understand connections and automatic standby.
+  </Card>
+</CardGroup>

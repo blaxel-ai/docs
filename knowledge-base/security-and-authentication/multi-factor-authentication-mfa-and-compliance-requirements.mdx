@@ -1,0 +1,33 @@
+---
+title: 'Multi-Factor Authentication (MFA) and compliance requirements'
+description: 'Meet MFA and compliance requirements on Blaxel by enforcing MFA through your identity provider and using SAML SSO and Directory Sync.'
+---
+
+Blaxel does not currently provide a built-in multi-factor authentication (MFA) mechanism. Enforce MFA through your external authentication provider instead.
+
+## MFA support
+
+Connect your identity provider, such as Okta, Azure AD, Google Workspace, or OneLogin, and enforce MFA at the identity provider level.
+
+When SAML is active and enforced for your account, it becomes the only allowed login method for your domain. See [SAML and Directory Sync](/Security/SSO-Directory-sync) for configuration details.
+
+## Compliance considerations
+
+Use these controls to support HIPAA and SOC 2 compliance requirements:
+
+- SAML SSO with identity provider-enforced MFA is the strongest option and is recommended for enterprise compliance
+- Directory Sync (SCIM) automates user provisioning and deprovisioning based on your identity provider directory, supporting access lifecycle management requirements
+- OAuth providers such as Google or GitHub satisfy most MFA requirements when MFA is enabled at the provider
+
+SOC 2 and HIPAA audit reports are available upon request.
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="SAML and Directory Sync" icon="shield" href="/Security/SSO-Directory-sync">
+    Configure SAML SSO and automated provisioning through SCIM.
+  </Card>
+  <Card title="Contact Blaxel" icon="envelope" href="https://blaxel.ai/contact">
+    Request compliance reports or help with enterprise authentication.
+  </Card>
+</CardGroup>

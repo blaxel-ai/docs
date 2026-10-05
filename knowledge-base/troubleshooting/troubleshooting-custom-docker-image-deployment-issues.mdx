@@ -1,0 +1,96 @@
+---
+title: 'Troubleshooting custom Docker image deployment issues'
+description: 'Diagnose sandbox API, Dockerfile path, build timeout, entrypoint, dependency, and logging issues in custom Blaxel sandbox images.'
+---
+
+Custom Docker images for sandboxes can fail during build or deployment because of missing files, dependencies, or startup configuration. Use the matching section below to identify and resolve the failure.
+
+## Include the sandbox API
+
+Every custom sandbox image must include the `sandbox-api` binary:
+
+```dockerfile
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+```
+
+## Correct Dockerfile paths
+
+When you run `bl deploy`, Blaxel archives all files in your current directory and sends them to the build server. If the Dockerfile is in a subdirectory such as `agent-container/`, write `COPY` paths relative to the uploaded build context.
+
+Incorrect:
+
+```dockerfile
+COPY agent-container/base-package.json package.json
+```
+
+Correct:
+
+```dockerfile
+COPY base-package.json package.json
+```
+
+## Reduce build timeouts
+
+Internal timeout increases usually resolve build timeout failures automatically. If timeouts continue:
+
+- Install fewer packages in the Dockerfile
+- Use a smaller base image where possible
+- Combine `RUN` instructions to reduce image layers
+
+## Fix custom entrypoints
+
+If your entrypoint checks ports with `nc`, install netcat:
+
+```dockerfile
+RUN apt-get update && apt-get install -y netcat-openbsd
+```
+
+Use `127.0.0.1` instead of `localhost` in Debian-based images because `localhost` may not resolve correctly.
+
+If you do not need custom initialization, remove the custom script and start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+This entrypoint works when you start other processes programmatically through the SDK or API.
+
+## Install system libraries
+
+Compilation errors such as `unable to find library -lgcc` indicate that the image lacks development packages. Install the required toolchain:
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libc6-dev \
+    libgcc-12-dev \
+    pkg-config
+```
+
+## Configure the environment
+
+Docker `ENV` variables are available to the entrypoint and its child processes. Extend variables such as `PATH` with `export` in your entrypoint script:
+
+```sh
+#!/bin/sh
+export PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
+export LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:$LIBRARY_PATH"
+/usr/local/bin/sandbox-api
+```
+
+## Inspect build logs
+
+Use the CLI to view the complete build process and deployment errors:
+
+```bash
+bl logs sandbox sandbox-name
+```
+
+<CardGroup cols={2}>
+  <Card title="Docker sandbox tutorial" href="/Tutorials/Docker">
+    Learn how to run Docker workloads in a sandbox.
+  </Card>
+  <Card title="Sandbox processes" href="/Sandboxes/Processes">
+    Learn how to start and manage processes programmatically.
+  </Card>
+</CardGroup>

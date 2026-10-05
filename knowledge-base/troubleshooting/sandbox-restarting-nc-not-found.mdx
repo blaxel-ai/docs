@@ -1,0 +1,61 @@
+---
+title: 'Resolving sandbox restarts caused by nc not found'
+description: 'Stop sandbox restart loops by removing an unnecessary custom entrypoint or installing netcat and using the loopback IP in Debian-based images.'
+---
+
+A sandbox can restart repeatedly when its `entrypoint.sh` script cannot start the sandbox API. The usual causes are a missing netcat package or failed `localhost` resolution in a Debian-based image.
+
+## Remove the entrypoint script
+
+If you do not need custom initialization, remove `entrypoint.sh` and start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+Remove the custom entrypoint instructions:
+
+```dockerfile
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+## Fix the entrypoint script
+
+If you need custom initialization, install `netcat-openbsd` in the Dockerfile:
+
+```dockerfile
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends --quiet \
+        netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+Then replace `localhost` with `127.0.0.1` in the port check:
+
+```sh
+while ! nc -z 127.0.0.1 "$port"; do
+  sleep 1
+done
+```
+
+Debian-based images do not always resolve `localhost` automatically. Use `127.0.0.1` for local connections in these images.
+
+## Inspect sandbox logs
+
+Check the console logs for errors from the entrypoint script:
+
+```bash
+bl logs sbx your-sandbox-name
+```
+
+<CardGroup cols={2}>
+  <Card title="Sandbox processes" href="/Sandboxes/Processes">
+    Learn how to start and manage sandbox processes.
+  </Card>
+  <Card title="Docker sandbox tutorial" href="/Tutorials/Docker">
+    Learn how to configure Docker workloads in sandboxes.
+  </Card>
+</CardGroup>

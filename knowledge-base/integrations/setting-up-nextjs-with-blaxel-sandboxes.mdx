@@ -1,0 +1,363 @@
+---
+title: 'Set up Next.js with Blaxel Sandboxes'
+description: 'Run a Next.js application in a Blaxel Sandbox and expose it securely with a Blaxel preview URL.'
+---
+
+This guide explains how to run a Next.js application inside a Blaxel Sandbox and expose it securely using Blaxel previews.
+
+## Prerequisites
+
+- [Blaxel CLI](../../cli-reference/introduction) installed and authenticated with `bl login`
+- Node.js 18 or later
+- `@blaxel/core` installed in your project with `npm install @blaxel/core`
+
+## 1. Understand the architecture
+
+Running Next.js inside a Blaxel Sandbox requires minimal adjustments compared to local development:
+
+- Next.js binds to all interfaces by default in development mode
+- Blaxel exposes services through preview URLs
+- The preview URL handles routing and authentication
+
+Run the Next.js development server on port `3000`, then expose it through a [Blaxel preview URL](../../Sandboxes/Preview-url).
+
+## 2. Build the sandbox image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  netcat-openbsd \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Create a Next.js project with TypeScript, Tailwind, App Router, and Turbopack
+RUN mkdir -p /app \
+  && npx create-next-app@latest /app --use-npm --typescript --eslint --tailwind --src-dir --app --turbopack \
+  && cd /app && npm install --save @next/swc-linux-x64-musl
+
+COPY ./next.config.ts /app/next.config.ts
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENV PATH="/usr/local/bin:$PATH"
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+Create an `entrypoint.sh` script that starts the sandbox API and development server:
+
+```bash
+#!/bin/sh
+
+export PATH="/usr/local/bin:$PATH"
+
+/usr/local/bin/sandbox-api &
+
+wait_for_port() {
+  local port=$1
+  local timeout=30
+  local count=0
+
+  echo "Waiting for port $port to be available..."
+  while ! nc -z localhost "$port"; do
+    sleep 1
+    count=$((count + 1))
+    if [ "$count" -gt "$timeout" ]; then
+      echo "Timeout waiting for port $port"
+      exit 1
+    fi
+  done
+  echo "Port $port is now available"
+}
+
+wait_for_port 8080
+
+echo "Running Next.js dev server..."
+curl http://localhost:8080/process \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "dev-server",
+    "workingDir": "/app",
+    "command": "npm run dev -- --port 3000",
+    "waitForCompletion": false,
+    "restartOnFailure": true,
+    "maxRestarts": 25
+  }'
+
+wait
+```
+
+## 3. Configure Next.js
+
+Create `next.config.ts`:
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  allowedDevOrigins: ["*.preview.bl.run"],
+};
+
+export default nextConfig;
+```
+
+The `allowedDevOrigins` setting lets the development server accept requests from Blaxel preview origins. If your Blaxel workspace uses a custom domain, add it to the array:
+
+```typescript
+allowedDevOrigins: ["*.preview.bl.run", "*.preview.mycompany.com"];
+```
+
+## 4. Configure and deploy the image
+
+Create `blaxel.toml` in the same directory as your `Dockerfile`:
+
+```toml
+type = "sandbox"
+name = "nextjs-template"
+
+[runtime]
+memory = 4096
+
+[[runtime.ports]]
+name = "nextjs-dev"
+target = 3000
+protocol = "tcp"
+```
+
+Deploy the image:
+
+```bash
+bl deploy
+```
+
+For more information about reusable images, see [sandbox images](../../Sandboxes/Templates).
+
+## 5. Create or reuse a sandbox
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-nextjs-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  labels: {
+    framework: "nextjs",
+  },
+  image: "nextjs-template:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000, protocol: "HTTP" },
+  ],
+});
+```
+
+## 6. Configure preview response headers
+
+Next.js development servers work well with permissive CORS headers when accessed through a preview URL:
+
+```typescript
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+```
+
+Alternatively, use [custom domains](../../Infrastructure/Custom-domains) to expose previews on your own domain.
+
+## 7. Create the preview and token
+
+Next.js runs on port `3000`. Create a private preview for that port:
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "dev-server-preview" },
+  spec: {
+    responseHeaders,
+    public: false,
+    port: 3000,
+  },
+});
+```
+
+Generate a token that expires after one day:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+const token = await preview.tokens.create(expiresAt);
+```
+
+## 8. Start and monitor the development server
+
+If you do not use the entrypoint script, start the development server programmatically:
+
+```typescript
+async function startDevServer(sandbox: SandboxInstance) {
+  console.log("Starting Next.js dev server...");
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --port 3000",
+    workingDir: "/app",
+    waitForPorts: [3000],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+Stream its logs:
+
+```typescript
+const logStream = sandbox.process.streamLogs("dev-server", {
+  onLog(log) {
+    console.log(log);
+  },
+});
+
+logStream.close();
+```
+
+## 9. Access the Next.js application
+
+Once the server is running, open:
+
+```text
+${preview.spec?.url}?bl_preview_token=${token.value}
+```
+
+## 10. Run the complete example
+
+The following example creates the sandbox and preview, starts the server when needed, prints the access URL, and streams logs:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-nextjs-sandbox";
+
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+async function startDevServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --port 3000",
+    workingDir: "/app",
+    waitForPorts: [3000],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      labels: {
+        framework: "nextjs",
+      },
+      image: "nextjs-template:latest",
+      memory: 4096,
+      ports: [
+        { name: "preview", target: 3000, protocol: "HTTP" },
+      ],
+    });
+
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "preview" },
+      spec: {
+        responseHeaders,
+        public: false,
+        port: 3000,
+      },
+    });
+
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    const processes = await sandbox.process.list();
+    if (!processes.find((process) => process.name === "dev-server")) {
+      await startDevServer(sandbox);
+    }
+
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    console.log(`Next.js Preview URL: ${webUrl}`);
+
+    const logStream = sandbox.process.streamLogs("dev-server", {
+      onLog(log) {
+        console.log(log);
+      },
+    });
+
+    process.on("SIGINT", () => {
+      logStream.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+## 11. Use Next.js features
+
+### Turbopack
+
+The template uses Turbopack, Next.js's Rust-based bundler. It provides:
+
+- Faster cold starts
+- Instant hot module replacement
+- Optimized incremental compilation
+
+The `@next/swc-linux-x64-musl` package is preinstalled for Alpine Linux performance.
+
+### App Router
+
+The template configures the App Router with the `/app` directory structure. It provides:
+
+- Server Components by default
+- Nested layouts
+- Loading and error states
+- Server Actions
+
+### TypeScript, Tailwind CSS, and ESLint
+
+The template enables TypeScript with strict type checking. Tailwind CSS is preconfigured in `src/app/globals.css`, and ESLint uses the recommended Next.js rules.
+
+This setup runs Next.js fully inside a Blaxel Sandbox, securely exposes the development server, supports Fast Refresh, and provides a fast environment for previews, internal demos, and AI-powered coding workflows.
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Real-time previews" href="../../Sandboxes/Preview-url">
+    Configure public and private preview URLs for sandbox services.
+  </Card>
+  <Card title="Sandbox images" href="../../Sandboxes/Templates">
+    Build and manage reusable Blaxel Sandbox images.
+  </Card>
+</CardGroup>

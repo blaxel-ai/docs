@@ -1,0 +1,53 @@
+---
+title: 'Ensure sandboxes use the latest deployed image'
+description: 'Create or update Blaxel sandboxes with the latest deployed image version and understand how existing sandboxes behave.'
+---
+
+Use the `latest` tag when new sandboxes should include the most recently deployed packages and dependencies. Existing sandboxes continue to use their current image until you replace or update them.
+
+## Use the latest tag
+
+Reference your sandbox template image with the `:latest` tag:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-image:latest",
+});
+```
+
+If you omit a tag, `latest` is the default. Each new sandbox then uses the newest deployed version available at creation time.
+
+## Manage existing sandboxes
+
+Running `bl deploy` does not update existing sandboxes that use an older image. They continue running until you explicitly replace or update them.
+
+To move every sandbox to the latest image:
+
+1. Delete sandboxes that use older image versions.
+2. Create new sandboxes with the `:latest` tag.
+
+Alternatively, call the UpdateSandbox API at `PUT /sandboxes/{sandboxName}` to update the image in place. Updating the image resets the sandbox state.
+
+## Idempotent creation behavior
+
+`createIfNotExists()` in TypeScript and `create_if_not_exists()` in Python return an existing sandbox with the same name unchanged. They do not recreate it with the latest image.
+
+Delete the sandbox first or use the UpdateSandbox API when you need to force an image refresh.
+
+## Persistence and fresh images
+
+Blaxel sandboxes can remain in standby indefinitely, preserve their state between sessions, and resume in under 25 ms. This persistence can reduce setup time and compute costs.
+
+If fresh packages are more important than state persistence, regularly replace your sandboxes and create them with the `:latest` tag.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox images" href="/Sandboxes/Templates#update-a-custom-image">
+    Deploy new revisions of a custom sandbox image.
+  </Card>
+  <Card title="Sandbox best practices" href="/Sandboxes/best-practices">
+    Choose a lifecycle strategy for persistent sandboxes.
+  </Card>
+</CardGroup>

@@ -1,0 +1,66 @@
+---
+title: 'Setting up MCP servers with authentication on Blaxel'
+description: 'Authenticate connections to Blaxel-hosted MCP servers with API keys or short-lived OAuth tokens.'
+---
+
+Blaxel supports connections to Blaxel-hosted Model Context Protocol (MCP) servers using Blaxel API keys or OAuth tokens. MCP servers deployed on Blaxel are not public by default, so every connection must be authenticated.
+
+## Authentication methods
+
+### API key authentication
+
+Create long-lived API keys in the Blaxel Console. Use an API key directly as a bearer token:
+
+```http
+Authorization: Bearer bl_xxxxxxxx
+```
+
+### OAuth authentication
+
+Short-lived OAuth tokens are valid for two hours and provide a more secure option. Obtain them through any of these methods:
+
+- CLI: Run `bl login` to authenticate through the Blaxel Console
+- Service accounts: Use the client credentials grant type with `/oauth/token`
+- Full OAuth 2.0 flows: Blaxel implements all OAuth 2.0 grant types
+
+The well-known OpenID configuration is available at:
+
+```text
+https://api.blaxel.ai/v0/.well-known/openid-configuration
+```
+
+See [Access tokens](/Security/Access-tokens) for more information about API keys, OAuth tokens, and service accounts.
+
+## Public access
+
+Make an MCP server public through `blaxel.toml` to bypass Blaxel authentication:
+
+```toml
+public = true
+```
+
+When you make the server public, you must implement your own authentication.
+
+## Current implementation
+
+For more detailed information about MCP authentication patterns, refer to Cloudflare's article on building AI agents with MCP authentication.
+
+## Connect to the server
+
+Choose a long-lived API key or a short-lived OAuth token.
+
+- For API keys, create a key in the Blaxel Console under Profile > Security or through a service account
+- For OAuth, run `bl login` for CLI access or use service account client credentials with `/oauth/token`
+- Pass the token as `Authorization: Bearer <TOKEN>` when connecting to the MCP server
+- For accounts with multiple workspaces, optionally pass `X-Blaxel-Workspace: <WORKSPACE>`
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Access tokens" icon="key" href="/Security/Access-tokens">
+    Learn how to create and use Blaxel API keys and OAuth tokens.
+  </Card>
+  <Card title="Create an MCP server" icon="server" href="/Functions/Create-MCP-server">
+    Develop and configure a custom MCP server on Blaxel.
+  </Card>
+</CardGroup>

@@ -1,0 +1,38 @@
+---
+title: 'Handling Preview not found 404 errors in sandboxes'
+description: 'Resolve Preview not found 404 errors by checking sandbox and preview lifecycle state, TTL settings, and asynchronous deletion races.'
+---
+
+A `Preview not found` response with a `404` status means the requested preview has been deleted or is being deleted. Check the lifecycle state of both the parent sandbox and the preview.
+
+## Common causes
+
+This error occurs when:
+
+- The parent sandbox was deleted manually
+- The parent sandbox expired because of its TTL
+- The preview's TTL expired
+- An asynchronous deletion request placed the preview in the `DELETING` state
+
+## Resolve the error
+
+Create previews with `createIfNotExists` in TypeScript or `create_if_not_exists` in Python. When a preview is in the `DELETING` state, the platform waits for deletion to finish before recreating it. These methods safely reuse preview IDs and avoid a race with deletion.
+
+Also verify that the sandbox and preview are still active and were not removed by TTL expiration or manual cleanup.
+
+## Prevent future errors
+
+- Handle `404` responses gracefully in your application
+- Poll the sandbox status periodically where appropriate
+- Configure sandbox TTL values that match your usage pattern
+
+If the error continues after these checks, contact support.
+
+<CardGroup cols={2}>
+  <Card title="Preview URLs" href="/Sandboxes/Preview-url">
+    Learn how to create and use sandbox previews.
+  </Card>
+  <Card title="Sandbox overview" href="/Sandboxes/Overview">
+    Review sandbox lifecycle and configuration.
+  </Card>
+</CardGroup>

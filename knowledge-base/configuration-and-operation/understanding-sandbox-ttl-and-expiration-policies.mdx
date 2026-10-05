@@ -1,0 +1,98 @@
+---
+title: 'Understanding sandbox TTL and expiration policies'
+description: 'Configure sandbox TTL and expiration policies to control lifecycle, automatic deletion, and storage costs.'
+---
+
+Blaxel provides TTL and expiration policies that automatically manage sandbox lifecycles. Use them to control costs and remove unused sandboxes from your workspace.
+
+## TTL policy types
+
+Configure any of these lifecycle policies:
+
+- `ttl-idle`: Delete a sandbox after a specified period of inactivity
+- `ttl-max-age`: Delete a sandbox after a maximum age, regardless of activity
+- `date`: Delete a sandbox on a specific date
+
+You can also define TTL through top-level sandbox parameters:
+
+- `ttl`: Set a maximum age with simpler syntax
+- `expires`: Set an absolute expiration date
+
+## Configure TTL policies
+
+Set `ttl`, `expires`, or `lifecycle` when creating a sandbox:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-image",
+  ttl: "24h",
+  // OR
+  // expires: new Date(Date.now() + 86400000),
+  // OR / AND
+  lifecycle: {
+    expirationPolicies: [
+      { type: "ttl-idle", value: "1h", action: "delete" },
+    ],
+  },
+});
+```
+
+## Policy behavior
+
+### Idle TTL timing
+
+The `ttl-idle` timer starts only after the sandbox receives its first API call or connection. Creating a sandbox without using it does not start the idle timer.
+
+On Tier 1, a hard 30-day cap still applies. A sandbox is deleted after 30 days regardless of activity, so `ttl-idle` cannot provide rolling expiration. Rolling expiration based on activity is available on Tier 2 and above.
+
+### Processing frequency
+
+TTL enforcement does not operate at one-second precision. The cleanup process runs approximately every 60 seconds.
+
+### Computed termination time
+
+Sandbox metadata includes the read-only `expiresIn` field in TypeScript and `expires_in` field in Python. It reports the number of seconds until automatic termination under the current TTL or lifecycle policy.
+
+## Deletion process
+
+When a sandbox expires:
+
+1. Blaxel terminates the sandbox.
+2. The sandbox remains in the `terminated` state for a retention period, which depends on your tier configuration.
+3. Blaxel deletes the sandbox completely.
+
+## Tier limits
+
+TTL restrictions depend on your account tier:
+
+- Tier 0: A maximum TTL of 7 days is enforced
+- Tier 1: A hard 30-day maximum lifetime is enforced, and `expiresIn` reflects this limit
+- Tier 2 and above: No maximum TTL is enforced, and `ttl-idle` supports rolling expiration based on activity
+
+## Idempotent sandbox creation
+
+When you call `createIfNotExists` with the same sandbox name, Blaxel replaces an existing terminated sandbox with a new one.
+
+Use TypeScript SDK v0.2.45 or later or Python SDK v0.2.21 or later for this behavior.
+
+## Update an existing sandbox
+
+Apply a TTL to an existing sandbox with `updateTtl` or update its lifecycle policies. This is useful when cleaning up sandboxes created without expiration rules.
+
+See [sandbox expiration policies](/Sandboxes/Expiration#update-sandbox-expiry-rules) for TypeScript and Python examples.
+
+## Preview cleanup
+
+Deleting a sandbox, including automatic deletion through TTL, also removes all associated preview URLs. You do not need to delete previews separately because they are scoped to the sandbox.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox expiration policies" href="/Sandboxes/Expiration">
+    Configure, update, and clear sandbox expiry rules.
+  </Card>
+  <Card title="Sandbox best practices" href="/Sandboxes/best-practices#automate-cleanup-with-ttls">
+    Apply TTLs as part of a lifecycle management strategy.
+  </Card>
+</CardGroup>

@@ -1,0 +1,39 @@
+---
+title: 'How to authenticate the Blaxel CLI in CI environments'
+description: 'Authenticate the Blaxel CLI with a dedicated API key to automate deployments and other tasks in CI/CD environments.'
+---
+
+To use the Blaxel CLI in CI/CD environments for tasks such as pushing sandbox images, authenticate with an API key.
+
+## GitHub Action
+
+The recommended way to integrate the Blaxel CLI into a GitHub CI pipeline is the official [Blaxel GitHub Action](https://github.com/blaxel-ai/bl-action).
+
+## Manual authentication
+
+For another CI platform or a manual setup:
+
+1. Create a dedicated workspace API key in the [Blaxel Console](https://app.blaxel.ai/profile/security).
+2. Set the API key as an environment variable and log in:
+
+```bash
+export BL_API_KEY=your-api-key-here
+bl login your-workspace
+```
+
+3. After login succeeds, run any Blaxel CLI command in your CI environment.
+
+<Tip>
+  Use a dedicated workspace API key for CI/CD automation instead of your personal API key.
+</Tip>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Access tokens" icon="key" href="/Security/Access-tokens">
+    Learn how to create and manage API keys for the CLI and CI environments.
+  </Card>
+  <Card title="Blaxel CLI" icon="terminal" href="/cli-reference/introduction">
+    Install the CLI and review its available commands.
+  </Card>
+</CardGroup>

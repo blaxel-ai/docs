@@ -1,0 +1,57 @@
+---
+title: 'Getting static IP addresses for Blaxel sandboxes'
+description: 'Retrieve the regional public IP address ranges used by Blaxel sandboxes for network allowlists.'
+---
+
+If network restrictions require you to allowlist IP addresses for Blaxel deployments, including sandbox traffic, retrieve the current public IP ranges through the Blaxel API. The API returns addresses as CIDR ranges for each region.
+
+## Retrieve public IP addresses
+
+Send an authenticated request to the public IP endpoint:
+
+```bash
+curl --request GET \
+  --url https://api.blaxel.ai/v0/publicIps \
+  --header "Authorization: Bearer $BL_API_KEY"
+```
+
+## IP address stability
+
+Blaxel public IP addresses are static and do not change frequently. New addresses are typically added only as the platform scales, which happens a few times per year or less.
+
+Retrieve the list from the API whenever you need the latest ranges.
+
+## Regional IP addresses
+
+Blaxel offers sandboxes in four regions:
+
+- `us-pdx-1`: Portland
+- `us-was-1`: North Virginia
+- `eu-lon-1`: London
+- `eu-fra-1`: Frankfurt
+
+To retrieve addresses for one region, add the `region` query parameter:
+
+```bash
+curl --request GET \
+  --url "https://api.blaxel.ai/v0/publicIps?region=us-was-1" \
+  --header "Authorization: Bearer $BL_API_KEY"
+```
+
+## Future networking options
+
+Blaxel is working on:
+
+- Dedicated IP addresses per customer without significant resource reservation
+- Private endpoint connections to AWS VPCs
+
+These options will provide additional networking controls for customers with strict security requirements.
+
+<CardGroup cols={2}>
+  <Card title="Regions and public IP addresses" href="/Infrastructure/Regions#public-ip-addresses">
+    Review regions and the public IP API.
+  </Card>
+  <Card title="Dedicated egress gateways" href="/Infrastructure/Dedicated-egress-gateways">
+    Configure dedicated outbound networking for supported workloads.
+  </Card>
+</CardGroup>
