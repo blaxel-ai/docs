@@ -276,6 +276,92 @@ await sandbox.process.wait("long-task", max_wait=600000, interval=5000)
 
 Set a long completion duration if your process is expected to take longer.
 
+### Send logs to a webhook
+
+`onLog` (`on_log` in Python, see [Log streaming](/Sandboxes/Log-streaming)) runs in your caller's process, so log delivery stops when the caller exits, even if the sandbox command is still running. For a short-lived caller such as a serverless function, run a relay inside the sandbox instead. If you only need the final result, start your command with `keepAlive: true`, `waitForCompletion: false` and a `timeout` that covers the command (a `keepAlive` process is killed after 10 minutes by default; see [Sandbox keep-alive](#sandbox-keep-alive)), then call `process.get(name)` and `process.logs(name)` from any later invocation.
+
+The relay needs `python3` in the sandbox (the default `blaxel/base-image` has it; `blaxel/ts-app` and `blaxel/node` do not) and an HTTPS receiver that checks the `X-Webhook-Secret` header. It runs your command, merges stdout and stderr, POSTs each line with an increasing `seq`, and ends with an `exit` event carrying `exitCode`. Save it as `log-relay.py` next to your caller:
+
+```python log-relay.py
+import itertools, json, os, subprocess, sys, urllib.request
+
+url, secret, seq = os.environ["WEBHOOK_URL"], os.environ.pop("WEBHOOK_SECRET"), itertools.count(1)
+# Refuse redirects: urllib would resend X-Webhook-Secret to the new URL.
+post = urllib.request.build_opener(type("NoRedirect", (urllib.request.HTTPRedirectHandler,), {"redirect_request": lambda *a: None})).open
+
+def send(event):
+    body = json.dumps({**event, "seq": next(seq)}).encode()
+    headers = {"Content-Type": "application/json", "X-Webhook-Secret": secret}
+    try:
+        post(urllib.request.Request(url, body, headers), timeout=5).close()
+    except Exception as error:
+        print("Webhook delivery failed:", error, file=sys.stderr, flush=True)
+
+child = subprocess.Popen(["sh", "-c", os.environ["TASK_COMMAND"]], stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, encoding="utf-8", errors="replace")
+for line in child.stdout:
+    send({"type": "line", "line": line.rstrip("\n")})
+code = child.wait()
+send({"type": "exit", "exitCode": code})
+sys.exit(code)
+```
+
+Upload it and start it without waiting for completion. Set `SANDBOX_NAME`, `WEBHOOK_URL`, and `WEBHOOK_SECRET` in your caller's environment, using a dedicated secret rather than your Blaxel API key. Replace the `TASK_COMMAND` value with your command; the demo runs for about one minute.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { readFile } from "node:fs/promises";
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get(process.env.SANDBOX_NAME!);
+await sandbox.fs.write("/tmp/log-relay.py", await readFile("log-relay.py", "utf8"));
+await sandbox.process.exec({
+  name: "log-relay",
+  command: "python3 /tmp/log-relay.py",
+  env: {
+    WEBHOOK_URL: process.env.WEBHOOK_URL!,
+    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET!,
+    TASK_COMMAND: 'for i in 1 2 3; do sleep 20; echo "step $i"; done'
+  },
+  keepAlive: true,
+  waitForCompletion: false,
+  timeout: 3600
+});
+```
+
+```python Python
+import asyncio
+import os
+from blaxel.core import SandboxInstance
+
+async def main():
+    sandbox = await SandboxInstance.get(os.environ["SANDBOX_NAME"])
+    await sandbox.fs.write("/tmp/log-relay.py", open("log-relay.py").read())
+    await sandbox.process.exec({
+        "name": "log-relay",
+        "command": "python3 /tmp/log-relay.py",
+        "env": {
+            "WEBHOOK_URL": os.environ["WEBHOOK_URL"],
+            "WEBHOOK_SECRET": os.environ["WEBHOOK_SECRET"],
+            "TASK_COMMAND": 'for i in 1 2 3; do sleep 20; echo "step $i"; done'
+        },
+        "keep_alive": True,
+        "wait_for_completion": False,
+        "timeout": 3600
+    })
+
+asyncio.run(main())
+```
+
+</CodeGroup>
+
+<Warning>
+  `keepAlive: true` (`keep_alive: True` in Python) is required. Without it, the sandbox can go to standby after your caller disconnects, and the command can pause until the next API call. See [Sandbox keep-alive](#sandbox-keep-alive). Set `timeout` to your task budget; this example auto-kills the relay after one hour.
+</Warning>
+
+The relay is best-effort: no retries or durable queue, and deleting the sandbox stops it. A failed POST (including the `exit` event) is logged and skipped. If nothing arrives, check `process.get("log-relay")` and `process.logs("log-relay")`: failed POSTs, a missing `python3`, `WEBHOOK_URL` or `TASK_COMMAND` show up there, not in your caller. POSTs are sequential with a five-second timeout, so a slow receiver delays delivery, and a command that prints a lot of output waits for it. The command does not inherit `WEBHOOK_SECRET`, but it runs as the same user as the relay and can still read the relay's environment from `/proc`, so don't run untrusted code with a secret that protects anything else. Use a unique process name for each concurrent run.
+
 ### Wait for ports
 
 In some cases, you may want to wait for a port to be opened while running — for example if you are running `npm run dev` and want to wait for port 3000 to be open. `exec` returns as soon as the ports are open, and the process keeps running in the background.
