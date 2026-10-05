@@ -31,7 +31,7 @@ This quickstart adapts the simple stdio-based MCP weather server from the [offic
 Clone the repository and change to the project working directory:
 
 ```bash
-git clone <https://github.com/modelcontextprotocol/quickstart-resources.git>
+git clone https://github.com/modelcontextprotocol/quickstart-resources.git
 cd quickstart-resources/weather-server-typescript
 ```
 
@@ -40,7 +40,7 @@ cd quickstart-resources/weather-server-typescript
 Clone the repository and change to the project working directory:
 
 ```bash
-git clone <https://github.com/modelcontextprotocol/quickstart-resources.git>
+git clone https://github.com/modelcontextprotocol/quickstart-resources.git
 cd quickstart-resources/weather-server-python
 ```
 
@@ -100,7 +100,7 @@ const port = parseInt(process.env.PORT || '8000');
 const host = process.env.HOST || '::';
 
 app.listen(port, host, () => {
-  console.log(`MCP Server running on <http://$>{host}:${port}/mcp`);
+  console.log(`MCP Server running on http://${host}:${port}/mcp`);
 }).on('error', error => {
   console.error('Server error:', error);
   process.exit(1);
@@ -167,7 +167,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk update \\
+RUN apk update \
     && apk add build-base curl ca-certificates
 
 COPY . .
@@ -187,11 +187,11 @@ CMD [ "node", "build/index.js" ]
 ```dockerfile
 FROM python:3.12-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \\
-    build-essential curl ca-certificates \\
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf <https://astral.sh/uv/install.sh> | sh \\
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
   && mv /root/.local/bin/uv /usr/local/bin/uv
 
 WORKDIR /app
@@ -219,7 +219,7 @@ bl deploy
 Blaxel will handle the build and deployment, producing an HTTPS endpoint on Global Agentics Network. The server endpoint looks like this:
 
 ```text
-<https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp>
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
 ```
 
 You can now [connect to this endpoint from any MCP-aware client](/Functions/Invoke-functions).
