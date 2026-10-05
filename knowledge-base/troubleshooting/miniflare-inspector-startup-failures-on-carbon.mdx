@@ -1,0 +1,130 @@
+---
+title: 'Fix Miniflare inspector startup failures on Carbon sandboxes'
+description: 'Diagnose Astro and Cloudflare preview startup failures caused by older Miniflare versions selecting an unavailable IPv6 localhost address.'
+---
+
+An Astro or Cloudflare preview can fail to start in a [Carbon (Mark 3.1)](/Infrastructure/Gens#carbon-aka-mark-31) sandbox when an older Miniflare version binds its runtime inspector to `localhost`. Upgrade the Cloudflare development dependencies or disable the inspector when you do not need it.
+
+## Symptoms
+
+The preview process may hang at:
+
+```text
+Starting local server...
+```
+
+In applications that wait for the preview server, the visible error can instead be a secondary connection failure:
+
+```text
+fetch failed
+Caused by:
+connect ECONNREFUSED 127.0.0.1:<port>
+```
+
+The refused connection does not necessarily mean that the application selected the wrong port. It can mean that Miniflare never finished starting the underlying `workerd` runtime.
+
+## Confirm the sandbox generation
+
+Run the following command inside the sandbox:
+
+```bash
+ip addr show
+```
+
+Inspect the main non-loopback interface. A global `inet6` address indicates that the sandbox is running on [Carbon (Mark 3.1)](/Infrastructure/Gens#carbon-aka-mark-31).
+
+<Note>
+  The presence of IPv6 identifies the sandbox generation during this rollout. It does not by itself prove that Miniflare is affected.
+</Note>
+
+## Check for the Miniflare issue
+
+Check which Cloudflare packages the application resolved:
+
+```bash
+npm ls miniflare wrangler @cloudflare/vite-plugin @astrojs/cloudflare
+```
+
+Then inspect localhost resolution and the IPv6 loopback interface:
+
+```bash
+getent hosts localhost
+ip -6 addr show dev lo
+sysctl net.ipv6.conf.lo.disable_ipv6
+```
+
+The known failure occurs when `localhost` resolves to `::1`, but the runtime cannot bind the IPv6 loopback address. Older Miniflare versions pass `--inspector-addr=localhost:0` to `workerd` and wait for an inspector-ready event that never arrives.
+
+Confirm the inspector address while the preview process is stuck:
+
+```bash
+ps -ef | grep '[w]orkerd'
+```
+
+An affected process includes:
+
+```text
+--inspector-addr=localhost:0
+```
+
+## Upgrade Miniflare or Wrangler
+
+The preferred fix is to update the package that provides Miniflare and regenerate the lockfile. The fix is included in:
+
+- Miniflare `4.20260601.0` and later
+- Wrangler `4.97.0` and later
+
+For a project that uses Wrangler directly:
+
+```bash
+npm install --save-dev wrangler@latest
+```
+
+Run `npm ls miniflare wrangler` again to verify the resolved versions. The fixed Miniflare release uses `127.0.0.1` for the runtime inspector instead of relying on `localhost` resolution.
+
+## Disable the inspector
+
+If you cannot upgrade immediately and do not need runtime debugging, disable the inspector in the Cloudflare integration.
+
+For an Astro project whose Cloudflare adapter supports `inspectorPort`, update `astro.config.mjs`:
+
+```javascript
+import { defineConfig } from "astro/config";
+import cloudflare from "@astrojs/cloudflare";
+
+export default defineConfig({
+  adapter: cloudflare({
+    inspectorPort: false,
+  }),
+});
+```
+
+For a project that configures the Cloudflare Vite plugin directly:
+
+```javascript
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    cloudflare({
+      inspectorPort: false,
+    }),
+  ],
+});
+```
+
+Restart the preview process after changing the configuration. This workaround disables local runtime debugging but does not affect the application preview.
+
+## Related Cloudflare fix
+
+Cloudflare fixed the underlying address selection in [workers-sdk pull request #14086](https://github.com/cloudflare/workers-sdk/pull/14086). The change replaces `localhost` with `127.0.0.1` for the runtime inspector address.
+
+<CardGroup cols={2}>
+  <Card title="Set up Astro with Blaxel Sandboxes" href="/knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes">
+    Configure and expose an Astro development server in a sandbox.
+  </Card>
+  <Card title="Infrastructure generations" href="/Infrastructure/Gens">
+    Compare Carbon with earlier Blaxel infrastructure generations.
+  </Card>
+</CardGroup>
