@@ -12,7 +12,7 @@ irm https://blaxel.ai/install.ps1 | iex
 
 </CodeGroup>
 
-The installer checks the Blaxel CLI (`bl`) against the release checksums, installs it, and adds it to your `PATH` with shell completions. It then runs [`bl setup`](/cli-reference/commands/bl_setup), which shows what it found and installs it when you press Enter: the [Blaxel skills](/skills-mcp#blaxel-skills) and MCP servers for the coding agents on your machine (Claude Code, Codex, Cursor and others), then the browser login. Run it again at any time to add what is missing.
+The installer checks the Blaxel CLI (`bl`) against the release checksums, installs it, and adds it to your `PATH`. On macOS and Linux, it also installs completions for your current shell if you use zsh, bash, or fish. On Windows, [configure PowerShell completions](/cli-reference/introduction#shell-autocompletion) separately. It then runs [`bl setup`](/cli-reference/commands/bl_setup), which shows what it found and installs it when you press Enter: the [Blaxel skills](/skills-mcp#blaxel-skills) and MCP servers for the coding agents on your machine (Claude Code, Codex, Cursor and others), then the browser login. Run it again at any time to add what is missing.
 
 <AccordionGroup>
 
