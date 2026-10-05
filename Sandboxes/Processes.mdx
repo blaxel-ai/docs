@@ -63,7 +63,7 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-By default, `exec` returns as soon as the process starts, before the command has produced its output.
+By default, `exec` returns after starting the process without waiting for it to finish. Its output may not be available yet.
 
 ### Get command output
 
@@ -95,7 +95,7 @@ print(result.stderr)
 
 </CodeGroup>
 
-The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Waiting is limited to 60 seconds. For longer commands, see [Wait for process completion](#wait-for-process-completion).
+The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Set `timeout` to bound how long the call waits. For longer commands, see [Wait for process completion](#wait-for-process-completion).
 
 Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
 
@@ -483,7 +483,7 @@ The first `npx` run downloads the server package, so the first reply can take se
 
 ### Stdin errors and restarts
 
-Writes keep their order, and two concurrent writes never mix inside a message. The SDK does not retry a failed write, since a duplicate would corrupt the stream. A write fails with:
+Sequential writes keep their order, and two concurrent writes never mix inside a message. The SDK does not retry a failed write, since a duplicate would corrupt the stream. A write fails with:
 
 - `409` if the process was started without `stdin: true`, or its stdin is closed
 - `413` if the data is larger than 8 MiB
