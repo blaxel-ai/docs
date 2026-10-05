@@ -296,6 +296,7 @@
                       "knowledge-base/troubleshooting/handling-preview-not-found-404-errors-in-sandboxes",
                       "knowledge-base/troubleshooting/sandbox-restarting-nc-not-found",
                       "knowledge-base/troubleshooting/when-localhost-goes-silent-in-debian-based-sandboxes",
+                      "knowledge-base/troubleshooting/miniflare-inspector-startup-failures-on-carbon",
                       "knowledge-base/troubleshooting/ssl-certificate-verification-errors-when-cloning-repositories",
                       "knowledge-base/troubleshooting/resolve-enospc-no-space-left-on-device-errors"
                     ]
