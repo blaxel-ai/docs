@@ -63,7 +63,39 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-Logs for a [process](/Sandboxes/Processes) are available in the _process execution_ object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
+By default, `exec` returns as soon as the process starts, before the command has produced its output.
+
+### Get command output
+
+Set `waitForCompletion: true` (`"wait_for_completion": True` in Python) to wait for the command to finish. The result then holds its `stdout`, `stderr`, and `exitCode` (`exit_code` in Python):
+
+<CodeGroup>
+
+```typescript TypeScript
+const result = await sandbox.process.exec({
+  command: "ls /",
+  waitForCompletion: true
+});
+
+console.log(result.exitCode);
+console.log(result.stdout);
+console.log(result.stderr);
+```
+
+```python Python
+result = await sandbox.process.exec({
+  "command": "ls /",
+  "wait_for_completion": True
+})
+
+print(result.exit_code)
+print(result.stdout)
+print(result.stderr)
+```
+
+</CodeGroup>
+
+The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Waiting is limited to 60 seconds. For longer commands, see [Wait for process completion](#wait-for-process-completion).
 
 Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
 
@@ -146,7 +178,7 @@ if completed_process.status == "completed":
 
 </CodeGroup>
 
-The exit code of the process is available in the `exitCode` parameter of the process execution object returned by the `process.exec` and `process.get` methods.
+The exit code of the process is available in the `exitCode` parameter (`exit_code` in Python) of the process execution object returned by the `process.exec` and `process.get` methods.
 
 You can also use the process ID or name to [retrieve logs of your processes](/Sandboxes/Log-streaming).
 
@@ -203,7 +235,7 @@ process = await sandbox.process.exec({
 
 </CodeGroup>
 
-When waiting for completion, the process execution object will contain a `.logs` field with the [combined `stdout` and `stderr` output as a string](/Sandboxes/Log-streaming). Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
+When waiting for completion, the process execution object contains the command's [output](#get-command-output): `stdout`, `stderr`, and both combined in `logs`. Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
 
 <Warning>
   When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.
