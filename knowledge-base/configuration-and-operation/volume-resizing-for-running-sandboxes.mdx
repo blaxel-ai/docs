@@ -1,0 +1,99 @@
+---
+title: 'Volume resizing for running sandboxes'
+description: 'Increase attached volume capacity while a Blaxel sandbox is running and automate resizing based on disk usage.'
+---
+
+You can resize a volume while its sandbox is running. The operation typically completes in under one second.
+
+## Limitations
+
+- You can increase a volume's size but cannot decrease it
+- Blaxel does not currently provide built-in automatic resizing
+
+## Resizing strategy
+
+To avoid running out of disk space:
+
+- Check volume usage before file-intensive commands such as package installations
+- Resize the volume when usage approaches 80%
+- Run a periodic monitor in the sandbox to measure usage and trigger resizing
+
+## Monitor and resize a volume
+
+The following function checks disk usage every three seconds and doubles the volume size when usage reaches 80%:
+
+```typescript
+import { SandboxInstance, VolumeInstance } from "@blaxel/core";
+
+async function startVolumeMonitor(
+  sandbox: SandboxInstance,
+  volumeName: string,
+  mountPath: string,
+  initialSizeMB: number,
+  usageThresholdPercent: number = 80,
+  growthFactor: number = 2,
+  pollIntervalSeconds: number = 3,
+) {
+  let currentSizeMB = initialSizeMB;
+  let resizing = false;
+
+  const monitorCmd = `while true; do df -m ${mountPath}; sleep ${pollIntervalSeconds}; done`;
+
+  await sandbox.process.exec({
+    command: monitorCmd,
+    onLog: (log) => {
+      const lines = log.split("\n");
+
+      for (const line of lines) {
+        if (!line.includes(mountPath) || line.startsWith("Filesystem")) continue;
+
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 5) continue;
+
+        const usagePercent = parseInt(parts[4]!.replace("%", ""), 10);
+        if (isNaN(usagePercent)) continue;
+
+        console.log(
+          `[monitor] ${parts[2]}MB used / ${parts[1]}MB total (${usagePercent}%)`,
+        );
+
+        if (usagePercent >= usageThresholdPercent && !resizing) {
+          resizing = true;
+          const newSize = Math.ceil(currentSizeMB * growthFactor);
+
+          console.log(
+            `[monitor] Usage ${usagePercent}% >= ${usageThresholdPercent}%, resizing ${currentSizeMB}MB to ${newSize}MB`,
+          );
+
+          VolumeInstance.update(volumeName, { size: newSize })
+            .then(() => {
+              currentSizeMB = newSize;
+              console.log(`[monitor] Resize to ${newSize}MB complete`);
+            })
+            .catch((err) => {
+              console.error("[monitor] Resize failed:", err);
+            })
+            .finally(() => {
+              resizing = false;
+            });
+        }
+      }
+    },
+  });
+
+  return {
+    getCurrentSize: () => currentSizeMB,
+  };
+}
+```
+
+Adjust the threshold, growth factor, and polling interval for your workload.
+
+<CardGroup cols={2}>
+  <Card title="Volumes overview" href="/Volumes/Overview#resize-a-volume">
+    Create, inspect, resize, and delete volumes.
+  </Card>
+  <Card title="Volumes for sandboxes" href="/Sandboxes/Volumes">
+    Attach persistent storage to a sandbox.
+  </Card>
+</CardGroup>

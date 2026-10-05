@@ -1,0 +1,47 @@
+---
+title: 'SSL certificate verification errors when cloning repositories'
+description: 'Fix Git SSL certificate verification failures in Blaxel sandboxes by installing CA certificates or choosing a base image that includes them.'
+---
+
+Cloning a repository in a Blaxel sandbox can fail with an SSL certificate verification error. Minimal base images often omit the certificate authorities required to verify HTTPS connections.
+
+## Example error
+
+The Git error resembles:
+
+```text
+fatal: unable to access 'https://github.com/blaxel-ai/sdk-typescript.git': server certificate verification failed
+```
+
+## Root cause
+
+Slim base images such as `node:22-bookworm-slim` do not always include CA certificates. Without a trusted certificate authority bundle, Git cannot verify the remote server's SSL certificate.
+
+## Install CA certificates
+
+Add `ca-certificates` to the packages installed by your Dockerfile:
+
+```dockerfile
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+## Choose another base image
+
+Alternatively, use a base image that includes CA certificates:
+
+- `node:22-alpine`
+- `node:22-bookworm`, using the full image instead of the slim variant
+
+The Alpine variant has been tested successfully with repository cloning. If you switch to Alpine, update your package installation commands because Alpine uses `apk` instead of `apt-get`, and package names or availability may differ.
+
+<CardGroup cols={2}>
+  <Card title="Docker sandbox tutorial" href="/Tutorials/Docker">
+    Learn how to build and run Docker images in sandboxes.
+  </Card>
+  <Card title="Sandbox proxy and network" href="/Sandboxes/Proxy">
+    Review sandbox networking configuration.
+  </Card>
+</CardGroup>

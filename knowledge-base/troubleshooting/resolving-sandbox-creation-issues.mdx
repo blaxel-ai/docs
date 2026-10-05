@@ -1,0 +1,57 @@
+---
+title: 'Resolving sandbox creation issues'
+description: 'Fix Blaxel sandboxes that fail during startup because their custom image has a missing or incorrect entrypoint.'
+---
+
+If your sandbox is created but fails to start, its template may have a missing or incorrect entrypoint. The entrypoint must keep the sandbox API running.
+
+## Common symptoms
+
+- The sandbox appears to be created but immediately fails or is deleted
+- Requests to the sandbox return a `404 Not Found` error
+
+## Root cause
+
+The template does not have a functional entrypoint that keeps the sandbox API running. Even when your container runs commands on demand, the sandbox API must remain active for the sandbox to work.
+
+## Configure the entrypoint
+
+Always copy the sandbox API binary into your custom image:
+
+```dockerfile
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+```
+
+Do not leave the entrypoint empty. If you do not need custom initialization, start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+If you need initialization logic, use a custom entrypoint script instead of a Dockerfile `RUN` instruction:
+
+```dockerfile
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+The script must start `sandbox-api`, wait for it to become available, and then start other processes through the `/process` API. End the script with `wait` so the container remains alive.
+
+## Additional considerations
+
+For templates designed to run commands on demand:
+
+- Keep a process running to maintain the sandbox API connection
+- Run commands with `sandbox.process.exec` while the entrypoint remains active
+- Remember that a sandbox snapshots its entire VM state, including memory, filesystem data, and running processes, when it enters standby
+- Expect the sandbox to restore from standby in under 25 ms
+
+After updating the entrypoint, rebuild the template and create a new sandbox.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox overview" href="/Sandboxes/Overview">
+    Learn how Blaxel sandboxes run and manage workloads.
+  </Card>
+  <Card title="Sandbox processes" href="/Sandboxes/Processes">
+    Learn how to execute and manage sandbox processes.
+  </Card>
+</CardGroup>

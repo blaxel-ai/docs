@@ -1,0 +1,51 @@
+---
+title: 'Using custom domains with sandboxes'
+description: 'Configure verified custom domains and wildcard subdomains for Blaxel sandbox preview URLs.'
+---
+
+You can use custom domains with sandbox preview URLs. Registering a domain automatically enables wildcard subdomains.
+
+For example:
+
+- Registering `mycompany.com` lets you use any `*.mycompany.com` subdomain
+- Registering `preview.mycompany.com` lets you use any `*.preview.mycompany.com` subdomain
+
+## Create a preview URL
+
+Use the SDK to create a sandbox preview on your custom domain:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const preview = await sandbox.previews.create({
+  metadata: { name: "preview-custom-domain" },
+  spec: {
+    port: 443,
+    public: false,
+    customDomain: "your.custom.domain.dev",
+  },
+});
+```
+
+This approach lets you:
+
+- Give the preview a specific name
+- Retrieve the preview later with the SDK
+- Access the custom domain URL from the preview specification
+
+## Requirements and limitations
+
+- Custom domains require Tier 3 or higher access
+- Each custom domain is assigned to one region and cannot be used across regions
+- You must configure the required DNS records and verify the domain in the Blaxel Console
+- Custom domains currently work only for sandbox previews
+
+<CardGroup cols={2}>
+  <Card title="Custom domains" href="/Infrastructure/Custom-domains">
+    Register, verify, and manage custom domains.
+  </Card>
+  <Card title="Sandbox preview URLs" href="/Sandboxes/Preview-url">
+    Create and manage public or private sandbox previews.
+  </Card>
+</CardGroup>

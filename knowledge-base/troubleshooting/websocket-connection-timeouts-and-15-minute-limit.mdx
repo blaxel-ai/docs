@@ -1,0 +1,36 @@
+---
+title: 'WebSocket connection timeouts and the 15-minute limit'
+description: 'Keep long-running sandbox WebSocket connections reliable by handling the 15-minute idle timeout, reconnection, standby, and ping-pong traffic.'
+---
+
+Sandbox WebSocket connections have a 15-minute idle timeout. If no data flows through a connection for 15 minutes, Blaxel closes it and transitions the sandbox to standby.
+
+## Timeout behavior
+
+When a WebSocket connection reaches the 15-minute idle limit, it disconnects automatically. Your client must reconnect when this happens.
+
+## Automatic reconnection
+
+For processes that run longer than 15 minutes, reconnect automatically after the existing connection closes. Reconnection is typically seamless and fast enough for most use cases.
+
+## Sandbox keep-alive
+
+By default, sandboxes enter standby after a few seconds of inactivity to save resources. You can keep a sandbox running after launching a process even when no active client connection exists.
+
+This behavior is useful for a server that must continue running while it is not serving requests. Configure it with the [sandbox keep-alive settings](/Sandboxes/Standby-control).
+
+## Ping-pong traffic
+
+To prevent an idle connection from timing out:
+
+- Send data actively between the client and server
+- Exchange regular ping-pong messages to keep the connection active
+
+<CardGroup cols={2}>
+  <Card title="Standby control" href="/Sandboxes/Standby-control">
+    Configure standby behavior and keep-alive settings.
+  </Card>
+  <Card title="Sandbox sessions" href="/Sandboxes/Sessions">
+    Learn how to manage interactive sandbox sessions.
+  </Card>
+</CardGroup>

@@ -1,0 +1,80 @@
+---
+title: 'Resolving sandbox creation race conditions and duplicate requests'
+description: 'Prevent duplicate Blaxel sandbox creation requests and handle 409 conflicts safely with idempotent SDK methods.'
+---
+
+Sandbox creation can fail when your application sends multiple requests to create the same sandbox at the same time. Use an idempotent creation method and add client-side request guards where needed.
+
+## Common errors
+
+You may receive either of these errors:
+
+- `SANDBOX_ALREADY_EXISTS (409)`
+- `RATE_LIMIT_EXCEEDED (429)`
+
+## Root cause
+
+Duplicate creation requests commonly result from:
+
+- React Strict Mode intentionally running effects twice in development
+- React hooks running again during component re-renders
+- Rapid user interactions triggering the same API call
+
+Blaxel has improved platform-side race condition handling, which prevents most failures even when duplicate requests occur.
+
+## Use idempotent creation
+
+Use `createIfNotExists()` in TypeScript or `create_if_not_exists()` in Python instead of `create()`. These methods handle a `409` conflict by returning the existing sandbox.
+
+<CodeGroup>
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "memory": 4096,
+    "region": "us-pdx-1",
+})
+```
+</CodeGroup>
+
+## Add request guards
+
+As an optional client-side safeguard:
+
+- Track an in-progress request with an `isCreating` flag
+- Check whether creation is already in progress before sending another request
+- Show an appropriate loading state while creation completes
+
+## Handle React Strict Mode
+
+In React development environments:
+
+- Cancel duplicate requests in the `useEffect` cleanup function
+- Define accurate dependency arrays to avoid unnecessary effect runs
+- Track request state across re-renders with `useRef`
+
+## Investigate persistent failures
+
+If race conditions continue after you apply these changes:
+
+1. Record the sandbox ID and error timestamp.
+2. Check whether your application sends duplicate creation calls.
+3. Contact support with the error details.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox overview" href="/Sandboxes/Overview">
+    Learn how to create and manage Blaxel sandboxes.
+  </Card>
+  <Card title="Sandbox best practices" href="/Sandboxes/best-practices">
+    Review recommended patterns for reliable sandbox workloads.
+  </Card>
+</CardGroup>

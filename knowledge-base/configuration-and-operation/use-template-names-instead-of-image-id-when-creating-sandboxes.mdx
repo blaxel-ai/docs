@@ -1,0 +1,52 @@
+---
+title: 'Use template names instead of image IDs when creating sandboxes'
+description: 'Create Blaxel sandboxes from consistent template names instead of workspace-specific image IDs.'
+---
+
+You can use a template name instead of an `IMAGE_ID` when creating a sandbox. This keeps code readable and portable across development and production workspaces.
+
+## Create from a template name
+
+Pass the deployed template name to the `image` property:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-template",
+  memory: 4096,
+  ports: [
+    { name: "nextjs-dev", target: 3000 },
+    { name: "another-api", target: 8888 },
+  ],
+});
+```
+
+## Requirements
+
+- Deploy the template in every workspace where you use it
+- Keep the template name consistent across workspaces
+
+## Benefits
+
+Using a template name provides:
+
+- More readable and maintainable code
+- Consistent references across environments
+- No need to retrieve and hardcode workspace-specific image IDs
+
+For example, you no longer need a lookup command like:
+
+```bash
+bl get sandboxes mytemplate -o json | jq -r '.[0].spec.runtime.image'
+```
+
+<CardGroup cols={2}>
+  <Card title="Sandbox images" href="/Sandboxes/Templates">
+    Build, deploy, and use reusable sandbox images.
+  </Card>
+  <Card title="Sandbox overview" href="/Sandboxes/Overview">
+    Review sandbox creation and configuration options.
+  </Card>
+</CardGroup>

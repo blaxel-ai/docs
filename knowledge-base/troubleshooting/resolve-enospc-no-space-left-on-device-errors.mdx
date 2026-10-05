@@ -1,0 +1,32 @@
+---
+title: 'Resolving ENOSPC no space left on device errors'
+description: 'Resolve ENOSPC storage errors in Blaxel sandboxes by increasing memory allocation or attaching a volume for larger persistent storage.'
+---
+
+An `ENOSPC: no space left on device` error means that your sandbox has exhausted its available storage. Sandbox filesystem storage is in memory by default for optimal speed, so storage needs count against the memory allocation.
+
+## Increase memory allocation
+
+A sandbox's memory allocation covers both runtime memory and filesystem storage. Increase the allocation to provide more storage space. This is the recommended short-term solution.
+
+<Tip>
+If the sandbox logs contain `Out of memory: Killed process`, the sandbox exceeded its memory allocation and needs more memory.
+</Tip>
+
+Increasing memory also increases CPU allocation:
+
+- 8 GB of memory provides 4 CPU cores
+- 16 GB of memory provides 8 CPU cores
+
+## Use a volume
+
+If files alone require more than 4 GB, use a volume for larger, persistent storage. A volume may provide slower filesystem performance than the default in-memory storage.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox volumes" href="/Sandboxes/Volumes">
+    Add persistent storage to a sandbox.
+  </Card>
+  <Card title="Sandbox filesystem" href="/Sandboxes/Filesystem">
+    Learn how files are stored and managed in sandboxes.
+  </Card>
+</CardGroup>

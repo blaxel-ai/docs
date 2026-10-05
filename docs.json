@@ -250,7 +250,58 @@
             "pages": [
               "troubleshooting",
               "troubleshooting/error-codes",
-              "troubleshooting/help-center"
+              {
+                "group": "Knowledge base",
+                "pages": [
+                  "knowledge-base/overview",
+                  {
+                    "group": "Integrations",
+                    "pages": [
+                      "knowledge-base/integrations/setting-up-nextjs-with-blaxel-sandboxes",
+                      "knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes",
+                      "knowledge-base/integrations/setting-up-vite-with-blaxel-sandboxes",
+                      "knowledge-base/integrations/setting-up-expo-with-blaxel-sandboxes"
+                    ]
+                  },
+                  {
+                    "group": "Configuration and Operation",
+                    "pages": [
+                      "knowledge-base/configuration-and-operation/using-custom-domains-with-sandboxes",
+                      "knowledge-base/configuration-and-operation/getting-static-ip-addresses-for-blaxel-sandboxes",
+                      "knowledge-base/configuration-and-operation/understanding-sandbox-active-vs-standby-states-and-billing",
+                      "knowledge-base/configuration-and-operation/understanding-sandbox-ttl-and-expiration-policies",
+                      "knowledge-base/configuration-and-operation/use-template-names-instead-of-image-id-when-creating-sandboxes",
+                      "knowledge-base/configuration-and-operation/ensure-sandboxes-use-the-latest-deployed-image",
+                      "knowledge-base/configuration-and-operation/volume-resizing-for-running-sandboxes",
+                      "knowledge-base/configuration-and-operation/sandbox-inactivity-with-long-running-processes",
+                      "knowledge-base/configuration-and-operation/batch-delete-sandboxes-from-the-cli"
+                    ]
+                  },
+                  {
+                    "group": "Security and Authentication",
+                    "pages": [
+                      "knowledge-base/security-and-authentication/setting-up-mcp-servers-with-authentication-on-blaxel",
+                      "knowledge-base/security-and-authentication/multi-factor-authentication-mfa-and-compliance-requirements",
+                      "knowledge-base/security-and-authentication/how-to-authenticate-the-bl-cli-in-ci-environments"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "knowledge-base/troubleshooting/resolving-sandbox-creation-issues",
+                      "knowledge-base/troubleshooting/resolving-sandbox-creation-race-conditions-and-duplicate-requests",
+                      "knowledge-base/troubleshooting/troubleshooting-custom-docker-image-deployment-issues",
+                      "knowledge-base/troubleshooting/sandbox-limits-and-quota-exceeded-errors",
+                      "knowledge-base/troubleshooting/websocket-connection-timeouts-and-15-minute-limit",
+                      "knowledge-base/troubleshooting/handling-preview-not-found-404-errors-in-sandboxes",
+                      "knowledge-base/troubleshooting/sandbox-restarting-nc-not-found",
+                      "knowledge-base/troubleshooting/when-localhost-goes-silent-in-debian-based-sandboxes",
+                      "knowledge-base/troubleshooting/ssl-certificate-verification-errors-when-cloning-repositories",
+                      "knowledge-base/troubleshooting/resolve-enospc-no-space-left-on-device-errors"
+                    ]
+                  }
+                ]
+              }
             ]
           }
         ]
@@ -674,6 +725,10 @@
     {
       "source": "/Agents/Run-an-agent",
       "destination": "/Agents/Query-agents"
+    },
+    {
+      "source": "/troubleshooting/help-center",
+      "destination": "/knowledge-base/overview"
     }
   ]
 }

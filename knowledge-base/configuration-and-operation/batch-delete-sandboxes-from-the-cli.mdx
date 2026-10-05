@@ -1,0 +1,53 @@
+---
+title: 'Batch delete sandboxes from the CLI'
+description: 'Delete all or selected Blaxel sandboxes in bulk with the CLI and jq filters.'
+---
+
+Use the Blaxel CLI with `jq` to delete multiple sandboxes in one operation. This is useful for workspace cleanup and sandbox lifecycle management at scale.
+
+<Warning>
+Sandbox deletion is permanent. Run the inner `bl get` and `jq` command first to verify the names before passing them to `bl delete`.
+</Warning>
+
+## Delete all sandboxes
+
+Delete every sandbox in the current workspace:
+
+```bash
+bl delete sbx $(bl get sbx -o json | jq -r '.[].metadata.name')
+```
+
+## Delete specific sandboxes
+
+Pass multiple sandbox names:
+
+```bash
+bl delete sandbox sandbox-1 sandbox-2
+```
+
+## Delete sandboxes by status
+
+Delete sandboxes with the `FAILED` status:
+
+```bash
+bl delete sbx $(bl get sbx -o json | jq -r '.[] | select(.status == "FAILED") | .metadata.name')
+```
+
+## Delete sandboxes by label
+
+Delete sandboxes whose `nextjs` label is set to `true`:
+
+```bash
+bl delete sbx $(bl get sbx -o json | jq -r '.[] | select(.metadata.labels.nextjs == "true") | .metadata.name')
+```
+
+These commands parse the JSON response from `bl get`, select matching sandbox resources, and pass their names to `bl delete`.
+
+<CardGroup cols={2}>
+  <Card title="Delete resources with the CLI" href="/cli-reference/commands/bl_delete">
+    Review deletion syntax and additional bulk deletion examples.
+  </Card>
+  <Card title="Sandbox expiration policies" href="/Sandboxes/Expiration">
+    Automate sandbox cleanup with TTL policies.
+  </Card>
+</CardGroup>

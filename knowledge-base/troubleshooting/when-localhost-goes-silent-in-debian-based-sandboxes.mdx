@@ -1,0 +1,45 @@
+---
+title: 'When localhost goes silent in Debian-based sandboxes'
+description: 'Fix localhost name resolution and service-to-service networking failures after moving sandbox images from Alpine to minimal Debian.'
+---
+
+Moving a container image from Alpine to Debian Bookworm can improve compatibility with dependencies such as Playwright or Python 3.13. However, minimal Debian images may introduce a name resolution failure that breaks communication through `localhost`.
+
+## Symptom
+
+A sandbox that worked on Alpine may enter a crash loop after switching to an image such as `node:22-bookworm-slim`. Its logs show an error like:
+
+```text
+nc: getaddrinfo for host "localhost" port 8080: Name or service not known
+```
+
+The error can occur even when `sandbox-api` is running because the system cannot resolve `localhost` to a loopback address.
+
+## Root cause
+
+Slim or minimal Debian distributions may omit the `/etc/hosts` entry or name service configuration in `nsswitch.conf` that resolves `localhost`.
+
+When an application or a utility such as netcat (`nc`) connects to `localhost`, the system performs a name lookup. Without an explicit hosts mapping or suitable resolver configuration, that lookup fails with `getaddrinfo` before the request reaches the network stack.
+
+## Use the loopback IP
+
+Replace `localhost` with `127.0.0.1` in entrypoint scripts, health checks, and tool server configurations. Using the explicit loopback address bypasses hostname resolution.
+
+Configure clients to connect to `127.0.0.1`. Configure servers to listen on `0.0.0.0` when they must also be reachable through external container ports.
+
+## Check a Debian migration
+
+When moving from Alpine to `bookworm-slim`:
+
+- Install `ca-certificates` explicitly to prevent Git clone and HTTPS failures
+- Replace `localhost` with `127.0.0.1` in internal scripts
+- Verify that `EXPOSE` instructions and port mappings, such as port `8081` for an internal API, match your infrastructure
+
+<CardGroup cols={2}>
+  <Card title="Sandbox proxy and network" href="/Sandboxes/Proxy">
+    Learn how networking works inside Blaxel sandboxes.
+  </Card>
+  <Card title="Sandbox ports" href="/Sandboxes/Ports">
+    Configure ports exposed by sandbox services.
+  </Card>
+</CardGroup>

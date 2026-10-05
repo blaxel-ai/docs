@@ -1,0 +1,89 @@
+---
+title: 'Understanding sandbox active vs standby states and billing'
+description: 'Understand how active and standby sandbox states affect compute, storage, connections, and billing.'
+---
+
+Blaxel sandboxes operate in active and standby states. These states determine which resources are billed and how quickly a sandbox can resume.
+
+## Active mode
+
+A sandbox stays active while it has an active connection. In active mode, you are charged for allocated memory and storage.
+
+Blaxel allocates CPU based on your selected memory allocation. CPU is not charged separately.
+
+Active connection behavior includes:
+
+- HTTP, WebSocket, or TCP connections with data flow keep a sandbox active
+- Idle connections, such as WebSockets with no data flow, have a 15-minute timeout
+- After 15 minutes with no data transmission, the sandbox transitions to standby
+
+See [standby control](/Sandboxes/Standby-control) for ways to manage connections and activity.
+
+## Standby mode
+
+Without active connections, a sandbox transitions to standby in approximately 15 seconds.
+
+During the transition:
+
+- Blaxel snapshots the complete state, including the filesystem and running processes
+- You are not charged for CPU or memory while the sandbox is in standby
+- You are charged only for snapshot and volume storage
+- Reconnecting restores the sandbox in under 25 ms with its processes preserved
+
+## Common issues preventing standby
+
+### Missing sandbox API
+
+A missing or outdated sandbox API is the most common reason a sandbox fails to enter standby. The sandbox API is required for correct shutdown behavior.
+
+To correct the configuration:
+
+1. Use the latest sandbox API in your Dockerfile.
+2. Copy the binary into your image:
+
+   ```dockerfile
+   COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+   ```
+
+3. Start the sandbox API first in your entrypoint and wait for it to become ready on port `8080` before starting other processes.
+4. Delete and recreate the sandbox after updating the image.
+
+### Preview URL connections
+
+Deployed preview URLs do not maintain persistent connections and do not prevent standby. You do not need to recreate previews to allow a sandbox to enter standby.
+
+Each incoming request through a preview URL wakes the sandbox.
+
+### Process keep-alive
+
+Process keep-alive controls automatic hibernation. Starting a process with `keepAlive: true` in TypeScript or `keep_alive: True` in Python keeps the sandbox active until the process completes or times out.
+
+The default timeout is 600 seconds. Set the timeout to `0` for a process that should run until it completes naturally.
+
+## Monitor sandbox state
+
+The API reports `DEPLOYED` for both active and standby sandboxes. Use these methods to distinguish them:
+
+- Check CPU or memory charts in the Blaxel Console. A value of 0% indicates that the sandbox was in standby
+- Use Billing Explorer to inspect compute runtime charges, measured in GB-seconds
+- Treat continuous compute runtime charges as a sign that the sandbox may be stuck in active mode
+
+## Troubleshoot continuous billing
+
+If a sandbox that should be idle incurs continuous compute charges:
+
+1. Verify that the sandbox API is installed and running.
+2. Close every connection when it is idle.
+3. Check for background processes that keep connections open.
+4. Delete and recreate the sandbox after correcting the sandbox API.
+
+A correctly configured sandbox incurs compute charges only while it actively processes requests.
+
+<CardGroup cols={2}>
+  <Card title="Sandbox standby control" href="/Sandboxes/Standby-control">
+    Manage active connections and automatic standby behavior.
+  </Card>
+  <Card title="Process keep-alive" href="/Sandboxes/Processes#sandbox-keep-alive">
+    Keep a sandbox active while selected processes run.
+  </Card>
+</CardGroup>
