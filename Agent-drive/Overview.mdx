@@ -118,17 +118,26 @@ drive = await DriveInstance.create_if_not_exists(
 
 ## Mount a drive to a sandbox
 
-Mount a drive to a running sandbox by specifying the `driveName`, the `mountPath` (where the drive will appear in the sandbox's filesystem), and optionally the `drivePath` (a subdirectory within the drive to mount).
+Drives cannot be attached in the sandbox create call. Unlike [volumes](/Sandboxes/Volumes#attach-a-volume-to-a-sandbox), which use `volumes: [{ name, mountPath }]` at creation, drives are mounted afterward. Create or get a drive in the same region as your sandbox, then call `sandbox.drives.mount(...)`.
+
+Specify the `driveName`, the `mountPath` (where the drive will appear in the sandbox's filesystem), and optionally the `drivePath` (a subdirectory within the drive to mount).
 
 <CodeGroup>
 
 ```tsx TypeScript
-import { SandboxInstance } from "@blaxel/core";
+import { SandboxInstance, DriveInstance } from "@blaxel/core";
 
-const sandbox = await SandboxInstance.get("my-sandbox");
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-app",
+  region: "us-was-1",
+});
+const drive = await DriveInstance.createIfNotExists({
+  name: "my-app-data",
+  region: "us-was-1",
+});
 
 await sandbox.drives.mount({
-  driveName: "my-drive",
+  driveName: drive.name,
   mountPath: "/mnt/data",
   drivePath: "/",   // optional; defaults to root of the drive
 });
@@ -136,18 +145,26 @@ await sandbox.drives.mount({
 
 ```python Python
 from blaxel.core import SandboxInstance
+from blaxel.core.drive import DriveInstance
 
-sandbox = await SandboxInstance.get("my-sandbox")
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-app",
+    "region": "us-was-1",
+})
+drive = await DriveInstance.create_if_not_exists({
+    "name": "my-app-data",
+    "region": "us-was-1",
+})
 
 await sandbox.drives.mount(
-    drive_name="my-drive",
+    drive_name=drive.name,
     mount_path="/mnt/data",
     drive_path="/", # optional; defaults to root of the drive
 )
 ```
 
 ```bash CLI
-bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /mnt/data
+bl drive mount --sandbox my-app --drive my-app-data --mount-path /mnt/data
 ```
 
 </CodeGroup>
