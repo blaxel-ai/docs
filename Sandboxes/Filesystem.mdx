@@ -240,6 +240,123 @@ content = await sandbox.fs.read("/blaxel/app/config.json")
 
 </CodeGroup>
 
+### Read many files
+
+Discover relative file paths with `fs.find`, then read text files in batches of four. This returns flat path/content pairs with one discovery call plus one read call per file, not a single bulk-read request.
+
+`find` defaults to 20 results, so do not assume its default response includes every file. Request one more than your chosen file cap and reject the result if that extra match is returned. `excludeDirs` (`exclude_dirs` in Python) matches directory names, not path globs; apply file exclusions by filtering paths separately.
+
+<CodeGroup>
+
+```typescript TypeScript
+const root = "/blaxel/app/schemas";
+const maxFiles = 20;
+const result = await sandbox.fs.find(root, {
+  type: "file",
+  patterns: ["*.json"],
+  excludeDirs: ["node_modules", ".git"],
+  maxResults: maxFiles + 1,
+});
+const matches = result.matches ?? [];
+if (matches.length > maxFiles) {
+  throw new Error("File cap exceeded; narrow your search.");
+}
+
+const files: Array<{ path: string; content: string }> = [];
+for (let offset = 0; offset < matches.length; offset += 4) {
+  const batch = await Promise.all(
+    matches.slice(offset, offset + 4).map(async (file) => ({
+      path: file.path,
+      content: await sandbox.fs.read(`${root}/${file.path}`),
+    }))
+  );
+  files.push(...batch);
+}
+```
+
+```python Python
+import asyncio
+
+root = "/blaxel/app/schemas"
+max_files = 20
+result = await sandbox.fs.find(
+    root,
+    type="file",
+    patterns=["*.json"],
+    exclude_dirs=["node_modules", ".git"],
+    max_results=max_files + 1,
+)
+matches = result.matches or []
+if len(matches) > max_files:
+    raise ValueError("File cap exceeded; narrow your search.")
+
+async def read_file(file):
+    return {
+        "path": file.path,
+        "content": await sandbox.fs.read(f"{root}/{file.path}"),
+    }
+
+files = []
+for offset in range(0, len(matches), 4):
+    batch = await asyncio.gather(
+        *(read_file(file) for file in matches[offset:offset + 4])
+    )
+    files.extend(batch)
+```
+
+</CodeGroup>
+
+### Export a whole directory as one archive
+
+Create an archive on disk with `tar`, then download it with one binary read. This uses two calls for creation and download, plus a cleanup call. Your sandbox image must include `tar`. Keep the temporary archive outside the directory you are exporting.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { randomUUID } from "node:crypto";
+
+const archivePath = `/tmp/schemas-${randomUUID()}.tar.gz`;
+let archiveData: Blob;
+try {
+  const result = await sandbox.process.exec({
+    command: `tar -czf '${archivePath}' -C '/blaxel/app/schemas' .`,
+    waitForCompletion: true,
+    timeout: 30,
+  });
+  if (result.exitCode !== 0) {
+    throw new Error("Archive creation failed.");
+  }
+  archiveData = await sandbox.fs.readBinary(archivePath);
+} finally {
+  await sandbox.fs.rm(archivePath);
+}
+```
+
+```python Python
+from uuid import uuid4
+
+archive_path = f"/tmp/schemas-{uuid4()}.tar.gz"
+try:
+    result = await sandbox.process.exec({
+        "command": f"tar -czf '{archive_path}' -C '/blaxel/app/schemas' .",
+        "wait_for_completion": True,
+        "timeout": 30,
+    })
+    if result.exit_code != 0:
+        raise RuntimeError("Archive creation failed.")
+    archive_data = await sandbox.fs.read_binary(archive_path)
+finally:
+    await sandbox.fs.rm(archive_path)
+```
+
+</CodeGroup>
+
+<Warning>
+Do not pipe base64-encoded file contents through process logs. Output can be truncated, and file contents are exposed in retained logs. Use the binary filesystem read instead.
+</Warning>
+
+Neither recipe guarantees a consistent snapshot if files change during the operation.
+
 ### Write file
 
 Create a file in a specific path:
