@@ -40,7 +40,7 @@ When developing locally, you can also **log in to your workspace with Blaxel CLI
 
 Logs for a [process](/Sandboxes/Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
 
-Both standard output (stdout) and standard error (stderr) are surfaced:
+Both standard output (stdout) and standard error (stderr) are surfaced. `logs` holds both, and `stdout` and `stderr` hold each one separately:
 
 <CodeGroup>
 
