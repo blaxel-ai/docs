@@ -260,7 +260,7 @@ cursor-agent mcp login blaxel
 ```
 
 <Note>
-  In your home folder, `~/.cursor/mcp.json` is also the project config, so `cursor-agent mcp list` shows `blaxel` and `blaxel-docs` as `not loaded (needs approval)`. Approve each once with `cursor-agent mcp enable blaxel` and `cursor-agent mcp enable blaxel-docs`. Cursor asks again if a server's config changes.
+  When you run `cursor-agent` in your home folder, `~/.cursor/mcp.json` is also the project config, so `cursor-agent mcp list` shows each server in it, such as `blaxel`, as `not loaded (needs approval)`. Approve each once, for example `cursor-agent mcp enable blaxel` (and `cursor-agent mcp enable blaxel-docs` if you added the documentation server). A server needs approval again if its config changes.
 </Note>
 
 To use an API key instead, add the headers to the server entry:
