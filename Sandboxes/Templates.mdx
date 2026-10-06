@@ -24,7 +24,7 @@ When you create a sandbox from an image, Blaxel provisions a new instance with a
 ### How sandbox images work
 
 1. **Initial setup**: Follow this guide to create your sandbox image for the first time. Use `bl push` to publish the image to Blaxel's registry without creating a new sandbox or affecting existing sandboxes, or `bl deploy` to push the image and also create a sandbox from it.
-2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations.
+2. **Build phase**: Your Dockerfile is used to create a container with all required tools and configurations. Blaxel then [slims the image](#image-slimming), removing files that are usually only needed at build time.
 3. **Initialization phase**: The sandbox API is injected and startup commands are executed.
 4. **Instantiation**: New sandboxes can be spawned from this image in seconds.
 
@@ -114,6 +114,10 @@ ENTRYPOINT ["/entrypoint.sh"]
 ```
 
 **Always include** the _sandbox-api_ binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
+
+<Warning>
+  This example installs `make` and `g++`. Those compilers are available in `RUN` steps, then removed by [image slimming](#image-slimming) before the sandbox starts. Set `slim = false` when the running sandbox needs them.
+</Warning>
 
 ##### 3. Configure image settings
 
@@ -741,6 +745,7 @@ The `build()` method automatically:
 - Sets a default entrypoint if none was specified
 - Packages the Dockerfile and local files into a ZIP archive
 - Uploads and deploys the image as a sandbox
+- Runs the default [image slimming](#image-slimming) pass after the Docker build
 - Polls until the sandbox reaches `DEPLOYED` or `FAILED` status
 
 ###### Inspect the generated Dockerfile
@@ -1730,6 +1735,30 @@ bl push
 
 The new revision becomes available while the old one remains accessible.
 
+## Image slimming
+
+After the Docker build finishes, Blaxel runs a slimming pass on the image root filesystem. The pass reduces image size and sandbox boot time. It removes a fixed list of paths that are typically only needed while the image is building:
+
+- package manager caches
+- documentation and man pages
+- headers and static libraries
+- systemd
+- Python `__pycache__` directories
+- build toolchains, including `make`, `gcc`, `g++`, `cmake`, `autoconf`, and `automake`
+
+The same paths are removed from every image. `RUN` instructions can still use these tools while the image is building. The tools are absent when a sandbox starts from the published image.
+
+`bl push` and `bl deploy` run this pass. Local `docker build` and `make run` keep the filesystem Docker produced. A binary can exist in that local container and be missing from the sandbox. The SDK `build()` method uploads the image to the same pipeline, so the pass runs there too.
+
+Slimming is enabled by default. For images you publish with `bl push` or `bl deploy`, disable it in `blaxel.toml` when the running sandbox needs a compiler or another build tool:
+
+```toml
+[build]
+slim = false
+```
+
+With `slim = false`, the image keeps caches, documentation, headers, and build tools. The image is larger. Sandboxes take longer to boot. Leave slimming enabled when those files are only needed to compile dependencies during the image build.
+
 ## Clean up unused images
 
 Use the Blaxel Console to delete unused image tags in bulk and free image storage. This is useful after repeated builds or when you approach your total image-size quota. Check your account's limits on the [Quotas page](https://app.blaxel.ai/account/quotas).
@@ -1910,6 +1939,7 @@ The consuming workspace or account pays nothing for image storage of shared imag
 - Minimize layers in Dockerfile
 - Pre-install only essential packages
 - Defer optional installations to runtime
+- Leave [image slimming](#image-slimming) enabled unless the sandbox needs build tools at runtime
 
 ### 2. Cache dependencies
 
