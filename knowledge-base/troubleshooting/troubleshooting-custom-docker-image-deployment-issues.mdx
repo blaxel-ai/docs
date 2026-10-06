@@ -1,6 +1,6 @@
 ---
 title: 'Troubleshooting custom Docker image deployment issues'
-description: 'Diagnose sandbox API, Dockerfile path, build timeout, entrypoint, dependency, and logging issues in custom Blaxel sandbox images.'
+description: 'Diagnose sandbox API, Dockerfile path, build timeout, entrypoint, missing build tools, and logging issues in custom Blaxel sandbox images.'
 ---
 
 Custom Docker images for sandboxes can fail during build or deployment because of missing files, dependencies, or startup configuration. Use the matching section below to identify and resolve the failure.
@@ -66,6 +66,21 @@ RUN apt-get update && apt-get install -y \
     libgcc-12-dev \
     pkg-config
 ```
+
+These packages are available during the image build. [Image slimming](/Sandboxes/Templates#image-slimming) removes compilers before the sandbox starts. Disable slimming if the running sandbox needs them.
+
+## Keep build tools available at runtime
+
+A package can install successfully in the Dockerfile and be missing when the sandbox starts. Image slimming runs after the Docker build and removes build-time files, including `make`, `gcc`, `g++`, and `cmake`. Those tools still work in `RUN` steps.
+
+To keep them, disable slimming in `blaxel.toml`:
+
+```toml
+[build]
+slim = false
+```
+
+See [image slimming](/Sandboxes/Templates#image-slimming) for the paths this pass removes, and for the effect on image size and boot time.
 
 ## Configure the environment
 

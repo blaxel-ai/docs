@@ -33,7 +33,10 @@ The format of Blaxel's configuration file is described below.
 
 # build configuration (optional)
 # [build]
-# automatic image slimming
+# sandbox image slimming
+# after the Docker build, removes a fixed set of build-time paths
+# including package caches, docs, headers, and compilers such as make and gcc
+# set to false to keep those files in the running sandbox
 # possible values: [true, false]
 # defaults to true
 # slim = true
@@ -141,6 +144,8 @@ The format of Blaxel's configuration file is described below.
 # callback URL (only for trigger type="http-async")
 # callbackUrl = "https://webhook.site/3955e30a-e4b6-4fa5-8a28-598ce0f53386"
 ```
+
+For sandbox images, see [image slimming](/Sandboxes/Templates#image-slimming) for the paths removed when `slim` is `true`.
 
 Learn more about the commands and resources this file configures.
 
