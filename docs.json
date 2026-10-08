@@ -495,6 +495,7 @@
                   "/cli-reference/commands/bl_login",
                   "/cli-reference/commands/bl_logout",
                   "/cli-reference/commands/bl_logs",
+                  "/cli-reference/commands/bl_mcp",
                   "/cli-reference/commands/bl_new",
                   "/cli-reference/commands/bl_push",
                   "/cli-reference/commands/bl_run",
