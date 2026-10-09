@@ -1642,11 +1642,19 @@ components:
           type: integer
           description: Number of parallel tasks
           example: 5
+        taskCount:
+          type: integer
+          description: Number of tasks of this execution
+          example: 12
         tasks:
           type: array
           description: List of execution tasks
           items:
             $ref: '#/components/schemas/JobExecutionTask'
+        tasksRef:
+          type: string
+          description: Where this execution's task list is stored (server-managed)
+          readOnly: true
         timeout:
           type: integer
           description: Job timeout in seconds (captured at execution creation time)
@@ -4033,6 +4041,10 @@ components:
           description: The tasks configuration of the cronjob
           items:
             $ref: '#/components/schemas/TriggerConfigurationTask'
+        tasksRef:
+          type: string
+          description: Where this trigger's task list is stored (server-managed)
+          readOnly: true
         timeout:
           type: integer
           description: The timeout in seconds for async triggers (max 900s, MK3 only)
