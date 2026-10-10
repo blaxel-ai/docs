@@ -18,28 +18,29 @@ Each workspace also has a display name for better organization, which workspace 
 
 ## User roles
 
-There are two roles that a user or service account can have in a workspace: **admin** and **member**.
+There are three roles that a user or service account can have in a workspace: **admin**, **member** and **viewer**.
 
-Admins have **complete access** in the workspace, on all workspace resources. They can also modify all workspace settings, including inviting other team members. More specifically, admins have all the permissions that members have, in addition to:
+### Sandboxes
 
-- creating and editing policies
-- inviting and removing users
-- changing users' permissions
-- adding and removing integrations
-- changing the workspace name
-- deleting the workspace
+| Action | Viewer | Member | Admin |
+| --- | :---: | :---: | :---: |
+| List and view [sandboxes](../Sandboxes/Overview), their snapshots, previews and schedules | ✓ | ✓ | ✓ |
+| View sandbox logs and metrics | ✓ | ✓ | ✓ |
+| Create, update, start, stop, fork and delete sandboxes | | ✓ | ✓ |
+| Archive and unarchive sandboxes, create and restore snapshots | | ✓ | ✓ |
+| Create, update and delete previews and schedules | | ✓ | ✓ |
+| Create preview tokens, view preview tokens and request headers | | ✓ | ✓ |
+| Open a terminal in a sandbox | | ✓ | ✓ |
+| Use the [sandbox API](../Sandboxes/Overview): processes, filesystem, network (ports and tunnels), drive mounts, codegen, archive and system | | ✓ | ✓ |
 
-Members can view the workspace settings but not edit them. They are also able to **view and modify** the following resources inside a workspace (including querying them when applicable):
+### Workspace
 
-- [agents](../Agents/Overview)
-- [MCP servers](../Functions/Overview)
-- [model APIs](../Models/Model-deployment)
-- [batch jobs](../Jobs/Overview)
-- [sandboxes](../Sandboxes/Overview)
-
-They have read-only access on the following resources:
-
-- [policies](../Model-Governance/Policies)
+| Action | Viewer | Member | Admin |
+| --- | :---: | :---: | :---: |
+| View team members | ✓ | ✓ | ✓ |
+| Invite and remove users, change their role | | | ✓ |
+| Manage service accounts and their API keys | | | ✓ |
+| Rename and delete the workspace | | | ✓ |
 
 ## Shared account settings
 
