@@ -20,24 +20,30 @@ Each workspace also has a display name for better organization, which workspace 
 
 There are three roles that a user or service account can have in a workspace: **admin**, **member** and **viewer**.
 
+### Sandboxes
+
 | Action | Viewer | Member | Admin |
 | --- | :---: | :---: | :---: |
-| View resources ([agents](../Agents/Overview), [MCP servers](../Functions/Overview), [model APIs](../Models/Model-deployment), [batch jobs](../Jobs/Overview), [sandboxes](../Sandboxes/Overview), volumes, images, previews, schedules), logs and metrics | ✓ | ✓ | ✓ |
-| Create, edit, deploy and delete these resources | | ✓ | ✓ |
-| Run resources: query agents, MCP servers and model APIs, start job executions, connect to sandboxes | | ✓ | ✓ |
-| View preview tokens and preview request headers | | ✓ | ✓ |
-| View secret values of environment variables | | | ✓ |
-| View integrations | ✓ | ✓ | ✓ |
-| Add, edit and remove integrations | | ✓ | ✓ |
-| View policies, custom domains, VPCs and egress IPs | ✓ | ✓ | ✓ |
-| Create, edit and delete policies, custom domains, VPCs and egress IPs | | | ✓ |
-| Share images with other workspaces | | | ✓ |
+| List and view [sandboxes](../Sandboxes/Overview), their snapshots, previews and schedules | ✓ | ✓ | ✓ |
+| View sandbox logs and metrics | ✓ | ✓ | ✓ |
+| Create, update, start, stop, fork and delete sandboxes | | ✓ | ✓ |
+| Archive and unarchive sandboxes, create and restore snapshots | | ✓ | ✓ |
+| Create, update and delete previews and schedules | | ✓ | ✓ |
+| Create preview tokens, view preview tokens and request headers | | ✓ | ✓ |
+| Open a terminal in a sandbox | | ✓ | ✓ |
+| Use the sandbox API | | ✓ | ✓ |
+| View secret values of sandbox environment variables | | | ✓ |
+
+The [sandbox API](../Sandboxes/Overview) covers everything that runs inside a sandbox: processes, filesystem, network (ports and tunnels), drive mounts, codegen tools, archive and system operations. Viewers get a `403` on all of it. [Public previews](../Sandboxes/Preview-url) can be opened by anyone, and private previews by anyone with a preview token, regardless of their role.
+
+### Workspace
+
+| Action | Viewer | Member | Admin |
+| --- | :---: | :---: | :---: |
 | View team members | ✓ | ✓ | ✓ |
 | Invite and remove users, change their role | | | ✓ |
 | Manage service accounts and their API keys | | | ✓ |
 | Rename and delete the workspace | | | ✓ |
-| View billing usage | ✓ | ✓ | ✓ |
-| Manage billing (subscription, credits, SSO) | | ✓ | ✓ |
 
 ## Shared account settings
 
