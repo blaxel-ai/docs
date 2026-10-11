@@ -1059,8 +1059,8 @@ components:
           example: ttl-idle
         value:
           type: string
-          description: Duration value for TTL policies (e.g., '30m', '24h', '7d')
-            or ISO 8601 date for date policies
+          description: Duration value for TTL policies (e.g., '30m', '24h', '7d',
+            minimum '5m') or ISO 8601 date for date policies
           example: 24h
     FirewallConfig:
       type: object
@@ -3539,8 +3539,8 @@ components:
           type: string
           description: 'Max-age from creation: the sandbox is deleted this long after
             it is created, regardless of activity (not an idle timeout). Units s,
-            m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''). For idle-based cleanup,
-            use a lifecycle expiration policy of type ttl-idle.'
+            m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''), minimum ''5m''. For
+            idle-based cleanup, use a lifecycle expiration policy of type ttl-idle.'
           example: 24h
     SandboxScheduleEntry:
       type: object
@@ -6374,6 +6374,15 @@ paths:
                 resourceType:
                   description: Resource type (agent, function, sandbox, job)
                   type: string
+                tag:
+                  description: Tag for the imported image. Only supported when image
+                    is a registry reference. When omitted, a tag is derived from the
+                    build inputs. Tags are immutable, so a tag that already exists
+                    is rejected. latest, pending and failed are reserved.
+                  example: v1.2.0
+                  maxLength: 32
+                  pattern: ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,31}$
+                  type: string
                 volumeMb:
                   description: Temporary scratch disk for the registry import worker
                     in MiB. Only supported when image is a registry reference. When
@@ -6416,6 +6425,8 @@ paths:
                 type: string
         "400":
           description: invalid request
+        "409":
+          description: the requested tag already exists
       security:
       - OAuth2:
         - images:create
@@ -9401,6 +9412,9 @@ paths:
                     name:
                       description: Service account name
                       type: string
+                    role:
+                      description: Role of the service account in the workspace
+                      type: string
                     updated_at:
                       description: Last update timestamp
                       type: string
@@ -9431,6 +9445,14 @@ paths:
                 name:
                   description: Service account name
                   type: string
+                role:
+                  description: Role of the service account in the workspace. Defaults
+                    to admin on creation; unchanged on update when omitted.
+                  enum:
+                  - viewer
+                  - member
+                  - admin
+                  type: string
               required:
               - name
               type: object
@@ -9455,6 +9477,9 @@ paths:
                     type: string
                   name:
                     description: Service account name
+                    type: string
+                  role:
+                    description: Role of the service account in the workspace
                     type: string
                   updated_at:
                     description: Last update timestamp
@@ -9534,6 +9559,14 @@ paths:
                 name:
                   description: Service account name
                   type: string
+                role:
+                  description: Role of the service account in the workspace. Defaults
+                    to admin on creation; unchanged on update when omitted.
+                  enum:
+                  - viewer
+                  - member
+                  - admin
+                  type: string
               type: object
         required: true
       responses:
@@ -9553,6 +9586,9 @@ paths:
                     type: string
                   name:
                     description: Service account name
+                    type: string
+                  role:
+                    description: Role of the service account in the workspace
                     type: string
                   updated_at:
                     description: Last update timestamp
