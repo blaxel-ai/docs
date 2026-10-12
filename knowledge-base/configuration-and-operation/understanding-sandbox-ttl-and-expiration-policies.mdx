@@ -72,6 +72,8 @@ TTL restrictions depend on your account tier:
 - Tier 1: A hard 30-day maximum lifetime is enforced, and `expiresIn` reflects this limit
 - Tier 2 and above: No maximum TTL is enforced, and `ttl-idle` supports rolling expiration based on activity
 
+On every tier, `ttl`, `ttl-idle` and `ttl-max-age` must be at least `5m`. The API rejects shorter values with a `400` error. To remove a sandbox sooner, delete it explicitly.
+
 ## Idempotent sandbox creation
 
 When you call `createIfNotExists` with the same sandbox name, Blaxel replaces an existing terminated sandbox with a new one.
