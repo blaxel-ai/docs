@@ -7,6 +7,14 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-10-13">
+
+### Build environment size in the SDK image builder
+
+The SDK image builder's `build()` method accepts `buildMemory` and `buildVolume` (`build_memory` and `build_volume` in Python) to [size the environment an image is built in](/Sandboxes/Templates#size-the-build-environment), like `bl push --memory` and `--volume`. Use them when a large image runs out of memory or disk during the build. Available in `@blaxel/core` 0.3.28 and `blaxel` 0.4.16.
+
+</Update>
+
 <Update label="2026-09-25">
 
 ### Network-level domain filter enforcement
