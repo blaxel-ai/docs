@@ -382,7 +382,7 @@ Added new sandbox networking features in private preview:
 
 ### Adjusted data collection in SDKs to be opt-out by default
 
-Exception data collection in the Python SDK (v0.2.46+), TypeScript SDK (v0.2.76+) and Go SDK (v0.16.1+) is now disabled by default. Users must now explicitly opt-in.
+Exception data collection in the Python SDK (v0.2.46+), TypeScript SDK (v0.2.76+) and Go SDK (v0.16.1+) is now disabled by default. Users must now explicitly opt in.
 
 </Update>
 
@@ -508,7 +508,7 @@ Added a new region in the European Union: `eu-fra-1` (Frankfurt)
 
 ### Improved build control for sandbox images
 
-Added ability to opt-out of our automatic slimming process for sandbox images, by [setting `slim = false`](./deployment-reference).
+Added ability to opt out of our automatic slimming process for sandbox images, by [setting `slim = false`](./deployment-reference).
 
 </Update>
 
@@ -734,7 +734,7 @@ Added [Relace](https://www.relace.ai/) support for fast apply in the codegen too
 
 ### Binary support for sandboxes
 
-- Added `readBinary()` function for sandbox filesystem to return a file content as a standard Blob object
+- Added `readBinary()` function for sandbox filesystem to return a file's content as a standard Blob object
 - Added `writeBinary()` function for sandbox filesystem to write a Buffer/Blob
 - Added `download()` function to download a file from the sandbox's file system to your local machine.
 
@@ -819,7 +819,7 @@ Released v2 of the sandbox networking layer, which decreases latency by up to 90
 
 ### New init command
 
-Added `bl new` command to quickly initialize a new or existing project on Blaxel. You can also use any of the sub commands:
+Added `bl new` command to quickly initialize a new or existing project on Blaxel. You can also use any of the subcommands:
   - `bl new agent`
   - `bl new mcp`
   - `bl new job`
@@ -1196,7 +1196,7 @@ Added revisions for agents, model APIs and functions:
 
 - Each build of an object creates a new immutable revision, which can be deployed to redirect request traffic to it
 - Ability to deploy a new revision using blue-green strategy
-- Ability to rollback to previous revision
+- Ability to roll back to previous revision
 - Ability to split a percentage of traffic to a second revision (canary deployments)
 
 </Update>
