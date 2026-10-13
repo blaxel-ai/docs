@@ -808,6 +808,43 @@ temp_dir = image.write_temp()
 
 </CodeGroup>
 
+##### Size the build environment
+
+Large images can run out of memory or disk while they build. Set `buildMemoryMb` and `buildVolumeMb` (`build_memory_mb` and `build_volume_mb` in Python) on `build()` to size the temporary environment the image is built in. These are the same settings as `bl push --memory` and `--volume`, or `[build].memoryMb` and `[build].volumeMb` in [`blaxel.toml`](/deployment-reference).
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await image.build({
+  name: "my-sandbox",
+  memory: 4096,
+  buildMemoryMb: 16384,
+  buildVolumeMb: 32768,
+});
+```
+
+```python Python
+sandbox = await image.build(
+    name="my-sandbox",
+    memory=4096,
+    build_memory_mb=16384,
+    build_volume_mb=32768,
+)
+```
+
+</CodeGroup>
+
+| Option | Range (MB) | Description |
+|--------|------------|-------------|
+| `buildMemoryMb` / `build_memory_mb` | 1 to 32768 | Memory of the build environment |
+| `buildVolumeMb` / `build_volume_mb` | 0 to 131072 | Disk attached to the build for its intermediate layers. `0` builds in memory |
+
+When you omit them, the platform defaults apply. They only affect the build. The deployed sandbox uses `memory`.
+
+<Note>
+  These options require `@blaxel/core` 0.3.27 or later, or `blaxel` 0.4.15 or later. HIPAA workspaces do not support `buildVolumeMb`; omit it or set it to `0`.
+</Note>
+
 ##### Understand immutability and branching
 
 Each method returns a new `ImageInstance`, leaving the original unchanged. This lets you create base images and branch from them:
@@ -960,7 +997,7 @@ asyncio.run(main())
 | `cargoInstall` / `cargo_install` | Install Rust crates |
 | `goInstall` / `go_install` | Install Go packages |
 | `composerInstall` / `composer_install` | Install PHP packages |
-| `build` | Build and deploy as a sandbox |
+| `build` | Build and deploy as a sandbox. See [Size the build environment](#size-the-build-environment) for build options |
 | `write` | Write image to a folder |
 | `writeTemp` / `write_temp` | Write image to a temporary folder |
 
