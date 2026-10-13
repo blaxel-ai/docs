@@ -808,6 +808,8 @@ temp_dir = image.write_temp()
 
 </CodeGroup>
 
+<a id="size-the-build-environment"></a>
+
 ##### Size the build environment
 
 Large images can run out of memory or disk while they build. Set `buildMemoryMb` and `buildVolumeMb` (`build_memory_mb` and `build_volume_mb` in Python) on `build()` to size the temporary environment the image is built in. These are the same settings as `bl push --memory` and `--volume`, or `[build].memoryMb` and `[build].volumeMb` in [`blaxel.toml`](/deployment-reference).
