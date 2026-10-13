@@ -3879,6 +3879,28 @@ components:
           type: string
           description: VPC name for the sandbox. Defaults to "default" when absent.
           example: default
+    Secret:
+      type: object
+      description: Workspace secret, referenced from proxy routing as {{SECRET:name}}.
+        Values are write-only and can never be read back. Every upsert stores a new
+        immutable version and the latest one is resolved at runtime.
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the secret was first created
+          readOnly: true
+        name:
+          type: string
+          description: Case-sensitive secret name
+        updatedAt:
+          type: string
+          description: The date and time of the latest version
+          readOnly: true
+        value:
+          type: string
+          description: Secret value. Write-only, never returned by the API
+      required:
+      - name
     Status:
       type: string
       description: Deployment status of a resource deployed on Blaxel
@@ -4525,6 +4547,9 @@ components:
             sandboxes:list: List sandboxes
             sandboxes:update: Update sandboxes
             sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
             templates:get: Get template details
             templates:list: List templates
             volumeTemplates:create: Create volume templates
@@ -4600,6 +4625,9 @@ components:
             sandboxes:list: List sandboxes
             sandboxes:update: Update sandboxes
             sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
             templates:get: Get template details
             templates:list: List templates
             volumeTemplates:create: Create volume templates
@@ -5731,6 +5759,53 @@ paths:
         - drives:get
       - ApiKeyAuth: []
       summary: Create drive access token
+      tags:
+      - drives
+  /drives/{driveName}/folders:
+    delete:
+      description: Deletes a folder and all its contents directly in drive storage.
+        This is synchronous and non-atomic. If it times out or fails, some contents
+        may have been deleted; retry the same path to finish cleanup. An absent folder
+        succeeds. The drive root and internal metadata cannot be deleted.
+      operationId: DeleteDriveFolder
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      - description: Relative folder path ending in a slash, for example documents/reports/.
+        in: query
+        name: path
+        required: true
+        schema:
+          maxLength: 1024
+          type: string
+      responses:
+        "204":
+          description: Folder and its contents deleted, or folder already absent
+        "400":
+          description: Invalid folder path
+        "401":
+          description: Unauthorized
+        "403":
+          description: Insufficient permissions, protected path, or drives feature
+            disabled
+        "404":
+          description: Drive not found
+        "409":
+          description: Drive unavailable or requested path is not a folder
+        "502":
+          description: Storage unavailable or deletion incomplete; retry to finish
+            cleanup
+        "504":
+          description: Deletion timed out and may be partially complete; retry to
+            finish cleanup
+      security:
+      - OAuth2:
+        - drives:delete
+      - ApiKeyAuth: []
+      summary: Delete a folder and its contents
       tags:
       - drives
   /drives/by-external-id/{externalId}:
@@ -9387,6 +9462,101 @@ paths:
       summary: Get Sandbox Scheduling Metrics
       tags:
       - compute
+  /secrets:
+    delete:
+      description: Deletes a secret by name (query parameter) from the workspace.
+      operationId: DeleteSecretByQuery
+      parameters:
+      - description: Name of the secret
+        in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:delete
+      - ApiKeyAuth: []
+      summary: Delete secret by query
+      tags:
+      - secrets
+      x-stainless-ignore: true
+    get:
+      description: Lists the secrets of the workspace. Values are write-only and never
+        returned.
+      operationId: ListSecrets
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Secret'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:list
+      - ApiKeyAuth: []
+      summary: List secrets
+      tags:
+      - secrets
+    post:
+      description: Creates or updates a secret by name. Each call stores a new immutable
+        version; the latest version is the one resolved by the proxy.
+      operationId: UpsertSecret
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Secret'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:create
+      - ApiKeyAuth: []
+      summary: Upsert secret
+      tags:
+      - secrets
+  /secrets/{secretName}:
+    delete:
+      description: Deletes a secret and all its versions from the workspace.
+      operationId: DeleteSecret
+      parameters:
+      - description: Name of the secret
+        in: path
+        name: secretName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:delete
+      - ApiKeyAuth: []
+      summary: Delete secret
+      tags:
+      - secrets
   /service_accounts:
     get:
       description: Returns all service accounts in the workspace. Service accounts
