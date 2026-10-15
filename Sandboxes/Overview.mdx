@@ -426,6 +426,42 @@ sandbox = await SandboxInstance.create({
 
 For a complete example of using iptables to run Tailscale inside a sandbox, see the [Tailscale tutorial](/Tutorials/Tailscale).
 
+### Android kernel
+
+On [Carbon](/Infrastructure/Gens), a sandbox can boot an Android-compatible kernel for running Android in a container. Enable it with `android: enabled` in `extraArgs`.
+
+The Android kernel also supports loadable kernel modules and kernel tracing (kprobes, tracepoints, eBPF, and perf), for out-of-tree drivers and eBPF profilers. These kernel extensions are off by default. Enable them with `kernelExtensions: enabled`:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-android-sandbox",
+  extraArgs: { android: "enabled", kernelExtensions: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-android-sandbox",
+    "extra_args": {"android": "enabled", "kernelExtensions": "enabled"},
+})
+```
+
+</CodeGroup>
+
+Without `kernelExtensions`, the sandbox's kernel refuses module loading and kernel tracing to every process, including root, and nothing inside the sandbox can turn them back on.
+
+<Warning>
+   With kernel extensions on, the sandbox's kernel no longer blocks features that let processes modify the running kernel or extract information from it, such as loading unsigned modules. Enable them only for workloads that need modules or kernel tracing.
+</Warning>
+
+`kernelExtensions` is accepted only together with `android: enabled`, and only on Carbon. Blaxel rejects other combinations when the sandbox is created. Modules are not signed. Build them against the sandbox's kernel version (`uname -r`).
+
 ### Creation timeout
 
 Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call raises a `SandboxCreationTimeoutError`.
