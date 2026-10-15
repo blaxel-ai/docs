@@ -8,7 +8,7 @@ You can have your sandbox warned before it is deleted or put on standby. Blaxel 
 | Event | Signal | Setting | Maximum |
 | --- | --- | --- | --- |
 | Deletion | `SIGTERM` | `terminationGracePeriodSeconds` | 30 seconds |
-| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 10 seconds |
+| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 30 seconds |
 
 Both settings default to `0`: no signal is sent and the sandbox is deleted or put on standby right away. A value above the maximum or below `0` is rejected with a `400` error.
 
@@ -19,7 +19,7 @@ Set the grace periods in the `[runtime]` section of the `blaxel.toml` of your [s
 ```toml
 [runtime]
 terminationGracePeriodSeconds = 30
-standbyGracePeriodSeconds = 10
+standbyGracePeriodSeconds = 30
 ```
 
 The same fields are available in `spec.runtime` when you create a sandbox through the API. They are read when the sandbox is created, so changing them requires a new sandbox.
@@ -54,12 +54,10 @@ signal.signal(signal.SIGTERM, on_sigterm)
 
 When a sandbox with a standby grace period goes idle, its processes receive `SIGUSR2`. The sandbox keeps running across the standby: use the signal to flush buffers, write a checkpoint or close outbound connections.
 
-By default, Blaxel waits for the full grace period before the standby. To go on standby as soon as your code is ready, use the keep-alive counter exposed in the `BLAXEL_SCALE_FILE` environment variable:
+By default, Blaxel waits for the full grace period, then puts the sandbox on standby. Your code can change this with the keep-alive counter in the file at `$BLAXEL_SCALE_FILE`. Write `+1` to the file to raise the counter, and `-1` to lower it.
 
-- Write `+1` to the file when your code starts preparing
-- Write `-1` when it is done, even if the preparation fails: the sandbox goes on standby right away
-
-If the counter is still above `0` when the grace period ends, the standby is cancelled and the sandbox keeps running. Any activity on the sandbox during the grace period also cancels the standby.
+- **Ready early:** write `+1` when your code starts preparing and `-1` when it is done, even if it fails. The sandbox goes on standby as soon as the counter is back to `0`.
+- **Stay awake:** keep the counter above `0` when the grace period ends. The standby is cancelled and the sandbox keeps running until your code writes `-1`. Once the sandbox is idle again, it gets a new `SIGUSR2` before the next standby.
 
 <CodeGroup>
 
