@@ -3,7 +3,7 @@ title: 'Lifecycle signals'
 description: 'Let sandbox code clean up before deletion and prepare before standby with SIGTERM and SIGUSR2 grace periods.'
 ---
 
-A sandbox can ask to be warned before it is deleted or put on standby. Blaxel sends a signal to the processes running in the sandbox, then gives them a grace period to act before it continues.
+You can have your sandbox warned before it is deleted or put on standby. Blaxel sends a signal to the processes running in your sandbox, then gives them a grace period to act before it continues.
 
 | Event | Signal | Setting | Maximum |
 | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ When a sandbox with a standby grace period goes idle, its processes receive `SIG
 By default, Blaxel waits for the full grace period before the standby. To go on standby as soon as your code is ready, use the keep-alive counter exposed in the `BLAXEL_SCALE_FILE` environment variable:
 
 - Write `+1` to the file when your code starts preparing
-- Write `-1` when it is done: the sandbox goes on standby right away
+- Write `-1` when it is done, even if the preparation fails: the sandbox goes on standby right away
 
 If the counter is still above `0` when the grace period ends, the standby is cancelled and the sandbox keeps running. Any activity on the sandbox during the grace period also cancels the standby.
 
@@ -68,8 +68,11 @@ import { writeFileSync } from "node:fs";
 
 process.on("SIGUSR2", async () => {
   writeFileSync(process.env.BLAXEL_SCALE_FILE!, "+1");
-  await saveCheckpoint();
-  writeFileSync(process.env.BLAXEL_SCALE_FILE!, "-1");
+  try {
+    await saveCheckpoint();
+  } finally {
+    writeFileSync(process.env.BLAXEL_SCALE_FILE!, "-1");
+  }
 });
 ```
 
@@ -81,9 +84,11 @@ def on_sigusr2(signum, frame):
     scale_file = os.environ["BLAXEL_SCALE_FILE"]
     with open(scale_file, "w") as f:
         f.write("+1")
-    save_checkpoint()
-    with open(scale_file, "w") as f:
-        f.write("-1")
+    try:
+        save_checkpoint()
+    finally:
+        with open(scale_file, "w") as f:
+            f.write("-1")
 
 signal.signal(signal.SIGUSR2, on_sigusr2)
 ```
