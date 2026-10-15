@@ -94,6 +94,7 @@
                 "pages": [
                   "Sandboxes/Proxy",
                   "Sandboxes/Proxy-secrets-injection",
+                  "Sandboxes/Proxy-workspace-secrets",
                   "Sandboxes/Proxy-domains"
                 ]
               },
