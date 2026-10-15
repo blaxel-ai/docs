@@ -36,6 +36,49 @@ Only verified preview custom domains can be shared.
 
 When a target workspace binds a preview to the shared domain, the full host still needs to be unique across the account. If another workspace already uses the same `<prefixUrl>.<domain>` host, Blaxel returns `409`.
 
+## Certificate validation methods
+
+Blaxel issues a TLS certificate for each custom domain. The certificate must be validated before the domain becomes usable. Choose the validation method when you create the domain. It cannot be changed afterwards.
+
+### DNS validation (default)
+
+DNS validation is the default and works for every domain type. Blaxel returns a unique validation CNAME record in addition to the routing record. Publish both records with your DNS provider, then click Verify.
+
+### HTTP validation
+
+<Note>
+HTTP validation is in private preview. Contact Blaxel support to enable it for your workspace.
+</Note>
+
+With HTTP validation, you do not publish a validation record. Point your domain to Blaxel with the routing record, then click Verify. Blaxel validates the certificate over HTTP once the domain resolves to Blaxel. Verification usually completes within a few minutes of DNS propagation.
+
+HTTP validation is only available for application domains with exact host names. Preview domains use a wildcard certificate, which can only be validated with DNS. HTTP validation is rejected for wildcard names and wildcard subject alternative names.
+
+The records to publish depend on the host name:
+
+- Subdomain (for example `shop.client.com`): one CNAME record from the subdomain to the Blaxel routing endpoint.
+- Apex domain (for example `client.com`): an ALIAS, ANAME or flattened CNAME record from the apex to the Blaxel routing endpoint, plus a TXT record named `_cf-challenge.client.com` whose value is the Blaxel routing endpoint shown in the console.
+- Apex with `www` as a subject alternative name: the two apex records above plus a CNAME record from `www` to the Blaxel routing endpoint. No TXT record is needed for `www`.
+
+The console and the API return the exact records for your domain.
+
+To select HTTP validation in the console, set the domain type to Applications and choose HTTP under Certificate Validation. With the API or SDKs, set `spec.validationMethod` to `http` when creating the domain. Omitting the field uses DNS validation.
+
+```bash
+curl -X POST 'https://api.blaxel.ai/v0/customdomains' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "metadata": { "name": "client.com" },
+    "spec": {
+      "domainType": "applications",
+      "subjectAlternativeNames": ["www.client.com"],
+      "validationMethod": "http"
+    }
+  }'
+```
+
 ## Use a custom domain
 
 Custom domains can currently be used for:
