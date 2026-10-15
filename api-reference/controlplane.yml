@@ -721,6 +721,18 @@ components:
           description: Map of TXT record names to values for domain verification
           additionalProperties:
             type: string
+        validationMethod:
+          type: string
+          description: How the TLS certificate is validated. "dns" (default) requires
+            the certificate validation CNAME records to be published; "http" validates
+            over HTTP once the domain points to Blaxel and requires no validation
+            record. HTTP validation is not available for wildcard domains (previews
+            or "*." names) and cannot be changed after creation.
+          enum:
+          - dns
+          - http
+          example: dns
+          default: dns
         verificationError:
           type: string
           description: Error message if verification failed
@@ -1059,8 +1071,9 @@ components:
           example: ttl-idle
         value:
           type: string
-          description: Duration value for TTL policies (e.g., '30m', '24h', '7d',
-            minimum '5m') or ISO 8601 date for date policies
+          description: Duration value for TTL policies (e.g., '30m', '24h', '7d';
+            minimum '60s' for ttl-idle, '5m' for ttl-max-age) or ISO 8601 date for
+            date policies
           example: 24h
     FirewallConfig:
       type: object
@@ -3513,9 +3526,11 @@ components:
             variant includes tun and iptables and cannot be combined with nfs. The
             landlock variant enables the Landlock LSM, includes tun and iptables,
             and cannot be combined with android or nfs. Android and landlock requests
-            are rejected if routing selects mk3.0. Values: ''enabled'' or ''disabled''.
-            Determines which kernel variant the workload runs on. Immutable after
-            creation.'
+            are rejected if routing selects mk3.0. ''kernelExtensions'' (mk3.1, android
+            only for now) switches on the selected kernel''s loadable modules and
+            kernel tracing (eBPF, kprobes, perf); without it they are disabled, even
+            for root. Values: ''enabled'' or ''disabled''. Determines which kernel
+            variant the workload runs on. Immutable after creation.'
           additionalProperties:
             type: string
         image:
