@@ -67,6 +67,7 @@
             "pages": [
               "Sandboxes/Overview",
               "Sandboxes/Expiration",
+              "Sandboxes/Lifecycle-signals",
               "Sandboxes/Processes",
               {
                 "group": "File system",
