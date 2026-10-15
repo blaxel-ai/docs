@@ -99,7 +99,7 @@ signal.signal(signal.SIGUSR2, on_sigusr2)
 
 ## Which processes receive the signals
 
-The [sandbox API](./Templates#2-customize-the-dockerfile) receives both signals and passes them on to the processes it started: the `--command` of the image and the processes started through the [process API](./Processes). On deletion, it waits for all of them to exit before it shuts down.
+The [sandbox API](./Templates) receives both signals and passes them on to the processes it started: the `--command` of the image and the processes started through the [process API](./Processes). On deletion, it waits for all of them to exit before it shuts down.
 
 If the entrypoint of your image is your own program rather than the sandbox API, it receives both signals directly.
 
