@@ -14,15 +14,37 @@ Both settings default to `0`: no signal is sent and the sandbox is deleted or pu
 
 ## Configure the grace periods
 
-Set the grace periods in the `[runtime]` section of the `blaxel.toml` of your [sandbox template](./Templates), then deploy it with `bl deploy`:
+Set the grace periods when you create the sandbox:
 
-```toml
-[runtime]
-terminationGracePeriodSeconds = 30
-standbyGracePeriodSeconds = 30
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-pdx-1",
+  terminationGracePeriodSeconds: 30,
+  standbyGracePeriodSeconds: 30,
+});
 ```
 
-The same fields are available in `spec.runtime` when you create a sandbox through the API. They are read when the sandbox is created, so changing them requires a new sandbox.
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "region": "us-pdx-1",
+  "termination_grace_period_seconds": 30,
+  "standby_grace_period_seconds": 30,
+})
+```
+
+</CodeGroup>
+
+The same fields are available in `spec.runtime` of the [Create sandbox API](/api-reference/compute/create-sandbox). They are read when the sandbox is created, so changing them requires a new sandbox.
 
 ## Handle deletion
 
