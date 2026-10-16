@@ -1,0 +1,100 @@
+---
+title: 'Sample documentation page'
+sidebarTitle: 'Sample page'
+description: 'A reference page demonstrating the frontmatter, tone, and Mintlify components used across the Blaxel documentation.'
+---
+
+This page is a working template for writers. It demonstrates the components and conventions described in `STYLE_GUIDE.md` so you can copy patterns from a live example instead of starting from a blank file.
+
+## Callouts
+
+Use callouts to highlight information without interrupting the main flow. Keep each one to 1-3 sentences and avoid nesting them.
+
+<Note>
+  A `<Note>` adds supplementary context the reader should know but that does not block progress, such as a version requirement or a related concept.
+</Note>
+
+<Tip>
+  A `<Tip>` highlights a best practice or shortcut, like using `createIfNotExists()` instead of `create()` to avoid handling duplicate-name errors.
+</Tip>
+
+<Warning>
+  A `<Warning>` flags a constraint or destructive action, such as an operation that cannot be undone or a limit that causes failures if exceeded.
+</Warning>
+
+<Info>
+  An `<Info>` calls out external references, pricing implications, or beta notices, such as a feature that is only available on certain plans.
+</Info>
+
+## Code samples
+
+Use a fenced code block with a language identifier for every sample. Wrap multi-language examples in `<CodeGroup>`, and label each block with the language (and package manager, if relevant).
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "sample-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "sample-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-pdx-1"
+})
+```
+
+</CodeGroup>
+
+## Interface variations
+
+Use `<Tabs>` when content varies by interface (CLI vs Console vs API) and the reader will only follow one path. Do not use tabs for language variants; use `<CodeGroup>` for that instead.
+
+<Tabs>
+  <Tab title="CLI">
+    ```shell
+    bl new sandbox sample-sandbox
+    cd sample-sandbox
+    bl deploy
+    ```
+  </Tab>
+  <Tab title="Console">
+    - Log in to the [Blaxel Console](https://app.blaxel.ai/).
+    - Click **Sandboxes** in the left navigation menu.
+    - Click **\+Create sandbox** -\> **Deploy from console**.
+  </Tab>
+</Tabs>
+
+## Deep dives
+
+Use `<Accordion>` (grouped inside `<AccordionGroup>`) for optional details, alternative methods, or reference tables that would otherwise interrupt the main flow.
+
+<AccordionGroup>
+  <Accordion title="When to use an accordion">
+    Reach for an accordion when the detail is useful to some readers but would break the flow for everyone else, such as an authentication walkthrough or a full parameter reference table.
+  </Accordion>
+  <Accordion title="When not to use an accordion">
+    Do not hide required steps inside an accordion. If every reader needs the information to complete the task, keep it in the main body.
+  </Accordion>
+</AccordionGroup>
+
+## Related documentation
+
+This sample page pairs with the [style guide](https://github.com/blaxel-ai/docs/blob/main/STYLE_GUIDE.md), which documents the full set of conventions for frontmatter, tone, headings, and components used across these docs.
+
+<CardGroup cols={2}>
+  <Card title="Sandboxes overview" icon="cube" href="/Sandboxes/Overview">
+    See these components used in a real product page.
+  </Card>
+  <Card title="Example templates" icon="github" href="/Examples/Overview">
+    Browse sample agents and full-repo templates on GitHub.
+  </Card>
+</CardGroup>
