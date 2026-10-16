@@ -240,7 +240,8 @@
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
                   "Infrastructure/Dedicated-egress-gateways",
-                  "Infrastructure/Custom-domains"
+                  "Infrastructure/Custom-domains",
+                  "Infrastructure/Custom-domains-http-validation"
                 ]
               }
             ]
