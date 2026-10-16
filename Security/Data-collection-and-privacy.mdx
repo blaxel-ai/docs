@@ -4,7 +4,62 @@ title: 'Data collection and privacy'
 description: 'Understand what usage and telemetry data the Blaxel CLI and SDKs collect, how it is used, and how to opt out for privacy-sensitive deployments.'
 ---
 
-The Blaxel SDKs and Blaxel CLI have two separate data collection systems.
+The Blaxel SDKs and Blaxel CLI use separate systems for usage reporting, error tracking, and workload observability.
+
+## Anonymous CLI usage reporting
+
+When usage reporting is enabled in the CLI build and the local tracking preference allows it, the CLI sends the following events to PostHog to measure installation and setup outcomes. This reporting is separate from Sentry error tracking and OpenTelemetry.
+
+| Event | Trigger | Event-specific properties |
+| --- | --- | --- |
+| `Installed CLI` | The first eligible invocation of a CLI version that has not been successfully reported locally. | `version` |
+| `Upgraded CLI` | A successful upgrade through the CLI. | `old_version`, `new_version` |
+| `Setup CLI` | Setup finishes, fails, or is cancelled. | `status`, `detected_agents`, `components`, and `failure_category` on failure |
+| `Login CLI` | Browser, API key, or client credentials login starts and then succeeds or fails, including browser login during setup. | `status`, and `failure_category` on failure |
+| `First Resource CLI` | The first eligible successful create observed through the CLI's shared apply path for this local reporting ID. | `resource_category` |
+
+Each event includes an event timestamp and a random UUID stored locally as `distinct_id` in `.blaxel/telemetry.json` under your home directory. The CLI reuses this ID across local invocations. It does not derive the ID from an account, workspace, email address, hostname, or hardware identifier. The local file also records successfully reported CLI versions and the first-resource marker to reduce duplicate reporting.
+
+The common event properties are:
+
+- `cli_version`, when the running version matches the release-version allowlist. Version properties accept numeric releases and alpha, beta, or rc prereleases; arbitrary build text is omitted.
+- `os`: darwin, linux, windows, or unknown.
+- `architecture`: amd64, arm64, 386, arm, or unknown.
+- `install_method`: shell, powershell, homebrew, or unknown, inferred from the current installer invocation or executable location. It is not a complete history of how the CLI was installed.
+- `$process_person_profile`: the boolean `false`, requesting no person-profile processing.
+- `$geoip_disable`: the boolean `true`, requesting no GeoIP enrichment.
+
+Event-specific properties are limited to these values:
+
+- Setup `status`: success, failure, or cancelled. Login `status`: started, success, or failure.
+- `detected_agents`: locally detected IDs from claude-code, codex, cursor, gemini-cli, github-copilot, opencode, amp, cline, windsurf, goose, kiro-cli, roo, continue, augment, junie, trae, qwen-code, openhands, pi, crush, devin, and openclaw. No agent prompts or MCP protocol output are captured.
+- `components`: selected setup categories from skills, mcp, docs, login, and tracking. These describe the selected work, not a per-component success report.
+- `failure_category`: usage, validation, authentication, not_found, conflict, operational, internal, or panic. If multiple setup tasks fail, only one category is reported. Raw error text is excluded.
+- `resource_category`: Agent, Function, Sandbox, Job, Model, Volume, or Drive.
+
+Usage event payloads exclude account and workspace IDs or names, emails, hostnames, paths, command arguments, environment-variable values, credentials, file contents, and raw errors. No IP address is added to the event body. The analytics receiver still receives a network connection; the GeoIP flag does not by itself establish how that receiver handles or retains the source IP address.
+
+### Consent and opt-outs
+
+The existing `tracking` preference in the local configuration described under **Error tracking** below controls both CLI usage reporting and local SDK/CLI error tracking. Setup labels its toggle **Usage and error reports** and keeps an existing saved choice. New setup plans retain the existing selected-by-default choice; the separate first-use consent prompt retains its default of no. Without a saved choice, the SDK's existing tracking default remains off.
+
+Usage capture is disabled regardless of a saved `tracking: true` when:
+
+- `DO_NOT_TRACK` has **any nonempty value**, including 0, false, or whitespace.
+- `BL_INSTALL_TRACKING` is false (case-insensitive, ignoring surrounding whitespace).
+- Any of `CI`, `GITHUB_ACTIONS`, `GITLAB_CI`, `CIRCLECI`, `TRAVIS`, `JENKINS_URL`, `BUILDKITE`, or `TEAMCITY_VERSION` has a nonempty value.
+
+You can also turn off the setup toggle or set `tracking: false` in the local configuration. `BL_INSTALL_TRACKING=false` disables usage capture directly and selects the setup toggle off. It does not independently override Sentry or SDK error tracking.
+
+<Note>
+  Usage reporting intentionally treats `DO_NOT_TRACK=0` and `DO_NOT_TRACK=false` as opt-outs. Error tracking retains the existing SDK semantics described below, where those values enable error tracking. The CLI usage opt-outs do not change OpenTelemetry or sandbox runtime reporting.
+</Note>
+
+### Measurement limits
+
+Usage delivery is best effort: requests have a one-second timeout, process-exit flushing waits at most one second, and the CLI drops excess events instead of queueing them when eight requests are already in flight. Setup and login attempts are not stored for offline replay. Failed version or first-resource delivery leaves the local marker eligible for a later invocation or creation.
+
+The first-resource event measures a successful create observed by an opted-in CLI installation. It does not confirm that a resource is ready or that a deployment finished, cover resources created through the Console or SDKs, or establish the first resource for an account. The anonymous local ID is not joined to identified server events. Resetting the local state, separate homes, concurrent CLI processes, opt-outs, and delivery failures can make this funnel incomplete or produce duplicates.
 
 ## Error tracking
 
