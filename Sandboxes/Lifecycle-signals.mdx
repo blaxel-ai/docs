@@ -7,8 +7,8 @@ You can have your sandbox warned before it is deleted or put on standby. Blaxel 
 
 | Event | Signal | Setting | Maximum |
 | --- | --- | --- | --- |
-| Deletion | `SIGTERM` | `terminationGracePeriodSeconds` | 30 seconds |
-| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 30 seconds |
+| Deletion | `SIGTERM` | `terminationGracePeriodSeconds` | 300 seconds |
+| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 300 seconds |
 
 Both settings default to `0`: no signal is sent and the sandbox is deleted or put on standby right away. A value above the maximum or below `0` is rejected with a `400` error.
 
