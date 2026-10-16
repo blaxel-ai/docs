@@ -117,7 +117,8 @@
             "group": "Volumes",
             "pages": [
               "Volumes/Overview",
-              "Volumes/Volumes-templates"
+              "Volumes/Volumes-templates",
+              "Volumes/Ephemeral-volumes"
             ]
           },
           {
