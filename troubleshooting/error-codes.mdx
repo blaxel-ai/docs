@@ -5,18 +5,20 @@ description: "Reference for structured error codes returned by Blaxel API respon
 
 Blaxel returns structured error responses in case of request failure. These error responses include additional information designed for coding agents and LLMs.
 
-Every error has a consistent JSON body and response header, as shown below:
+Structured platform errors have a consistent JSON body and response header, as shown below:
 
 ```json
 {
   "error": {
     "action": "Stop. URL does not match a Blaxel route. Use `https://{sbx|agt|mcp|mdl|job}-{name}-{workspace}.{region}.bl.run[/{path}]` for workloads or `https://{preview_id}.preview.bl.run/{path}` for previews. Get the canonical URL from the SDK (e.g. `sandbox.metadata.url`), not by hand.",
     "code": "ROUTE_NOT_FOUND",
+    "dispatch_state": "not_dispatched",
     "do_not": "Do not retry, do not guess URLs, do not use `run.blaxel.ai` (not served).",
     "docs_url": "https://docs.blaxel.ai/Sandboxes/Ports.md",
     "message": "Preview not found: xxx",
     "origin": "platform",
     "retryable": false,
+    "safe_to_retry_request": false,
     "status": 404,
     "timestamp": "2026-04-23T14:49:43+00:00"
   }
@@ -27,11 +29,13 @@ Every error has a consistent JSON body and response header, as shown below:
 |---|---|
 | `error.action` | Agent-readable actions to be taken |
 | `error.code` | Machine-readable error code |
+| `error.dispatch_state` | `not_dispatched` when the request never reached the workload, `dispatched_unknown` when it may have |
 | `error.do_not` | Agent-readable actions not to be taken |
 | `error.docs_url` | Documentation related to this error |
 | `error.message` | Human-readable description |
 | `error.origin` | `"platform"` when emitted by Blaxel; otherwise absent |
 | `error.retryable` | Whether the request can return a different response if it is retried |
+| `error.safe_to_retry_request` | `true` only when the request can be replayed safely, including a write |
 | `error.status` | HTTP status code (same as HTTP response header) |
 | `error.timestamp` | Timestamp in ISO-8601 format |
 
@@ -43,10 +47,17 @@ Every error has a consistent JSON body and response header, as shown below:
 | `WORKLOAD_NOT_FOUND` | 404 | No | Workload record doesn't exist |
 | `WORKSPACE_NOT_FOUND` | 404 | No | Workspace couldn't be resolved for a deployment-subdomain request |
 | `WORKLOAD_UNAVAILABLE` | 404 | **Yes** | Workload exists but no healthy replica is currently serving it |
+| `WORKLOAD_FAILED` | 503 | No | Workload failed permanently on the compute plane; create a new one instead of retrying |
 | `AUTHENTICATION_REQUIRED` | 401 | No | Credentials missing |
 | `AUTHENTICATION_FAILED` | 401 | No | Credentials present but invalid or rejected |
+| `TOKEN_REVOKED` | 401 | No | Token was valid but has been revoked since it was issued |
 | `FORBIDDEN` | 403 | No | Authenticated but not authorized |
 | `BAD_REQUEST` | 400 | No | Malformed request |
 | `USAGE_LIMIT_EXCEEDED` | 402 | No | Plan quota reached |
-| `POLICY_VIOLATION` | varies | No | Policy rule rejection |
-| `REQUEST_ENTITY_TOO_LARGE` | 413 | No | Request body exceeds [upload limit](/Sandboxes/Filesystem#write-binary-file) |
+| `ROUTING_UNAVAILABLE` | 503 | **Yes** | A lookup the gateway needs to route or authenticate the request didn't answer; the request wasn't forwarded |
+| `UPSTREAM_CONNECT_FAILED` | 502 | **Yes** | Connection to the workload failed (refused, no route, TLS failure); the request didn't reach it |
+| `UPSTREAM_CONNECT_TIMEOUT` | 502 | **Yes** | Connecting to the workload timed out, typically while it is still starting; the request didn't reach it |
+| `UPSTREAM_ERROR` | 502 | **Yes** | The exchange with the workload failed, or the proxy in front of it returned a 502 (for example, nothing is listening on the port yet); the workload may have processed the request |
+| `UPSTREAM_TIMEOUT` | 502 or 504 | **Yes** | The platform gave up waiting for the workload's response; the workload may still be running the work |
+| `GATEWAY_INTERNAL_ERROR` | 500 | **Yes** | Internal gateway failure, not caused by the workload |
+| `POLICY_VIOLATION` | varies | No | Reserved; not currently returned |

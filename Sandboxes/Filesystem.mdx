@@ -448,7 +448,7 @@ The binary content to write can be provided as:
 - *Uint8Array*: Typed array containing binary data
 
 <Note>
-If you're calling the sandbox filesystem API directly over HTTP instead of using an SDK, a single request is capped at 5 MB. Requests larger than this are rejected with an HTTP 413 before they reach the sandbox. Therefore, if using HTTP, larger files must be uploaded in parts via the sandbox's multipart upload endpoints rather than in a single request. Blaxel SDKs handle this automatically: SDK functions like `write()`, `writeBinary()`, and `write_binary()` automatically split files over 5 MB and send via multipart upload in 5 MB chunks.
+If you're calling the sandbox filesystem API directly over HTTP instead of using an SDK, a single request body may be limited. On sandboxes whose `nodeGeneration` is `mk3.0`, a proxy in front of the sandbox rejects bodies over 8 MiB (8,388,608 bytes) with an HTTP 413 and a plain HTML body, not a structured JSON error. Sandboxes on `mk3.1` don't apply this limit. To work on both, upload larger files in parts via the sandbox's multipart upload endpoints rather than in a single request. Blaxel SDKs handle this automatically: SDK functions like `write()`, `writeBinary()`, and `write_binary()` automatically split files over 5 MB and send via multipart upload in 5 MB chunks.
 </Note>
 
 ### Download file to host
