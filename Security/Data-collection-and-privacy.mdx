@@ -32,7 +32,7 @@ The common event properties are:
 
 Event-specific properties are limited to these values:
 
-- Setup `status`: success, failure, or cancelled. Login `status`: started, success, failure, or cancelled. Skipping or quitting the setup login, or pressing Ctrl+C during browser login, counts as cancelled.
+- Setup `status`: success, failure, or cancelled. Login `status`: started, success, failure, or cancelled. Skipping or quitting the setup login, pressing Ctrl+C during browser login, or leaving the workspace picker counts as cancelled.
 - `detected_agents`: locally detected IDs from claude-code, codex, cursor, gemini-cli, github-copilot, opencode, amp, cline, windsurf, goose, kiro-cli, roo, continue, augment, junie, trae, qwen-code, openhands, pi, crush, devin, openclaw, vscode, and claude-desktop. No agent prompts or MCP protocol output are captured.
 - `components`: selected setup categories from skills, mcp, docs, login, and tracking. These describe the selected work, not a per-component success report.
 - `failure_category`: usage, validation, authentication, not_found, conflict, operational, internal, or panic. If multiple setup tasks fail, only one category is reported. Raw error text is excluded.
