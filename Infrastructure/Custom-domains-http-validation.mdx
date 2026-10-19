@@ -5,12 +5,9 @@ tag: 'private preview'
 ---
 
 <Note>
-  This feature is currently in private preview and is not recommended for production use. In private preview, it has the following limitations:
-  - It is only available for application domains with exact host names.
-  - Preview domains and wildcard names keep using DNS validation.
-  - The validation method is chosen at domain creation and cannot be changed afterwards.
+  This feature is currently in private preview and is not recommended for production use.
 
-  For more information, [contact us on Discord](https://discord.gg/CsWKUZUHFQ) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20HTTP%20validation%20for%20custom%20domains%20for%20the%20following%20use%20case%3A).
+  For more information and to gain access, [contact us on Discord](https://discord.gg/CsWKUZUHFQ) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20HTTP%20validation%20for%20custom%20domains%20for%20the%20following%20use%20case%3A).
 </Note>
 
 HTTP validation lets Blaxel validate the TLS certificate of a [custom domain](/Infrastructure/Custom-domains) once the domain resolves to Blaxel. You only publish the routing records: there is no validation record to add with your DNS provider.
@@ -33,7 +30,7 @@ The console and the API return the exact records for your domain.
 
 ## Select HTTP validation
 
-In the [Blaxel Console](https://app.blaxel.ai/), set the domain type to Applications and choose HTTP under Certificate Validation when adding the domain.
+In the [Blaxel Console](https://app.blaxel.ai/), set the domain type to Applications, and choose HTTP under Certificate Validation when adding the domain. 
 
 With the API or SDKs, set `spec.validationMethod` to `http` when creating the domain. Omitting the field uses DNS validation.
 
