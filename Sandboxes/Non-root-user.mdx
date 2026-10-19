@@ -7,34 +7,8 @@ description: 'Scope everything a sandbox runs on your behalf to an unprivileged 
 By default, everything inside a sandbox runs as `root`. You can instead declare an unprivileged user in your image, so processes, terminals and filesystem operations run as that user while the sandbox API keeps the privileges it needs for drive mounts, networking and keep-alive.
 
 <Note>
-  Non-root user isolation works out of the box on [Carbon (Mark 3.1)](/Infrastructure/Gens#carbon-aka-mark-31). Carbon is enabled by default for new workspaces in the `us-pdx-1` and `us-was-1` regions, and is rolling out progressively to existing workspaces. On Mark 3.0, it requires [iptables support](/Sandboxes/Overview#kernel-networking), enabled at creation time.
+  Non-root user isolation is available on [Carbon (Mark 3.1)](/Infrastructure/Gens#carbon-aka-mark-31). Carbon is enabled by default for new workspaces in the `us-pdx-1` and `us-was-1` regions, and is rolling out progressively to existing workspaces. On the previous generation, create the sandbox with the [`iptables: enabled`](/Sandboxes/Overview#kernel-networking) extra arg.
 </Note>
-
-On Mark 3.0, create the sandbox with `iptables: enabled` in `extraArgs`:
-
-<CodeGroup>
-
-```typescript TypeScript
-import { SandboxInstance } from "@blaxel/core";
-
-const sandbox = await SandboxInstance.create({
-  name: "my-sandbox",
-  image: "my-non-root-image",
-  extraArgs: { iptables: "enabled" },
-});
-```
-
-```python Python
-from blaxel.core import SandboxInstance
-
-sandbox = await SandboxInstance.create({
-    "name": "my-sandbox",
-    "image": "my-non-root-image",
-    "extra_args": {"iptables": "enabled"},
-})
-```
-
-</CodeGroup>
 
 ## Why the sandbox API stays root
 
