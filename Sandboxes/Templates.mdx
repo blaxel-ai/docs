@@ -6,7 +6,7 @@ description: "Create reusable sandbox images with pre-configured tools, language
 
 Sandbox images allow you to create customized & reusable sandbox environments. They define the tools, languages, frameworks, and configurations that will be available when you spawn a new sandbox instance.
 
-Images are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR reviews agent, etc.).
+Images are particularly useful for teams who need standardized environments or for creating many specialized sandboxes for repeated use cases (codegen agent, Git PR review agent, etc.).
 
 To free storage occupied by images you no longer use, see [clean up unused images](#clean-up-unused-images).
 
@@ -808,6 +808,45 @@ temp_dir = image.write_temp()
 
 </CodeGroup>
 
+<a id="size-the-build-environment"></a>
+
+##### Size the build environment
+
+Large images can run out of memory or disk while they build. Set `buildMemory` and `buildVolume` (`build_memory` and `build_volume` in Python) on `build()` to size the temporary environment the image is built in. These are the same settings as `bl push --memory` and `--volume`, or `[build].memoryMb` and `[build].volumeMb` in [`blaxel.toml`](/deployment-reference).
+
+<CodeGroup>
+
+```typescript TypeScript
+const sandbox = await image.build({
+  name: "my-sandbox",
+  memory: 4096,
+  buildMemory: 16384,
+  buildVolume: 32768,
+});
+```
+
+```python Python
+sandbox = await image.build(
+    name="my-sandbox",
+    memory=4096,
+    build_memory=16384,
+    build_volume=32768,
+)
+```
+
+</CodeGroup>
+
+| Option | Range (MB) | Description |
+|--------|------------|-------------|
+| `buildMemory` / `build_memory` | 1 to 32768 | Memory of the build environment |
+| `buildVolume` / `build_volume` | 0 to 131072 | Disk attached to the build for its intermediate layers. `0` builds in memory |
+
+When you omit them, the platform defaults apply. They only affect the build. The deployed sandbox uses `memory`.
+
+<Note>
+  These options require `@blaxel/core` 0.3.28 or later, or `blaxel` 0.4.16 or later. HIPAA workspaces do not support `buildVolume`; omit it or set it to `0`.
+</Note>
+
 ##### Understand immutability and branching
 
 Each method returns a new `ImageInstance`, leaving the original unchanged. This lets you create base images and branch from them:
@@ -960,7 +999,7 @@ asyncio.run(main())
 | `cargoInstall` / `cargo_install` | Install Rust crates |
 | `goInstall` / `go_install` | Install Go packages |
 | `composerInstall` / `composer_install` | Install PHP packages |
-| `build` | Build and deploy as a sandbox |
+| `build` | Build and deploy as a sandbox. See [Size the build environment](#size-the-build-environment) for build options |
 | `write` | Write image to a folder |
 | `writeTemp` / `write_temp` | Write image to a temporary folder |
 

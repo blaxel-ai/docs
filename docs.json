@@ -240,7 +240,8 @@
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
                   "Infrastructure/Dedicated-egress-gateways",
-                  "Infrastructure/Custom-domains"
+                  "Infrastructure/Custom-domains",
+                  "Infrastructure/Custom-domains-http-validation"
                 ]
               }
             ]
@@ -367,6 +368,7 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/Omnara",
               "Tutorials/OpenShell",
               "Tutorials/DeepSeek-Harness",
               "Tutorials/Herdr",
