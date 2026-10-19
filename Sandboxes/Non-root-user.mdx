@@ -6,6 +6,10 @@ description: 'Scope everything a sandbox runs on your behalf to an unprivileged 
 
 By default, everything inside a sandbox runs as `root`. You can instead declare an unprivileged user in your image, so processes, terminals and filesystem operations run as that user while the sandbox API keeps the privileges it needs for drive mounts, networking and keep-alive.
 
+<Note>
+  Non-root user isolation is available on [Carbon (Mark 3.1)](/Infrastructure/Gens#carbon-aka-mark-31). Carbon is enabled by default for new workspaces in the `us-pdx-1` and `us-was-1` regions, and is rolling out progressively to existing workspaces. On the previous generation, create the sandbox with the [`iptables: enabled`](/Sandboxes/Overview#kernel-networking) extra arg.
+</Note>
+
 ## Why the sandbox API stays root
 
 The sandbox API is PID 1 in the sandbox. It mounts [Agent Drive](/Agent-drive/Overview), configures egress networking, installs the CA bundle and manages standby, and all of those require root.
