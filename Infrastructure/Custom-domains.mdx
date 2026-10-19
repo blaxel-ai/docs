@@ -36,6 +36,13 @@ Only verified preview custom domains can be shared.
 
 When a target workspace binds a preview to the shared domain, the full host still needs to be unique across the account. If another workspace already uses the same `<prefixUrl>.<domain>` host, Blaxel returns `409`.
 
+## Certificate validation methods
+
+Blaxel issues a TLS certificate for each custom domain. The certificate must be validated before the domain becomes usable. Choose the validation method when you create the domain. It cannot be changed afterwards.
+
+- DNS validation (default): works for every domain type. Blaxel returns a unique validation CNAME record in addition to the routing record. Publish both records with your DNS provider, then click Verify.
+- HTTP validation (private preview): for application domains with exact host names only. Point your domain to Blaxel with the routing record and Blaxel validates the certificate over HTTP, with no validation record to publish. See [HTTP validation](/Infrastructure/Custom-domains-http-validation).
+
 ## Use a custom domain
 
 Custom domains can currently be used for:
@@ -49,6 +56,9 @@ Related pages:
 <CardGroup cols={2}>
   <Card title="Sandbox preview URLs" href="../Sandboxes/Preview-url">
     Create preview URLs and configure fallback routing for custom domains.
+  </Card>
+  <Card title="HTTP validation" href="/Infrastructure/Custom-domains-http-validation">
+    Validate application domain certificates over HTTP without publishing a validation record.
   </Card>
   <Card title="Changelog" href="../changelog">
     Review recent platform updates related to custom domains and previews.

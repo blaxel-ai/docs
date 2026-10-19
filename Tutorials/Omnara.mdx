@@ -1,0 +1,170 @@
+---
+title: 'Run Omnara agents in Blaxel sandboxes'
+sidebarTitle: 'Omnara on Blaxel'
+description: 'Connect your Blaxel workspace to Omnara so agents run commands in Blaxel sandboxes that sleep when idle and wake when the agent needs them.'
+---
+
+[Omnara](https://www.omnara.com) is an open-source managed agent platform. It handles execution and state while you choose the model, tools, and machines for each agent. In this tutorial, you connect your Blaxel workspace as an Omnara machine pool, launch an agent that runs commands in a Blaxel sandbox, and watch the sandbox sleep and wake.
+
+## Prerequisites
+
+- A [Blaxel account](https://app.blaxel.ai) and workspace
+- An [Omnara Cloud](https://app.omnara.com) account
+- [Node.js](https://nodejs.org/en/download) `22` or newer, to run the Omnara CLI with `npx`
+
+Tested with Omnara CLI `1.0.30` and the `blaxel/claude-code:latest` image.
+
+<Note>
+  On Omnara Cloud, your organization's default pool already runs on Blaxel and is managed by Omnara, so there's nothing to set up. To start there, follow the [Omnara quickstart](https://docs.omnara.com/quickstart). This tutorial connects your own Blaxel workspace instead, so sandboxes run and are billed in your account.
+</Note>
+
+## How it works
+
+- Agents live in Omnara as event logs. Omnara runs the agent loop and calls the model, so model keys never enter the sandbox.
+- When an agent needs a machine, Omnara creates a sandbox in your workspace and starts the Omnara daemon, `omnarad`, in it. The daemon connects outbound, so there are no ports to open.
+- When the machine is idle for the time you set, it sleeps and Blaxel puts the sandbox on standby with its memory and files intact. The agent's next command wakes it.
+
+## 1. Create a Blaxel API key
+
+Create a [service account](/Security/Service-accounts) in your workspace and generate an API key for it. Pick the member role, not the default admin role. Member covers everything Omnara needs: creating and deleting sandboxes and using the sandbox API.
+
+Export the key:
+
+```bash
+export BL_API_KEY=<Blaxel-API-key>
+```
+
+## 2. Log in to Omnara
+
+```bash
+npx omnara login
+npx omnara config select
+```
+
+`login` opens your browser to approve the CLI. `config select` sets the organization and project for the commands below. Choose your Default project, which already has access to Omnara's hosted models.
+
+## 3. Add the key as an Omnara secret
+
+```bash
+npx omnara secrets create --owner-kind org --name blaxel-api-key \
+  --material-kind generic --material-value "$BL_API_KEY"
+```
+
+Note the secret ID (`sec_...`) in the output.
+
+## 4. Create a Blaxel pool
+
+Save the following as `blaxel-pool.json`. Replace the secret ID and the workspace name:
+
+```json
+{
+  "name": "blaxel-pool",
+  "provider": "blaxel",
+  "provider_auth_secret_id": "<secret-id>",
+  "provider_config": { "workspace": "<Blaxel-workspace-name>" },
+  "default_machine_provider_options": {
+    "image": "blaxel/claude-code:latest",
+    "region": "us-pdx-1",
+    "sleep_after_ms": 30000
+  },
+  "default_machine_memory_mb": 4096,
+  "max_machine_memory_mb": 8192,
+  "max_total_memory_mb": 16384,
+  "max_total_machines": 2
+}
+```
+
+- `image` must include Blaxel's `sandbox-api` and `curl`. Blaxel's public `blaxel/claude-code` image has both. To build your own, see [templates](/Sandboxes/Templates).
+- `region` is one of the [Blaxel regions](/Infrastructure/Regions).
+- `sleep_after_ms` turns on sleep: how long a machine must be idle before it sleeps, in milliseconds, with a minimum of `30000`. Without it, the sandbox never sleeps and bills for memory until it's deleted.
+- Blaxel pools set memory only. CPU scales with it.
+
+Create the pool, then grant it to your project with the pool ID (`mpo_...`) from the output:
+
+```bash
+npx omnara pools create --body "$(cat blaxel-pool.json)"
+npx omnara grant pools add --machine-pool-id <pool-id>
+```
+
+## 5. Launch an agent
+
+Save the following as `agent.yaml`:
+
+```yaml
+version: v1
+instruction: You have a Blaxel sandbox. Run commands there to complete tasks.
+model:
+  provider_config: omnara-openrouter
+  name: openai/gpt-6.1-sol
+machine_sources:
+  - machine_pool_name: blaxel-pool
+```
+
+`omnara-openrouter` is the model provider every Omnara Cloud organization starts with. Because the config has a machine source, Omnara adds the command, process, and file tools for you.
+
+Launch the agent with a first task:
+
+```bash
+npx omnara agents launch --file agent.yaml --name "Blaxel demo" \
+  --message "Run uname -a, report the kernel version, and write the current date to ~/note.txt."
+```
+
+Omnara creates a sandbox from the pool, and the agent runs the commands there. Note the agent ID (`agt_...`) in the output. To follow the conversation in your terminal, run:
+
+```bash
+npx omnara agents chat <agent-id>
+```
+
+You can also follow it in the [Omnara dashboard](https://app.omnara.com). In the Blaxel Console, the sandbox is named `omnara-mch-...` and has an `omnara-machine` label set to its Omnara machine ID (`mch_...`).
+
+## 6. Watch the sandbox sleep and wake
+
+Wait about a minute without sending the agent anything, then list the pool's machines:
+
+```bash
+npx omnara machines list --machine-pool-id <pool-id>
+```
+
+The machine's `connection_state` is `asleep`. It sleeps after 30 seconds of idle time, and Blaxel puts the sandbox on [standby](/Sandboxes/Overview#standby-mode) about 15 seconds later. Blaxel doesn't charge for memory during standby.
+
+Ask the agent for the file it wrote:
+
+```bash
+npx omnara agents input <agent-id> --message "Print ~/note.txt."
+```
+
+The agent's command wakes the sandbox, and the agent prints the date it wrote before the machine slept. Standby keeps the sandbox's memory and files.
+
+## 7. Archive the agent
+
+```bash
+npx omnara agents archive <agent-id>
+```
+
+Archiving the agent deletes its sandbox from your workspace. The pool and secret stay, so you can launch more agents on Blaxel.
+
+## Troubleshooting
+
+| Symptom | Action |
+| --- | --- |
+| The machine stays in `provisioning` or shows `provision_failed` | Run `npx omnara machines list --machine-pool-id <pool-id>` to see its `lifecycle_state`. Check the workspace name, the region, and the service account's role |
+| The agent reports `command not found` | The image doesn't have that tool. Build an image that includes it from a [template](/Sandboxes/Templates) |
+| The sandbox doesn't sleep | Check that the pool sets `sleep_after_ms`. A process the agent started and left running keeps the machine awake |
+
+## Resources
+
+<Card title="Omnara Blaxel provider guide" icon="book" href="https://docs.omnara.com/machines/providers/blaxel">
+  Configure custom images, regions, sleep, and pool limits for Blaxel pools in Omnara.
+</Card>
+
+<Card title="Omnara on GitHub" icon="github" href="https://github.com/omnara-ai/omnara">
+  Read the source of the open-source Omnara platform, or self-host it.
+</Card>
+
+<Card title="Sandbox lifecycle" icon="clock" href="/Sandboxes/Overview#sandbox-lifecycle">
+  Learn how sandboxes move between active mode, standby, and deletion.
+</Card>
+
+<Card title="Service accounts" icon="key" href="/Security/Service-accounts">
+  Create service accounts and API keys with the role your integration needs.
+</Card>

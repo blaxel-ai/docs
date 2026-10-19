@@ -240,7 +240,8 @@
                   "Infrastructure/Regions",
                   "Infrastructure/Gens",
                   "Infrastructure/Dedicated-egress-gateways",
-                  "Infrastructure/Custom-domains"
+                  "Infrastructure/Custom-domains",
+                  "Infrastructure/Custom-domains-http-validation"
                 ]
               }
             ]
@@ -367,6 +368,7 @@
             "expanded": true,
             "pages": [
               "Tutorials/Agents-Overview",
+              "Tutorials/Omnara",
               "Tutorials/OpenShell",
               "Tutorials/DeepSeek-Harness",
               "Tutorials/Herdr",
@@ -495,6 +497,7 @@
                   "/cli-reference/commands/bl_login",
                   "/cli-reference/commands/bl_logout",
                   "/cli-reference/commands/bl_logs",
+                  "/cli-reference/commands/bl_mcp",
                   "/cli-reference/commands/bl_new",
                   "/cli-reference/commands/bl_push",
                   "/cli-reference/commands/bl_run",

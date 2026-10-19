@@ -721,6 +721,18 @@ components:
           description: Map of TXT record names to values for domain verification
           additionalProperties:
             type: string
+        validationMethod:
+          type: string
+          description: How the TLS certificate is validated. "dns" (default) requires
+            the certificate validation CNAME records to be published; "http" validates
+            over HTTP once the domain points to Blaxel and requires no validation
+            record. HTTP validation is not available for wildcard domains (previews
+            or "*." names) and cannot be changed after creation.
+          enum:
+          - dns
+          - http
+          example: dns
+          default: dns
         verificationError:
           type: string
           description: Error message if verification failed
@@ -1059,8 +1071,9 @@ components:
           example: ttl-idle
         value:
           type: string
-          description: Duration value for TTL policies (e.g., '30m', '24h', '7d')
-            or ISO 8601 date for date policies
+          description: Duration value for TTL policies (e.g., '30m', '24h', '7d';
+            minimum '60s' for ttl-idle, '5m' for ttl-max-age) or ISO 8601 date for
+            date policies
           example: 24h
     FirewallConfig:
       type: object
@@ -1642,11 +1655,19 @@ components:
           type: integer
           description: Number of parallel tasks
           example: 5
+        taskCount:
+          type: integer
+          description: Number of tasks of this execution
+          example: 12
         tasks:
           type: array
           description: List of execution tasks
           items:
             $ref: '#/components/schemas/JobExecutionTask'
+        tasksRef:
+          type: string
+          description: Where this execution's task list is stored (server-managed)
+          readOnly: true
         timeout:
           type: integer
           description: Job timeout in seconds (captured at execution creation time)
@@ -3505,9 +3526,11 @@ components:
             variant includes tun and iptables and cannot be combined with nfs. The
             landlock variant enables the Landlock LSM, includes tun and iptables,
             and cannot be combined with android or nfs. Android and landlock requests
-            are rejected if routing selects mk3.0. Values: ''enabled'' or ''disabled''.
-            Determines which kernel variant the workload runs on. Immutable after
-            creation.'
+            are rejected if routing selects mk3.0. ''kernelExtensions'' (mk3.1, android
+            only for now) switches on the selected kernel''s loadable modules and
+            kernel tracing (eBPF, kprobes, perf); without it they are disabled, even
+            for root. Values: ''enabled'' or ''disabled''. Determines which kernel
+            variant the workload runs on. Immutable after creation.'
           additionalProperties:
             type: string
         image:
@@ -3522,6 +3545,13 @@ components:
           example: 4096
         ports:
           $ref: '#/components/schemas/Ports'
+        standbyGracePeriodSeconds:
+          type: integer
+          description: 'Seconds the sandbox gets after a SIGUSR2 to prepare before
+            it goes to standby (scale to zero). The workload can say it is done earlier
+            by writing to $BLAXEL_STANDBY_READY_FILE. Defaults to 0: no signal, immediate
+            standby.'
+          example: 10
         terminationGracePeriodSeconds:
           type: integer
           description: Duration in seconds the pod needs to terminate gracefully.
@@ -3531,8 +3561,8 @@ components:
           type: string
           description: 'Max-age from creation: the sandbox is deleted this long after
             it is created, regardless of activity (not an idle timeout). Units s,
-            m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''). For idle-based cleanup,
-            use a lifecycle expiration policy of type ttl-idle.'
+            m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''), minimum ''5m''. For
+            idle-based cleanup, use a lifecycle expiration policy of type ttl-idle.'
           example: 24h
     SandboxScheduleEntry:
       type: object
@@ -3871,6 +3901,28 @@ components:
           type: string
           description: VPC name for the sandbox. Defaults to "default" when absent.
           example: default
+    Secret:
+      type: object
+      description: Workspace secret, referenced from proxy routing as {{SECRET:name}}.
+        Values are write-only and can never be read back. Every upsert stores a new
+        immutable version and the latest one is resolved at runtime.
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the secret was first created
+          readOnly: true
+        name:
+          type: string
+          description: Case-sensitive secret name
+        updatedAt:
+          type: string
+          description: The date and time of the latest version
+          readOnly: true
+        value:
+          type: string
+          description: Secret value. Write-only, never returned by the API
+      required:
+      - name
     Status:
       type: string
       description: Deployment status of a resource deployed on Blaxel
@@ -4033,6 +4085,10 @@ components:
           description: The tasks configuration of the cronjob
           items:
             $ref: '#/components/schemas/TriggerConfigurationTask'
+        tasksRef:
+          type: string
+          description: Where this trigger's task list is stored (server-managed)
+          readOnly: true
         timeout:
           type: integer
           description: The timeout in seconds for async triggers (max 900s, MK3 only)
@@ -4513,6 +4569,9 @@ components:
             sandboxes:list: List sandboxes
             sandboxes:update: Update sandboxes
             sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
             templates:get: Get template details
             templates:list: List templates
             volumeTemplates:create: Create volume templates
@@ -4588,6 +4647,9 @@ components:
             sandboxes:list: List sandboxes
             sandboxes:update: Update sandboxes
             sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
             templates:get: Get template details
             templates:list: List templates
             volumeTemplates:create: Create volume templates
@@ -5721,6 +5783,53 @@ paths:
       summary: Create drive access token
       tags:
       - drives
+  /drives/{driveName}/folders:
+    delete:
+      description: Deletes a folder and all its contents directly in drive storage.
+        This is synchronous and non-atomic. If it times out or fails, some contents
+        may have been deleted; retry the same path to finish cleanup. An absent folder
+        succeeds. The drive root and internal metadata cannot be deleted.
+      operationId: DeleteDriveFolder
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      - description: Relative folder path ending in a slash, for example documents/reports/.
+        in: query
+        name: path
+        required: true
+        schema:
+          maxLength: 1024
+          type: string
+      responses:
+        "204":
+          description: Folder and its contents deleted, or folder already absent
+        "400":
+          description: Invalid folder path
+        "401":
+          description: Unauthorized
+        "403":
+          description: Insufficient permissions, protected path, or drives feature
+            disabled
+        "404":
+          description: Drive not found
+        "409":
+          description: Drive unavailable or requested path is not a folder
+        "502":
+          description: Storage unavailable or deletion incomplete; retry to finish
+            cleanup
+        "504":
+          description: Deletion timed out and may be partially complete; retry to
+            finish cleanup
+      security:
+      - OAuth2:
+        - drives:delete
+      - ApiKeyAuth: []
+      summary: Delete a folder and its contents
+      tags:
+      - drives
   /drives/by-external-id/{externalId}:
     get:
       description: Returns a drive matching the given external ID. If no drive is
@@ -6362,6 +6471,15 @@ paths:
                 resourceType:
                   description: Resource type (agent, function, sandbox, job)
                   type: string
+                tag:
+                  description: Tag for the imported image. Only supported when image
+                    is a registry reference. When omitted, a tag is derived from the
+                    build inputs. Tags are immutable, so a tag that already exists
+                    is rejected. latest, pending and failed are reserved.
+                  example: v1.2.0
+                  maxLength: 32
+                  pattern: ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,31}$
+                  type: string
                 volumeMb:
                   description: Temporary scratch disk for the registry import worker
                     in MiB. Only supported when image is a registry reference. When
@@ -6404,6 +6522,8 @@ paths:
                 type: string
         "400":
           description: invalid request
+        "409":
+          description: the requested tag already exists
       security:
       - OAuth2:
         - images:create
@@ -9364,6 +9484,101 @@ paths:
       summary: Get Sandbox Scheduling Metrics
       tags:
       - compute
+  /secrets:
+    delete:
+      description: Deletes a secret by name (query parameter) from the workspace.
+      operationId: DeleteSecretByQuery
+      parameters:
+      - description: Name of the secret
+        in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:delete
+      - ApiKeyAuth: []
+      summary: Delete secret by query
+      tags:
+      - secrets
+      x-stainless-ignore: true
+    get:
+      description: Lists the secrets of the workspace. Values are write-only and never
+        returned.
+      operationId: ListSecrets
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Secret'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:list
+      - ApiKeyAuth: []
+      summary: List secrets
+      tags:
+      - secrets
+    post:
+      description: Creates or updates a secret by name. Each call stores a new immutable
+        version; the latest version is the one resolved by the proxy.
+      operationId: UpsertSecret
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Secret'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:create
+      - ApiKeyAuth: []
+      summary: Upsert secret
+      tags:
+      - secrets
+  /secrets/{secretName}:
+    delete:
+      description: Deletes a secret and all its versions from the workspace.
+      operationId: DeleteSecret
+      parameters:
+      - description: Name of the secret
+        in: path
+        name: secretName
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+          description: successful operation
+      security:
+      - OAuth2:
+        - secrets:delete
+      - ApiKeyAuth: []
+      summary: Delete secret
+      tags:
+      - secrets
   /service_accounts:
     get:
       description: Returns all service accounts in the workspace. Service accounts
@@ -9388,6 +9603,9 @@ paths:
                       type: string
                     name:
                       description: Service account name
+                      type: string
+                    role:
+                      description: Role of the service account in the workspace
                       type: string
                     updated_at:
                       description: Last update timestamp
@@ -9419,6 +9637,14 @@ paths:
                 name:
                   description: Service account name
                   type: string
+                role:
+                  description: Role of the service account in the workspace. Defaults
+                    to admin on creation; unchanged on update when omitted.
+                  enum:
+                  - viewer
+                  - member
+                  - admin
+                  type: string
               required:
               - name
               type: object
@@ -9443,6 +9669,9 @@ paths:
                     type: string
                   name:
                     description: Service account name
+                    type: string
+                  role:
+                    description: Role of the service account in the workspace
                     type: string
                   updated_at:
                     description: Last update timestamp
@@ -9522,6 +9751,14 @@ paths:
                 name:
                   description: Service account name
                   type: string
+                role:
+                  description: Role of the service account in the workspace. Defaults
+                    to admin on creation; unchanged on update when omitted.
+                  enum:
+                  - viewer
+                  - member
+                  - admin
+                  type: string
               type: object
         required: true
       responses:
@@ -9541,6 +9778,9 @@ paths:
                     type: string
                   name:
                     description: Service account name
+                    type: string
+                  role:
+                    description: Role of the service account in the workspace
                     type: string
                   updated_at:
                     description: Last update timestamp
