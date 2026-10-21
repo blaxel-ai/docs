@@ -1,0 +1,436 @@
+{
+  "about": "Single source for the limits, quotas, regions and prices in these docs. Edit this file, then run `npm run limits:generate`. Every entry needs a `source` (a public docs page, a public blaxel.ai page, or \"platform config\") and `verified`. See data/README.md.",
+  "reviewed": "2026-10-21",
+  "tiers": {
+    "source": "platform config; /Security/Quotas; https://blaxel.ai/pricing",
+    "verified": true,
+    "note": "Account-wide defaults for each quota tier. Each tier inherits the values of the tiers below it. Manual quota increases are not reflected here.",
+    "levels": [
+      {"tier": 0, "requirement": "None", "source": "platform config; https://blaxel.ai/pricing", "verified": true},
+      {"tier": 1, "requirement": "$20", "source": "platform config; https://blaxel.ai/pricing", "verified": true},
+      {"tier": 2, "requirement": "$50", "source": "platform config; https://blaxel.ai/pricing", "verified": true},
+      {"tier": 3, "requirement": "$200", "source": "platform config", "verified": true},
+      {"tier": 4, "requirement": "$500", "source": "platform config", "verified": true},
+      {"tier": 5, "requirement": "$1,500", "source": "platform config", "verified": true},
+      {"tier": 6, "requirement": "$4,000", "source": "platform config", "verified": true},
+      {"tier": 7, "requirement": "Contact sales", "source": "platform config", "verified": true},
+      {"tier": 8, "requirement": "Contact sales", "source": "platform config", "verified": true},
+      {"tier": 9, "requirement": "Contact sales", "source": "platform config; https://blaxel.ai/pricing", "verified": true}
+    ],
+    "quotas": [
+      {
+        "key": "sandboxes",
+        "label": "Sandboxes",
+        "unit": "count",
+        "values": [10, 50, 200, 800, 2000, 5000, 10000, 25000, 50000, 100000],
+        "source": "platform config; https://blaxel.ai/pricing (tiers 0, 1, 2 and 9)",
+        "verified": true
+      },
+      {
+        "key": "memory_per_instance",
+        "label": "Memory per sandbox, agent, MCP server or job",
+        "unit": "MB",
+        "values": [4096, 8192, 32768, 32768, 32768, 32768, 32768, 32768, 32768, 32768],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "sandbox_max_ttl",
+        "label": "Maximum sandbox TTL",
+        "unit": "days",
+        "values": [7, 30, null, null, null, null, null, null, null, null],
+        "null_label": "No limit",
+        "source": "platform config; /Sandboxes/Expiration",
+        "verified": true
+      },
+      {
+        "key": "terminated_retention",
+        "label": "Terminated sandbox retention",
+        "unit": "minutes",
+        "values": [5, 5, 1440, 43200, 43200, 43200, 43200, 43200, 43200, 43200],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "previews",
+        "label": "Preview URLs",
+        "unit": "count",
+        "values": [20, 100, 400, 1600, 4000, 10000, 20000, 50000, 100000, 200000],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "snapshots_total",
+        "label": "Snapshots",
+        "unit": "count",
+        "values": [20, 100, 400, 1600, 4000, 10000, 20000, 50000, 100000, 200000],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "snapshots_per_sandbox",
+        "label": "Snapshots per sandbox",
+        "unit": "count",
+        "values": [5, 10, 20, 20, 20, 20, 20, 20, 20, 20],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "schedules_per_sandbox",
+        "label": "Schedules per sandbox",
+        "unit": "count",
+        "values": [null, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+        "null_label": "Not available",
+        "source": "platform config; /Sandboxes/Schedules",
+        "verified": true
+      },
+      {
+        "key": "volumes",
+        "label": "Volumes",
+        "unit": "count",
+        "values": [null, 10, 400, 6000, 18000, 50000, 144000, 512000, 1024000, 2048000],
+        "null_label": "Not available",
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "volume_max_size",
+        "label": "Maximum size per volume",
+        "unit": "MB",
+        "values": [null, 4096, 8192, 16384, 32768, 32768, 32768, 131072, 131072, 131072],
+        "null_label": "Not available",
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "volume_total_size",
+        "label": "Total volume size",
+        "unit": "MB",
+        "values": [null, 10240, 204800, 3145728, 9437184, 25165824, 73400320, 262144000, 524288000, 1048576000],
+        "null_label": "Not available",
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "volume_templates",
+        "label": "Volume templates",
+        "unit": "count",
+        "values": [null, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+        "null_label": "Not available",
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "image_storage",
+        "label": "Total image storage",
+        "unit": "MB",
+        "values": [20480, 102400, 204800, 1048576, 2621440, 5242880, 10485760, 26214400, 104857600, 262144000],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "agents",
+        "label": "Agents",
+        "unit": "count",
+        "values": [5, 20, 75, 200, 500, 500, 500, 500, 500, 500],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "mcp_servers",
+        "label": "MCP servers",
+        "unit": "count",
+        "values": [5, 20, 75, 200, 500, 500, 500, 500, 500, 500],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "jobs",
+        "label": "Jobs",
+        "unit": "count",
+        "values": [5, 20, 75, 200, 500, 500, 500, 500, 500, 500],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "job_concurrent_tasks",
+        "label": "Concurrent job tasks",
+        "unit": "count",
+        "values": [10, 25, 100, 100, 1000, 1000, 1000, 1000, 1000, 1000],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "job_memory_total",
+        "label": "Memory of concurrent job tasks",
+        "unit": "MB",
+        "values": [20480, 65536, 131072, 262144, 524288, 524288, 786432, 1048576, 2097152, 4194304],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "runtime_timeout",
+        "label": "Maximum timeout",
+        "unit": "seconds",
+        "values": [3600, 86400, 86400, 86400, 604800, 604800, 604800, 604800, 604800, 604800],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "ephemeral_volume_max_size",
+        "label": "Maximum ephemeral volume size",
+        "unit": "MB",
+        "values": [10240, 20480, 40960, 40960, 81920, 81920, 163840, 327680, 655360, 1310720],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "workspaces",
+        "label": "Workspaces",
+        "unit": "count",
+        "values": [1, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "workspace_users",
+        "label": "Workspace users",
+        "unit": "count",
+        "values": [10, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "custom_domains",
+        "label": "Custom domains",
+        "unit": "count",
+        "values": [null, null, null, 5, 5, 5, 5, 5, 5, 5],
+        "null_label": "Not available",
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "metrics_retention",
+        "label": "Metrics retention",
+        "unit": "days",
+        "values": [3, 14, 30, 30, 30, 30, 30, 30, 30, 30],
+        "source": "platform config",
+        "verified": true
+      }
+    ]
+  },
+  "cpu": {
+    "source": "platform config; /Sandboxes/Overview (8 GB and 16 GB rows)",
+    "verified": true,
+    "note": "Default vCPU allocation for a memory size. Each row covers the sizes above the previous row, up to its own size; the last row covers every larger size.",
+    "rows": [
+      {"memory_mb": 2048, "vcpus": 1},
+      {"memory_mb": 4096, "vcpus": 2},
+      {"memory_mb": 8192, "vcpus": 4},
+      {"memory_mb": 16384, "vcpus": 6},
+      {"memory_mb": 32768, "vcpus": 8},
+      {"memory_mb": 65536, "vcpus": 16},
+      {"memory_mb": 131072, "vcpus": 32}
+    ]
+  },
+  "limits": [
+    {
+      "key": "memory_min",
+      "group": "sandbox",
+      "label": "Minimum sandbox memory",
+      "value": 1024,
+      "unit": "MB",
+      "on_exceed": "Smaller values are raised to the minimum",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "memory_max",
+      "group": "sandbox",
+      "label": "Maximum sandbox memory",
+      "value": 262144,
+      "unit": "MB",
+      "on_exceed": "Your tier's memory quota applies first: `QUOTA_EXCEEDED` (429)",
+      "source": "platform config; https://blaxel.ai/pricing",
+      "verified": true
+    },
+    {
+      "key": "ttl_min",
+      "group": "sandbox",
+      "label": "Minimum `ttl` and `ttl-max-age`",
+      "value": 300,
+      "unit": "seconds",
+      "on_exceed": "Rejected with a 400 error",
+      "source": "/Sandboxes/Expiration; platform config",
+      "verified": true
+    },
+    {
+      "key": "ttl_idle_min",
+      "group": "sandbox",
+      "label": "Minimum `ttl-idle`",
+      "value": 60,
+      "unit": "seconds",
+      "on_exceed": "Rejected with a 400 error",
+      "source": "/Sandboxes/Expiration; platform config",
+      "verified": true
+    },
+    {
+      "key": "grace_period_max",
+      "group": "sandbox",
+      "label": "Maximum `terminationGracePeriodSeconds` and `standbyGracePeriodSeconds`",
+      "value": 300,
+      "unit": "seconds",
+      "on_exceed": "Rejected with a 400 error",
+      "source": "/Sandboxes/Lifecycle-signals; platform config",
+      "verified": true
+    },
+    {
+      "key": "keepalive_default_timeout",
+      "group": "sandbox",
+      "label": "Default timeout of a `keepAlive` process",
+      "value": 600,
+      "unit": "seconds",
+      "on_exceed": "The process is stopped; set `timeout` to `0` to run until it exits",
+      "source": "/Sandboxes/Processes; platform config",
+      "verified": true
+    },
+    {
+      "key": "wait_for_completion_max",
+      "group": "sandbox",
+      "label": "Maximum `waitForCompletion` wait",
+      "value": 60,
+      "unit": "seconds",
+      "on_exceed": "The call returns an error while the process keeps running; watch the process instead",
+      "source": "/Sandboxes/Processes",
+      "verified": false
+    },
+    {
+      "key": "idle_connection_timeout",
+      "group": "sandbox",
+      "label": "Idle WebSocket or TCP connection",
+      "value": 900,
+      "unit": "seconds",
+      "on_exceed": "The connection closes and the sandbox can go on standby",
+      "source": "/Sandboxes/Overview",
+      "verified": false
+    },
+    {
+      "key": "upload_body_mk30",
+      "group": "requests",
+      "label": "Single HTTP request body to a sandbox (`mk3.0`)",
+      "value": 8388608,
+      "unit": "bytes",
+      "on_exceed": "413 with a plain HTML body; upload in parts with the multipart endpoints. Sandboxes on `mk3.1` don't apply this limit",
+      "source": "/Sandboxes/Filesystem",
+      "verified": false
+    },
+    {
+      "key": "sdk_multipart_threshold",
+      "group": "requests",
+      "label": "SDK multipart upload threshold and part size",
+      "value": 5242880,
+      "unit": "bytes",
+      "on_exceed": "SDK `write()`, `writeBinary()` and `write_binary()` split larger files into parts of this size",
+      "source": "/Sandboxes/Filesystem",
+      "verified": true
+    },
+    {
+      "key": "multipart_max_parts",
+      "group": "requests",
+      "label": "Parts per multipart upload",
+      "value": 10000,
+      "unit": "count",
+      "on_exceed": "The part is rejected",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "process_stdin_max",
+      "group": "requests",
+      "label": "Single process stdin write",
+      "value": 8388608,
+      "unit": "bytes",
+      "on_exceed": "413; send larger input in several writes",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "proxy_body_merge_max",
+      "group": "requests",
+      "label": "JSON body merged by proxy secrets injection",
+      "value": 1048576,
+      "unit": "bytes",
+      "display": "1 MB",
+      "on_exceed": "The request is forwarded without injected body fields",
+      "source": "/Sandboxes/Proxy",
+      "verified": false
+    },
+    {
+      "key": "sandbox_create_concurrency",
+      "group": "rate",
+      "label": "Sandbox creations in progress at once, per workspace",
+      "value": 100,
+      "unit": "count",
+      "on_exceed": "429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish",
+      "source": "platform config",
+      "verified": true
+    }
+  ],
+  "snippets": {
+    "upload_limits": ["upload_body_mk30", "sdk_multipart_threshold", "multipart_max_parts", "process_stdin_max"]
+  },
+  "scan": {
+    "upload_413": ["upload_body_mk30", "process_stdin_max"],
+    "multipart": ["sdk_multipart_threshold"],
+    "ttl_minimums": {"ttl": "ttl_min", "ttl-max-age": "ttl_min", "ttl-idle": "ttl_idle_min"},
+    "create_concurrency": "sandbox_create_concurrency"
+  },
+  "regions": {
+    "source": "platform config; /Infrastructure/Regions",
+    "verified": true,
+    "items": [
+      {"key": "us-pdx-1", "location": "Oregon", "country": "United States", "source": "platform config; /Infrastructure/Regions", "verified": true},
+      {"key": "us-was-1", "location": "North Virginia", "country": "United States", "source": "platform config; /Infrastructure/Regions", "verified": true},
+      {"key": "eu-lon-1", "location": "London", "country": "United Kingdom", "source": "platform config; /Infrastructure/Regions", "verified": true},
+      {"key": "eu-fra-1", "location": "Frankfurt", "country": "Germany", "source": "platform config; /Infrastructure/Regions", "verified": true},
+      {"key": "auto", "location": "Automatic (your closest region)", "country": "-", "source": "platform config; /Infrastructure/Regions", "verified": true}
+    ],
+    "public_ips": {
+      "endpoint": "https://api.blaxel.ai/v0/publicIps",
+      "note": "Egress IP ranges are served by the API per region and change as the platform scales, so they are not stored here.",
+      "source": "/Infrastructure/Regions",
+      "verified": true
+    }
+  },
+  "pricing": {
+    "source": "https://blaxel.ai/pricing",
+    "verified": true,
+    "items": [
+      {"key": "sandbox_compute", "product": "Sandboxes", "item": "Active compute, by allocated memory", "rate": "$0.0000115", "unit": "GB-second", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "snapshot_storage", "product": "Sandboxes", "item": "Snapshot storage", "rate": "$0.20", "unit": "GB-month", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {
+        "key": "image_registry_storage",
+        "product": "Sandboxes, jobs and MCP servers",
+        "item": "Image storage",
+        "rate": "$0.045",
+        "unit": "GB-month",
+        "source": "https://blaxel.ai/pricing; platform config",
+        "verified": true
+      },
+      {"key": "job_compute", "product": "Batch jobs", "item": "Compute, by memory", "rate": "$0.000006", "unit": "GB-second", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "job_cron", "product": "Batch jobs", "item": "Cron jobs", "rate": "Included", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "mcp_compute", "product": "MCP servers", "item": "Compute, by memory", "rate": "$0.000007", "unit": "GB-second", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "volume_storage", "product": "Volumes", "item": "Provisioned capacity", "rate": "$0.12", "unit": "GB-month", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "drive_storage", "product": "Agent Drive", "item": "Data stored and operations", "rate": "Free during beta", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "custom_domain_fqdn", "product": "Custom domains", "item": "Fully qualified domain", "rate": "$0.25", "unit": "domain per month", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "custom_domain_wildcard", "product": "Custom domains", "item": "Wildcard domain", "rate": "$20", "unit": "domain per month", "source": "https://blaxel.ai/pricing; platform config", "verified": true},
+      {"key": "egress_gateway", "product": "Egress gateways", "item": "Dedicated IPs and active runtime", "rate": "Free during beta", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "proxy_data", "product": "Proxy", "item": "Data processed", "rate": "Free during beta", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "model_gateway", "product": "LLM gateway", "item": "Requests routed", "rate": "Included", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "traffic", "product": "Traffic and bandwidth", "item": "Internal traffic and internet egress", "rate": "Included", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "support_email", "product": "Add-ons", "item": "Email support", "rate": "$800 per month plus 3% of usage", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "support_dedicated", "product": "Add-ons", "item": "Dedicated support", "rate": "$1,600 per month plus 10% of usage", "source": "https://blaxel.ai/pricing", "verified": true},
+      {"key": "hipaa", "product": "Add-ons", "item": "HIPAA (signed BAA)", "rate": "$250", "unit": "month", "source": "https://blaxel.ai/pricing", "verified": true}
+    ]
+  }
+}

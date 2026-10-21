@@ -1,0 +1,14 @@
+{
+  "name": "blaxel-docs",
+  "private": true,
+  "description": "Scripts for the Blaxel documentation. The site itself is built by Mintlify.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "limits:generate": "node scripts/limits/generate.mjs",
+    "limits:check": "node scripts/limits/generate.mjs --check",
+    "test": "node --test scripts/limits/generate.test.mjs"
+  }
+}
