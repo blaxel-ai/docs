@@ -33,6 +33,7 @@ jobs:
           cp -R "$tmpdir"/docs/* ./cli-reference/commands/
           rm -rf "$tmpdir"
           python scripts/generate-submenu-cli/main.py cli-reference/commands ./docs.json
+          node scripts/generate-llms/main.mjs || echo "::warning::Could not regenerate the llms files. Run npm run llms on the pull request."
           git status --short
       - name: Create pull request for CLI docs update
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
