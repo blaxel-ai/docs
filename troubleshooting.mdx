@@ -118,9 +118,9 @@ app.run(host=host, port=port)
 ```
 </CodeGroup>
 
-## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code
+## Sandbox deployment fails with a `QUOTA_EXCEEDED` error
 
-This error indicates that the maximum memory limit for the account has been reached in the current tier.
+Sandbox creation returns HTTP 429 with the code `QUOTA_EXCEEDED` when the new sandbox would take the account over a quota of its current tier, such as its total sandbox memory or its number of sandboxes. An ephemeral volume larger than the maximum size returns the same code with HTTP 400.
 
 Blaxel has a tiering system that unlocks higher limits and features on the platform as your tier progresses. To resolve this error, upgrade your account to a higher tier, which unlocks higher RAM limits for sandboxes. The default sandbox quotas of each tier are:
 
