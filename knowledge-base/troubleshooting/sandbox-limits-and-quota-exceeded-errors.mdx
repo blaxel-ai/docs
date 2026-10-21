@@ -3,7 +3,15 @@ title: 'Sandbox limits and quota exceeded errors'
 description: 'Resolve QUOTA_EXCEEDED errors by checking your Blaxel account tier, memory allocation, payment method, and sandbox quota.'
 ---
 
+import TierSandboxes from '/snippets/limits/tier-sandboxes.mdx';
+
 If sandbox creation returns `QUOTA_EXCEEDED`, your workload may exceed the limits for your account tier. Memory limits and allowed sandbox counts vary by tier.
+
+## Default quotas by tier
+
+Quotas apply to your whole account, across all its workspaces. Your account can have higher quotas than its tier after a quota increase.
+
+<TierSandboxes />
 
 ## Resolve quota errors
 

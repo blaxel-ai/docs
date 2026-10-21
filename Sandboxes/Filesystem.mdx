@@ -7,6 +7,8 @@ description: 'Read, write, list, and delete files inside a Blaxel sandbox using 
 
 ---
 
+import UploadLimits from '/snippets/limits/upload-limits.mdx';
+
 Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
 
 <Tip>
@@ -450,6 +452,10 @@ The binary content to write can be provided as:
 <Note>
 If you're calling the sandbox filesystem API directly over HTTP instead of using an SDK, a single request body may be limited. On sandboxes whose `nodeGeneration` is `mk3.0`, a proxy in front of the sandbox rejects bodies over 8 MiB (8,388,608 bytes) with an HTTP 413 and a plain HTML body, not a structured JSON error. Sandboxes on `mk3.1` don't apply this limit. To work on both, upload larger files in parts via the sandbox's multipart upload endpoints rather than in a single request. Blaxel SDKs handle this automatically: SDK functions like `write()`, `writeBinary()`, and `write_binary()` automatically split files over 5 MB and send via multipart upload in 5 MB chunks.
 </Note>
+
+The request size limits are:
+
+<UploadLimits />
 
 ### Download file to host
 
