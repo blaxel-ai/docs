@@ -1,0 +1,472 @@
+# Blaxel docs: Administration and security
+
+> Workspace access control, data collection and privacy, and model governance policies.
+
+This file has the full text of 3 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Workspaces, users and roles](https://docs.blaxel.ai/Security/Workspace-access-control)
+- [Data collection and privacy](https://docs.blaxel.ai/Security/Data-collection-and-privacy)
+- [Policies](https://docs.blaxel.ai/Model-Governance/Policies)
+
+# Workspaces, users and roles
+Source: https://docs.blaxel.ai/Security/Workspace-access-control
+
+Manage Blaxel workspaces, invite users, assign roles, and configure access control to share resources securely across your organization.
+
+All resources on Blaxel are logically regrouped in an **account**, which is the highest possible level of tenancy. An account can have **multiple workspaces** - a common pattern when dealing with multiple environments (e.g. development vs. production), business units, or end-clients.
+
+Users can be either [team members](https://docs.blaxel.ai/Security/Workspace-access-control), or [service accounts](https://docs.blaxel.ai/Security/Service-accounts) that represent external systems that can operate Blaxel. They are added to a workspace with certain permissions on the workspace resources inherited from their role.
+
+## Workspace name
+
+The workspace name (called `name` in the Blaxel API) uniquely identifies your workspace. You set it when the workspace is created. Once set, it cannot be changed. The workspace name appears at the bottom of the left sidebar in the Blaxel Console.
+
+Each workspace also has a display name for better organization, which workspace admins can modify.
+
+## User roles
+
+There are three roles that a user or service account can have in a workspace: **admin**, **member** and **viewer**.
+
+### Sandboxes
+
+| Action | Viewer | Member | Admin |
+| --- | :---: | :---: | :---: |
+| List and view [sandboxes](https://docs.blaxel.ai/Sandboxes/Overview), their snapshots, previews and schedules | ✓ | ✓ | ✓ |
+| View sandbox logs and metrics | ✓ | ✓ | ✓ |
+| Create, update, start, stop, fork and delete sandboxes | | ✓ | ✓ |
+| Archive and unarchive sandboxes, create and restore snapshots | | ✓ | ✓ |
+| Create, update and delete previews and schedules | | ✓ | ✓ |
+| Create preview tokens, view preview tokens and request headers | | ✓ | ✓ |
+| Open a terminal in a sandbox | | ✓ | ✓ |
+| Use the [sandbox API](https://docs.blaxel.ai/Sandboxes/Overview): processes, filesystem, network (ports and tunnels), drive mounts, codegen, archive and system | | ✓ | ✓ |
+
+### Workspace
+
+| Action | Viewer | Member | Admin |
+| --- | :---: | :---: | :---: |
+| View team members | ✓ | ✓ | ✓ |
+| Invite and remove users, change their role | | | ✓ |
+| Manage service accounts and their API keys | | | ✓ |
+| Rename and delete the workspace | | | ✓ |
+
+## Shared account settings
+
+A Blaxel account is the top-level entity that owns one or more workspaces. The following are managed at the account level and are **shared across all workspaces** in an account:
+
+- Quota tier and limits
+- Credits
+- SSO/SAML configuration
+- Usage analytics
+
+This means that resource usage in any workspace draws from the common credit balance and counts toward the same quotas. See the [usage and quotas documentation](https://docs.blaxel.ai/Security/Quotas) for more information.
+
+## Create a workspace
+
+Workspaces can be created, managed, and deleted using the Blaxel Console and the Blaxel SDKs.
+
+### Blaxel Console
+
+To create a new workspace using the Blaxel Console:
+
+- Click the workspace name at the bottom left corner.
+- In the rollout menu, click **Switch** > **+**.
+
+- In the **Create a new workspace** dialog, enter a workspace name and label.
+- Click **Create** to create the workspace.
+
+### Blaxel SDKs
+
+```typescript TypeScript
+import { createWorkspace } from "@blaxel/core";
+
+const { data: newWs } = await createWorkspace({
+  body: {
+    name: "my-workspace",
+    displayName: "My Workspace",
+    region: "us-west-2",
+  },
+});
+console.log(newWs);
+```
+
+```python Python
+import asyncio
+from blaxel.core.common import autoload
+from blaxel.core.client import client
+from blaxel.core.client.api.workspaces import create_workspace
+from blaxel.core.client.models.workspace import Workspace
+
+autoload()
+
+async def main():
+    new_ws = await create_workspace.asyncio(
+        client=client,
+        body=Workspace(
+            name="my-workspace",
+            display_name="My Workspace",
+            region="us-west-2",
+        ),
+    )
+    print(new_ws)
+
+asyncio.run(main())
+```
+
+## Delete a workspace
+
+> [!WARNING]
+>
+> Deleting a workspace is permanent and cannot be undone.
+
+### Blaxel Console
+
+To delete a workspace using the Blaxel Console:
+
+- Click the workspace name at the bottom left corner.
+- Click **Workspace settings**.
+- Review the information and click **Delete workspace** to delete the workspace.
+
+### Blaxel SDKs
+
+```typescript TypeScript
+import { deleteWorkspace } from "@blaxel/core";
+
+const { data: deleted } = await deleteWorkspace({
+  path: {
+    workspaceName: "my-workspace",
+  },
+});
+console.log(deleted);
+```
+
+```python Python
+import asyncio
+from blaxel.core.common import autoload
+from blaxel.core.client import client
+from blaxel.core.client.api.workspaces import delete_workspace
+
+autoload()
+
+async def main():
+    deleted = await delete_workspace.asyncio(
+        workspace_name="my-workspace",
+        client=client,
+    )
+    print(deleted)
+
+asyncio.run(main())
+```
+
+## Invite a member
+
+Admins can invite team members via their email address. They will be prompted for the role to give the user.
+
+To invite a team member:
+
+- Click **Workspace** > **Team**.
+- Click **Invite user**.
+- Enter the invitee's email address and role.
+
+The invitee will receive an email to allow them to accept the invitation on the Blaxel console. They will not be able to access workspace resources until they have manually accepted the invitation. If the user doesn't have a Blaxel account already, they will be asked to sign up first.
+
+Invitations to other workspaces are visible from your profile.
+
+## Remove a member
+
+To remove a member from a standard Blaxel workspace:
+
+- Click **Workspace** > **Team**
+- Select **Remove** from the member's actions menu
+- Confirm the removal
+
+Only workspace admins can remove members. You cannot remove yourself; another workspace admin must remove you.
+
+# Data collection and privacy
+Source: https://docs.blaxel.ai/Security/Data-collection-and-privacy
+
+Understand what usage and telemetry data the Blaxel CLI and SDKs collect, how it is used, and how to opt out for privacy-sensitive deployments.
+
+The Blaxel SDKs and Blaxel CLI use separate systems for usage reporting, error tracking, and workload observability.
+
+## Anonymous CLI usage reporting
+
+When usage reporting is enabled in the CLI build and the local tracking preference allows it, the CLI sends the following events to PostHog to measure installation and setup outcomes. This reporting is separate from Sentry error tracking and OpenTelemetry.
+
+| Event | Trigger | Event-specific properties |
+| --- | --- | --- |
+| `Installed CLI` | The first eligible invocation of a CLI version that has not been successfully reported locally, including the setup run that turns usage reporting on. | `version` |
+| `Upgraded CLI` | A successful `bl upgrade` that installs a different version. | `old_version`, `new_version` |
+| `Setup CLI` | Setup finishes, fails, or is cancelled. | `status`, `detected_agents`, `components`, and `failure_category` on failure |
+| `Login CLI` | Browser, API key, or client credentials login starts and then succeeds, fails, or is cancelled, including browser login during setup. | `status`, and `failure_category` on failure |
+| `First Resource CLI` | The first eligible successful create observed through the CLI's shared apply path for this local reporting ID. | `resource_category` |
+
+Each event includes an event timestamp and a random UUID stored locally as `distinct_id` in `.blaxel/telemetry.json` under your home directory. The CLI reuses this ID across local invocations. It does not derive the ID from an account, workspace, email address, hostname, or hardware identifier. The local file also records successfully reported CLI versions and the first-resource marker to reduce duplicate reporting.
+
+The common event properties are:
+
+- `cli_version`, when the running version matches the release-version allowlist. Version properties accept numeric releases and alpha, beta, or rc prereleases; arbitrary build text is omitted.
+- `os`: darwin, linux, windows, or unknown.
+- `architecture`: amd64, arm64, 386, arm, or unknown.
+- `install_method`: shell, powershell, homebrew, or unknown, inferred from the current installer invocation or executable location. It is not a complete history of how the CLI was installed.
+- `environment`: prod, dev, local, or unknown. This is the Blaxel environment the CLI is pointed at, from `BL_ENV` or the current workspace's configuration, so development and production traffic can be told apart. It is not a workspace name or ID.
+- `$process_person_profile`: the boolean `false`, requesting no person-profile processing.
+- `$geoip_disable`: the boolean `true`, requesting no GeoIP enrichment.
+
+Event-specific properties are limited to these values:
+
+- Setup `status`: success, failure, or cancelled. Login `status`: started, success, failure, or cancelled. Skipping or quitting the setup login, pressing Ctrl+C during browser login, or leaving the workspace picker counts as cancelled.
+- `detected_agents`: locally detected IDs from claude-code, codex, cursor, gemini-cli, github-copilot, opencode, amp, cline, windsurf, goose, kiro-cli, roo, continue, augment, junie, trae, qwen-code, openhands, pi, crush, devin, openclaw, vscode, and claude-desktop. No agent prompts or MCP protocol output are captured.
+- `components`: selected setup categories from skills, mcp, docs, login, and tracking. These describe the selected work, not a per-component success report.
+- `failure_category`: usage, validation, authentication, not_found, conflict, operational, internal, or panic. If multiple setup tasks fail, only one category is reported. Raw error text is excluded.
+- `resource_category`: Agent, Function, Sandbox, Job, Model, Volume, or Drive.
+
+Usage event payloads exclude account and workspace IDs or names, emails, hostnames, paths, command arguments, environment-variable values, credentials, file contents, and raw errors. No IP address is added to the event body. The analytics receiver still receives a network connection; the GeoIP flag does not by itself establish how that receiver handles or retains the source IP address.
+
+### Consent and opt-outs
+
+The existing `tracking` preference in the local configuration described under **Error tracking** below controls both CLI usage reporting and local SDK/CLI error tracking. Setup labels its toggle **Usage and error reports** and keeps an existing saved choice. New setup plans retain the existing selected-by-default choice; the separate first-use consent prompt retains its default of no. Without a saved choice, the SDK's existing tracking default remains off.
+
+Usage capture is disabled regardless of a saved `tracking: true` when:
+
+- `DO_NOT_TRACK` has **any nonempty value**, including 0, false, or whitespace.
+- `BL_INSTALL_TRACKING` is false (case-insensitive, ignoring surrounding whitespace).
+- Any of `CI`, `GITHUB_ACTIONS`, `GITLAB_CI`, `CIRCLECI`, `TRAVIS`, `JENKINS_URL`, `BUILDKITE`, or `TEAMCITY_VERSION` has a nonempty value.
+
+You can also turn off the setup toggle or set `tracking: false` in the local configuration. `BL_INSTALL_TRACKING=false` disables usage capture directly and selects the setup toggle off. It does not independently override Sentry or SDK error tracking.
+
+> [!NOTE]
+>
+> Usage reporting intentionally treats `DO_NOT_TRACK=0` and `DO_NOT_TRACK=false` as opt-outs. Error tracking retains the existing SDK semantics described below, where those values enable error tracking. The CLI usage opt-outs do not change OpenTelemetry or sandbox runtime reporting.
+
+### Measurement limits
+
+Usage delivery is best effort: requests have a one-second timeout, process-exit flushing waits at most one second, and the CLI drops excess events instead of queueing them when eight requests are already in flight. Setup and login attempts are not stored for offline replay. Failed version or first-resource delivery leaves the local marker eligible for a later invocation or creation.
+
+The first-resource event measures a successful create observed by an opted-in CLI installation. It does not confirm that a resource is ready or that a deployment finished, cover resources created through the Console or SDKs, or establish the first resource for an account. The anonymous local ID is not joined to identified server events. Resetting the local state, separate homes, concurrent CLI processes, opt-outs, and delivery failures can make this funnel incomplete or produce duplicates.
+
+## Error tracking
+
+When enabled, the SDKs and CLI capture errors and exceptions that originate from the SDK/CLI itself - not from application code. Each SDK/CLI has a lightweight, custom Sentry client that collects and tracks the following error-related metadata:
+
+- Error type and message
+- Stack trace
+- Environment
+- Release/version
+- Workspace
+- Commit hash
+- OS/runtime context
+- Breadcrumbs
+- Runtime-specific context (e.g. goroutine info in Go)
+
+No request data, API keys, file contents, IP addresses or other user or application data is collected.
+
+### Opt in
+
+Error tracking is controlled by a combination of the `DO_NOT_TRACK` environment variable and the `tracking` parameter, read from the following locations (in priority order):
+
+1. `DO_NOT_TRACK` environment variable
+2. `tracking:` field in `~/.blaxel/config.yaml`
+3. Pre-set default value
+    - `false` starting from SDK v0.2.46 (Python), v0.2.76 (TypeScript), and v0.16.1 (Go)
+    - `true` in all earlier versions
+
+The Blaxel CLI prompts the user for tracking consent on first interactive use and during installation. The response is recorded in `~/.blaxel/config.yaml` and affects error tracking in the SDKs and the CLI locally.
+
+> [!NOTE]
+>
+> Consenting when prompted sets `tracking: true` in `~/.blaxel/config.yaml`, which is read by both the CLI and SDKs and results in error tracking becoming enabled for local sessions.
+>
+> However, when deploying on Blaxel, the platform automatically injects `DO_NOT_TRACK=1`, which disables error tracking regardless of the value set in `~/.blaxel/config.yaml`. You can override this by explicitly setting `DO_NOT_TRACK=0` in your environment configuration (see below). Similarly, in CI environments or in remote environments where the Blaxel CLI is not used, the `tracking:` field is never set to `true` and error tracking is therefore disabled by default.
+
+#### `DO_NOT_TRACK` environment variable
+
+The `DO_NOT_TRACK` environment variable follows the [Console Do Not Track](https://consoledonottrack.com/) convention. To explicitly enable tracking, use the command below in your shell environment:
+
+```bash
+export DO_NOT_TRACK=0    # Enable tracking
+```
+
+#### Blaxel configuration file
+
+You can also disable tracking by adding the following parameter to your `~/.blaxel/config.yaml` global configuration file:
+
+```yaml
+tracking: false
+```
+
+> [!WARNING]
+>
+> Setting `BL_ENABLE_OPENTELEMETRY=0` has no effect on error tracking.
+
+## OpenTelemetry tracing and logging
+
+When you deploy from the Blaxel Console, Blaxel CLI or by using the Blaxel SDK to wrap your code for deployment, Blaxel automatically instruments your requests with logging and tracing. The resulting logs and traces are provided to users for real-time monitoring and debugging of their workloads.
+
+The data collected consists of:
+
+- Metrics: Aggregated data about workload executions
+- Logs: Timestamped logs for workloads
+- Traces: Data on inputs, outputs and execution steps
+
+Blaxel only collects and saves traces for a sampled 10% of all your executions.
+
+[Read more about observability](https://docs.blaxel.ai/Observability/Overview).
+
+### Opt in locally
+
+This feature is controlled by the `BL_ENABLE_OPENTELEMETRY` environment variable. This environment variable defaults to `false` locally and to `true` in deployed environments. To explicitly enable it locally, use the command below in your shell environment:
+
+```bash
+export BL_ENABLE_OPENTELEMETRY=true    # Enable OpenTelemetry logging
+```
+
+> [!WARNING]
+>
+> Setting `DO_NOT_TRACK=1` has no effect on OpenTelemetry.
+
+## Sandbox runtime error reporting
+
+The Blaxel sandbox runtime (`sandbox-api`) reports internal errors to Sentry. The data collected is limited to:
+
+- Error type and message
+- Stack trace
+- Environment
+- Release/version
+- Runtime context (e.g. goroutine info)
+
+Request context and user data are unconditionally stripped server-side before any data leaves the process. No request payloads, API keys, user identifiers, or IP addresses are transmitted.
+
+When telemetry is active, `sandbox-api` logs an explicit notice at startup.
+
+### Opt out
+
+Sandbox runtime telemetry is controlled independently from the SDK/CLI `DO_NOT_TRACK` variable. Use either of the following in your sandbox image configuration:
+
+```bash
+# Environment variable
+TELEMETRY_ENABLED=false
+
+# Startup flag in entrypoint script
+/usr/local/bin/sandbox-api --disable-telemetry &
+```
+
+> [!WARNING]
+>
+> `TELEMETRY_ENABLED` and `--disable-telemetry` only affect sandbox runtime error reporting. They have no effect on SDK/CLI error tracking (controlled by `DO_NOT_TRACK`) or OpenTelemetry tracing (controlled by `BL_ENABLE_OPENTELEMETRY`).
+
+# Policies
+Source: https://docs.blaxel.ai/Model-Governance/Policies
+
+Define policies that control where workloads run on the Global Agentics Network, including location constraints, flavors, and token limits.
+
+Policies are used to program how and where your workloads are deployed on Blaxel. Policies can be defined as code, allowing for easy programming and customization of your [Global Agentics Network](https://docs.blaxel.ai/Infrastructure/Global-Inference-Network).
+
+Policies apply to the entities they are attached to: [model APIs](https://docs.blaxel.ai/Models/Overview), [functions](https://docs.blaxel.ai/Functions/Overview) and [agent](https://docs.blaxel.ai/Agents/Overview) deployments.
+
+## Policies overview
+
+Policies essentially describe rules as to how deployments and executions are made on Blaxel.
+
+A policy states all the **allowed options for a specific aspect** (called the *policy type*) of the deployment or execution (for example: the execution location).
+
+Example:
+
+- Policy `Country: US` means that attached workloads will only be able to run in locations that are in the United States.
+
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](https://docs.blaxel.ai/Infrastructure/Global-Inference-Network)’s default optimizations.
+
+### Policy types
+
+Policies have a **type**, allowing multiple policies to drive various deployment strategies without colliding. Typically, you can easily enforce a policy on the execution location and a policy on the underlying hardware at the same time.
+
+There are currently three types of policies: **location,** **flavor,** and **token usage**.
+
+### Location policies
+
+Location policies give control over which clusters will execute your workloads.
+
+They come in two different formats:
+
+- policies on **countries** let you define all [physical locations](https://docs.blaxel.ai/Model-Governance/Policies) inside of one or several countries at once
+    - for example, execute only in the following country: *USA*
+- policies on **continents** let you define all [physical locations](https://docs.blaxel.ai/Model-Governance/Policies) inside of one or several continents at once
+    - for example, execute only in *North America*
+
+### Flavor policies
+
+Flavor policies give control over which underlying hardware your workloads will be executed on.
+
+They come in two different formats:
+
+- policies on **cpu** let you pass a specific list of CPU types
+    - for example, execute only on x86
+
+### Token usage policies
+
+Token usage policies control the maximum number of tokens your [**model APIs**](https://docs.blaxel.ai/Models/Overview) can handle within a specific time period. You can control the maximum number of input tokens, output tokens, **and/or** total tokens. When a model reaches its maximum token limit, subsequent requests are rejected with a 429 error.
+
+> [!NOTE]
+>
+> The policy only drops complete requests AFTER the maximum limit is reached. The first request that exceeds the threshold will still be processed. However, all subsequent requests within the enforced time period will be dropped.
+
+## Create a policy
+
+Policies can be created from the Blaxel console, or from the Blaxel APIs and CLI.
+
+Read [our complete reference on policies](https://docs.blaxel.ai/api-reference/policies/create-governance-policy).
+
+## Attach a policy
+
+Attaching a policy to a workload enforces it on the workload.
+
+When no policies are enforced on a type, all options for this type are considered allowed. Workloads are executed using [Global Agentics Network](https://docs.blaxel.ai/Infrastructure/Global-Inference-Network)’s default optimizations.
+
+### Attaching multiple policies
+
+When attaching **multiple policies** to a resource, it's crucial to understand their combined effect.
+
+**If you are attaching multiple policies to the same resource:**
+
+Their combined effect is the **UNION** of all of their effects for the same [type](https://docs.blaxel.ai/Model-Governance/Policies) of policy (a.k.a. *OR* clause), and **INTERSECTION** across all [types](https://docs.blaxel.ai/Model-Governance/Policies) of policies (a.k.a. *AND* clause).
+
+For example:
+
+- Let’s assume the following policies:
+    - Policy A: Country is: USA
+    - Policy B: Continent is: North America, or Europe
+- if a workload has the following combined policies:
+    - A and B: then the workload will only execute in any location in either North America (including USA) or Europe - on any kind of hardware available there.
+
+## Policy reference
+
+Below is the list of official names to build policies.
+
+### Flavors
+
+**type**: `flavor`
+
+| **Code** | **Type** | **Flavor Name** |
+| --- | --- | --- |
+| CPU x86 | cpu | x86 |
+
+### Locations
+
+**type**: `location`
+
+| **Code** | **Type** | **Name** |
+| --- | --- | --- |
+| eu | continent | Europe |
+| na | continent | North America |
+| us | country | United States |
+
+### Token usage
+
+**type**: `maxToken`
+
+- `granularity`: the unit period of time over which the number of tokens is evaluated. One of: `month`, `day`, `hour`, `minute`
+- `step`: the number of time period units over which the number of tokens is evaluated. It is a number greater than 1.
+- `input`: threshold for the maximum number of **input** tokens. If 0, this metric is not evaluated.
+- `output`: threshold for the maximum number of **output** tokens. If 0, this metric is not evaluated.
+- `total`: threshold for the maximum number of **input and output** tokens. If 0, this metric is not evaluated.
