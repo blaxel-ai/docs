@@ -62,7 +62,7 @@ When you create a private preview URL a token is required to access the URL. You
 
 Preview URLs pass the `Cache-Control` sent by your application through to the browser, so browser caching and conditional requests (`ETag` / `If-None-Match` answered with `304 Not Modified`) work the same way as through the sandbox URL. Blaxel only restricts shared caches (CDNs, proxies):
 
-- **Public previews**: `public` and `s-maxage` are removed and `private` is added, unless the response is marked `immutable`, which may stay in shared caches.
+- **Public previews**: `public` and `s-maxage` are removed and `private` is added, unless the response is marked `immutable` and sets no cookie, in which case it may stay in shared caches.
 - **Private previews**: `public` and `s-maxage` are always removed and `private` is added, so only the user's browser caches the response.
 
 Responses without a `Cache-Control` header are served with `Cache-Control: no-store`.
