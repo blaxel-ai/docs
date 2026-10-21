@@ -342,6 +342,8 @@ Rules for `externalId`:
 - Mutable: can be changed after creation
 - Omitting it on update preserves the current value
 
+In Python, `SandboxInstance` has no external ID helpers. Set `externalId` in `metadata` and use the API client functions shown below.
+
 Set `externalId` in metadata at creation time:
 
 <CodeGroup>
@@ -357,16 +359,17 @@ const sandbox = await SandboxInstance.createIfNotExists({
 
 ```python Python
 sandbox = await SandboxInstance.create_if_not_exists({
-    "name": "my-sandbox",
-    "image": "blaxel/base-image:latest",
-    "external_id": "session-abc-123",
-    "region": "us-pdx-1"
+    "metadata": {"name": "my-sandbox", "externalId": "session-abc-123"},
+    "spec": {
+        "region": "us-pdx-1",
+        "runtime": {"image": "blaxel/base-image:latest"},
+    },
 })
 ```
 
 </CodeGroup>
 
-Retrieve the most recent non-terminated sandbox matching an external ID:
+Retrieve the most recent non-terminated sandbox matching an external ID. If none matches, the TypeScript call throws a `404` error and the Python call returns an `Error` with code `404`:
 
 <CodeGroup>
 
@@ -375,7 +378,13 @@ const sandbox = await SandboxInstance.getByExternalId("session-abc-123");
 ```
 
 ```python Python
-sandbox = await SandboxInstance.get_by_external_id("session-abc-123")
+from blaxel.core import SandboxInstance, client
+from blaxel.core.client.api.compute import get_sandbox_by_external_id
+from blaxel.core.client.models import Sandbox
+
+found = await get_sandbox_by_external_id.asyncio("session-abc-123", client=client)
+if isinstance(found, Sandbox):
+    sandbox = SandboxInstance(found)
 ```
 
 </CodeGroup>
@@ -389,7 +398,12 @@ const sandboxes = await SandboxInstance.list({ externalId: "session-abc-123" });
 ```
 
 ```python Python
-sandboxes = await SandboxInstance.list(external_id="session-abc-123")
+from blaxel.core import client
+from blaxel.core.client.api.compute import list_sandboxes
+
+sandboxes = await list_sandboxes.asyncio(client=client, external_id="session-abc-123")
+for sandbox in sandboxes.data:
+    print(sandbox.metadata.name)
 ```
 
 </CodeGroup>
