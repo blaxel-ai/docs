@@ -21,7 +21,7 @@ The following options are available for sandbox expiry and deletion:
 - expire at a specific date using the `expires` parameter
 - expire based on a combination of one or more lifecycle policies, specified with the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
   - `ttl-max-age`: Delete after total lifetime from creation (equivalent to `ttl`) (1h, 24h, 7d)
-  - `ttl-idle`: Delete after period of inactivity from last active time (1h, 24h, 7d)
+  - `ttl-idle`: Delete after the sandbox has spent this long in standby (1h, 24h, 7d)
   - `date`: Delete at a specific date (equivalent to `expires`)
 
 <Note>
@@ -29,7 +29,7 @@ The following options are available for sandbox expiry and deletion:
 </Note>
 
 <Warning>
-  For `ttl-idle`, "activity" is counted as either a **resume** or a **suspend** — not anything in between. If a sandbox hasn't been in standby since it was last woken up, the idle timer starts from the time of that first wake-up. This means that if your session runs continuously for longer than the idle TTL without going into standby, the sandbox will be deleted once the TTL elapses, even if it is actively in use.
+  The `ttl-idle` clock only runs while the sandbox is in standby: it starts when the sandbox goes on standby and resets when it resumes, so `ttl-idle` never deletes an active sandbox. `ttl`, `ttl-max-age`, `expires` and `date` apply whether the sandbox is active or not, including while a command is running.
 </Warning>
 
 The sandbox metadata includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
@@ -50,7 +50,7 @@ const sandbox = await SandboxInstance.create({
   memory: 4096,
   ports: [{ target: 3000, protocol: "HTTP" }],
   region: "us-pdx-1",
-  ttl: "24h", // Total duration before auto-deletion. Supported units: h, d, w
+  ttl: "24h", // Total duration before auto-deletion. Supported units: s, m, h, d, w
   // OR
   // expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
   // OR / AND
@@ -58,7 +58,7 @@ const sandbox = await SandboxInstance.create({
     expirationPolicies: [
       {
         type: "ttl-idle",
-        value: "24h",  // Delete after 24 hours of inactivity. Supported units: h, d, w
+        value: "24h",  // Delete after 24 hours in standby. Supported units: s, m, h, d, w
         action: "delete"
       }
     ]
@@ -67,7 +67,7 @@ const sandbox = await SandboxInstance.create({
 ```
 
 ```python Python highlight={11-23}
-from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
+from blaxel.core import SandboxInstance
 
 # Create a new sandbox
 sandbox = await SandboxInstance.create({
@@ -76,19 +76,19 @@ sandbox = await SandboxInstance.create({
   "memory": 4096,
   "ports": [{ "target": 3000 }],
   "region": "us-pdx-1",
-  "ttl": "24h", ## Total duration before auto-deletion. Supported units: h, d, w
-  ## OR
-  ## expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
-  ## OR / AND
-  "lifecycle": SandboxLifecycle(
-    expiration_policies=[
-      ExpirationPolicy(
-        type_="ttl-idle",
-        value="24h",  # Delete after 24 hours of inactivity. Supported units: h, d, w
-        action="delete"
-      )
+  "ttl": "24h",  # Total duration before auto-deletion. Supported units: s, m, h, d, w
+  # OR
+  # "expires": datetime.now(timezone.utc) + timedelta(days=1),  # Alternative: set a date at which it will be deleted
+  # OR / AND
+  "lifecycle": {
+    "expiration_policies": [
+      {
+        "type": "ttl-idle",
+        "value": "24h",  # Delete after 24 hours in standby. Supported units: s, m, h, d, w
+        "action": "delete"
+      }
     ]
-  )
+  }
 })
 ```
 
@@ -97,8 +97,8 @@ sandbox = await SandboxInstance.create({
 Important notes:
 
 - Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
-- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
-- The minimum value for `ttl` and `ttl-max-age` is `5m`, and for `ttl-idle` it is `1m`. Shorter values are rejected with a `400` error, such as `ttl 1m is too short: the minimum is 5m`. This does not apply to `expires` or `date` policies. To remove a sandbox sooner, delete it explicitly.
+- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), and `w` (weeks).
+- The minimum value for `ttl` and `ttl-max-age` is `5m`, and for `ttl-idle` it is `60s`. Shorter values are rejected with a `400` error, such as `ttl 1m is too short: the minimum is 5m`. This does not apply to `expires` or `date` policies. To remove a sandbox sooner, delete it explicitly.
 - You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
 
 ## Update sandbox expiry rules
@@ -142,15 +142,16 @@ await SandboxInstance.updateLifecycle("my-sandbox", {
 
 ```python Python
 from blaxel.core import SandboxInstance
+from blaxel.core.client.models import SandboxLifecycle
 
 # Update sandbox expiration policy
 await SandboxInstance.update_lifecycle(
     "my-sandbox",
-    {
+    SandboxLifecycle.from_dict({
         "expiration_policies": [
             { "type": "ttl-max-age", "value": "30m", "action": "delete" }
         ]
-    },
+    }),
 )
 ```
 
