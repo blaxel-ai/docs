@@ -1,0 +1,372 @@
+---
+title: 'Sandbox lifecycle recipe'
+sidebarTitle: 'Lifecycle recipe'
+description: 'Create or reuse Blaxel sandboxes, choose expiration policies, keep them awake through long commands, and delete, recreate or pool them safely.'
+---
+
+This page is the reference pattern for managing a sandbox from creation to deletion. It covers reuse by name, standby, expiration, long commands, image updates, recreation and pools, with the current values for each setting.
+
+## Create or reuse a sandbox
+
+Create sandboxes with `createIfNotExists()` / `create_if_not_exists()` and a stable name. The call returns the sandbox that already holds the name, or creates one with your configuration:
+
+- A sandbox that is active or in standby is returned as is.
+- A sandbox that failed or expired (status `FAILED` or `TERMINATED`) is replaced by a new one.
+- A deletion or creation of the same name that is still in progress is waited for on the server, so concurrent calls get the same sandbox.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "user-42-workspace",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+  lifecycle: {
+    expirationPolicies: [{ type: "ttl-idle", value: "24h", action: "delete" }],
+  },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "user-42-workspace",
+    "image": "blaxel/base-image:latest",
+    "memory": 4096,
+    "region": "us-pdx-1",
+    "lifecycle": {
+        "expiration_policies": [{"type": "ttl-idle", "value": "24h", "action": "delete"}]
+    },
+})
+```
+
+</CodeGroup>
+
+<Warning>
+  When a sandbox already holds the name, it is returned unchanged. The image, memory, environment variables and expiration policies in the call are not applied to it. To change its expiry, see [Update expiry on a live sandbox](#update-expiry-on-a-live-sandbox). To change its image, see [Update images and templates](#update-images-and-templates).
+</Warning>
+
+### Name a sandbox
+
+Sandbox names follow these rules:
+
+- Use only lowercase letters, digits and single hyphens, such as `user-42-workspace`.
+- Start and end with a letter or a digit.
+- Keep the name to 49 characters or fewer.
+- Derive the name from something you already track, such as a user, session or task ID, so you can find the sandbox again.
+
+Invalid names are rejected with a `400` error. If you omit the name, Blaxel assigns one, and `createIfNotExists()` always creates a new sandbox.
+
+## Understand standby and activity
+
+A sandbox stays active while something is connected to it. About 15 seconds after the last connection ends, it goes on standby: its memory, processes and filesystem are snapshotted, and you stop paying for memory. The next request resumes it in under 25 milliseconds. See [Sandbox lifecycle](./Overview#sandbox-lifecycle) for details and pricing.
+
+These keep a sandbox active:
+
+- Requests to the sandbox, such as process and filesystem calls, terminal sessions and preview URL traffic
+- An open WebSocket or TCP connection, until it carries no traffic for 15 minutes
+- A running process started with `keepAlive`
+
+These do not keep a sandbox active:
+
+- A process started without `keepAlive`: it is frozen with the snapshot and continues when the sandbox resumes
+- Reading the sandbox with `get()` or `list()`, which returns its stored metadata without resuming it
+
+A sandbox you create and never use also goes on standby once its creation request ends. Its `ttl-idle` clock starts then, not at its first request. In practice, a sandbox created with a `60s` `ttl-idle` policy and never used is deleted about a minute and a half after creation.
+
+## Choose an expiration policy
+
+Without an expiration policy, a sandbox stays in standby indefinitely and keeps its snapshot storage. Expiration policies delete it automatically:
+
+| Setting | Where to set it | Deletes the sandbox | Current minimum |
+| --- | --- | --- | --- |
+| `ttl` | top level | a fixed time after creation, active or not | `5m` |
+| `expires` | top level | at a date | must be in the future |
+| `ttl-max-age` | lifecycle policy | a fixed time after creation, active or not (same as `ttl`) | `5m` |
+| `ttl-idle` | lifecycle policy | after it has spent this long in standby | `60s` |
+| `date` | lifecycle policy | at a date (same as `expires`) | must be in the future |
+
+The idle clock for `ttl-idle` only runs while the sandbox is in standby. It starts when the sandbox goes on standby and resets when it resumes, so `ttl-idle` never deletes an active sandbox. `ttl`, `ttl-max-age`, `expires` and `date` apply whether the sandbox is active or not.
+
+Durations accept `s`, `m`, `h`, `d` and `w`, such as `90s`, `30m`, `1h30m`, `7d` or `2w`. Days and weeks take a whole number on their own, so write `36h` rather than `1d12h`. Values below the current minimum are rejected with a `400` error, such as `ttl 1m is too short: the minimum is 5m`. To remove a sandbox sooner than the minimum allows, [delete it explicitly](#delete-a-sandbox).
+
+You can combine several policies. The first condition met deletes the sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "user-42-workspace",
+  image: "blaxel/base-image:latest",
+  region: "us-pdx-1",
+  lifecycle: {
+    expirationPolicies: [
+      { type: "ttl-idle", value: "24h", action: "delete" },
+      { type: "ttl-max-age", value: "30d", action: "delete" },
+    ],
+  },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "user-42-workspace",
+    "image": "blaxel/base-image:latest",
+    "region": "us-pdx-1",
+    "lifecycle": {
+        "expiration_policies": [
+            {"type": "ttl-idle", "value": "24h", "action": "delete"},
+            {"type": "ttl-max-age", "value": "30d", "action": "delete"},
+        ]
+    },
+})
+```
+
+</CodeGroup>
+
+<Note>
+  On [quota tiers](https://app.blaxel.ai/account/quotas) that enforce a maximum lifetime, a sandbox created without `ttl` or `expires` gets that maximum as its `ttl`, so a `ttl-idle` policy alone does not keep it longer. A longer `ttl` or a later `expires` is rejected with a `429` error.
+</Note>
+
+When a sandbox expires, it is deleted the same way as an [explicit delete](#delete-a-sandbox). In practice, this happens within a few seconds of the deadline.
+
+The read-only `expiresIn` / `expires_in` field gives the number of seconds left before a sandbox expires. For a sandbox with only a `ttl-idle` policy, it is set only while the sandbox is in standby.
+
+## Update expiry on a live sandbox
+
+Update the TTL or the expiration policies of an existing sandbox. The change applies to the running sandbox without restarting it, and replaces the previous policies:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.updateTtl("user-42-workspace", "7d");
+
+await SandboxInstance.updateLifecycle("user-42-workspace", {
+  expirationPolicies: [{ type: "ttl-idle", value: "1h", action: "delete" }],
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+from blaxel.core.client.models import SandboxLifecycle
+
+await SandboxInstance.update_ttl("user-42-workspace", "7d")
+
+await SandboxInstance.update_lifecycle(
+    "user-42-workspace",
+    SandboxLifecycle.from_dict(
+        {"expiration_policies": [{"type": "ttl-idle", "value": "1h", "action": "delete"}]}
+    ),
+)
+```
+
+</CodeGroup>
+
+Pass `null` / `None` to remove the TTL or all policies. See [Expiration policies](./Expiration) for more examples.
+
+## Delete a sandbox
+
+Delete a sandbox as soon as you no longer need it, instead of waiting for a policy. Deletion erases all of its data and cannot be undone:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.delete("user-42-workspace");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+await SandboxInstance.delete("user-42-workspace")
+```
+
+</CodeGroup>
+
+The call returns right away with status `DELETING`, and the status changes to `TERMINATED` within a few seconds. If the sandbox has a [termination grace period](./Lifecycle-signals), its teardown can continue after that, until its processes exit or the grace period ends.
+
+After the teardown, `get()` keeps returning the sandbox with status `TERMINATED` for at least 5 minutes by default, so its logs stay accessible. In practice it often stays longer. `list()` hides it, so check `status` before reusing a sandbox you got by name. `createIfNotExists()` replaces it right away. To keep files across deletions, store them on a [volume](./Volumes).
+
+## Keep a sandbox awake through a long command
+
+A command can run longer than any single request. Start it with `keepAlive` so the sandbox stays active until the command ends, even with no client connected:
+
+<CodeGroup>
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "test-suite",
+  command: "npm test",
+  keepAlive: true,
+  timeout: 0, // 0 never kills the process; the default is 600 seconds
+});
+
+// Optionally block until it ends
+const result = await sandbox.process.wait("test-suite", { maxWait: -1, interval: 5000 });
+```
+
+```python Python
+await sandbox.process.exec({
+    "name": "test-suite",
+    "command": "npm test",
+    "keep_alive": True,
+    "timeout": 0,  # 0 never kills the process; the default is 600 seconds
+})
+
+# Optionally block until it ends
+result = await sandbox.process.wait("test-suite", max_wait=-1, interval=5000)
+```
+
+</CodeGroup>
+
+- With `keepAlive`, `timeout` is an auto-kill deadline in seconds. Without it, `timeout` only bounds how long the call waits.
+- `waitForCompletion` / `wait_for_completion` is limited to 60 seconds. Use `process.wait()` for longer commands: it polls the process, and `maxWait: -1` / `max_wait=-1` waits until it ends.
+- Polling with `process.wait()` also keeps the sandbox active, as long as the interval is well under 15 seconds and your client keeps running. `keepAlive` does not depend on your client.
+- `ttl`, `ttl-max-age`, `expires` and `date` still apply while a command runs. Set them longer than your longest command, or rely on `ttl-idle`, which never deletes an active sandbox.
+
+See [Processes](./Processes#sandbox-keep-alive) for keep-alive details and [Standby control](./Standby-control) for other ways to keep a sandbox active.
+
+## Recreate after a delete
+
+To replace a sandbox under the same name, delete it, then call `createIfNotExists()`. The server waits for the old sandbox to finish its teardown, usually a few seconds, before it creates the new one.
+
+The call can still fail while the old sandbox is going away. Retry it after a short delay in these cases:
+
+- The teardown is still running after the wait. The call fails with a `409` error with code `SANDBOX_DELETION_IN_PROGRESS`.
+- The old sandbox has a [termination grace period](./Lifecycle-signals) and its processes keep running after `SIGTERM`. The new sandbox waits until the grace period ends, then fails with a `500` error with code `DEPLOYMENT_FAILED`. To avoid this wait, make your processes exit on `SIGTERM`.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const RETRYABLE = ["SANDBOX_DELETION_IN_PROGRESS", "DEPLOYMENT_FAILED"];
+
+await SandboxInstance.delete("user-42-workspace");
+
+let sandbox;
+for (let attempt = 1; ; attempt++) {
+  try {
+    sandbox = await SandboxInstance.createIfNotExists({
+      name: "user-42-workspace",
+      image: "blaxel/base-image:latest",
+      region: "us-pdx-1",
+    });
+    break;
+  } catch (error: any) {
+    if (!RETRYABLE.includes(error?.code) || attempt === 5) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+  }
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxAPIError, SandboxInstance
+
+RETRYABLE = {"SANDBOX_DELETION_IN_PROGRESS", "DEPLOYMENT_FAILED"}
+
+await SandboxInstance.delete("user-42-workspace")
+
+for attempt in range(1, 6):
+    try:
+        sandbox = await SandboxInstance.create_if_not_exists({
+            "name": "user-42-workspace",
+            "image": "blaxel/base-image:latest",
+            "region": "us-pdx-1",
+        })
+        break
+    except SandboxAPIError as error:
+        if error.code not in RETRYABLE or attempt == 5:
+            raise
+        await asyncio.sleep(2 * attempt)
+```
+
+</CodeGroup>
+
+- `createIfNotExists()` replaces a sandbox that failed, so a retry creates a new one once the old sandbox is gone.
+- Use `createIfNotExists()` rather than `create()` after a delete. `create()` also waits for the teardown, but if the old sandbox is still being deleted after the wait, it fails with `SANDBOX_ALREADY_EXISTS`, the same error as for a live sandbox.
+- If you do not need the same name, create the replacement under a new name. Nothing waits on the old sandbox.
+- Use TypeScript SDK v0.3.25 or later, or Python SDK v0.4.13 or later, so the server handles these waits.
+
+## Update images and templates
+
+A sandbox keeps the image revision it was created with, through standby and resume. New revisions of a template only reach new sandboxes:
+
+- Reference your template with the `:latest` tag, or no tag, to get the newest deployed revision at creation time.
+- After you push a new revision with `bl push` or `bl deploy`, new sandboxes can take a short time to pick it up.
+- `createIfNotExists()` returns an existing sandbox unchanged, on its old image.
+- To move an existing sandbox to the new revision, delete it and [recreate it](#recreate-after-a-delete). Keep data you need on a [volume](./Volumes).
+- To roll out gradually, create new sandboxes under new names and let the old ones expire with a `ttl-idle` policy.
+
+Updating the image of an existing sandbox through the API restarts it and resets its state. [Upgrading the sandbox API](./Overview) with `sandbox.system.upgrade()` only updates the Blaxel API binary inside the sandbox, not your image.
+
+## Use a sandbox pool
+
+The SDK does not provide a pool API. To serve requests from pre-created sandboxes, keep a pool yourself as described in [Reduce cold start times with a pre-warmed pool](./best-practices#reduce-cold-start-times-with-a-pre-warmed-pool). Pool sandboxes wait in standby at no memory cost.
+
+`ttl` and `ttl-max-age` count from creation, including the time a sandbox spends in the pool. Give pool sandboxes a long `ttl-idle` so spares your pool loses track of are cleaned up. When you hand one out, set the deadline for its task:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const deadline = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+
+await SandboxInstance.updateLifecycle(pooledName, {
+  expirationPolicies: [
+    { type: "date", value: deadline, action: "delete" },
+    { type: "ttl-idle", value: "30m", action: "delete" },
+  ],
+});
+```
+
+```python Python
+from datetime import datetime, timedelta, timezone
+
+from blaxel.core import SandboxInstance
+from blaxel.core.client.models import SandboxLifecycle
+
+deadline = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+
+await SandboxInstance.update_lifecycle(
+    pooled_name,
+    SandboxLifecycle.from_dict({
+        "expiration_policies": [
+            {"type": "date", "value": deadline, "action": "delete"},
+            {"type": "ttl-idle", "value": "30m", "action": "delete"},
+        ]
+    }),
+)
+```
+
+</CodeGroup>
+
+When the task ends, delete the sandbox, or return it to the pool and restore its pool policy.
+
+<CardGroup cols={2}>
+  <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
+    Configure, update and clear sandbox expiry rules.
+  </Card>
+  <Card title="Lifecycle signals" icon="bell" href="/Sandboxes/Lifecycle-signals">
+    Let sandbox code react before deletion or standby.
+  </Card>
+  <Card title="Processes" icon="terminal" href="/Sandboxes/Processes">
+    Run commands, wait for them and keep the sandbox awake.
+  </Card>
+  <Card title="Best practices" icon="check" href="/Sandboxes/best-practices">
+    Recommended practices for running sandboxes in production.
+  </Card>
+</CardGroup>

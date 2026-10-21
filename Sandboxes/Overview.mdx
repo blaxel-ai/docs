@@ -25,7 +25,7 @@ Unlike traditional sandbox infrastructure, Blaxel's standout feature is its full
 />
 
 <Tip>
-  [Read more about the Blaxel sandbox lifecycle](https://blaxel.ai/blog/understand-the-lifecycle-of-a-blaxel-sandbox).
+  [Read more about the Blaxel sandbox lifecycle](https://blaxel.ai/blog/understand-the-lifecycle-of-a-blaxel-sandbox). For the recommended way to create, expire, recreate and delete sandboxes, follow the [sandbox lifecycle recipe](./Lifecycle-recipe).
 </Tip>
 
 ### Active mode
@@ -521,7 +521,7 @@ except SandboxCreationTimeoutError as error:
 
 ### Expiration
 
-Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions.
+Blaxel supports [automatic sandbox deletion](./Expiration) based on specific conditions. To choose between them, see [Choose an expiration policy](./Lifecycle-recipe#choose-an-expiration-policy).
 
 ## Retrieve an existing sandbox
 
@@ -691,6 +691,9 @@ You can explore the contents of a sandbox with an interactive terminal. You can 
 
 
 <CardGroup>
+  <Card title="Lifecycle recipe" icon="arrows-rotate" href="/Sandboxes/Lifecycle-recipe">
+    Create, expire, recreate and delete sandboxes the recommended way.
+  </Card>
   <Card title="Expiration policies" icon="hourglass-half" href="/Sandboxes/Expiration">
     Automatically delete sandboxes based on specific conditions.
   </Card>
