@@ -98,6 +98,7 @@ Important notes:
 
 - Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](/api-reference/compute/update-sandbox) for full documentation.
 - The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
+- The minimum value for `ttl` and `ttl-max-age` is `5m`, and for `ttl-idle` it is `1m`. Shorter values are rejected with a `400` error, such as `ttl 1m is too short: the minimum is 5m`. This does not apply to `expires` or `date` policies. To remove a sandbox sooner, delete it explicitly.
 - You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
 
 ## Update sandbox expiry rules
