@@ -3508,6 +3508,13 @@ components:
       description: Runtime configuration defining how the sandbox VM is provisioned
         and its resource limits
       properties:
+        diskPercent:
+          type: integer
+          description: Maximum share of the sandbox memory its filesystem can use,
+            in percent (10-95). The filesystem is held in memory, so files written
+            count against the sandbox memory. Defaults to 50. mk3.1 only. Immutable
+            after creation.
+          example: 80
         envs:
           type: array
           description: Environment variables injected into the sandbox. Supports Kubernetes
