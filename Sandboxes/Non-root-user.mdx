@@ -17,7 +17,7 @@ The sandbox API is PID 1 in the sandbox. It mounts [Agent Drive](/Agent-drive/Ov
 This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks everything mentioned above. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
 
 <Warning>
-  Running the same image locally with `docker run` applies `USER` to the sandbox API, so drive mounts and networking setup fail. Use the entrypoint variant below if you need the image to behave the same way outside Blaxel.
+  Running the same image locally with `docker run` applies `USER` to the entrypoint, so drive mounts and networking setup fail, and root-only preparation in an entrypoint script fails too. Skip the preparation in the script when it does not run as root (`[ "$(id -u)" = 0 ]`).
 </Warning>
 
 <Note>
@@ -46,9 +46,9 @@ ENTRYPOINT ["/usr/local/bin/sandbox-api"]
 
 The user follows Docker `USER` syntax: `app`, `10001`, `app:app` or `10001:10001`. The user must exist in the image, and it cannot resolve to uid 0. Make sure your workload owns every directory it writes to.
 
-### Pass the user explicitly
+### Prepare the sandbox as root at boot
 
-If you need root-only preparation at boot, such as a `chown` or a `mkdir` outside the user's home, use an entrypoint that runs as root and hands over to the sandbox API with the `--user` flag:
+If you need root-only preparation at boot, such as a `chown`, a `mkdir` outside the user's home or firewall rules, use an entrypoint script that hands over to the sandbox API with the `--user` flag:
 
 ```bash
 #!/bin/sh
@@ -59,7 +59,11 @@ chown -R app /blaxel
 exec /usr/local/bin/sandbox-api --user app "$@"
 ```
 
-Leave `USER` out of that Dockerfile so the entrypoint itself runs as root, and point `ENTRYPOINT` at the script. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
+Keep `USER app` in the Dockerfile and point `ENTRYPOINT` at the script. On Blaxel, the entrypoint of a sandbox always starts as root, whatever the image `USER`. The `USER` directive also keeps the ownership you set in the Dockerfile: in an image without `USER`, every file is owned by root. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
+
+A background process the script starts before the `exec` keeps running as root. To start one as your user, use the standard tools, such as `su-exec app <command> &` or `setpriv --reuid=app --regid=app --init-groups <command> &`.
+
+Firewall rules (`nft`, `iptables`) added by the script stay in place for the life of the sandbox, including across standby and an out-of-memory kill. Write them so the script can run them again, because it runs on every boot.
 
 ## What runs as your user vs. stays root
 
@@ -111,10 +115,24 @@ Without a `USER` directive, or with `USER root`, the sandbox API installs the ru
   A workload running as root can bypass API isolation. Root callers are allowed by the rules, and root can remove them or stop the sandbox API. API isolation only protects the sandbox API from workloads running as a non-root `USER`.
 </Warning>
 
+## Agent Drive
+
+[Agent Drive](/Agent-drive/Overview) mounts are mapped to your user by default: files on the drive appear owned by your user and are writable by it, without a `chown`.
+
+## Cap the sandbox lifetime
+
+Keep-alive processes keep the sandbox running, and a `ttl-idle` expiration policy only counts while the sandbox is in standby. To set a hard limit that holds whatever runs inside, use a `ttl-max-age` expiration policy, counted from the sandbox creation:
+
+```typescript
+lifecycle: {
+  expirationPolicies: [{ type: "ttl-max-age", value: "2h", action: "delete" }],
+}
+```
+
 ## Limitations
 
 - Access granted only through a supplementary group of your user is not honored on filesystem API calls, which apply the primary group.
-- Files that already exist in the image and belong to root stay read-only for your workload. Change their ownership at build time or in a root entrypoint.
+- Files that already exist in the image and belong to root stay read-only for your workload. Change their ownership at build time, in an image that declares `USER`, or in a root entrypoint.
 - With neither `BL_SANDBOX_USER_ENABLED` nor `BL_SANDBOX_API_ISOLATION` set, the sandbox runs everything as root.
 
 <CardGroup cols={2}>
