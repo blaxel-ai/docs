@@ -17,7 +17,7 @@ The sandbox API is PID 1 in the sandbox. It mounts [Agent Drive](/Agent-drive/Ov
 This is why a plain `USER` directive is not enough on its own: in a plain container it de-privileges the sandbox API itself, which breaks everything mentioned above. On Blaxel, the runtime does not apply the image `USER` to the sandbox API. It starts the API as root and passes your user down to it, and the API drops privileges for the operations it runs on your behalf, keeping root only for the infrastructure work listed below.
 
 <Warning>
-  Running the same image locally with `docker run` applies `USER` to the entrypoint, so drive mounts and networking setup fail, and root-only preparation in an entrypoint script fails too. Skip the preparation in the script when it does not run as root (`[ "$(id -u)" = 0 ]`).
+  Running the same image locally with `docker run` applies `USER` to the entrypoint, so drive mounts and networking setup fail, and root-only preparation in an entrypoint script fails too. The entrypoint script below skips its root-only preparation in that case.
 </Warning>
 
 <Note>
@@ -54,7 +54,9 @@ If you need root-only preparation at boot, such as a `chown`, a `mkdir` outside 
 #!/bin/sh
 set -eu
 
-chown -R app /blaxel
+if [ "$(id -u)" = 0 ]; then
+  chown -R app /blaxel
+fi
 
 exec /usr/local/bin/sandbox-api --user app "$@"
 ```
@@ -121,11 +123,17 @@ The sandbox API mounts [Agent Drive](/Agent-drive/Overview) as root and maps the
 
 ## Cap the sandbox lifetime
 
-Keep-alive processes keep the sandbox running, and a `ttl-idle` expiration policy only counts while the sandbox is in standby. To set a hard limit that holds whatever runs inside, use a `ttl-max-age` expiration policy, counted from the sandbox creation:
+Keep-alive processes keep the sandbox running, so a `ttl-idle` [expiration policy](/Sandboxes/Expiration) is not a reliable cap. To set a hard limit that holds whatever runs inside, use a `ttl-max-age` expiration policy, counted from the sandbox creation:
 
-```typescript
+```typescript TypeScript
 lifecycle: {
   expirationPolicies: [{ type: "ttl-max-age", value: "2h", action: "delete" }],
+}
+```
+
+```python Python
+lifecycle={
+    "expirationPolicies": [{"type": "ttl-max-age", "value": "2h", "action": "delete"}],
 }
 ```
 
