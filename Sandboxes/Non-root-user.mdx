@@ -59,7 +59,7 @@ chown -R app /blaxel
 exec /usr/local/bin/sandbox-api --user app "$@"
 ```
 
-Keep `USER app` in the Dockerfile and point `ENTRYPOINT` at the script. On Blaxel, the entrypoint of a sandbox always starts as root, whatever the image `USER`. The `USER` directive also keeps the ownership you set in the Dockerfile: in an image without `USER`, every file is owned by root. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
+Keep `USER app` in the Dockerfile and point `ENTRYPOINT` at the script. On Blaxel, the entrypoint of a sandbox always starts as root, whatever the image `USER`. The `USER` directive also tells the image builder to keep the ownership you set in the Dockerfile. An image without `USER` is built with every file owned by root, by design, so a `chown` in its Dockerfile has no effect. The `--user` flag is the explicit opt-in, so it does not need `BL_SANDBOX_USER_ENABLED`. Setting `BL_SANDBOX_USER` in your image environment is equivalent to `USER`, and still requires the enable variable.
 
 A background process the script starts before the `exec` keeps running as root. To start one as your user, use the standard tools, such as `su-exec app <command> &` or `setpriv --reuid=app --regid=app --init-groups <command> &`.
 
