@@ -117,7 +117,7 @@ Without a `USER` directive, or with `USER root`, the sandbox API installs the ru
 
 ## Agent Drive
 
-[Agent Drive](/Agent-drive/Overview) mounts are mapped to your user by default: files on the drive appear owned by your user and are writable by it, without a `chown`.
+The sandbox API mounts [Agent Drive](/Agent-drive/Overview) as root and maps the drive's owner onto a local user. By default, that local user is your image user, so files on the drive appear owned by it and your workload can write to them. To map the drive onto another uid and gid, pass `uidMap` and `gidMap` when you mount it.
 
 ## Cap the sandbox lifetime
 
