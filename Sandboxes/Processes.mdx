@@ -95,7 +95,7 @@ print(result.stderr)
 
 </CodeGroup>
 
-The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Set `timeout` to bound how long the call waits. For longer commands, see [Wait for process completion](#wait-for-process-completion).
+The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Set `timeout` to limit how long the command can run: if it's still running when the timeout expires, the process is killed and the call fails. For longer commands, see [Wait for process completion](#wait-for-process-completion).
 
 Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
 
@@ -242,7 +242,7 @@ When waiting for completion, the process execution object contains the command's
 </Warning>
 
 <Note>
-  For processes **without** `keepAlive: true`, the `timeout` parameter does **not** kill the process. It only bounds how long the API call waits when using `waitForCompletion` (or `waitForPorts`); once the timeout elapses, an error is returned but the process keeps running in the background. Non-`keepAlive` processes have no auto-kill timeout and run until they complete on their own. To auto-kill a process after a duration, use `keepAlive: true` together with a `timeout` (see [Sandbox keep-alive](#sandbox-keep-alive)).
+  `timeout` is the longest a process can run, in seconds, with or without `keepAlive`. When it expires, the process is killed and `restartOnFailure` doesn't restart it; a `waitForCompletion` call fails with a 422 error (`process timed out after N seconds`). Without `timeout`, a process runs until it exits, except `keepAlive` processes, which default to 600 seconds (see [Sandbox keep-alive](#sandbox-keep-alive)).
 </Note>
 
 You can also wait for a process after it has started:
@@ -286,8 +286,7 @@ In some cases, you may want to wait for a port to be opened while running — fo
 const process = await sandbox.process.exec({
   name: "dev-server",
   command: "npm run dev -- --host $HOST --port 3000",
-  waitForPorts: [3000],
-  timeout: 60
+  waitForPorts: [3000]
 });
 ```
 
@@ -295,8 +294,7 @@ const process = await sandbox.process.exec({
 process = await sandbox.process.exec({
   "name": "dev-server",
   "command": "npm run dev -- --host $HOST --port 3000",
-  "wait_for_ports": [3000],
-  "timeout": 60
+  "wait_for_ports": [3000]
 })
 ```
 
@@ -304,7 +302,7 @@ process = await sandbox.process.exec({
 
 A port counts as open once the server listens on the address in `HOST` (or on all interfaces). A server bound only to `localhost` isn't reachable from outside the sandbox, so it doesn't count.
 
-`timeout` bounds how long the call waits for the ports. Keep it under 120 seconds: a request that stays open that long is cut off by the gateway with a 504 error instead of the timeout error. If the process fails before its ports open (it exits with a non-zero code or is killed), the call fails right away instead of waiting out the timeout. The error includes the exit code and the last lines of the process's output:
+Leave `timeout` unset (or set it to `0` with `keepAlive`) for a server that should keep running. `timeout` is the process's lifetime, not just the wait, so the server is killed when it expires, even after its ports open. Without it, the call waits until the ports open. If the server takes 120 seconds or more to open them, the gateway ends the call with a 504 error, but the process keeps running: check it with `process.get` and retry until the port responds. If the process fails before its ports open (it exits with a non-zero code or is killed), the call fails right away. The error includes the exit code and the last lines of the process's output:
 
 <CodeGroup>
 
@@ -313,8 +311,7 @@ try {
   await sandbox.process.exec({
     name: "dev-server",
     command: "npm run dev -- --host $HOST --port 3000",
-    waitForPorts: [3000],
-    timeout: 60
+    waitForPorts: [3000]
   });
 } catch (error) {
   // e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
@@ -327,8 +324,7 @@ try:
     await sandbox.process.exec({
         "name": "dev-server",
         "command": "npm run dev -- --host $HOST --port 3000",
-        "wait_for_ports": [3000],
-        "timeout": 60
+        "wait_for_ports": [3000]
     })
 except Exception as error:
     # e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
@@ -338,7 +334,7 @@ except Exception as error:
 </CodeGroup>
 
 <Note>
-  Don't end the command with `&`. The shell exits straight away and the server it put in the background isn't tracked as part of the process, so the call waits until `timeout` and a startup crash isn't reported. Failing fast needs sandbox-api 0.2.62 or later; custom images pick it up when rebuilt.
+  Don't end the command with `&`. The shell exits straight away and the server it put in the background isn't tracked as part of the process, so the call waits until the gateway ends it and a startup crash isn't reported. Failing fast needs sandbox-api 0.2.62 or later; custom images pick it up when rebuilt.
 </Note>
 
 ## Process stdin
@@ -561,18 +557,19 @@ await sandbox.process.exec({
 
 </CodeGroup>
 
-The auto-kill timeout and its 600-second default **only apply to processes started with `keepAlive: true`**. If a `keepAlive` process is started without a `timeout`, it defaults to **600 seconds (10 minutes)** and is automatically terminated when the timeout elapses. To run a `keepAlive` process indefinitely with no auto-kill, set `timeout: 0`.
+`timeout` kills any process when it expires. Only `keepAlive` processes get a default: a `keepAlive` process started without a `timeout` is killed after **600 seconds (10 minutes)**. To run a `keepAlive` process indefinitely with no auto-kill, set `timeout: 0`.
 
 The table below summarizes how `keepAlive` and `timeout` interact:
 
-| Configuration | Process auto-kill behavior | `timeout` parameter effect |
-| --- | --- | --- |
-| `keepAlive` not set (default) | Never auto-killed. Runs until it completes on its own. | Only bounds how long the API waits when using `waitForCompletion` or `waitForPorts`. Does not terminate the process. |
-| `keepAlive: true`, no `timeout` | Auto-killed after **600 seconds** (10 minutes). | — |
-| `keepAlive: true`, `timeout: 0` | Never auto-killed. Runs until it completes on its own. | — |
-| `keepAlive: true`, `timeout: N` | Auto-killed after **N seconds**. | — |
+| Configuration | Process auto-kill behavior |
+| --- | --- |
+| `keepAlive` not set (default), no `timeout` | Never auto-killed. Runs until it completes on its own. |
+| `keepAlive` not set (default), `timeout: N` | Auto-killed after **N seconds**. |
+| `keepAlive: true`, no `timeout` | Auto-killed after **600 seconds** (10 minutes). |
+| `keepAlive: true`, `timeout: 0` | Never auto-killed. Runs until it completes on its own. |
+| `keepAlive: true`, `timeout: N` | Auto-killed after **N seconds**. |
 
-You can run multiple processes, and the sandbox will stay active until all of them complete:
+You can run multiple processes, and the sandbox will stay active until all of them complete. Here each one is killed after 1 hour:
 
 <CodeGroup>
 
