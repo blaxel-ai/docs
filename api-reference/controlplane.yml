@@ -1957,6 +1957,9 @@ components:
       properties:
         createdAt:
           type: string
+        createdBy:
+          type: string
+          description: User or service account that created the volume.
         displayName:
           type: string
         externalId:
@@ -1966,6 +1969,9 @@ components:
           type: string
         updatedAt:
           type: string
+        updatedBy:
+          type: string
+          description: User or service account that last updated the volume.
     LiteVolumeSpec:
       type: object
       description: Compact spec for a Volume, returned in listing responses.
@@ -2734,13 +2740,16 @@ components:
         requestHeaders:
           type: object
           description: Those headers will be set in all requests to your preview.
-            This is especially useful to set the Authorization header.
+            This is especially useful to set the Authorization header. At most 20
+            headers and 8 KiB in total unless your quota allows more; X-Blaxel-* headers
+            are reserved.
           additionalProperties:
             type: string
         responseHeaders:
           type: object
           description: Those headers will be set in all responses of your preview.
-            This is especially useful to set the CORS headers.
+            This is especially useful to set the CORS headers. At most 20 headers
+            and 8 KiB in total unless your quota allows more.
           additionalProperties:
             type: string
         ttl:
@@ -3508,6 +3517,13 @@ components:
       description: Runtime configuration defining how the sandbox VM is provisioned
         and its resource limits
       properties:
+        diskPercent:
+          type: integer
+          description: Maximum share of the sandbox memory its filesystem can use,
+            in percent (10-95). The filesystem is held in memory, so files written
+            count against the sandbox memory. Defaults to 50. mk3.1 only. Immutable
+            after creation.
+          example: 80
         envs:
           type: array
           description: Environment variables injected into the sandbox. Supports Kubernetes
@@ -3529,7 +3545,11 @@ components:
             are rejected if routing selects mk3.0. ''kernelExtensions'' (mk3.1, android
             only for now) switches on the selected kernel''s loadable modules and
             kernel tracing (eBPF, kprobes, perf); without it they are disabled, even
-            for root. Values: ''enabled'' or ''disabled''. Determines which kernel
+            for root. ''kernelPreview'' (mk3.1) selects the preview kernel, the next
+            kernel version offered before it becomes the default; it has the default
+            kernel''s features (iptables included), cannot be combined with android,
+            landlock, nfs, tun or a dedicated egress gateway, and is rejected if routing
+            selects mk3.0. Values: ''enabled'' or ''disabled''. Determines which kernel
             variant the workload runs on. Immutable after creation.'
           additionalProperties:
             type: string
@@ -6361,8 +6381,25 @@ paths:
     delete:
       description: Cleans up unused container images in the workspace registry. Only
         removes images that are not currently referenced by any active agent, function,
-        sandbox, or job deployment.
+        sandbox, or job deployment. One call runs for a limited time; when hasMore
+        is true, only part of the unused images were deleted and the call should be
+        repeated.
       operationId: CleanupImages
+      parameters:
+      - description: Only report the image tags a cleanup would delete, without deleting
+          anything.
+        in: query
+        name: dryRun
+        schema:
+          default: false
+          type: boolean
+      - description: Never delete the most recently created tag of each image, so
+          no image is removed completely.
+        in: query
+        name: keepLatest
+        schema:
+          default: false
+          type: boolean
       responses:
         "200":
           content:
@@ -6370,11 +6407,43 @@ paths:
               schema:
                 properties:
                   deleted:
-                    description: Number of images deleted
+                    description: Number of image tags deleted (with dryRun, to delete)
                     type: integer
+                  hasMore:
+                    description: True when the cleanup stopped on its time limit before
+                      every unused image was deleted. Call it again to continue.
+                    type: boolean
+                  images:
+                    description: Images the cleanup deleted tags from (with dryRun,
+                      would delete tags from)
+                    items:
+                      properties:
+                        fullyRemoved:
+                          description: True when no tag is left, so the image is removed
+                            completely
+                          type: boolean
+                        keptTags:
+                          description: Number of tags the image keeps
+                          type: integer
+                        name:
+                          description: Image name
+                          type: string
+                        resourceType:
+                          description: Image resource type
+                          type: string
+                        tags:
+                          description: Tags deleted (with dryRun, to delete)
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
                   message:
                     description: Result message
                     type: string
+                  remaining:
+                    description: Number of unused images left for a next call
+                    type: integer
                 type: object
           description: successful operation
       security:
