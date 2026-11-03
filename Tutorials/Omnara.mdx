@@ -12,7 +12,7 @@ description: 'Connect your Blaxel workspace to Omnara so agents run commands in 
 - An [Omnara Cloud](https://app.omnara.com) account
 - [Node.js](https://nodejs.org/en/download) `22` or newer, to run the Omnara CLI with `npx`
 
-Tested with Omnara CLI `1.0.30` and the `blaxel/claude-code:latest` image.
+Tested with Omnara CLI `1.0.32` and the `blaxel/claude-code:latest` image.
 
 <Note>
   On Omnara Cloud, your organization's default pool already runs on Blaxel and is managed by Omnara, so there's nothing to set up. To start there, follow the [Omnara quickstart](https://docs.omnara.com/quickstart). This tutorial connects your own Blaxel workspace instead, so sandboxes run and are billed in your account.
@@ -42,6 +42,12 @@ npx omnara config select
 ```
 
 `login` opens your browser to approve the CLI. `config select` sets the organization and project for the commands below. Choose your Default project, which already has access to Omnara's hosted models.
+
+`config select` needs an interactive terminal. In a script, CI job or coding agent, set the IDs directly instead. `npx omnara whoami` prints your organization ID and `npx omnara projects list` prints your project IDs:
+
+```bash
+npx omnara config --org <org-id> --project <project-id>
+```
 
 ## 3. Add the key as an Omnara secret
 
@@ -143,11 +149,23 @@ npx omnara agents archive <agent-id>
 
 Archiving the agent deletes its sandbox from your workspace. The pool and secret stay, so you can launch more agents on Blaxel.
 
+## 8. Clean up
+
+To remove the rest of what this tutorial created, delete the pool, which also removes its grant to your project, and then the secret:
+
+```bash
+npx omnara pools delete <pool-id>
+npx omnara secrets delete <secret-id>
+```
+
+Then delete the service account in **Workspace settings > Service accounts** in the Blaxel Console. This also revokes its API key.
+
 ## Troubleshooting
 
 | Symptom | Action |
 | --- | --- |
-| The machine stays in `provisioning` or shows `provision_failed` | Run `npx omnara machines list --machine-pool-id <pool-id>` to see its `lifecycle_state`. Check the workspace name, the region, and the service account's role |
+| The machine stays in `provisioning` or shows `provision_failed` | Run `npx omnara machines list --machine-pool-id <pool-id>` to find the machine ID, then `npx omnara machines get <machine-id>` and read `lifecycle_reason_message`. Check the workspace name, the region, and that the image includes `sandbox-api` and `curl` |
+| `lifecycle_reason_message` is `blaxel API returned HTTP 403`, or the agent reports `machine_unreachable`, with a member or admin key | This is a known Blaxel issue: right after you create a service account key, the sandbox API can refuse it for several minutes even though creating sandboxes works. Wait a few minutes, then send the agent your message again. Omnara retries provisioning on its own. If it lasts longer than 15 minutes, [contact us](https://blaxel.ai/contact) |
 | The agent reports `command not found` | The image doesn't have that tool. Build an image that includes it from a [template](/Sandboxes/Templates) |
 | The sandbox doesn't sleep | Check that the pool sets `sleep_after_ms`. A process the agent started and left running keeps the machine awake |
 
