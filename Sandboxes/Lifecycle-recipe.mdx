@@ -230,7 +230,7 @@ result = await sandbox.process.wait("test-suite", max_wait=-1, interval=5000)
 
 </CodeGroup>
 
-- With `keepAlive`, `timeout` is an auto-kill deadline in seconds. Without it, `timeout` only bounds how long the call waits.
+- `timeout` is the longest a process can run, in seconds, with or without `keepAlive`: when it expires, the process is killed. Without `timeout`, a process runs until it exits, except `keepAlive` processes, which are killed after 600 seconds.
 - `waitForCompletion` / `wait_for_completion` is limited to about 120 seconds; a longer wait fails with `504 Gateway Timeout`. Use `process.wait()` for longer commands: it polls the process, and `maxWait: -1` / `max_wait=-1` waits until it ends.
 - `process.wait()` returns when the command ends, whether it succeeded or failed; it doesn't raise on a non-zero exit. Check `result.status` and `result.exitCode` / `result.exit_code`.
 - Polling with `process.wait()` also keeps the sandbox active, as long as the interval is well under 15 seconds and your client keeps running. `keepAlive` does not depend on your client.
