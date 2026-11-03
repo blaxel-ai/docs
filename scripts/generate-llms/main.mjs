@@ -191,7 +191,21 @@ function build() {
   const operationPages = new Set(operations.flatMap((o) => [o.page, `api-reference/${o.tag}`]));
 
   // Convert pages.
-  const loadSnippet = (p) => parseFrontmatter(fs.readFileSync(path.join(ROOT, p.replace(/^\//, '')), 'utf8')).body;
+  // Inline only regular files under snippets/, so an import path can never copy other files into the output.
+  const snippetRoot = fs.realpathSync(path.join(ROOT, 'snippets'));
+  const loadSnippet = (p) => {
+    let file;
+    try {
+      file = fs.realpathSync(path.resolve(ROOT, p.replace(/^\//, '')));
+    } catch {
+      return '';
+    }
+    if (!file.startsWith(snippetRoot + path.sep) || !fs.statSync(file).isFile()) {
+      errors.push(`Snippet import outside snippets/ is not inlined: ${p}`);
+      return '';
+    }
+    return parseFrontmatter(fs.readFileSync(file, 'utf8')).body;
+  };
   for (const p of pages) {
     if (p.indexOnly) continue;
     const { convert } = createConverter({
