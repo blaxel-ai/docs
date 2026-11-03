@@ -91,6 +91,7 @@ export BL_API_KEY=...
 
 - An API key never expires unless an expiry was set when it was created.
 - A personal API key reaches every workspace of its user. Prefer a service account key, which only reaches one workspace.
+- The `bl` CLI reads `BL_WORKSPACE` and `BL_API_KEY` directly, so `bl login` is not needed.
 
 Reference: https://docs.blaxel.ai/Security/Access-tokens
 
@@ -105,6 +106,22 @@ X-Blaxel-Workspace: my-workspace
 
 - `X-Blaxel-Authorization: Bearer ...` is accepted in place of `Authorization`.
 - Send `X-Blaxel-Workspace` when the identity belongs to more than one workspace. Without it, those requests fail with `400`.
+
+## Step 5: Create a sandbox
+
+The same credential works on the sandbox URL that the create call returns:
+
+```bash
+curl -X POST https://api.blaxel.ai/v0/sandboxes \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H 'Content-Type: application/json' \
+  -d '{"metadata":{"name":"my-sandbox"},"spec":{"runtime":{"image":"blaxel/base-image:latest","memory":2048}}}'
+# then, with metadata.url from the response:
+curl -X POST "$SANDBOX_URL/process" -H "Authorization: Bearer $BL_API_KEY" \
+  -H 'Content-Type: application/json' -d '{"command":"echo hello","waitForCompletion":true}'
+```
+
+Delete it with `DELETE /v0/sandboxes/my-sandbox`. SDKs and the full sandbox API: https://docs.blaxel.ai/Sandboxes/Overview
 
 ## Errors
 
