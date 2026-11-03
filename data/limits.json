@@ -1,6 +1,6 @@
 {
   "about": "Single source for the limits, quotas, regions and prices in these docs. Edit this file, then run `npm run limits:generate`. Every entry needs a `source` (a public docs page, a public blaxel.ai page, or \"platform config\") and `verified`. See data/README.md.",
-  "reviewed": "2026-10-21",
+  "reviewed": "2026-11-02",
   "tiers": {
     "source": "platform config; /Security/Quotas; https://blaxel.ai/pricing",
     "verified": true,
@@ -298,21 +298,21 @@
       "key": "wait_for_completion_max",
       "group": "sandbox",
       "label": "Maximum `waitForCompletion` wait",
-      "value": 60,
+      "value": 120,
       "unit": "seconds",
-      "on_exceed": "The call returns an error while the process keeps running; watch the process instead",
+      "on_exceed": "The call fails with 504 Gateway Timeout; watch the process instead",
       "source": "/Sandboxes/Processes",
-      "verified": false
+      "verified": true
     },
     {
       "key": "idle_connection_timeout",
       "group": "sandbox",
-      "label": "Idle WebSocket or TCP connection",
-      "value": 900,
+      "label": "Idle WebSocket connection through a preview URL",
+      "value": 60,
       "unit": "seconds",
-      "on_exceed": "The connection closes and the sandbox can go on standby",
+      "on_exceed": "The connection closes and the sandbox can go on standby; send messages or pings more often to keep it open",
       "source": "/Sandboxes/Overview",
-      "verified": false
+      "verified": true
     },
     {
       "key": "upload_body_mk30",
