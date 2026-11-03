@@ -198,6 +198,7 @@ function build() {
     try {
       file = fs.realpathSync(path.resolve(ROOT, p.replace(/^\//, '')));
     } catch {
+      errors.push(`Snippet import not found: ${p}`);
       return '';
     }
     if (!file.startsWith(snippetRoot + path.sep) || !fs.statSync(file).isFile()) {
