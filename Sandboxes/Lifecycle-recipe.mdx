@@ -63,7 +63,7 @@ Invalid names are rejected with a `400` error. If you omit the name, Blaxel assi
 
 ## Understand standby and activity
 
-A sandbox stays active while something is connected to it. About 15 seconds after the last connection ends, it goes on standby: its memory, processes and filesystem are snapshotted, and you stop paying for memory. The next request resumes it in under 25 milliseconds. See [Sandbox lifecycle](./Overview#sandbox-lifecycle) for details and pricing.
+A sandbox stays active while something is connected to it. About 15 to 30 seconds after the last connection ends, it goes on standby: its memory, processes and filesystem are snapshotted, and you stop paying for memory. The next request resumes it in under 25 milliseconds. See [Sandbox lifecycle](./Overview#sandbox-lifecycle) for details and pricing.
 
 These keep a sandbox active:
 
@@ -138,7 +138,7 @@ sandbox = await SandboxInstance.create_if_not_exists({
 
 When a sandbox expires, it is deleted the same way as an [explicit delete](#delete-a-sandbox). In practice, this happens within a few seconds of the deadline.
 
-The read-only `expiresIn` / `expires_in` field gives the number of seconds left before a sandbox expires. For a sandbox with only a `ttl-idle` policy, it is set only while the sandbox is in standby.
+The read-only `expiresIn` / `expires_in` field gives the number of seconds left before a sandbox expires. For a sandbox with only a `ttl-idle` policy, it is set only while the sandbox is in standby, so it can take 30 seconds or more after the last activity to appear.
 
 ## Update expiry on a live sandbox
 
@@ -231,7 +231,8 @@ result = await sandbox.process.wait("test-suite", max_wait=-1, interval=5000)
 </CodeGroup>
 
 - With `keepAlive`, `timeout` is an auto-kill deadline in seconds. Without it, `timeout` only bounds how long the call waits.
-- `waitForCompletion` / `wait_for_completion` is limited to 60 seconds. Use `process.wait()` for longer commands: it polls the process, and `maxWait: -1` / `max_wait=-1` waits until it ends.
+- `waitForCompletion` / `wait_for_completion` is limited to about 120 seconds; a longer wait fails with `504 Gateway Timeout`. Use `process.wait()` for longer commands: it polls the process, and `maxWait: -1` / `max_wait=-1` waits until it ends.
+- `process.wait()` returns when the command ends, whether it succeeded or failed; it doesn't raise on a non-zero exit. Check `result.status` and `result.exitCode` / `result.exit_code`.
 - Polling with `process.wait()` also keeps the sandbox active, as long as the interval is well under 15 seconds and your client keeps running. `keepAlive` does not depend on your client.
 - `ttl`, `ttl-max-age`, `expires` and `date` still apply while a command runs. Set them longer than your longest command, or rely on `ttl-idle`, which never deletes an active sandbox.
 
