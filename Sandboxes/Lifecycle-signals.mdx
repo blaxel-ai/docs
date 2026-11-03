@@ -1,0 +1,134 @@
+---
+title: 'Lifecycle signals'
+description: 'Let sandbox code clean up before deletion and prepare before standby with SIGTERM and SIGUSR2 grace periods.'
+---
+
+You can have your sandbox warned before it is deleted or put on standby. Blaxel sends a signal to the processes running in your sandbox, then gives them a grace period to act before it continues.
+
+| Event | Signal | Setting | Maximum |
+| --- | --- | --- | --- |
+| Deletion | `SIGTERM` | `terminationGracePeriodSeconds` | 300 seconds |
+| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 300 seconds |
+
+Both settings default to `0`: no signal is sent and the sandbox is deleted or put on standby right away. A value above the maximum or below `0` is rejected with a `400` error.
+
+## Configure the grace periods
+
+Set the grace periods when you create the sandbox:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-pdx-1",
+  terminationGracePeriodSeconds: 30,
+  standbyGracePeriodSeconds: 30,
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "region": "us-pdx-1",
+  "termination_grace_period_seconds": 30,
+  "standby_grace_period_seconds": 30,
+})
+```
+
+</CodeGroup>
+
+The same fields are available in `spec.runtime` of the [Create sandbox API](/api-reference/compute/create-sandbox). They are read when the sandbox is created, so changing them requires a new sandbox.
+
+## Handle deletion
+
+When a sandbox with a termination grace period is deleted, its processes receive `SIGTERM`. The sandbox is deleted as soon as they exit, or when the grace period ends, whichever comes first. A sandbox in standby is resumed first so that it can receive the signal, and the time to resume counts against the grace period.
+
+<CodeGroup>
+
+```typescript TypeScript
+process.on("SIGTERM", async () => {
+  await flushPendingWork();
+  process.exit(0);
+});
+```
+
+```python Python
+import signal
+import sys
+
+def on_sigterm(signum, frame):
+    flush_pending_work()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, on_sigterm)
+```
+
+</CodeGroup>
+
+## Handle standby
+
+When a sandbox with a standby grace period goes idle, its processes receive `SIGUSR2`. The sandbox keeps running across the standby: use the signal to flush buffers, write a checkpoint or close outbound connections.
+
+The sandbox goes on standby when your code says it is done, or when the grace period ends, whichever comes first. To say it is done, write `done` to the file at `$BLAXEL_STANDBY_READY_FILE`. Write it even if the preparation fails, otherwise the sandbox waits for the full grace period.
+
+If the sandbox becomes active again during the grace period, the standby is cancelled: a new request, a new connection or a [keep-alive](./Processes#sandbox-keep-alive) cancels it. The next time the sandbox goes idle, it receives `SIGUSR2` again.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { writeFileSync } from "node:fs";
+
+process.on("SIGUSR2", async () => {
+  try {
+    await saveCheckpoint();
+  } finally {
+    writeFileSync(process.env.BLAXEL_STANDBY_READY_FILE!, "done");
+  }
+});
+```
+
+```python Python
+import os
+import signal
+
+def on_sigusr2(signum, frame):
+    try:
+        save_checkpoint()
+    finally:
+        with open(os.environ["BLAXEL_STANDBY_READY_FILE"], "w") as f:
+            f.write("done")
+
+signal.signal(signal.SIGUSR2, on_sigusr2)
+```
+
+```shell Shell
+trap 'save_checkpoint; echo done > "$BLAXEL_STANDBY_READY_FILE"' USR2
+```
+
+</CodeGroup>
+
+<Warning>
+  The default action of `SIGUSR2` is to terminate the process. Blaxel only sends it to processes that install a handler for it, so processes without one are not affected.
+</Warning>
+
+## Which processes receive the signals
+
+The [sandbox API](./Templates) receives both signals and passes them on to the processes it started: the `--command` of the image and the processes started through the [process API](./Processes). On deletion, it waits for all of them to exit before it shuts down.
+
+If the entrypoint of your image is your own program rather than the sandbox API, it receives both signals directly.
+
+<CardGroup cols={2}>
+  <Card title="Standby mode" href="/Sandboxes/Overview#standby-mode">
+    Learn how sandboxes go on standby and resume.
+  </Card>
+  <Card title="Sandbox keep-alive" href="/Sandboxes/Processes#sandbox-keep-alive">
+    Keep a sandbox awake while a process runs.
+  </Card>
+</CardGroup>
