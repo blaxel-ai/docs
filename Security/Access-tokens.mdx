@@ -20,6 +20,10 @@ Long-lived tokens are easier to use but are less secure as their validity can go
   A personal API key or personal OAuth login grants access to every [workspace](/Security/Workspace-access-control) your account belongs to, while a service account's API key or client-credentials token only grants access to the single workspace that service account belongs to. If a request fails with a 403 error even though the credential is valid, this usually means the credential doesn't have access to the specified workspace.
 </Note>
 
+<Tip>
+  AI agents can read [auth.md](https://docs.blaxel.ai/auth.md), a machine-readable summary of these authentication methods and the discovery documents behind them.
+</Tip>
+
 ## API keys
 
 Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration can be infinite.
