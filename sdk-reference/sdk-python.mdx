@@ -14,12 +14,16 @@ Blaxel features an SDK in **Python**. To install, follow the instructions below.
 
 ```shell Python (pip)
 
+python3 -m venv .venv
+source .venv/bin/activate
 pip install blaxel
 
 ```
 
 ```shell Python (uv)
 
+uv venv
+source .venv/bin/activate
 uv pip install blaxel
 
 ```
@@ -31,6 +35,10 @@ uv init && uv add blaxel
 ```
 
 </CodeGroup>
+
+<Note>
+On Debian and Ubuntu, install the venv module first: `sudo apt install python3-venv`.
+</Note>
 
 ## Prerequisites
 

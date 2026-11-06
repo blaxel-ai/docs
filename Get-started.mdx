@@ -85,12 +85,16 @@ Sandboxes can be created programmatically using Blaxel SDK. Install the SDK:
 
 ```shell Python (pip)
 
+python3 -m venv .venv
+source .venv/bin/activate
 pip install blaxel
 
 ```
 
 ```shell Python (uv)
 
+uv venv
+source .venv/bin/activate
 uv pip install blaxel
 
 ```
@@ -120,6 +124,10 @@ bun add @blaxel/core
 ```
 
 </CodeGroup>
+
+<Note>
+On Debian and Ubuntu, install the venv module first: `sudo apt install python3-venv`.
+</Note>
 
 Create your first sandbox:
 
