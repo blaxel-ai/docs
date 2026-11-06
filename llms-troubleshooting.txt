@@ -1,0 +1,1017 @@
+# Blaxel docs: Errors, limits and troubleshooting
+
+> Error codes, quotas and fixes for common errors.
+
+This file has the full text of 14 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Usage and quotas](https://docs.blaxel.ai/Security/Quotas)
+- [Troubleshoot Blaxel deployments, runtime, and CLI errors](https://docs.blaxel.ai/troubleshooting)
+- [Error codes reference](https://docs.blaxel.ai/troubleshooting/error-codes)
+- [Resolving sandbox creation issues](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-issues)
+- [Resolving sandbox creation race conditions and duplicate requests](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-race-conditions-and-duplicate-requests)
+- [Troubleshooting custom Docker image deployment issues](https://docs.blaxel.ai/knowledge-base/troubleshooting/troubleshooting-custom-docker-image-deployment-issues)
+- [Sandbox limits and quota exceeded errors](https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-limits-and-quota-exceeded-errors)
+- [WebSocket connection timeouts and the 15-minute limit](https://docs.blaxel.ai/knowledge-base/troubleshooting/websocket-connection-timeouts-and-15-minute-limit)
+- [Handling Preview not found 404 errors in sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/handling-preview-not-found-404-errors-in-sandboxes)
+- [Resolving sandbox restarts caused by nc not found](https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-restarting-nc-not-found)
+- [When localhost goes silent in Debian-based sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/when-localhost-goes-silent-in-debian-based-sandboxes)
+- [Fix Miniflare inspector startup failures on Carbon sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/miniflare-inspector-startup-failures-on-carbon)
+- [SSL certificate verification errors when cloning repositories](https://docs.blaxel.ai/knowledge-base/troubleshooting/ssl-certificate-verification-errors-when-cloning-repositories)
+- [Resolving ENOSPC no space left on device errors](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolve-enospc-no-space-left-on-device-errors)
+
+# Usage and quotas
+Source: https://docs.blaxel.ai/Security/Quotas
+
+Monitor account usage in the Blaxel Console, view current quotas for sandboxes, agents, jobs, and other resources, and request quota increases.
+
+The Blaxel Console provides detailed analytics for you to monitor account usage. You can also see your account's current quotas, and request an increase in quotas if required.
+
+## Quotas
+
+### Quota tiers
+
+Blaxel has a quota tiering system that unlocks higher limits and features on the platform as your tier progresses.
+
+Higher tiers have access to higher limits such as more standby/concurrent sandboxes, more concurrent jobs, higher sandbox and volume sizes, longer sandbox TTLs. They also have access to gated features such as custom domains, dedicated IPs and more.
+
+You can see the [limits and features of each tier](https://app.blaxel.ai/account/quotas) in the **Quotas** tab.
+
+- Click the workspace name at the bottom left of the Blaxel Console.
+- In the sub-menu, click **Account**.
+- Click the **Quotas** tab.
+
+#### How tiers are calculated
+
+Your current tier is evaluated continuously based on your **30-day top-up volume**. This is the total amount of real funds added to your Blaxel wallet via manual or automated top-ups over the trailing 30 days.
+
+**Top-ups are not flat fees**: Funds added to meet a tier requirement are deposited directly into your account balance. These funds are subsequently used to pay for your standard compute and storage consumption.
+
+**Promotional credits do not unlock tiers**: Promotional credits (such as startup program grants) and previously accumulated balances automatically apply toward your active infrastructure costs. However, they do not count toward the 30-day top-up volume required to unlock or maintain a quota tier.
+
+#### Maintaining your tier
+
+Because tier eligibility relies on a rolling 30-day window, your tier will automatically adjust if your top-up volume decreases. If your 30-day top-up volume falls below your current tier's threshold, your workspace will be downgraded, which may result in blocked resource creation if you exceed the lower tier's limits.
+
+To prevent service disruptions and maintain your quotas without manual intervention, you can configure **Auto top-up** in the Billing section of your Console.
+
+### Quota usage
+
+Blaxel also lets you view and manage quotas associated with your account.
+
+Quotas for your account are listed in the **All current quotas** section.
+
+This section provides details on quotas for:
+
+- Deployed sandboxes, agents, MCP servers, model APIs, policies, triggers, and jobs
+- Sandboxes: volumes, volume templates, default TTL, previews, volume sizes and versions
+- Jobs: maximum parallel executions, maximum concurrent tasks
+- Workspaces: users, service accounts, integrations, custom domains, revisions, timeouts
+
+### Increase account quotas
+
+#### Automatically increase quotas via top-up
+
+To unlock access to [higher quotas and limits](https://app.blaxel.ai/account/quotas), you must upgrade to a higher tier by topping up the appropriate amount of credit in your account. These top-up amounts go directly into your Blaxel wallet. This is not a fee for the tier itself, but rather a pre-payment for the usage you are about to run.
+
+### Manually request a quota increase
+
+**Upgrading to a higher tier** is the usual way to unlock higher quotas for your account. In case of issues, it is also possible to manually request an increase in quotas for your account through the Blaxel Console. To do this:
+
+- Click the pencil icon.
+- Input the requested quota value.
+
+In some cases, you may see an **Upgrade** button instead of a pencil icon. Click this to access our payment gateway, in which you can provide details for payment.
+
+> [!NOTE]
+>
+> Accounts on the free plan are not eligible for quota upgrades and will not see the option to request a quota increase in the Blaxel Console.
+
+## Best practices for quota management
+
+### Configure sandbox TTL
+
+Keeping inactive sandboxes in standby consumes snapshot storage and counts against your quota limits. To optimize costs and quota usage, we recommend setting a Time-To-Live (TTL) of 7 to 60 days (depending on your re-activation patterns) to automatically prune dormant sandboxes.
+
+### Monitor usage alerts
+
+Blaxel automatically dispatches an email notification to workspace administrators when your infrastructure usage reaches 90% of your current tier's quota.
+
+## Analytics
+
+Blaxel Billing Explorer provides detailed cost and usage analytics at account level. These metrics are available for the current billing period, last 30 days, last 7 days, and last 24 hours.
+
+To view usage analytics for your account:
+
+- Click the workspace name at the bottom left of the Blaxel Console.
+- Click **Account**.
+- Click the **Subscription** tab.
+- Navigate to the **Usage analytics** section of the page.
+
+The usage analytics section provides details on:
+
+- Total compute runtime usage/cost for sandboxes, agents, batch jobs or MCP servers
+- Total deployment image and snapshot storage usage/cost
+- Total volume storage usage/cost
+- Total number/cost of asynchronous requests
+
+You can toggle between usage and cost metrics using the switch in the top right corner of the section.
+
+# Troubleshoot Blaxel deployments, runtime, and CLI errors
+Source: https://docs.blaxel.ai/troubleshooting
+
+Resolve common issues with Blaxel deployments including build failures, runtime errors, connectivity problems, and CLI authentication.
+
+This page describes common issues and how to troubleshoot them. If your issue is not covered below, browse the [Blaxel Knowledge Base](https://docs.blaxel.ai/knowledge-base/overview).
+
+> [!NOTE]
+>
+> For current service status, refer to [https://status.blaxel.ai/](https://status.blaxel.ai/)
+
+## Preview URLs return a `502 Bad Gateway` server error
+
+This error occurs when the application server is either not running inside the sandbox, or is running but binding to `localhost`. In the latter case, it is only reachable inside the sandbox and the external preview URL will not be able to access it.
+
+To resolve this error, first confirm that the application server is running. If it is, then ensure that it is configured to bind to the address provided by the `HOST` environment variable, which Blaxel injects into the sandbox, rather than a static value. Once this is done, restart the application server. If you need a static fallback (for example when running the same code outside a sandbox), use `::` so it listens on all available network interfaces over both IPv4 and IPv6 (use `0.0.0.0` only if you specifically need to restrict the server to IPv4).
+
+For example, in code:
+
+```tsx TypeScript
+const host = process.env.HOST || '::';
+app.listen(3000, host, () => {
+  console.log(`Server is running`);
+});
+```
+
+```python Python
+host = os.environ.get("HOST", "::")
+app.run(host=host, port=3000)
+```
+
+or at the command line:
+
+```tsx TypeScript
+npm run dev -- --host $HOST
+# or
+npm serve -- --host $HOST
+```
+
+```python Python
+python main.py --host $HOST
+```
+
+## Preview URL requests fail on the browser's CORS preflight (OPTIONS) request
+
+This error occurs when calling a preview URL from browser-based JavaScript on a different origin, and the browser's CORS preflight (`OPTIONS`) request doesn't get the expected headers back. It typically shows up as a CORS error in the browser console, and the actual request never reaches your sandbox.
+
+To resolve this error, configure `responseHeaders` on the preview with the appropriate CORS headers. Make sure `Access-Control-Allow-Origin` matches the calling origin exactly, and that `Access-Control-Allow-Headers` includes every custom header your client sends, including any authentication-related headers. See [Handle CORS on Blaxel](https://docs.blaxel.ai/Sandboxes/CORS) for details.
+
+## Sandbox commands return a `502 Bad Gateway` server error
+
+This error occurs for three possible reasons:
+
+1. The sandbox API is called too soon after sandbox creation. The solution is to retry the request.
+
+2. The sandbox API was unexpectedly terminated - for example, if the sandbox runs out of memory. The solution is to delete and recreate the sandbox, which also restarts the sandbox API.
+
+3. The sandbox never started so the deployment status is set to `ERROR`. The solution is to recreate the sandbox.
+
+The sandbox logs will typically contain additional information to identify the root cause of this error. Sandbox logs can be viewed in the [Blaxel Console](https://app.blaxel.ai) or with the Blaxel CLI using the command `bl logs sandbox SANDBOX-NAME`.
+
+> [!NOTE]
+>
+> Deleting and recreating will cause the current state of the sandbox to be lost.
+
+## Sandbox creation returns a `504 Gateway Timeout`
+
+This error occurs when a sandbox creation request takes longer than CloudFront's edge timeout (approximately 60 seconds) to complete. CloudFront closes the connection to the origin and returns an HTML `504 Gateway Time-out` page rather than a Blaxel JSON error. This does **not** mean sandbox creation failed; the build and deployment continue in the background.
+
+To resolve this error, poll the sandbox's `status` field until it reaches `DEPLOYED` or `FAILED`, using the polling pattern shown in the [custom image deployment guide](https://docs.blaxel.ai/Sandboxes/Templates#4-monitor-deployment-status).
+
+> [!NOTE]
+>
+> The TypeScript SDK's `SandboxInstance.create()` handles this automatically by falling back to polling on a 504, so this only needs manual handling when calling the REST API directly or using other language SDKs.
+
+## Sandbox deployment fails with `STARTUP TCP probe failed` or `DEADLINE_EXCEEDED` error
+
+This error occurs when the server running inside the sandbox is not binding to the correct host and port.
+
+To resolve this error, configure your server to bind to the host and port designated by the `HOST` and `PORT` environment variables. Blaxel automatically injects these variables during deployment.
+
+For example:
+
+```tsx TypeScript
+const port = parseInt(env.PORT || "80");
+const host = process.env.HOST || "::";
+app.listen(port, host, () => {
+  console.log(`Server is running`);
+});
+```
+
+```python Python
+port = os.environ.get("PORT", "80")
+host = os.environ.get("HOST", "::")
+app.run(host=host, port=port)
+```
+
+## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code
+
+This error indicates that the maximum memory limit for the account has been reached in the current tier.
+
+Blaxel has a tiering system that unlocks higher limits and features on the platform as your tier progresses. To resolve this error, upgrade your account to a higher tier, which unlocks higher RAM limits for sandboxes.
+
+To see more details on which quota was exceeded or to upgrade to a higher tier, visit the [**Quotas** page of the Blaxel Console](https://app.blaxel.ai/account/quotas).
+
+## Models return a 429 error
+
+This error occurs when a model reaches its maximum token limit.
+
+To resolve this error, adjust the model's token usage policy. Token usage policies control the maximum number of tokens your model APIs can handle within a specific time period. You can configure the maximum number of input tokens, output tokens and/or total tokens using these policies.
+
+## Sandbox commands return an `ENOSPC: no space left on device` error
+
+This error occurs when your sandbox runs out of storage space. This usually happens when your file storage requirements exceed the available memory since, for performance reasons, Blaxel sandboxes reserve, when possible, [approximately 50% of their available memory](https://docs.blaxel.ai/Sandboxes/Overview#memory-and-filesystem) for the filesystem.
+
+To resolve this error, you have two options:
+
+- Increase the available memory allocation for the sandbox, which also increases the available filesystem storage.
+
+> [!NOTE]
+>
+> Increasing memory also increases CPU allocation.
+> - 8GB memory = 4 CPU cores
+> - 16GB memory = 6 CPU cores
+
+- Add storage using [volumes](https://docs.blaxel.ai/Sandboxes/Volumes) when data should live at a specific mount path or persist independently from the sandbox lifecycle. Adding storage requires deleting and recreating the sandbox first.
+
+> [!NOTE]
+>
+> Volumes are slower than the in-memory filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for our benchmarks.
+
+## API requests fail with a 403 error even though the credentials are valid
+
+This error occurs when the credentials themselves (API key or OAuth token) are valid, but the user or service account they belong to doesn't have sufficient privileges in the specified workspace.
+
+Two related errors can also occur:
+- A `400` error if the request doesn't specify a workspace at all where one is required.
+- A `400` or `404` error if the credential has access to zero or multiple workspaces and none was specified, since Blaxel can't determine which one to use.
+
+> [!NOTE]
+>
+> This is distinct from a `401 Unauthorized` error, which means the [credentials themselves are missing or invalid](https://docs.blaxel.ai/troubleshooting/error-codes).
+
+To resolve this error, first confirm the workspace name in your request matches a workspace you (or the service account) have access to. Also check your [role in that workspace](https://docs.blaxel.ai/Security/Workspace-access-control) and ask a workspace administrator to grant the required role if it's missing or insufficient.
+
+Personal API keys and OAuth logins grant access to every workspace you belong to, while [service account](https://docs.blaxel.ai/Security/Service-accounts) API keys and client-credentials tokens are scoped to a single workspace. Ensure that you're using credentials that are actually valid for the workspace you're targeting.
+
+## Sandbox commands return a `404 WORKSPACE_NOT_FOUND` error
+
+This error occurs when a [workspace is not provisioned correctly](https://docs.blaxel.ai/troubleshooting/error-codes).
+
+To resolve this error, please contact us for support via [Discord](https://discord.gg/CsWKUZUHFQ) or our [online contact form](https://blaxel.ai/contact).
+
+## Volume creation fails with a 403 error
+
+This error could occur when:
+- volumes are not enabled for the workspace;
+- volume size exceeds the maximum allowed size;
+- total volume size exceeds maximum allowed total size.
+
+To resolve this error, you can:
+- Enable volumes (if not enabled).
+- Reduce the size of your volumes.
+- Contact us to increase your volume size limits.
+
+## Connections to the sandbox terminal fail with `websocket: bad handshake`
+
+This error could occur when:
+- you are using an outdated CLI version
+- you are using a custom sandbox image without the sandbox API
+- you are using a deprecated image
+
+To resolve this error, you can:
+- upgrade to the latest CLI version
+- if using a pre-built image, ensure that you are using a [current version of the image](https://docs.blaxel.ai/Sandboxes/Templates#pre-built-templates). If using an older image, recreate the sandbox with the latest version.
+- if using a custom Docker image, ensure that you include the sandbox API. If it's missing, add it to your image build process and recreate the sandbox with the new image.
+
+## Hot reloads fail on Webpack previews
+
+This error occurs when a Webpack server is configured to use the same port as local development, but the sandbox preview URL is mapped to a different port. As a result, when hot reloading previews, your client is trying to connect to the local development port instead of the sandbox's preview URL port.
+
+To resolve this error, add a conditional in the `webSocketURL` of your `webpack/config.dev.js` to handle the different ports:
+
+```javascript highlight={9-13}
+///... rest of webpack/config.dev.js
+
+module.exports = {
+  devServer: {
+    host: "::",
+    port: 3000,
+    allowedHosts: [".bl.run", ".beamlit.net", "localhost", "127.0.0.1"],
+    client: {
+      webSocketURL: {
+        port: process.env.BL_CLOUD === "true" ? 443 : 3000,
+      },
+    },
+    headers: {
+      ...
+    },
+  },
+  /// ... rest of webpack/config.dev.js
+```
+
+## A deleted agent or MCP server still appears in the Blaxel Console listing
+
+This error occurs when a deletion operation didn't fully complete, leaving the resource in a stuck "deleted" state.
+
+To resolve this, run the `bl delete` command again on the same resource:
+
+```bash
+bl delete agent <AGENT-RESOURCE-NAME>
+# or
+bl delete function <MCP-RESOURCE-NAME>
+```
+
+# Error codes reference
+Source: https://docs.blaxel.ai/troubleshooting/error-codes
+
+Reference for structured error codes returned by Blaxel API responses, including the JSON body format and headers designed for LLMs and coding agents.
+
+Blaxel returns structured error responses in case of request failure. These error responses include additional information designed for coding agents and LLMs.
+
+Structured platform errors have a consistent JSON body and response header, as shown below:
+
+```json
+{
+  "error": {
+    "action": "Stop. URL does not match a Blaxel route. Use `https://{sbx|agt|mcp|mdl|job}-{name}-{workspace}.{region}.bl.run[/{path}]` for workloads or `https://{preview_id}.preview.bl.run/{path}` for previews. Get the canonical URL from the SDK (e.g. `sandbox.metadata.url`), not by hand.",
+    "code": "ROUTE_NOT_FOUND",
+    "dispatch_state": "not_dispatched",
+    "do_not": "Do not retry, do not guess URLs, do not use `run.blaxel.ai` (not served).",
+    "docs_url": "https://docs.blaxel.ai/Sandboxes/Ports.md",
+    "message": "Preview not found: xxx",
+    "origin": "platform",
+    "retryable": false,
+    "safe_to_retry_request": false,
+    "status": 404,
+    "timestamp": "2026-04-23T14:49:43+00:00"
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `error.action` | Agent-readable actions to be taken |
+| `error.code` | Machine-readable error code |
+| `error.dispatch_state` | `not_dispatched` when the request never reached the workload, `dispatched_unknown` when it may have |
+| `error.do_not` | Agent-readable actions not to be taken |
+| `error.docs_url` | Documentation related to this error |
+| `error.message` | Human-readable description |
+| `error.origin` | `"platform"` when emitted by Blaxel; otherwise absent |
+| `error.retryable` | Whether the request can return a different response if it is retried |
+| `error.safe_to_retry_request` | `true` only when the request can be replayed safely, including a write |
+| `error.status` | HTTP status code (same as HTTP response header) |
+| `error.timestamp` | Timestamp in ISO-8601 format |
+
+## Error codes
+
+| Code | HTTP | Retryable | When emitted |
+|---|---|---|---|
+| `ROUTE_NOT_FOUND` | 404 | No | Request path couldn't be parsed into a known workload, preview, or sandbox subdomain shape |
+| `WORKLOAD_NOT_FOUND` | 404 | No | Workload record doesn't exist |
+| `WORKSPACE_NOT_FOUND` | 404 | No | Workspace couldn't be resolved for a deployment-subdomain request |
+| `WORKLOAD_UNAVAILABLE` | 404 | **Yes** | Workload exists but no healthy replica is currently serving it |
+| `WORKLOAD_FAILED` | 503 | No | Workload failed permanently on the compute plane; create a new one instead of retrying |
+| `AUTHENTICATION_REQUIRED` | 401 | No | Credentials missing |
+| `AUTHENTICATION_FAILED` | 401 | No | Credentials present but invalid or rejected |
+| `TOKEN_REVOKED` | 401 | No | Token was valid but has been revoked since it was issued |
+| `FORBIDDEN` | 403 | No | Authenticated but not authorized |
+| `BAD_REQUEST` | 400 | No | Malformed request |
+| `USAGE_LIMIT_EXCEEDED` | 402 | No | Plan quota reached |
+| `ROUTING_UNAVAILABLE` | 503 | **Yes** | A lookup the gateway needs to route or authenticate the request didn't answer; the request wasn't forwarded |
+| `UPSTREAM_CONNECT_FAILED` | 502 | **Yes** | Connection to the workload failed (refused, no route, TLS failure); the request didn't reach it |
+| `UPSTREAM_CONNECT_TIMEOUT` | 502 | **Yes** | Connecting to the workload timed out, typically while it is still starting; the request didn't reach it |
+| `UPSTREAM_ERROR` | 502 | **Yes** | The exchange with the workload failed, or the proxy in front of it returned a 502 (for example, nothing is listening on the port yet); the workload may have processed the request |
+| `UPSTREAM_TIMEOUT` | 502 or 504 | **Yes** | The platform gave up waiting for the workload's response; the workload may still be running the work |
+| `GATEWAY_INTERNAL_ERROR` | 500 | **Yes** | Internal gateway failure, not caused by the workload |
+| `POLICY_VIOLATION` | varies | No | Reserved; not currently returned |
+
+# Resolving sandbox creation issues
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-issues
+
+Fix Blaxel sandboxes that fail during startup because their custom image has a missing or incorrect entrypoint.
+
+If your sandbox is created but fails to start, its template may have a missing or incorrect entrypoint. The entrypoint must keep the sandbox API running.
+
+## Common symptoms
+
+- The sandbox appears to be created but immediately fails or is deleted
+- Requests to the sandbox return a `404 Not Found` error
+
+## Root cause
+
+The template does not have a functional entrypoint that keeps the sandbox API running. Even when your container runs commands on demand, the sandbox API must remain active for the sandbox to work.
+
+## Configure the entrypoint
+
+Always copy the sandbox API binary into your custom image:
+
+```dockerfile
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+```
+
+Do not leave the entrypoint empty. If you do not need custom initialization, start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+If you need initialization logic, use a custom entrypoint script instead of a Dockerfile `RUN` instruction:
+
+```dockerfile
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+The script must start `sandbox-api`, wait for it to become available, and then start other processes through the `/process` API. End the script with `wait` so the container remains alive.
+
+## Additional considerations
+
+For templates designed to run commands on demand:
+
+- Keep a process running to maintain the sandbox API connection
+- Run commands with `sandbox.process.exec` while the entrypoint remains active
+- Remember that a sandbox snapshots its entire VM state, including memory, filesystem data, and running processes, when it enters standby
+- Expect the sandbox to restore from standby in under 25 ms
+
+After updating the entrypoint, rebuild the template and create a new sandbox.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn how Blaxel sandboxes run and manage workloads.
+
+- [Sandbox processes](https://docs.blaxel.ai/Sandboxes/Processes): Learn how to execute and manage sandbox processes.
+
+# Resolving sandbox creation race conditions and duplicate requests
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-race-conditions-and-duplicate-requests
+
+Prevent duplicate Blaxel sandbox creation requests and handle 409 conflicts safely with idempotent SDK methods.
+
+Sandbox creation can fail when your application sends multiple requests to create the same sandbox at the same time. Use an idempotent creation method and add client-side request guards where needed.
+
+## Common errors
+
+You may receive either of these errors:
+
+- `SANDBOX_ALREADY_EXISTS (409)`
+- `RATE_LIMIT_EXCEEDED (429)`
+
+## Root cause
+
+Duplicate creation requests commonly result from:
+
+- React Strict Mode intentionally running effects twice in development
+- React hooks running again during component re-renders
+- Rapid user interactions triggering the same API call
+
+Blaxel has improved platform-side race condition handling, which prevents most failures even when duplicate requests occur.
+
+## Use idempotent creation
+
+Use `createIfNotExists()` in TypeScript or `create_if_not_exists()` in Python instead of `create()`. These methods handle a `409` conflict by returning the existing sandbox.
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "memory": 4096,
+    "region": "us-pdx-1",
+})
+```
+
+## Add request guards
+
+As an optional client-side safeguard:
+
+- Track an in-progress request with an `isCreating` flag
+- Check whether creation is already in progress before sending another request
+- Show an appropriate loading state while creation completes
+
+## Handle React Strict Mode
+
+In React development environments:
+
+- Cancel duplicate requests in the `useEffect` cleanup function
+- Define accurate dependency arrays to avoid unnecessary effect runs
+- Track request state across re-renders with `useRef`
+
+## Investigate persistent failures
+
+If race conditions continue after you apply these changes:
+
+1. Record the sandbox ID and error timestamp.
+2. Check whether your application sends duplicate creation calls.
+3. Contact support with the error details.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn how to create and manage Blaxel sandboxes.
+
+- [Sandbox best practices](https://docs.blaxel.ai/Sandboxes/best-practices): Review recommended patterns for reliable sandbox workloads.
+
+# Troubleshooting custom Docker image deployment issues
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/troubleshooting-custom-docker-image-deployment-issues
+
+Diagnose sandbox API, Dockerfile path, build timeout, entrypoint, missing build tools, and logging issues in custom Blaxel sandbox images.
+
+Custom Docker images for sandboxes can fail during build or deployment because of missing files, dependencies, or startup configuration. Use the matching section below to identify and resolve the failure.
+
+## Include the sandbox API
+
+Every custom sandbox image must include the `sandbox-api` binary:
+
+```dockerfile
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+```
+
+## Correct Dockerfile paths
+
+When you run `bl deploy`, Blaxel archives all files in your current directory and sends them to the build server. If the Dockerfile is in a subdirectory such as `agent-container/`, write `COPY` paths relative to the uploaded build context.
+
+Incorrect:
+
+```dockerfile
+COPY agent-container/base-package.json package.json
+```
+
+Correct:
+
+```dockerfile
+COPY base-package.json package.json
+```
+
+## Reduce build timeouts
+
+Internal timeout increases usually resolve build timeout failures automatically. If timeouts continue:
+
+- Install fewer packages in the Dockerfile
+- Use a smaller base image where possible
+- Combine `RUN` instructions to reduce image layers
+
+## Fix custom entrypoints
+
+If your entrypoint checks ports with `nc`, install netcat:
+
+```dockerfile
+RUN apt-get update && apt-get install -y netcat-openbsd
+```
+
+Use `127.0.0.1` instead of `localhost` in Debian-based images because `localhost` may not resolve correctly.
+
+If you do not need custom initialization, remove the custom script and start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+This entrypoint works when you start other processes programmatically through the SDK or API.
+
+## Install system libraries
+
+Compilation errors such as `unable to find library -lgcc` indicate that the image lacks development packages. Install the required toolchain:
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libc6-dev \
+    libgcc-12-dev \
+    pkg-config
+```
+
+These packages are available during the image build. [Image slimming](https://docs.blaxel.ai/Sandboxes/Templates#image-slimming) removes compilers before the sandbox starts. Disable slimming if the running sandbox needs them.
+
+## Keep build tools available at runtime
+
+A package can install successfully in the Dockerfile and be missing when the sandbox starts. Image slimming runs after the Docker build and removes build-time files, including `make`, `gcc`, `g++`, and `cmake`. Those tools still work in `RUN` steps.
+
+To keep them, disable slimming in `blaxel.toml`:
+
+```toml
+[build]
+slim = false
+```
+
+See [image slimming](https://docs.blaxel.ai/Sandboxes/Templates#image-slimming) for the paths this pass removes, and for the effect on image size and boot time.
+
+## Configure the environment
+
+Docker `ENV` variables are available to the entrypoint and its child processes. Extend variables such as `PATH` with `export` in your entrypoint script:
+
+```sh
+#!/bin/sh
+export PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
+export LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:$LIBRARY_PATH"
+/usr/local/bin/sandbox-api
+```
+
+## Inspect build logs
+
+Use the CLI to view the complete build process and deployment errors:
+
+```bash
+bl logs sandbox sandbox-name
+```
+
+- [Docker sandbox tutorial](https://docs.blaxel.ai/Tutorials/Docker): Learn how to run Docker workloads in a sandbox.
+
+- [Sandbox processes](https://docs.blaxel.ai/Sandboxes/Processes): Learn how to start and manage processes programmatically.
+
+# Sandbox limits and quota exceeded errors
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-limits-and-quota-exceeded-errors
+
+Resolve QUOTA_EXCEEDED errors by checking your Blaxel account tier, memory allocation, payment method, and sandbox quota.
+
+If sandbox creation returns `QUOTA_EXCEEDED`, your workload may exceed the limits for your account tier. Memory limits and allowed sandbox counts vary by tier.
+
+## Resolve quota errors
+
+If you need more than your tier's standard limits, top up credits to upgrade your tier or request a quota increase in the Console. Tier 0 users must add a payment method and upgrade to Tier 1 before requesting an increase.
+
+In exceptional cases, contact support. Blaxel may manually increase quota limits for larger workloads where necessary.
+
+## Troubleshoot your quota
+
+1. Verify your account tier and payment method in your account settings.
+2. Reduce the sandbox memory allocation temporarily and retry the request.
+3. Review the official quota documentation.
+4. Contact support with the exact error and your memory requirements if the problem continues.
+
+- [Quotas](https://docs.blaxel.ai/Security/Quotas): Review account tiers and resource quota limits.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn how sandbox resources are configured.
+
+# WebSocket connection timeouts and the 15-minute limit
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/websocket-connection-timeouts-and-15-minute-limit
+
+Keep long-running sandbox WebSocket connections reliable by handling the 15-minute idle timeout, reconnection, standby, and ping-pong traffic.
+
+Sandbox WebSocket connections have a 15-minute idle timeout. If no data flows through a connection for 15 minutes, Blaxel closes it and transitions the sandbox to standby.
+
+## Timeout behavior
+
+When a WebSocket connection reaches the 15-minute idle limit, it disconnects automatically. Your client must reconnect when this happens.
+
+## Automatic reconnection
+
+For processes that run longer than 15 minutes, reconnect automatically after the existing connection closes. Reconnection is typically seamless and fast enough for most use cases.
+
+## Sandbox keep-alive
+
+By default, sandboxes enter standby after a few seconds of inactivity to save resources. You can keep a sandbox running after launching a process even when no active client connection exists.
+
+This behavior is useful for a server that must continue running while it is not serving requests. Configure it with the [sandbox keep-alive settings](https://docs.blaxel.ai/Sandboxes/Standby-control).
+
+## Ping-pong traffic
+
+To prevent an idle connection from timing out:
+
+- Send data actively between the client and server
+- Exchange regular ping-pong messages to keep the connection active
+
+- [Standby control](https://docs.blaxel.ai/Sandboxes/Standby-control): Configure standby behavior and keep-alive settings.
+
+- [Sandbox sessions](https://docs.blaxel.ai/Sandboxes/Sessions): Learn how to manage interactive sandbox sessions.
+
+# Handling Preview not found 404 errors in sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/handling-preview-not-found-404-errors-in-sandboxes
+
+Resolve Preview not found 404 errors by checking sandbox and preview lifecycle state, TTL settings, and asynchronous deletion races.
+
+A `Preview not found` response with a `404` status means the requested preview has been deleted or is being deleted. Check the lifecycle state of both the parent sandbox and the preview.
+
+## Common causes
+
+This error occurs when:
+
+- The parent sandbox was deleted manually
+- The parent sandbox expired because of its TTL
+- The preview's TTL expired
+- An asynchronous deletion request placed the preview in the `DELETING` state
+
+## Resolve the error
+
+Create previews with `createIfNotExists` in TypeScript or `create_if_not_exists` in Python. When a preview is in the `DELETING` state, the platform waits for deletion to finish before recreating it. These methods safely reuse preview IDs and avoid a race with deletion.
+
+Also verify that the sandbox and preview are still active and were not removed by TTL expiration or manual cleanup.
+
+## Prevent future errors
+
+- Handle `404` responses gracefully in your application
+- Poll the sandbox status periodically where appropriate
+- Configure sandbox TTL values that match your usage pattern
+
+If the error continues after these checks, contact support.
+
+- [Preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url): Learn how to create and use sandbox previews.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Review sandbox lifecycle and configuration.
+
+# Resolving sandbox restarts caused by nc not found
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-restarting-nc-not-found
+
+Stop sandbox restart loops by removing an unnecessary custom entrypoint or installing netcat and using the loopback IP in Debian-based images.
+
+A sandbox can restart repeatedly when its `entrypoint.sh` script cannot start the sandbox API. The usual causes are a missing netcat package or failed `localhost` resolution in a Debian-based image.
+
+## Remove the entrypoint script
+
+If you do not need custom initialization, remove `entrypoint.sh` and start the sandbox API directly:
+
+```dockerfile
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+Remove the custom entrypoint instructions:
+
+```dockerfile
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+## Fix the entrypoint script
+
+If you need custom initialization, install `netcat-openbsd` in the Dockerfile:
+
+```dockerfile
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends --quiet \
+        netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+Then replace `localhost` with `127.0.0.1` in the port check:
+
+```sh
+while ! nc -z 127.0.0.1 "$port"; do
+  sleep 1
+done
+```
+
+Debian-based images do not always resolve `localhost` automatically. Use `127.0.0.1` for local connections in these images.
+
+## Inspect sandbox logs
+
+Check the console logs for errors from the entrypoint script:
+
+```bash
+bl logs sbx your-sandbox-name
+```
+
+- [Sandbox processes](https://docs.blaxel.ai/Sandboxes/Processes): Learn how to start and manage sandbox processes.
+
+- [Docker sandbox tutorial](https://docs.blaxel.ai/Tutorials/Docker): Learn how to configure Docker workloads in sandboxes.
+
+# When localhost goes silent in Debian-based sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/when-localhost-goes-silent-in-debian-based-sandboxes
+
+Fix localhost name resolution and service-to-service networking failures after moving sandbox images from Alpine to minimal Debian.
+
+Moving a container image from Alpine to Debian Bookworm can improve compatibility with dependencies such as Playwright or Python 3.13. However, minimal Debian images may introduce a name resolution failure that breaks communication through `localhost`.
+
+## Symptom
+
+A sandbox that worked on Alpine may enter a crash loop after switching to an image such as `node:22-bookworm-slim`. Its logs show an error like:
+
+```text
+nc: getaddrinfo for host "localhost" port 8080: Name or service not known
+```
+
+The error can occur even when `sandbox-api` is running because the system cannot resolve `localhost` to a loopback address.
+
+## Root cause
+
+Slim or minimal Debian distributions may omit the `/etc/hosts` entry or name service configuration in `nsswitch.conf` that resolves `localhost`.
+
+When an application or a utility such as netcat (`nc`) connects to `localhost`, the system performs a name lookup. Without an explicit hosts mapping or suitable resolver configuration, that lookup fails with `getaddrinfo` before the request reaches the network stack.
+
+## Use the loopback IP
+
+Replace `localhost` with `127.0.0.1` in entrypoint scripts, health checks, and tool server configurations. Using the explicit loopback address bypasses hostname resolution.
+
+Configure clients to connect to `127.0.0.1`. Configure servers to listen on `0.0.0.0` when they must also be reachable through external container ports.
+
+## Check a Debian migration
+
+When moving from Alpine to `bookworm-slim`:
+
+- Install `ca-certificates` explicitly to prevent Git clone and HTTPS failures
+- Replace `localhost` with `127.0.0.1` in internal scripts
+- Verify that `EXPOSE` instructions and port mappings, such as port `8081` for an internal API, match your infrastructure
+
+- [Sandbox proxy and network](https://docs.blaxel.ai/Sandboxes/Proxy): Learn how networking works inside Blaxel sandboxes.
+
+- [Sandbox ports](https://docs.blaxel.ai/Sandboxes/Ports): Configure ports exposed by sandbox services.
+
+# Fix Miniflare inspector startup failures on Carbon sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/miniflare-inspector-startup-failures-on-carbon
+
+Diagnose Astro and Cloudflare preview startup failures caused by older Miniflare versions selecting an unavailable IPv6 localhost address.
+
+An Astro or Cloudflare preview can fail to start in a [Carbon (Mark 3.1)](https://docs.blaxel.ai/Infrastructure/Gens#carbon-aka-mark-31) sandbox when an older Miniflare version binds its runtime inspector to `localhost`. Upgrade the Cloudflare development dependencies or disable the inspector when you do not need it.
+
+## Symptoms
+
+The preview process may hang at:
+
+```text
+Starting local server...
+```
+
+In applications that wait for the preview server, the visible error can instead be a secondary connection failure:
+
+```text
+fetch failed
+Caused by:
+connect ECONNREFUSED 127.0.0.1:<port>
+```
+
+The refused connection does not necessarily mean that the application selected the wrong port. It can mean that Miniflare never finished starting the underlying `workerd` runtime.
+
+## Confirm the sandbox generation
+
+Run the following command inside the sandbox:
+
+```bash
+ip addr show
+```
+
+Inspect the main non-loopback interface. A global `inet6` address indicates that the sandbox is running on [Carbon (Mark 3.1)](https://docs.blaxel.ai/Infrastructure/Gens#carbon-aka-mark-31).
+
+> [!NOTE]
+>
+> The presence of IPv6 identifies the sandbox generation during this rollout. It does not by itself prove that Miniflare is affected.
+
+## Check for the Miniflare issue
+
+Check which Cloudflare packages the application resolved:
+
+```bash
+npm ls miniflare wrangler @cloudflare/vite-plugin @astrojs/cloudflare
+```
+
+Then inspect localhost resolution and the IPv6 loopback interface:
+
+```bash
+getent hosts localhost
+ip -6 addr show dev lo
+sysctl net.ipv6.conf.lo.disable_ipv6
+```
+
+The known failure occurs when `localhost` resolves to `::1`, but the runtime cannot bind the IPv6 loopback address. Older Miniflare versions pass `--inspector-addr=localhost:0` to `workerd` and wait for an inspector-ready event that never arrives.
+
+Confirm the inspector address while the preview process is stuck:
+
+```bash
+ps -ef | grep '[w]orkerd'
+```
+
+An affected process includes:
+
+```text
+--inspector-addr=localhost:0
+```
+
+## Upgrade Miniflare or Wrangler
+
+The preferred fix is to update the package that provides Miniflare and regenerate the lockfile. The fix is included in:
+
+- Miniflare `4.20260601.0` and later
+- Wrangler `4.97.0` and later
+
+For a project that uses Wrangler directly:
+
+```bash
+npm install --save-dev wrangler@latest
+```
+
+Run `npm ls miniflare wrangler` again to verify the resolved versions. The fixed Miniflare release uses `127.0.0.1` for the runtime inspector instead of relying on `localhost` resolution.
+
+## Disable the inspector
+
+If you cannot upgrade immediately and do not need runtime debugging, disable the inspector in the Cloudflare integration.
+
+For an Astro project whose Cloudflare adapter supports `inspectorPort`, update `astro.config.mjs`:
+
+```javascript
+import { defineConfig } from "astro/config";
+import cloudflare from "@astrojs/cloudflare";
+
+export default defineConfig({
+  adapter: cloudflare({
+    inspectorPort: false,
+  }),
+});
+```
+
+For a project that configures the Cloudflare Vite plugin directly:
+
+```javascript
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    cloudflare({
+      inspectorPort: false,
+    }),
+  ],
+});
+```
+
+Restart the preview process after changing the configuration. This workaround disables local runtime debugging but does not affect the application preview.
+
+## Related Cloudflare fix
+
+Cloudflare fixed the underlying address selection in [workers-sdk pull request #14086](https://github.com/cloudflare/workers-sdk/pull/14086). The change replaces `localhost` with `127.0.0.1` for the runtime inspector address.
+
+- [Set up Astro with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes): Configure and expose an Astro development server in a sandbox.
+
+- [Infrastructure generations](https://docs.blaxel.ai/Infrastructure/Gens): Compare Carbon with earlier Blaxel infrastructure generations.
+
+# SSL certificate verification errors when cloning repositories
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/ssl-certificate-verification-errors-when-cloning-repositories
+
+Fix Git SSL certificate verification failures in Blaxel sandboxes by installing CA certificates or choosing a base image that includes them.
+
+Cloning a repository in a Blaxel sandbox can fail with an SSL certificate verification error. Minimal base images often omit the certificate authorities required to verify HTTPS connections.
+
+## Example error
+
+The Git error resembles:
+
+```text
+fatal: unable to access 'https://github.com/blaxel-ai/sdk-typescript.git': server certificate verification failed
+```
+
+## Root cause
+
+Slim base images such as `node:22-bookworm-slim` do not always include CA certificates. Without a trusted certificate authority bundle, Git cannot verify the remote server's SSL certificate.
+
+## Install CA certificates
+
+Add `ca-certificates` to the packages installed by your Dockerfile:
+
+```dockerfile
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+## Choose another base image
+
+Alternatively, use a base image that includes CA certificates:
+
+- `node:22-alpine`
+- `node:22-bookworm`, using the full image instead of the slim variant
+
+The Alpine variant has been tested successfully with repository cloning. If you switch to Alpine, update your package installation commands because Alpine uses `apk` instead of `apt-get`, and package names or availability may differ.
+
+- [Docker sandbox tutorial](https://docs.blaxel.ai/Tutorials/Docker): Learn how to build and run Docker images in sandboxes.
+
+- [Sandbox proxy and network](https://docs.blaxel.ai/Sandboxes/Proxy): Review sandbox networking configuration.
+
+# Resolving ENOSPC no space left on device errors
+Source: https://docs.blaxel.ai/knowledge-base/troubleshooting/resolve-enospc-no-space-left-on-device-errors
+
+Resolve ENOSPC storage errors in Blaxel sandboxes by increasing memory allocation or attaching a volume for larger persistent storage.
+
+An `ENOSPC: no space left on device` error means that your sandbox has exhausted its available storage. Sandbox filesystem storage is in memory by default for optimal speed, so storage needs count against the memory allocation.
+
+## Increase memory allocation
+
+A sandbox's memory allocation covers both runtime memory and filesystem storage. Increase the allocation to provide more storage space. This is the recommended short-term solution.
+
+> [!TIP]
+>
+> If the sandbox logs contain `Out of memory: Killed process`, the sandbox exceeded its memory allocation and needs more memory.
+
+Increasing memory also increases CPU allocation:
+
+- 8 GB of memory provides 4 CPU cores
+- 16 GB of memory provides 8 CPU cores
+
+## Use a volume
+
+If files alone require more than 4 GB, use a volume for larger, persistent storage. A volume may provide slower filesystem performance than the default in-memory storage.
+
+- [Sandbox volumes](https://docs.blaxel.ai/Sandboxes/Volumes): Add persistent storage to a sandbox.
+
+- [Sandbox filesystem](https://docs.blaxel.ai/Sandboxes/Filesystem): Learn how files are stored and managed in sandboxes.

@@ -1,0 +1,276 @@
+# Blaxel
+
+> Blaxel documentation: cloud sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway for building and deploying AI-powered applications.
+
+How to use this index:
+
+- Each link opens the Markdown version of a page. Fetch only the pages you need.
+- For the full text of a product, use the files listed in https://docs.blaxel.ai/llms-full.txt (at most 200 KB each).
+- To search these docs from a coding agent, connect to the docs MCP server at `https://docs.blaxel.ai/mcp`.
+- CLI commands do not have one entry each: run `bl <command> --help`, or install the Blaxel skills (https://docs.blaxel.ai/skills-mcp.md).
+
+## Core recipes
+
+Start here. These pages answer the most common sandbox tasks.
+
+### Sandbox lifecycle
+
+- [Create or reuse a sandbox](https://docs.blaxel.ai/Sandboxes/Overview.md): Call `createIfNotExists` (`create_if_not_exists` in Python) with a stable name to get the same sandbox back on every run; sandboxes go to standby on their own when idle, so you do not need to delete and recreate them.
+- [Expire sandboxes automatically](https://docs.blaxel.ai/Sandboxes/Expiration.md): Set a TTL or expiration policy at creation, or update or clear it on an existing sandbox, so unused sandboxes delete themselves.
+- [Sandbox best practices](https://docs.blaxel.ai/Sandboxes/best-practices.md): Lifecycle, storage, cleanup with TTLs, idempotent creation, pre-warmed pools and retries.
+- [Run commands in a sandbox](https://docs.blaxel.ai/Sandboxes/Processes.md): Execute processes, wait for them, stream output and keep a sandbox active while a process runs.
+
+### Authentication
+
+- [Access tokens and API keys](https://docs.blaxel.ai/Security/Access-tokens.md): Authenticate to the API and CLI with OAuth access tokens or API keys, and set `BL_WORKSPACE` and `BL_API_KEY` for the SDKs.
+
+### Previews
+
+- [Preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url.md): Create public or private preview URLs for an app running in a sandbox; `createIfNotExists` with a constant name keeps the URL stable.
+- [Expose ports](https://docs.blaxel.ai/Sandboxes/Ports.md): Declare ports at creation and reach them with `sandbox.fetch()`; ports 80, 443 and 8080 are reserved.
+
+### Storage
+
+- [Volumes](https://docs.blaxel.ai/Volumes/Overview.md): Persistent block storage attached at sandbox creation that survives sandbox deletion.
+- [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview.md): Shared filesystem that several running sandboxes can mount at the same time (private preview).
+- [Snapshots and forks](https://docs.blaxel.ai/Sandboxes/Fork.md): Snapshot a sandbox, restore it to a snapshot, or fork it into new sandboxes.
+
+### Errors
+
+- [Error codes](https://docs.blaxel.ai/troubleshooting/error-codes.md): Structured error codes returned by the Blaxel API, with the JSON body format and headers.
+- [Sandbox already exists (409)](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-race-conditions-and-duplicate-requests.md): Avoid duplicate creation requests and handle 409 conflicts with the idempotent `createIfNotExists` methods.
+- [Troubleshooting](https://docs.blaxel.ai/troubleshooting.md): Fixes for 502 and 504 errors, failed deployments, quota errors, ENOSPC, 403 and 404 errors.
+
+### Limits
+
+- [Quotas](https://docs.blaxel.ai/Security/Quotas.md): Current quotas for sandboxes, agents, jobs and other resources, and how to request more.
+- [Quota exceeded errors](https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-limits-and-quota-exceeded-errors.md): Resolve `QUOTA_EXCEEDED` errors by checking account tier, memory allocation and sandbox quota.
+
+## Get started
+
+What Blaxel is, the quickstart, and the Blaxel skills and MCP servers for coding agents.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-get-started.txt (45.6 KB)
+
+- [Blaxel: infrastructure for autonomous agents](https://docs.blaxel.ai/Overview.md): Introduction to Blaxel core building blocks: perpetual sandboxes, Agent Drive shared filesystem, and networking primitives.
+- [Get started](https://docs.blaxel.ai/Get-started.md): Step-by-step quickstart guide to install the Blaxel CLI, create a cloud sandbox, run processes, manage files, and deploy your first AI agent.
+- [Blaxel Skills & MCP](https://docs.blaxel.ai/skills-mcp.md): Connect Claude, Codex, Cursor, Claude Code, Windsurf, or other AI assistants to manage your Blaxel resources and search the Blaxel docs via MCP.
+- [Community](https://docs.blaxel.ai/Community.md): Join the Blaxel community to ask questions, get support, and connect with other developers building AI agents and sandboxes on Blaxel.
+
+## Sandboxes
+
+Create, reuse, expire, snapshot and archive sandboxes; run processes, use the file system, stream logs and schedule work.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-sandboxes.txt (151 KB)
+
+- [Sandboxes](https://docs.blaxel.ai/Sandboxes/Overview.md): Run LLM-generated code in lightweight, sandboxed virtual machines with sub-25ms cold starts, file system, processes, and an MCP server for agents.
+- [Expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration.md): Configure expiration policies to automatically delete Blaxel sandboxes after inactivity, a TTL, or other conditions to control snapshot storage costs.
+- [Lifecycle signals](https://docs.blaxel.ai/Sandboxes/Lifecycle-signals.md): Let sandbox code clean up before deletion and prepare before standby with SIGTERM and SIGUSR2 grace periods.
+- [Process execution](https://docs.blaxel.ai/Sandboxes/Processes.md): Execute shell commands, retrieve process information, stream output, and control process lifecycle in Blaxel sandboxes using the SDK.
+- [File system](https://docs.blaxel.ai/Sandboxes/Filesystem.md): Read, write, list, and delete files inside a Blaxel sandbox using a simple file system interface from the SDK, MCP server, or REST API.
+- [Code generation tools](https://docs.blaxel.ai/Sandboxes/Codegen-tools.md): Use Blaxel sandbox tools and functions optimized for AI code generation, including file editing, formatting, search, and execution helpers.
+- [Log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming.md): Retrieve process output logs from sandboxes in batch or real-time streaming mode using the Blaxel SDK in TypeScript, Python, or Go.
+- [Snapshots and forking](https://docs.blaxel.ai/Sandboxes/Fork.md): Create point-in-time snapshots of sandboxes, roll them back to a checkpoint, and fork them into new sandboxes.
+- [Archive and unarchive sandboxes](https://docs.blaxel.ai/Sandboxes/Archive.md): Archive a sandbox to keep its filesystem while shutting it down, and unarchive it later to get it back.
+- [Sandbox schedules](https://docs.blaxel.ai/Sandboxes/Schedules.md): Run a command inside a Blaxel sandbox on a recurring cron schedule, a future datetime, or after a delay, with execution history per run.
+- [Sandbox MCP server](https://docs.blaxel.ai/Sandboxes/MCP.md): Every Blaxel sandbox exposes a built-in MCP server so agents can operate the sandbox using tool calls for files, processes, ports, and previews.
+- [Sandbox best practices](https://docs.blaxel.ai/Sandboxes/best-practices.md): Recommended practices for sandbox lifecycle management, scale-to-zero behavior, persistent storage, agent architecture, and MCP server design.
+- [Understanding sandbox active vs standby states and billing](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-active-vs-standby-states-and-billing.md): Understand how active and standby sandbox states affect compute, storage, connections, and billing.
+- [Understanding sandbox TTL and expiration policies](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-ttl-and-expiration-policies.md): Configure sandbox TTL and expiration policies to control lifecycle, automatic deletion, and storage costs.
+- [Sandbox inactivity with long-running processes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/sandbox-inactivity-with-long-running-processes.md): Keep long-running sandbox processes active by waiting, polling from a backend, or using an external agent architecture.
+
+## Sandbox images and templates
+
+Pre-built and custom sandbox images, environment variables and secrets, non-root users and infrastructure generations.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-sandbox-images.txt (84.7 KB)
+
+- [Build reusable sandbox images with Dockerfiles](https://docs.blaxel.ai/Sandboxes/Templates.md): Create reusable sandbox images with pre-configured tools, languages, and frameworks using Dockerfiles. Deploy new sandboxes from images in seconds.
+- [Run sandbox workloads as a non-root user](https://docs.blaxel.ai/Sandboxes/Non-root-user.md): Scope everything a sandbox runs on your behalf to an unprivileged user, and refuse calls from that user to the sandbox API.
+- [Sandbox variables and secrets](https://docs.blaxel.ai/Sandboxes/Variables-and-secrets.md): Configure environment variables and secrets in Blaxel sandboxes to securely manage API keys, credentials, and runtime configuration values.
+- [Generations](https://docs.blaxel.ai/Infrastructure/Gens.md): Overview of Blaxel infrastructure generations from Mark 1 through Carbon.
+- [Use template names instead of image IDs when creating sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/use-template-names-instead-of-image-id-when-creating-sandboxes.md): Create Blaxel sandboxes from consistent template names instead of workspace-specific image IDs.
+- [Ensure sandboxes use the latest deployed image](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/ensure-sandboxes-use-the-latest-deployed-image.md): Create or update Blaxel sandboxes with the latest deployed image version and understand how existing sandboxes behave.
+
+## Networking and previews
+
+Ports, preview URLs, dev server setup for previews, CORS, sessions, standby control, the outbound proxy, regions, egress gateways and custom domains.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-networking.txt (139.8 KB)
+
+- [Ports](https://docs.blaxel.ai/Sandboxes/Ports.md): Expose specific TCP ports on a Blaxel sandbox so external clients can connect to web servers, dev servers, or other services running inside it.
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url.md): Render an application in real-time through a direct preview URL backed by a running Blaxel sandbox, with optional auth and custom domains.
+- [Handle CORS on Blaxel](https://docs.blaxel.ai/Sandboxes/CORS.md): Configure CORS headers on Blaxel preview URLs so browser frontends on another origin can call your sandbox applications, including with credentials.
+- [Client-side sessions](https://docs.blaxel.ai/Sandboxes/Sessions.md): Operate Blaxel sandboxes directly from a frontend client using time-limited, scoped session tokens generated by your backend, with no proxy needed.
+- [Standby control](https://docs.blaxel.ai/Sandboxes/Standby-control.md): Control when sandboxes remain active by managing WebSocket connections, tab visibility, auto-disconnect behavior, and activity-based timeouts.
+- [Proxy](https://docs.blaxel.ai/Sandboxes/Proxy.md): Route outbound sandbox traffic through Blaxel's proxy with MITM header and body injection, inject secrets, and configure per-domain firewalls.
+- [Proxy routing with secrets injection](https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection.md): Inject secrets, dynamic values, headers, and body fields into outbound sandbox requests through the Blaxel proxy so code never sees raw API keys or credentials.
+- [Domain filtering](https://docs.blaxel.ai/Sandboxes/Proxy-domains.md): Restrict which external domains, HTTP methods, and URL paths a Blaxel sandbox can reach using allowlists and denylists to prevent data exfiltration and unwanted outbound traffic.
+- [Regions](https://docs.blaxel.ai/Infrastructure/Regions.md): Available deployment regions for Blaxel infrastructure including Oregon, Virginia, London, and Frankfurt, with guidance on resource-specific region selection.
+- [Dedicated egress gateways](https://docs.blaxel.ai/Infrastructure/Dedicated-egress-gateways.md): Attach dedicated egress IP addresses to Blaxel workloads so outbound traffic from sandboxes, agents, and jobs uses predictable, allowlistable IPs.
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains.md): Expose Blaxel agents, sandboxes, MCP servers, and other resources through your own custom domain names with managed TLS certificates.
+- [HTTP validation](https://docs.blaxel.ai/Infrastructure/Custom-domains-http-validation.md): Validate the TLS certificate of an application custom domain over HTTP, without publishing a DNS validation record.
+- [Set up Next.js with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-nextjs-with-blaxel-sandboxes.md): Run a Next.js application in a Blaxel Sandbox and expose it securely with a Blaxel preview URL.
+- [Set up Astro with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes.md): Run an Astro application in a Blaxel Sandbox and expose it securely with a Blaxel preview URL.
+- [Set up Vite with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-vite-with-blaxel-sandboxes.md): Run a Vite React and TypeScript application in a Blaxel Sandbox and expose it securely with a preview URL.
+- [Set up Expo with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-expo-with-blaxel-sandboxes.md): Run an Expo React Native and web application in a Blaxel Sandbox and access it through secure preview URLs.
+- [Using custom domains with sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/using-custom-domains-with-sandboxes.md): Configure verified custom domains and wildcard subdomains for Blaxel sandbox preview URLs.
+- [Getting static IP addresses for Blaxel sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/getting-static-ip-addresses-for-blaxel-sandboxes.md): Retrieve the regional public IP address ranges used by Blaxel sandboxes for network allowlists.
+
+## Storage
+
+Volumes, volume templates and Agent Drive.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-storage.txt (44.3 KB)
+
+- [Volumes for sandboxes](https://docs.blaxel.ai/Sandboxes/Volumes.md): Attach Blaxel Volumes to sandboxes for persistent storage that survives sandbox destruction and recreation, with mount path configuration.
+- [Agent Drive overview](https://docs.blaxel.ai/Agent-drive/Overview.md): Agent Drive is a distributed filesystem mountable to multiple sandboxes or agents simultaneously, with concurrent read-write access and built-in replication.
+- [Drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions.md): Configure label-based ACL rules on an Agent Drive to grant sandboxes, agents, or jobs read or read-write access, scoped to specific paths.
+- [Access Agent Drive over S3](https://docs.blaxel.ai/Agent-drive/S3-endpoint.md): Access an Agent Drive instance from S3-compatible clients using its HTTP endpoint, service account credentials, and SigV4 signing.
+- [Volumes](https://docs.blaxel.ai/Volumes/Overview.md): Attach Blaxel volumes to sandboxes and other resources for persistent storage that survives recreation, enabling stateful environments.
+- [Volume templates](https://docs.blaxel.ai/Volumes/Volumes-templates.md): Create volume templates pre-populated with files, dependencies, or datasets so new Blaxel sandboxes and resources start with environments ready to use.
+- [Volume resizing for running sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/volume-resizing-for-running-sandboxes.md): Increase attached volume capacity while a Blaxel sandbox is running and automate resizing based on disk usage.
+
+## Agents, MCP servers and jobs
+
+Deploy agents and other applications, host MCP servers, run batch jobs, and configure deployments with blaxel.toml.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-agents-jobs.txt (131.6 KB)
+
+- [Jobs](https://docs.blaxel.ai/Jobs/Overview.md): Run batch processing tasks for AI workflows on Blaxel as scheduled or on-demand jobs that scale automatically and run on serverless infrastructure.
+- [Develop a job](https://docs.blaxel.ai/Jobs/Develop-a-job.md): Initialize, develop, and locally test batch processing jobs using the Blaxel CLI and SDK in TypeScript or Python before deploying them.
+- [Deploy jobs](https://docs.blaxel.ai/Jobs/Deploy-a-job.md): Deploy batch jobs on Blaxel as serverless, autoscalable workloads using the CLI, GitHub integration, or Dockerfile-based deployments.
+- [Deploy jobs with a Dockerfile](https://docs.blaxel.ai/Jobs/Deploy-dockerfile-jobs.md): Ship a Blaxel batch job using your own custom Dockerfile to control the runtime environment, system dependencies, and the entire build process.
+- [Deploy multiple jobs from a mono-repo](https://docs.blaxel.ai/Jobs/Deploy-multiple-jobs.md): Deploy multiple Blaxel batch jobs from a single mono-repo with shared configuration, dependencies, and context to streamline complex workflows.
+- [Deploy multiple jobs from a single image](https://docs.blaxel.ai/Jobs/Deploy-shared-image.md): Build a Blaxel job image once and reuse it across multiple job definitions with different memory, disk, or region profiles, with no rebuilds.
+- [Manage job execution in TypeScript](https://docs.blaxel.ai/Jobs/Manage-job-execution-ts.md): Use the Blaxel TypeScript SDK to start, monitor, retry, and cancel batch job executions, with examples for input data and execution state.
+- [Manage job execution in Python](https://docs.blaxel.ai/Jobs/Manage-job-execution-py.md): Use the Blaxel Python SDK to start, monitor, retry, and cancel batch job executions, with examples for handling input data and execution state.
+- [Variables and secrets for jobs](https://docs.blaxel.ai/Jobs/Variables-and-secrets-jobs.md): Configure environment variables and secrets for Blaxel batch jobs to securely manage API keys, credentials, and runtime configuration values.
+- [Applications](https://docs.blaxel.ai/Applications/Overview.md): Serve AI-generated code as publicly accessible endpoints with revision management and custom URLs.
+- [MCP servers](https://docs.blaxel.ai/Functions/Overview.md): Deploy MCP servers on Blaxel as serverless, autoscalable APIs to equip your AI agents with tools, integrations, and external system access.
+- [Quickstart: Adapt an existing MCP server for Blaxel](https://docs.blaxel.ai/Functions/Adapt-Existing-MCP-server.md): Step-by-step guide to convert an existing stdio-based MCP server to streamable HTTP transport so you can deploy and host it on Blaxel.
+- [Quickstart: Develop a custom MCP server](https://docs.blaxel.ai/Functions/Create-MCP-server.md): Develop custom MCP servers in TypeScript or Python using Blaxel SDK, with local testing via MCP Inspector and one-command deployment.
+- [Deploy custom MCP servers](https://docs.blaxel.ai/Functions/Deploy-a-function.md): Host custom MCP servers on Blaxel as serverless, autoscalable endpoints with the CLI, GitHub integration, or Dockerfile-based deployments.
+- [Query MCP servers](https://docs.blaxel.ai/Functions/Invoke-functions.md): Connect to MCP servers deployed on Blaxel via streamable HTTP endpoints. Covers authentication, public access, and integration with agents and apps.
+- [Code mode](https://docs.blaxel.ai/Functions/Code-mode.md): Turn any OpenAPI specification into a code mode MCP server on Blaxel, letting agents call tools by executing TypeScript code in a sandbox.
+- [Variables and secrets for MCP servers](https://docs.blaxel.ai/Functions/Variables-and-secrets.md): Configure environment variables and secrets for Blaxel MCP servers to securely store API keys, credentials, and runtime configuration values.
+- [OAuth flow for integrations](https://docs.blaxel.ai/Functions/oauth-flow.md): Set up a user-facing OAuth flow so end-users can authorize integration connections to third-party services through your Blaxel application.
+- [Logs & traces](https://docs.blaxel.ai/Observability/Overview.md): Get automatic logging, distributed tracing, and real-time metrics including latency, token usage, and request data for agents deployed on Blaxel.
+- [Setting up MCP servers with authentication on Blaxel](https://docs.blaxel.ai/knowledge-base/security-and-authentication/setting-up-mcp-servers-with-authentication-on-blaxel.md): Authenticate connections to Blaxel-hosted MCP servers with API keys or short-lived OAuth tokens.
+- [blaxel.toml deployment configuration file reference](https://docs.blaxel.ai/deployment-reference.md): Complete reference for the blaxel.toml configuration file, including resource types, build settings, runtime options, environment variables, and volumes.
+
+## Models and integrations
+
+The Model Gateway, model provider integrations, MCP server integrations and agent framework integrations.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-models.txt (53.4 KB)
+
+- [Model APIs](https://docs.blaxel.ai/Models/Overview.md): Connect external model API providers or deploy custom models on Blaxel for unified gateway access with centralized credentials and observability.
+- [External model APIs](https://docs.blaxel.ai/Models/External-model-apis.md): Control and secure agent access to AI models from OpenAI, Anthropic, Mistral, and other top providers behind the Blaxel Global Inference Network.
+- [Query a model API](https://docs.blaxel.ai/Models/Query-a-model.md): Make inference requests to model APIs via their global endpoints on the Global Agentics Network, with ChatCompletions and custom sub-endpoint support.
+- [Integrations](https://docs.blaxel.ai/Integrations.md): Browse Blaxel integrations that connect your agents to LLM providers, SaaS apps, databases, and private APIs through pre-built MCP servers.
+- [OpenAI integration](https://docs.blaxel.ai/Integrations/OpenAI.md): Set up the OpenAI integration on Blaxel to call OpenAI models through a unified endpoint with centralized access control and observability.
+- [Anthropic integration](https://docs.blaxel.ai/Integrations/Anthropic.md): Set up the Anthropic integration on Blaxel to call Claude models through a unified endpoint with centralized access control and observability.
+- [Mistral AI integration](https://docs.blaxel.ai/Integrations/MistralAI.md): Set up the Mistral AI integration on Blaxel to call Mistral models through a unified endpoint with centralized access control and observability.
+- [Cohere integration](https://docs.blaxel.ai/Integrations/Cohere.md): Set up the Cohere integration on Blaxel to call Cohere models through a unified endpoint with centralized access control and observability.
+- [xAI integration](https://docs.blaxel.ai/Integrations/xAI.md): Set up the xAI integration on Blaxel to call xAI models through a unified endpoint with centralized access control and observability.
+- [DeepSeek integration](https://docs.blaxel.ai/Integrations/DeepSeek.md): Set up the DeepSeek integration on Blaxel to call DeepSeek models through a unified endpoint with centralized access control and observability.
+- [HuggingFace integration](https://docs.blaxel.ai/Integrations/HuggingFace.md): Deploy public or private AI models from Hugging Face on Blaxel and serve them as auto-scalable inference endpoints for your agents.
+- [Azure AI Foundry integration](https://docs.blaxel.ai/Integrations/Azure-AI-Foundry.md): Connect your Blaxel agents to LLMs deployed in Azure AI Inference, Azure OpenAI Service, and Azure AI Services through the Foundry integration.
+- [Google Maps](https://docs.blaxel.ai/Integrations/Google-Maps.md): Connect the Google Maps API to your Blaxel agents to enable geocoding, directions, place search, and other location-based capabilities.
+- [Gmail](https://docs.blaxel.ai/Integrations/Gmail.md): Connect Gmail to your Blaxel agents to give them email communication capabilities, including reading, drafting, and sending messages.
+- [OpenAI Agents API on Blaxel](https://docs.blaxel.ai/Integrations/OpenAI-Agents-API.md): Connect OpenAI-hosted agents to Blaxel computers, retain useful files with Agent Drive, and choose the cookbook execution mode for your application.
+- [AgentMail](https://docs.blaxel.ai/Integrations/AgentMail.md): Use AgentMail with Blaxel to build an intelligent assistant that autonomously answers technical questions over email through agentic inboxes.
+- [Rippletide](https://docs.blaxel.ai/Integrations/Rippletide.md): Combine Rippletide guardrails with Blaxel sandboxes to enforce agent safety, prevent hallucinations, and run trusted agent code securely.
+
+## Errors, limits and troubleshooting
+
+Error codes, quotas and fixes for common errors.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-troubleshooting.txt (46.6 KB)
+
+- [Usage and quotas](https://docs.blaxel.ai/Security/Quotas.md): Monitor account usage in the Blaxel Console, view current quotas for sandboxes, agents, jobs, and other resources, and request quota increases.
+- [Troubleshoot Blaxel deployments, runtime, and CLI errors](https://docs.blaxel.ai/troubleshooting.md): Resolve common issues with Blaxel deployments including build failures, runtime errors, connectivity problems, and CLI authentication.
+- [Error codes reference](https://docs.blaxel.ai/troubleshooting/error-codes.md): Reference for structured error codes returned by Blaxel API responses, including the JSON body format and headers designed for LLMs and coding agents.
+- [Knowledge Base](https://docs.blaxel.ai/knowledge-base/overview.md): Find practical answers, setup guides, security guidance, and troubleshooting help for Blaxel sandboxes and platform workflows.
+- [Multi-Factor Authentication (MFA) and compliance requirements](https://docs.blaxel.ai/knowledge-base/security-and-authentication/multi-factor-authentication-mfa-and-compliance-requirements.md): Meet MFA and compliance requirements on Blaxel by enforcing MFA through your identity provider and using SAML SSO and Directory Sync.
+- [Resolving sandbox creation issues](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-issues.md): Fix Blaxel sandboxes that fail during startup because their custom image has a missing or incorrect entrypoint.
+- [Resolving sandbox creation race conditions and duplicate requests](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolving-sandbox-creation-race-conditions-and-duplicate-requests.md): Prevent duplicate Blaxel sandbox creation requests and handle 409 conflicts safely with idempotent SDK methods.
+- [Troubleshooting custom Docker image deployment issues](https://docs.blaxel.ai/knowledge-base/troubleshooting/troubleshooting-custom-docker-image-deployment-issues.md): Diagnose sandbox API, Dockerfile path, build timeout, entrypoint, missing build tools, and logging issues in custom Blaxel sandbox images.
+- [Sandbox limits and quota exceeded errors](https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-limits-and-quota-exceeded-errors.md): Resolve QUOTA_EXCEEDED errors by checking your Blaxel account tier, memory allocation, payment method, and sandbox quota.
+- [WebSocket connection timeouts and the 15-minute limit](https://docs.blaxel.ai/knowledge-base/troubleshooting/websocket-connection-timeouts-and-15-minute-limit.md): Keep long-running sandbox WebSocket connections reliable by handling the 15-minute idle timeout, reconnection, standby, and ping-pong traffic.
+- [Handling Preview not found 404 errors in sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/handling-preview-not-found-404-errors-in-sandboxes.md): Resolve Preview not found 404 errors by checking sandbox and preview lifecycle state, TTL settings, and asynchronous deletion races.
+- [Resolving sandbox restarts caused by nc not found](https://docs.blaxel.ai/knowledge-base/troubleshooting/sandbox-restarting-nc-not-found.md): Stop sandbox restart loops by removing an unnecessary custom entrypoint or installing netcat and using the loopback IP in Debian-based images.
+- [When localhost goes silent in Debian-based sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/when-localhost-goes-silent-in-debian-based-sandboxes.md): Fix localhost name resolution and service-to-service networking failures after moving sandbox images from Alpine to minimal Debian.
+- [Fix Miniflare inspector startup failures on Carbon sandboxes](https://docs.blaxel.ai/knowledge-base/troubleshooting/miniflare-inspector-startup-failures-on-carbon.md): Diagnose Astro and Cloudflare preview startup failures caused by older Miniflare versions selecting an unavailable IPv6 localhost address.
+- [SSL certificate verification errors when cloning repositories](https://docs.blaxel.ai/knowledge-base/troubleshooting/ssl-certificate-verification-errors-when-cloning-repositories.md): Fix Git SSL certificate verification failures in Blaxel sandboxes by installing CA certificates or choosing a base image that includes them.
+- [Resolving ENOSPC no space left on device errors](https://docs.blaxel.ai/knowledge-base/troubleshooting/resolve-enospc-no-space-left-on-device-errors.md): Resolve ENOSPC storage errors in Blaxel sandboxes by increasing memory allocation or attaching a volume for larger persistent storage.
+
+## API, SDK and CLI reference
+
+Authentication, the REST APIs, the Management API endpoint index, and the SDK and CLI overviews.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-api.txt (84.5 KB)
+
+- [Service accounts](https://docs.blaxel.ai/Security/Service-accounts.md): Use Blaxel service accounts with non-user API credentials to automate the full life-cycle of resources in CI/CD pipelines and backend systems.
+- [Access tokens](https://docs.blaxel.ai/Security/Access-tokens.md): Authenticate to Blaxel APIs and the CLI using personal access tokens, with guidance on creating, scoping, rotating, and revoking tokens securely.
+- [How to authenticate the Blaxel CLI in CI environments](https://docs.blaxel.ai/knowledge-base/security-and-authentication/how-to-authenticate-the-bl-cli-in-ci-environments.md): Authenticate the Blaxel CLI with a dedicated API key to automate deployments and other tasks in CI/CD environments.
+- [REST API overview](https://docs.blaxel.ai/api-reference/introduction.md): Authenticate and interact with all Blaxel resources using REST APIs, with support for API key and OAuth 2.0 authentication methods.
+- [Inference API](https://docs.blaxel.ai/api-reference/inference.md): HTTP reference for the inference endpoints automatically generated when you deploy agents, model APIs, and MCP servers on the Global Agentics Network.
+- [Billing API endpoint reference](https://docs.blaxel.ai/api-reference/billing.md): HTTP endpoint reference for the Blaxel Billing Explorer API to programmatically retrieve cost, usage, and consumption metrics for your account.
+- [Blaxel SDKs overview](https://docs.blaxel.ai/sdk-reference/introduction.md): Use the Blaxel SDKs for TypeScript, Python, and Go to programmatically manage sandboxes, agents, MCP servers, jobs, and other resources.
+- [TypeScript SDK](https://docs.blaxel.ai/sdk-reference/sdk-ts.md): Install and use the Blaxel TypeScript SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other resources from Node.js.
+- [Python SDK](https://docs.blaxel.ai/sdk-reference/sdk-python.md): Install and use the Blaxel Python SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other workspace resources from Python.
+- [Go SDK](https://docs.blaxel.ai/sdk-reference/sdk-go.md): Install and use the Blaxel Go SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other workspace resources from Go.
+- [Blaxel CLI overview](https://docs.blaxel.ai/cli-reference/introduction.md): Install the Blaxel CLI (bl) to manage sandboxes, agents, MCP servers, jobs, and other resources from your terminal, with auth and command reference.
+- [Management API endpoints](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-api.txt): 176 endpoints with method, path and summary, each linked to its reference page.
+- [Sandbox API Reference OpenAPI spec](https://raw.githubusercontent.com/blaxel-ai/sandbox/refs/heads/main/sandbox-api/docs/openapi.yml): API served inside each sandbox for processes, files and networking.
+
+## Administration and security
+
+Workspace access control, data collection and privacy, and model governance policies.
+Full text: https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-admin.txt (22.9 KB)
+
+- [Workspaces, users and roles](https://docs.blaxel.ai/Security/Workspace-access-control.md): Manage Blaxel workspaces, invite users, assign roles, and configure access control to share resources securely across your organization.
+- [Baseten managed workspaces](https://docs.blaxel.ai/Security/Baseten-managed-workspaces.md): Connect your Baseten organization to a managed Blaxel workspace and manage access and account settings.
+- [Billing Explorer API](https://docs.blaxel.ai/Security/Billing-Explorer-API.md): Programmatically retrieve cost and usage metrics for your Blaxel account through the Billing Explorer API, with auth and request examples.
+- [Domain capture](https://docs.blaxel.ai/Security/Domain-capture.md): Verify your company's email domain on Blaxel to control which login methods your team can use and automatically onboard new users to workspaces.
+- [SAML & Directory Sync](https://docs.blaxel.ai/Security/SSO-Directory-sync.md): Configure SAML single sign-on and automated user provisioning via Directory Sync (SCIM) to manage your organization's Blaxel access at scale.
+- [Data collection and privacy](https://docs.blaxel.ai/Security/Data-collection-and-privacy.md): Understand what usage and telemetry data the Blaxel CLI and SDKs collect, how it is used, and how to opt out for privacy-sensitive deployments.
+- [Policies](https://docs.blaxel.ai/Model-Governance/Policies.md): Define policies that control where workloads run on the Global Agentics Network, including location constraints, flavors, and token limits.
+
+## Tutorials
+
+Step-by-step guides for coding agents, agent frameworks and app frameworks on Blaxel. Each one is listed in llms.txt and fetched on its own.
+
+- [Tutorials and examples overview](https://docs.blaxel.ai/Tutorials/Overview.md): Browse Blaxel tutorials and examples covering popular templates, sandbox apps like Next.js and code-server, agent frameworks, and full-repo GitHub templates.
+- [Self-host Claude Managed Agents on Blaxel](https://docs.blaxel.ai/Tutorials/Claude-Managed-Agents.md): Self-host the Claude Managed Agents (CMA) sandbox execution layer on Blaxel while Anthropic runs the agent loop, with isolated tool execution.
+- [Run Claude Code in a sandbox](https://docs.blaxel.ai/Tutorials/Claude-Code.md): Run Claude Code inside a Blaxel sandbox to execute coding tasks on a hosted codebase, with persistent storage and secure network access.
+- [Use Claude Agent SDK with Blaxel](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-Index.md): Deploy Claude Agent SDK agents on Blaxel with serverless hosting, colocated close to sandboxes for near-instant latency and full observability.
+- [Connect Claude Agent SDK to sandboxes](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-MCP.md): Connect the Claude Agent SDK (formerly Claude Code SDK) to a Blaxel sandbox to operate processes, files, and code through its built-in MCP server.
+- [Use Claude Agent SDK with MCP Code Mode](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-Code-Mode.md): Connect the Claude Agent SDK to a Blaxel MCP server running in code mode to call any OpenAPI-described API by executing TypeScript in a sandbox.
+- [Deploy Claude Agent SDK agents on Blaxel](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK.md): Deploy a Claude Agent SDK agent to Blaxel Agents Hosting as a serverless auto-scalable API, and colocate it close to the sandboxes it works on.
+- [Run Codex in a sandbox](https://docs.blaxel.ai/Tutorials/Codex.md): Run OpenAI Codex inside a Blaxel sandbox to execute coding tasks on a hosted codebase, with persistent storage and secure network access.
+- [Give an OpenAI agent a computer and keep its work](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-API.md): Create a report with an OpenAI-hosted agent on Blaxel, inspect the result, and let a fresh session review the saved file through Agent Drive.
+- [Use OpenAI Agents SDK with sandboxes](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-SDK.md): Use the OpenAI Agents SDK to create compute-capable Codex agents backed by Blaxel sandboxes for running commands, editing files, and executing code.
+- [Deploy OpenAI Agents SDK on Blaxel](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-SDK-Deployment.md): Deploy an OpenAI Agents SDK agent to Blaxel Agents Hosting as a serverless auto-scalable API and colocate it close to the sandboxes it works on.
+- [Run Amp in a sandbox](https://docs.blaxel.ai/Tutorials/Amp.md): Run Amp inside a Blaxel sandbox, stream coding tasks, and continue a thread after reconnecting.
+- [All full repo examples](https://docs.blaxel.ai/Examples/Overview.md): Browse sample agents, MCP servers, and full-repo applications you can use as reference or deploy directly to Blaxel from GitHub templates.
+- [Sandbox application tutorials overview](https://docs.blaxel.ai/Tutorials/Sandboxes-Overview.md): Browse tutorials for running web applications like Astro, Next.js, Expo, code-server, Docker, and Tailscale inside Blaxel sandboxes.
+- [Run Astro in a sandbox](https://docs.blaxel.ai/Tutorials/Astro.md): Run an Astro application inside a Blaxel sandbox and expose it securely through preview URLs, with setup steps and end-to-end code examples.
+- [Run Expo in a sandbox](https://docs.blaxel.ai/Tutorials/Expo.md): Run an Expo (React Native / Web) application inside a Blaxel sandbox and expose it securely through preview URLs with step-by-step setup.
+- [Run Next.js in a sandbox](https://docs.blaxel.ai/Tutorials/Nextjs.md): Run a Next.js application inside a Blaxel sandbox and expose it securely through preview URLs, with setup steps and end-to-end code examples.
+- [Run code-server in a sandbox](https://docs.blaxel.ai/Tutorials/Code-server.md): Run VS Code in the browser by deploying code-server inside a Blaxel sandbox, exposed securely through preview URLs for remote development.
+- [Run Docker in a sandbox](https://docs.blaxel.ai/Tutorials/Docker.md): Build, push, and run Docker images inside a Blaxel sandbox, and expose the running containers securely to the internet through preview URLs.
+- [Run Tailscale in a sandbox](https://docs.blaxel.ai/Tutorials/Tailscale.md): Connect a Blaxel sandbox to your Tailscale tailnet so you can SSH into it from any authorized device, with step-by-step setup instructions.
+- [Agent framework tutorials overview](https://docs.blaxel.ai/Tutorials/Agents-Overview.md): Browse framework-specific tutorials for shipping AI agents on Blaxel using LangChain, CrewAI, LlamaIndex, ADK, AI SDK, PydanticAI, and more.
+- [Run Omnara agents in Blaxel sandboxes](https://docs.blaxel.ai/Tutorials/Omnara.md): Connect your Blaxel workspace to Omnara so agents run commands in Blaxel sandboxes that sleep when idle and wake when the agent needs them.
+- [Run NVIDIA OpenShell on Blaxel](https://docs.blaxel.ai/Tutorials/OpenShell.md): Deploy NVIDIA OpenShell on Blaxel to run policy-confined agents in isolated microVM sandboxes with audited network access.
+- [Continue DeepSeek Harness sessions in a Blaxel sandbox](https://docs.blaxel.ai/Tutorials/DeepSeek-Harness.md): Move a DeepSeek Harness session to Blaxel, continue while your laptop is offline, then review and return the conversation and code changes.
+- [Run coding agents in Blaxel sandboxes from Herdr](https://docs.blaxel.ai/Tutorials/Herdr.md): Use the Herdr Blaxel plugin to run a coding agent in a persistent sandbox, reconnect, preview an application, and apply reviewed changes locally.
+- [Run OpenClaw on Blaxel](https://docs.blaxel.ai/Tutorials/OpenClaw.md): Deploy and run OpenClaw, an open-source coding agent harness, inside a Blaxel sandbox with persistent volume storage and live preview URLs.
+- [Run AI SDK on Blaxel](https://docs.blaxel.ai/Tutorials/Vercel-AI.md): Deploy Vercel AI SDK agent projects to Blaxel with minimal code changes to get serverless hosting, agentic observability, and governance policies.
+- [Use Mastra agents with Blaxel](https://docs.blaxel.ai/Tutorials/Mastra.md): Build Mastra TypeScript agents with built-in support for Blaxel sandboxes, giving your agents secure remote execution environments in the cloud.
+- [Run LangChain on Blaxel](https://docs.blaxel.ai/Tutorials/LangChain.md): Deploy LangChain and LangGraph projects to Blaxel with minimal code changes to get serverless hosting, agentic observability, and policies.
+- [Run CrewAI on Blaxel](https://docs.blaxel.ai/Tutorials/CrewAI.md): Deploy multi-agent CrewAI systems on Blaxel with serverless hosting, agentic observability, and connections to MCP servers and external LLM APIs.
+- [Run Google ADK on Blaxel](https://docs.blaxel.ai/Tutorials/ADK.md): Deploy Google Agent Development Kit (ADK) projects to Blaxel with minimal code changes to get serverless hosting, observability, and policies.
+- [Run LlamaIndex on Blaxel](https://docs.blaxel.ai/Tutorials/LlamaIndex.md): Deploy LlamaIndex agent and RAG projects to Blaxel with minimal code changes to get serverless hosting, agentic observability, and governance.
+- [Run PydanticAI on Blaxel](https://docs.blaxel.ai/Tutorials/PydanticAI.md): Deploy PydanticAI agent projects to Blaxel with minimal code changes to get serverless hosting, agentic observability, and governance policies.
+- [Orchestrate Blaxel agents with n8n](https://docs.blaxel.ai/Tutorials/n8n.md): Build n8n workflows that forward chat messages to Blaxel-hosted AI agents via HTTP requests, with step-by-step setup and configuration.
+- [Run custom agents on Blaxel](https://docs.blaxel.ai/Tutorials/Custom-Agents.md): Build and deploy fully custom Python or TypeScript agents on Blaxel without using a specific framework, while keeping your code platform-agnostic.
+
+## Optional
+
+- [Changelog](https://docs.blaxel.ai/changelog.md): Chronological log of all Blaxel platform updates, new feature releases, deprecations, infrastructure changes, and notable improvements.
+- [Integrations](https://blaxel.ai/integrations)
