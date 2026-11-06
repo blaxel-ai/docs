@@ -3,6 +3,8 @@ title: 'Resolving sandbox creation race conditions and duplicate requests'
 description: 'Prevent duplicate Blaxel sandbox creation requests and handle 409 conflicts safely with idempotent SDK methods.'
 ---
 
+import RateLimits from '/snippets/limits/rate-limits.mdx';
+
 Sandbox creation can fail when your application sends multiple requests to create the same sandbox at the same time. Use an idempotent creation method and add client-side request guards where needed.
 
 ## Common errors
@@ -11,6 +13,10 @@ You may receive either of these errors:
 
 - `SANDBOX_ALREADY_EXISTS (409)`
 - `RATE_LIMIT_EXCEEDED (429)`
+
+A `429` with the code `WORKSPACE_RATE_LIMIT_EXCEEDED` means the workspace reached its limit on sandbox creations in progress at once:
+
+<RateLimits />
 
 ## Root cause
 
