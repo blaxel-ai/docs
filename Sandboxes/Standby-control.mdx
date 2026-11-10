@@ -1,6 +1,6 @@
 ---
 title: "Standby control"
-description: "Control when sandboxes remain active by managing WebSocket connections, tab visibility, auto-disconnect behavior, and activity-based timeouts."
+description: "Put a sandbox on standby on demand, and control when sandboxes remain active by managing WebSocket connections, tab visibility, auto-disconnect behavior, and activity-based timeouts."
 ---
 
 Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
@@ -9,7 +9,83 @@ Sandboxes stay active as long as there's an active connection to them, typically
   You can also use [process keep-alive](./Processes#sandbox-keep-alive) to keep the sandbox running when you launch a process, even if there isn't an active connection to it.
 </Note>
 
-There are no built-in stop or start functions available in the SDKs to manage standby mode. This means you'll need to rely on other approaches to better control when sandboxes remain active:
+## Put a sandbox on standby on demand
+
+You don't have to wait for a sandbox to go idle. Send `POST /standby` to the sandbox API to put it on standby right away, for example while your code waits on a long model call. The sandbox keeps its memory, files and running processes, and resumes on the next request.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance, settings } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const res = await fetch(`${sandbox.metadata.url}/standby`, {
+  method: "POST",
+  headers: settings.headers,
+});
+console.log(res.status); // 202
+```
+
+```python Python
+import httpx
+from blaxel.core import SandboxInstance, settings
+
+sandbox = await SandboxInstance.get("my-sandbox")
+res = httpx.post(f"{sandbox.metadata.url}/standby", headers=settings.headers)
+print(res.status_code)  # 202
+```
+
+```shell cURL
+curl -X POST "https://<SANDBOX_URL>/standby" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: <WORKSPACE>"
+```
+
+</CodeGroup>
+
+The sandbox API answers `202` and closes the connection, then the sandbox pauses within a few seconds. The response can be:
+
+| Status | Meaning |
+| --- | --- |
+| `202` | Standby requested. |
+| `409` | A [keep-alive](./Processes#sandbox-keep-alive) process holds the sandbox awake. Add `?force=true` to put it on standby anyway. |
+| `501` | Standby is not supported in this environment, such as a sandbox API running outside Blaxel. |
+| `503` | The keep-alive state could not be read. Retry the request. |
+
+With `?force=true`, the keep-alive processes keep running across the standby, and they hold the sandbox awake again once it resumes.
+
+Code running inside the sandbox can ask for a standby without calling the API: write `+` to the file at `$BLAXEL_STANDBY_NOW_FILE`. A keep-alive process blocks this request, like a `POST /standby` without `force`.
+
+```shell
+echo + > "$BLAXEL_STANDBY_NOW_FILE"
+```
+
+If the sandbox has a [standby grace period](./Lifecycle-signals#handle-standby), its processes receive `SIGUSR2` first, as with an idle standby.
+
+### Resume the sandbox
+
+Any request to the sandbox resumes it, typically in under a second: a process call, a file read or a preview request. To resume it without doing anything else, send `POST /resume` to the sandbox API. It answers `200` once the sandbox is running.
+
+### Limits
+
+A `202` means the request was accepted by the sandbox, not that the standby happened. Blaxel ignores the request, without an error, in these cases:
+
+| Case | Limit |
+| --- | --- |
+| The sandbox just started | Requests sent in the first 10 seconds after the sandbox starts can be lost. Wait at least 10 seconds after creating the sandbox. This limit will be removed. |
+| Requests too close together | One accepted request per sandbox every 5 seconds. |
+| Too many requests from one workspace | 10 requests per second per workspace on each Blaxel host, with bursts of up to 20. Sandboxes of a workspace are spread across several hosts. |
+| A standby is already in progress | The sandbox is already being put on standby, stopped or deleted. |
+| Previous standbys failed | After a failed standby, Blaxel waits before it tries again: 10 seconds, doubling after each failure, up to 5 minutes. |
+| A keep-alive holds the sandbox | Only for requests made by writing to `$BLAXEL_STANDBY_NOW_FILE` while a keep-alive process runs. `POST /standby` answers `409` in this case. |
+
+Standbys also share capacity on each host: a host snapshots up to 8 sandboxes at the same time, and one workspace can use at most half of these slots. Requests beyond that are not ignored: they wait for a free slot, so the standby takes longer. A request to the sandbox during that wait cancels the standby.
+
+A sandbox whose request was ignored still goes on standby once it is idle, as usual. To confirm the standby, check that the sandbox status is `STANDBY`.
+
+## Control standby from a browser
+
+When the sandbox is used from a browser, you can also control when it remains active from the frontend:
 
 1. Hide iframe when tab is inactive
 
