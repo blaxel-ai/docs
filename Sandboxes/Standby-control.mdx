@@ -85,7 +85,7 @@ A `202` means the request was accepted by the sandbox, not that the standby happ
 
 Standbys also share capacity on each host: a host snapshots up to 8 sandboxes at the same time, and one workspace can use at most half of these slots. Requests beyond that are not ignored: they wait for a free slot, so the standby takes longer. A request to the sandbox during that wait cancels the standby.
 
-A sandbox whose request was ignored still goes on standby once it is idle, as usual. To confirm the standby, check that the sandbox status is `STANDBY`.
+A sandbox whose request was ignored still goes on standby once it is idle, as usual. To confirm the standby, [get the sandbox](/api-reference/compute/get-sandbox) and check that its `state` field is `STANDBY`. Its `status` field stays `DEPLOYED` in standby.
 
 ## Control standby from a browser
 
