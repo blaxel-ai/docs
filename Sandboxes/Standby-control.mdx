@@ -13,6 +13,10 @@ Sandboxes stay active as long as there's an active connection to them, typically
 
 You don't have to wait for a sandbox to go idle. Send `POST /standby` to the sandbox API to put it on standby right away, for example while your code waits on a long model call. The sandbox keeps its memory, files and running processes, and resumes on the next request.
 
+<Note>
+  On-demand standby requires the sandbox API `v0.2.78` or later. For a [custom image](./Templates), copy the sandbox API from `ghcr.io/blaxel-ai/sandbox:v0.2.78` or later, or from `ghcr.io/blaxel-ai/sandbox:latest`, and rebuild the image.
+</Note>
+
 <CodeGroup>
 
 ```typescript TypeScript
