@@ -61,7 +61,8 @@ These limits don't depend on your tier.
 | Limit | Value | When exceeded |
 | --- | --- | --- |
 | Sandbox creations in progress at once, per workspace and region | 100 | 429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish. Can be raised for a workspace on request |
-| Requests to `api.blaxel.ai` from one IP address | 6,000 per 60 seconds | 403 with no JSON body, from the network edge rather than the API; slow down and retry after a minute |
+| Image builds running at once, per workspace | 10 (builds also share a platform-wide limit of 100) | No error: extra builds wait in a queue and show as building. A build that hasn't started after about 46 minutes fails. Can be raised for a workspace on request |
+| Requests to `api.blaxel.ai` from one IP address | 6,000 per 60 seconds | Likely a 403 without a JSON error body (empty, or an HTML page), from the network edge rather than the API; slow down and retry after a minute |
 
 ### Quota usage
 
@@ -80,13 +81,13 @@ This section provides details on quotas for:
 
 ### Read quotas through the API
 
-You can read your account's quotas and current usage through the API, for example to size a large run or alert before it reaches a quota. This endpoint needs a user login: a service account API key gets a `400` error.
+You can read your account's quotas and current usage through the API, for example to size a large run or alert before it reaches a quota. This endpoint takes a user login (`bl login`) or a personal API key. A service account API key gets a `400` error, and partner platform tokens can't read it either. Build concurrency and sandbox creation rate limits aren't quotas, so this endpoint doesn't list them; see [rate limits](#rate-limits).
 
 1. Get your account ID: `GET https://api.blaxel.ai/v0/workspaces/{workspace}` returns it in `accountId`.
 2. Get the quotas: `GET https://api.blaxel.ai/v0/quotas/account/{accountId}`.
 
 ```bash
-# Log in with your browser (`bl login`), not with an API key
+# A user login (`bl login`) or a personal API key; service account keys get a 400
 TOKEN=$(bl token)
 WORKSPACE=my-workspace
 ACCOUNT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $WORKSPACE" \
@@ -116,18 +117,19 @@ When sandbox creation fails, the API returns a JSON body with a machine-readable
 {"code": "QUOTA_EXCEEDED", "message": "You have reached the maximum memory (32768) for your account. Requested: 65536", "status_code": 429}
 ```
 
-Read `code`, not only the HTTP status: a quota error and a rate limit both return `429`, but only the rate limit goes away if you retry.
+Read `code`, not only the HTTP status: a quota error and a rate limit both return `429`, but only the rate limit goes away if you retry. The `x-should-retry` response header (`true` or `false`) and the body fields `retryable` and `retry_after` (seconds) say the same thing for clients that don't read codes.
 
 | Code | HTTP | Retry | Meaning |
 | --- | --- | --- | --- |
 | `QUOTA_EXCEEDED` | 429 | No | The sandbox would take your account over a quota: its number of sandboxes, the memory or vCPUs of one sandbox, the timeout, the total ephemeral volume size or the total image storage. Retrying returns the same error until you delete resources or your quota rises. |
 | `QUOTA_EXCEEDED` | 400 | No | One ephemeral volume is larger than the maximum size per ephemeral volume of your tier. |
-| `WORKSPACE_RATE_LIMIT_EXCEEDED` | 429 | Yes | Too many sandbox creations are in progress at once in the workspace and region (see [rate limits](#rate-limits)). Retry when earlier creations finish. If the response has a `Retry-After` header, wait that long; otherwise back off exponentially. |
-| `RATE_LIMIT_EXCEEDED` | 429 | Yes | Blaxel is handling too many sandbox creations at the moment. Back off exponentially and retry. |
+| `WORKSPACE_RATE_LIMIT_EXCEEDED` | 429 | Yes | Too many sandbox creations are in progress at once in the workspace and region (see [rate limits](#rate-limits)). Retry when earlier creations finish. Wait for the `Retry-After` header (5 to 10 seconds, varied per response so clients don't retry together); without it, back off exponentially. |
+| `RATE_LIMIT_EXCEEDED` | 429 | Yes | Blaxel is handling too many sandbox creations in the region at the moment. Wait for the `Retry-After` header (10 to 20 seconds); without it, back off exponentially. |
+| None (`code` is the number `429`) | 429 | No | An image build or registry image import found your image storage quota full; the message starts with "Image storage quota reached". Delete unused images or raise the quota. Newer API versions return `QUOTA_EXCEEDED` here. |
 | `UNAUTHORIZED`, `UNAUTHORIZED_WORKSPACE` | 403 | No | The credentials are invalid, or they don't give write access to the workspace. The body is JSON. |
 | `TOKEN_REVOKED` | 401 | No | The token was revoked. Get a new one. |
 | `AUTHENTICATION_UNAVAILABLE` | 503 | Yes | Blaxel couldn't verify the credentials at the moment. Retry. |
-| None (no JSON body) | 403 | Yes, after slowing down | Your IP address sent too many requests to `api.blaxel.ai` and the network edge blocked it (see [rate limits](#rate-limits)). This isn't a quota. Reduce the request rate and retry after a minute. |
+| None (no JSON error body) | 403 | Likely, after slowing down | The request was likely blocked at the network edge before it reached the API, most often because your IP address sent too many requests to `api.blaxel.ai` (see [rate limits](#rate-limits)). The body is empty or an HTML page. Quota errors always have a JSON `code`. Reduce the request rate, for example by polling less often, and retry after a minute. |
 
 See [error codes](/troubleshooting/error-codes) for the errors returned by sandboxes, agents and other workloads once they run.
 
