@@ -110,6 +110,8 @@ Blaxel has a tiering system that unlocks higher limits and features on the platf
 
 To see more details on which quota was exceeded or to upgrade to a higher tier, visit the [**Quotas** page of the Blaxel Console](https://app.blaxel.ai/account/quotas).
 
+`QUOTA_EXCEEDED` can also return HTTP `429`, like the `WORKSPACE_RATE_LIMIT_EXCEEDED` rate limit: read the `code` field, because retrying a quota error returns the same error. A `403` with no JSON body isn't a quota: your IP address sent too many requests to `api.blaxel.ai`. See [sandbox creation errors](/Security/Quotas#sandbox-creation-errors) for every code and whether to retry.
+
 ## Models return a 429 error
 
 This error occurs when a model reaches its maximum token limit.
