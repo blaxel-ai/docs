@@ -1798,15 +1798,25 @@ slim = false
 
 With `slim = false`, the image keeps caches, documentation, headers, and build tools. The image is larger. Sandboxes take longer to boot. Leave slimming enabled when those files are only needed to compile dependencies during the image build.
 
+## How image storage works
+
+Blaxel stores each image tag as one flattened filesystem. Images do not share layers. Two images built on the same base image each store their own copy of that base.
+
+The size of every stored tag counts against your account's image storage quota. The quota appears as Image Total Max Size on the [Quotas page](https://app.blaxel.ai/account/quotas). Blaxel checks it before each new build and rejects the build with a `QUOTA_EXCEEDED` error when stored images already fill it. A [shared image](#share-images-across-workspaces-and-accounts) counts only in its source workspace.
+
+Images have no TTL and no automatic eviction. Every tag stays in storage until you delete it. To free storage, [clean up unused images](#clean-up-unused-images) from the Console or automate it with the Management API.
+
 ## Clean up unused images
 
-Use the Blaxel Console to delete unused image tags in bulk and free image storage. This is useful after repeated builds or when you approach your total image-size quota. Check your account's limits on the [Quotas page](https://app.blaxel.ai/account/quotas).
+Delete unused image tags in bulk to free image storage. This is useful after repeated builds or when you approach your image storage quota. Check your account's limits on the [Quotas page](https://app.blaxel.ai/account/quotas).
 
 Cleanup applies to the selected workspace, across resource types, not only sandbox images. Image tags referenced by existing resources are kept, including those used by sandboxes on standby. Unused tags can be deleted even when another tag of the same image is still in use.
 
 <Warning>
   Cleanup permanently deletes unused image tags and cannot be undone. An image pushed with `bl push` but not referenced by a resource can be deleted, even if you plan to use it later. Review any images or old tags you want to keep for future deployments before confirming.
 </Warning>
+
+### Blaxel Console
 
 To clean up images:
 
@@ -1817,6 +1827,26 @@ To clean up images:
 5. Click Cleanup Images to delete unused image tags.
 
 The image list refreshes after cleanup. If image storage is still near your quota, review the remaining images and their tags to identify what you still need. Cleanup does not delete your sandboxes or other resources.
+
+### Management API
+
+Use the [cleanup endpoint](/api-reference/images/cleanup-unused-container-images) to run the same cleanup from a script or a scheduled job. Preview what it would delete with `dryRun=true`:
+
+```bash
+curl -X DELETE "https://api.blaxel.ai/v0/images?dryRun=true" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+Run the cleanup without `dryRun` to delete the tags. Add `keepLatest=true` to keep the newest tag of each image:
+
+```bash
+curl -X DELETE "https://api.blaxel.ai/v0/images?keepLatest=true" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+The endpoint deletes only tags that no resource references. The response lists the deleted tags per image in `images` and their count in `deleted`. Each call runs for a limited time. When the response has `hasMore: true`, call the endpoint again until `hasMore` is `false`.
 
 ## Share images across workspaces and accounts
 
