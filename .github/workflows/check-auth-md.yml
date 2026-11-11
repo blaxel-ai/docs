@@ -1,0 +1,56 @@
+name: auth.md
+
+on:
+  pull_request:
+    paths:
+      - 'auth.md'
+      - 'Security/Access-tokens.mdx'
+      - 'docs.json'
+      - 'scripts/check-auth-md/**'
+      - '.github/workflows/check-auth-md.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auth.md'
+      - 'Security/Access-tokens.mdx'
+      - 'docs.json'
+      - 'scripts/check-auth-md/**'
+      - '.github/workflows/check-auth-md.yml'
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Check auth.md is published and linked
+        run: python scripts/check-auth-md/main.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Mintlify CLI
+        run: npm install --global mint@4
+      - name: Validate MDX and navigation
+        run: mint validate
+
+  live:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Check the published auth.md and discovery documents
+        run: python scripts/check-auth-md/main.py --live
