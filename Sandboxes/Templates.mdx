@@ -1802,7 +1802,9 @@ With `slim = false`, the image keeps caches, documentation, headers, and build t
 
 Blaxel stores each image tag as one flattened filesystem. Images do not share layers. Two images built on the same base image each store their own copy of that base.
 
-The size of every stored tag counts against your account's image storage quota. The quota appears as Image Total Max Size on the [Quotas page](https://app.blaxel.ai/account/quotas). Blaxel checks it before each new build and rejects the build with a `QUOTA_EXCEEDED` error when stored images already fill it. A [shared image](#share-images-across-workspaces-and-accounts) counts only in its source workspace.
+The size of every stored tag counts against your account's image storage quota. The quota appears as Image Total Max Size on the [Quotas page](https://app.blaxel.ai/account/quotas). Blaxel checks it before each new build and rejects the build with an HTTP 429 error when stored images already fill it. The message starts with "Image storage quota reached". Retrying does not help until you delete images or the quota is raised. A [shared image](#share-images-across-workspaces-and-accounts) counts only in its source workspace.
+
+Within a workspace, a build with the same build context as an earlier build (same Dockerfile and files, or same registry image) reuses the stored image instead of storing it again. Each tag still counts its full size against the quota, even when it reuses another tag's image.
 
 Images have no TTL and no automatic eviction. Every tag stays in storage until you delete it. To free storage, [clean up unused images](#clean-up-unused-images) from the Console or automate it with the Management API.
 
