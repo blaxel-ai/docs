@@ -2,5 +2,4 @@
 
 | Limit | Value | When exceeded |
 | --- | --- | --- |
-| Sandbox creations in progress at once, per workspace and region | 100 | 429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish. Can be raised for a workspace on request |
-| Requests to `api.blaxel.ai` from one IP address | 6,000 per 60 seconds | 403 with no JSON body, from the network edge rather than the API; slow down and retry after a minute |
+| Sandbox creations in progress at once, per workspace | 100 | 429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish |

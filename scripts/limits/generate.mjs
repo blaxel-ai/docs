@@ -170,8 +170,8 @@ function table(headers, rows) {
 const TIER_TABLES = {
   'tier-sandboxes': ['top_up', 'sandboxes', 'memory_per_instance', 'sandbox_max_ttl', 'terminated_retention'],
   'tier-sandbox-features': ['previews', 'snapshots_total', 'snapshots_per_sandbox', 'schedules_per_sandbox'],
-  'tier-storage': ['volumes', 'volume_max_size', 'volume_total_size', 'volume_templates', 'ephemeral_volume_max_size', 'ephemeral_volume_total_size', 'image_storage'],
-  'tier-workloads': ['agents', 'mcp_servers', 'jobs', 'job_concurrent_tasks', 'job_memory_total', 'runtime_timeout'],
+  'tier-storage': ['volumes', 'volume_max_size', 'volume_total_size', 'volume_templates', 'image_storage'],
+  'tier-workloads': ['agents', 'mcp_servers', 'jobs', 'job_concurrent_tasks', 'job_memory_total', 'runtime_timeout', 'ephemeral_volume_max_size'],
   'tier-account': ['workspaces', 'workspace_users', 'custom_domains', 'metrics_retention'],
 };
 
