@@ -7,6 +7,8 @@ import TierSandboxes from '/snippets/limits/tier-sandboxes.mdx';
 
 If sandbox creation returns `QUOTA_EXCEEDED`, your workload may exceed the limits for your account tier. Memory limits and allowed sandbox counts vary by tier.
 
+`QUOTA_EXCEEDED` comes with HTTP `429` (or `400` for an ephemeral volume that is too large), like the `WORKSPACE_RATE_LIMIT_EXCEEDED` rate limit. Read the `code` field: retrying a quota error returns the same error. See [sandbox creation errors](/Security/Quotas#sandbox-creation-errors) for every code and whether to retry, and [read quotas through the API](/Security/Quotas#read-quotas-through-the-api) to check your usage before a large run.
+
 ## Default quotas by tier
 
 Quotas apply to your whole account, across all its workspaces. Your account can have higher quotas than its tier after a quota increase.

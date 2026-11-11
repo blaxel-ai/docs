@@ -1,6 +1,6 @@
 {
   "about": "Single source for the limits, quotas, regions and prices in these docs. Edit this file, then run `npm run limits:generate`. Every entry needs a `source` (a public docs page, a public blaxel.ai page, or \"platform config\") and `verified`. See data/README.md.",
-  "reviewed": "2026-11-02",
+  "reviewed": "2026-11-10",
   "tiers": {
     "source": "platform config; /Security/Quotas; https://blaxel.ai/pricing",
     "verified": true,
@@ -178,9 +178,17 @@
       },
       {
         "key": "ephemeral_volume_max_size",
-        "label": "Maximum ephemeral volume size",
+        "label": "Maximum size per ephemeral volume",
         "unit": "MB",
         "values": [10240, 20480, 40960, 40960, 81920, 81920, 163840, 327680, 655360, 1310720],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "ephemeral_volume_total_size",
+        "label": "Total ephemeral volume size",
+        "unit": "MB",
+        "values": [20480, 40960, 81920, 163840, 327680, 655360, 1310720, 2621440, 5242880, 10485760],
         "source": "platform config",
         "verified": true
       },
@@ -368,10 +376,21 @@
     {
       "key": "sandbox_create_concurrency",
       "group": "rate",
-      "label": "Sandbox creations in progress at once, per workspace",
+      "label": "Sandbox creations in progress at once, per workspace and region",
       "value": 100,
       "unit": "count",
-      "on_exceed": "429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish",
+      "on_exceed": "429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish. Can be raised for a workspace on request",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "api_requests_per_ip",
+      "group": "rate",
+      "label": "Requests to `api.blaxel.ai` from one IP address",
+      "value": 6000,
+      "unit": "count",
+      "display": "6,000 per 60 seconds",
+      "on_exceed": "403 with no JSON body, from the network edge rather than the API; slow down and retry after a minute",
       "source": "platform config",
       "verified": true
     }
