@@ -6,6 +6,8 @@ description: 'Available deployment regions for Blaxel infrastructure including O
 
 ---
 
+import Regions from '/snippets/limits/regions.mdx';
+
 Blaxel is available in many regions across the globe. Some types of resources can be deployed ‘globally’ over multiple regions (for example: [agents](../Agents/Overview)), while some other types are deployed only in one specific region (for example: [sandboxes](../Sandboxes/Overview)).
 
 This guide details the available regions for [Mark 3 infrastructure generation](/Infrastructure/Gens).
@@ -14,13 +16,7 @@ This guide details the available regions for [Mark 3 infrastructure generation](
 
 The following regions are available for [Mark 3 infrastructure generation](/Infrastructure/Gens):
 
-| **Region code** | **Location** | **Country** |
-| --- | --- | --- |
-| `us-pdx-1` | Oregon | United States |
-| `us-was-1` | North Virginia | United States |
-| `eu-lon-1` | London | United Kingdom |
-| `eu-fra-1` | Frankfurt | Germany |
-| `auto` | Automatic (your closest region) | - |
+<Regions />
 
 All regions are not necessarily available in self-service by default. Please [contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+region+XYZ+because+&purpose=regions&origin=docs) if you would like access to a specific region.
 

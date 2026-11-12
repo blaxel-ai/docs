@@ -3,6 +3,8 @@ title: 'Resolving ENOSPC no space left on device errors'
 description: 'Resolve ENOSPC storage errors in Blaxel sandboxes by increasing memory allocation or attaching a volume for larger persistent storage.'
 ---
 
+import CpuPerMemory from '/snippets/limits/cpu-per-memory.mdx';
+
 An `ENOSPC: no space left on device` error means that your sandbox has exhausted its available storage. Sandbox filesystem storage is in memory by default for optimal speed, so storage needs count against the memory allocation.
 
 ## Increase memory allocation
@@ -15,8 +17,7 @@ If the sandbox logs contain `Out of memory: Killed process`, the sandbox exceede
 
 Increasing memory also increases CPU allocation:
 
-- 8 GB of memory provides 4 CPU cores
-- 16 GB of memory provides 8 CPU cores
+<CpuPerMemory />
 
 ## Use a volume
 
