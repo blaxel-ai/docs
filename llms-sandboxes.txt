@@ -1,0 +1,3798 @@
+# Blaxel docs: Sandboxes
+
+> Create, reuse, expire, snapshot and archive sandboxes; run processes, use the file system, stream logs and schedule work.
+
+This file has the full text of 15 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Sandboxes](https://docs.blaxel.ai/Sandboxes/Overview)
+- [Expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration)
+- [Lifecycle signals](https://docs.blaxel.ai/Sandboxes/Lifecycle-signals)
+- [Process execution](https://docs.blaxel.ai/Sandboxes/Processes)
+- [File system](https://docs.blaxel.ai/Sandboxes/Filesystem)
+- [Code generation tools](https://docs.blaxel.ai/Sandboxes/Codegen-tools)
+- [Log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming)
+- [Snapshots and forking](https://docs.blaxel.ai/Sandboxes/Fork)
+- [Archive and unarchive sandboxes](https://docs.blaxel.ai/Sandboxes/Archive)
+- [Sandbox schedules](https://docs.blaxel.ai/Sandboxes/Schedules)
+- [Sandbox MCP server](https://docs.blaxel.ai/Sandboxes/MCP)
+- [Sandbox best practices](https://docs.blaxel.ai/Sandboxes/best-practices)
+- [Understanding sandbox active vs standby states and billing](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-active-vs-standby-states-and-billing)
+- [Understanding sandbox TTL and expiration policies](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-ttl-and-expiration-policies)
+- [Sandbox inactivity with long-running processes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/sandbox-inactivity-with-long-running-processes)
+
+# Sandboxes
+Source: https://docs.blaxel.ai/Sandboxes/Overview
+
+Run LLM-generated code in lightweight, sandboxed virtual machines with sub-25ms cold starts, file system, processes, and an MCP server for agents.
+
+Sandboxes are instant-launching virtual machines serving as **sandboxed compute runtimes for agents**. You can securely run LLM-generated code inside these VMs, making them ideal for agents that need access to an operating system to run commands with no risk of escaping.
+
+They provide a basic [REST API interface](https://docs.blaxel.ai/api-reference/filesystem) for accessing the file system and processes, along with an [MCP server](https://docs.blaxel.ai/Sandboxes/MCP) that makes these capabilities available as tool calls.
+
+## Sandbox lifecycle
+
+Unlike traditional sandbox infrastructure, Blaxel's standout feature is its fully managed lifecycle. Sandboxes resume from standby in under 25 milliseconds and automatically scale to zero after a few seconds of inactivity. This means that your sandboxes wait on standby indefinitely when not used, eliminating cold starts without complex orchestration. Memory state is maintained even after scaling down, including the running processes and entire filesystem. For cost-effective long-term persistence, you can attach [volumes](https://docs.blaxel.ai/Sandboxes/Volumes) to sandboxes. For shared filesystems mountable across multiple sandboxes, see [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview).
+
+> [!TIP]
+>
+> [Read more about the Blaxel sandbox lifecycle](https://blaxel.ai/blog/understand-the-lifecycle-of-a-blaxel-sandbox).
+
+### Active mode
+
+Sandboxes stay in active mode as long as there's an active connection to them.
+
+You are charged for memory (based on how much you allocated at sandbox creation) and storage while a sandbox is in active mode. CPU resources are allocated accordingly by Blaxel based on your selected memory allocation and are not charged separately. For example, a sandbox with 8 GB memory is allocated 4 CPU cores, while one with 16 GB memory is allocated 6 CPU cores. [Learn more about pricing](https://blaxel.ai/pricing).
+
+### Standby mode
+
+If a sandbox does not have an active connection, it automatically transitions to a warm standby mode (also called _scale-to-zero_). This transition happens in approximately 15 seconds.
+
+If a sandbox has an ongoing WebSocket/TCP connection, there is a 15-minute idle timeout for such a connection. This means that if the WebSocket/TCP connection remains idle for 15 minutes with no activity, the sandbox will automatically transition to standby mode.
+
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes) and transitions the sandbox to standby mode within approximately 15 seconds.
+
+Reconnecting to the sandbox transitions it back to active mode. Any running processes are included in this snapshot and will be instantly restored when you reconnect to the sandbox.
+
+> [!WARNING]
+>
+> The snapshot preserves process and filesystem state, but not external network connections, such as database connections, message queues, or HTTP connection pools, which will automatically time out and close on the remote side of the connection.
+
+You are not charged for memory while a sandbox is in standby mode. However, you are charged for the storage of the snapshot and/or the volumes. [Learn more about pricing](https://blaxel.ai/pricing).
+
+> [!NOTE]
+>
+> To prevent a sandbox from going into standby, you can use [process keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive), [WebSocket ping/pong messages](https://docs.blaxel.ai/Sandboxes/Standby-control) or [other techniques](https://docs.blaxel.ai/Sandboxes/Standby-control) to prevent the timeout.
+
+### Archived mode
+
+Standby keeps a sandbox instantly resumable, memory included, and you keep paying for the storage of its snapshot. When a sandbox is not needed for a long time, [archiving](https://docs.blaxel.ai/Sandboxes/Archive) it stores the filesystem changes it made over its image and shuts it down: memory is not preserved, and nothing is kept warm for it.
+
+An archived sandbox keeps its name, its configuration, and its preview URLs. Unarchiving it starts the sandbox again from its image and writes the archived filesystem back over it, so you get the same sandbox back with its files. All processes that were running are restarted automatically from their configuration, with new process IDs.
+
+> [!NOTE]
+>
+> Archiving differs from standby: standby resumes in milliseconds with memory and processes intact, while unarchiving takes as long as the archived filesystem needs to be written back. Memory is not restored; all processes that were running are restarted automatically. Archiving is also not a [snapshot](https://docs.blaxel.ai/Sandboxes/Fork): a snapshot can be forked into other sandboxes, while an archive only ever restores the sandbox it was taken from.
+
+### Deletion
+
+In addition to automatic scale-to-zero, Blaxel also supports [automatic sandbox deletion based on expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration). Starter quotas enforce time-to-live limits (TTLs), while higher quota tiers unlock sandboxes with unlimited persistence.
+
+> [!NOTE]
+>
+> Automatic deletion differs from automatic standby (_scale-to-zero_). Deleted sandboxes cannot be recovered, while sandboxes in standby mode can be resumed instantly.
+
+### Sandbox deployment statuses
+
+During the deployment process, the possible sandbox statuses are:
+
+- `UPLOADING`: A new sandbox version has just been uploaded; the build has not started yet.
+- `BUILDING`: A new sandbox version has been uploaded and the build is in progress.
+- `DEPLOYING`: The sandbox deployment is in progress.
+- `DEPLOYED`: The sandbox is ready to use. It is either in active mode or standby mode.
+- `FAILED`: An error occurred during the build or deployment of the sandbox.
+- `DEACTIVATING`: The sandbox is being disabled, either because it was explicitly disabled or because a previous revision is being superseded by a new deployment.
+- `DEACTIVATED`: The sandbox has been disabled and is not accepting connections.
+- `TERMINATED`: A TTL was set for the sandbox; it has been deleted and will be removed from the API/UI soon.
+- `DELETING`: A deletion request has been triggered and the deletion is in progress.
+- `ARCHIVING`: The filesystem is being exported to the archive store and the sandbox is about to be shut down.
+- `ARCHIVED`: The filesystem is stored and the sandbox is shut down. [Unarchive](https://docs.blaxel.ai/Sandboxes/Archive) it to use it again.
+- `UNARCHIVING`: The sandbox is running again and its archived filesystem is being restored.
+
+> [!NOTE]
+>
+> `UPLOADING/BUILDING` statuses only appear when using `bl deploy` and `bl push` from a sandbox image folder.
+
+## Use cases
+
+Some examples of use cases include:
+
+- **Code review agents** that analyze repositories to detect the effects of changes. These agents run fully isolated compute environments for each tenant while keeping them snapshotted in standby between sessions, eliminating the need to clone the repo every time.
+- **Code generation agents** that iterate in their own compute environments, and instantly render live application previews as human users build, step away, and log back in.
+- **Data analyst agents** that execute ad hoc data analysis workflows, generating scripts on-the-fly and running them securely against private files or data within an isolated, ZDR-compliant environment.
+- **Background agents** that operate beyond their pre-configured tools. Each agent gets its own "personal computer" where it can autonomously install packages, execute custom scripts, store files, and adapt to new requirements securely. They can parallelize dozens of those personal computers.
+
+## Create a sandbox
+
+### Using the SDKs
+
+Create a new sandbox using the [Blaxel SDK](https://docs.blaxel.ai/sdk-reference/introduction) by specifying a name, image to use, [deployment region](https://docs.blaxel.ai/Infrastructure/Regions), optional labels, and the ports to expose. Note that **ports** **80** (system) and **443** & **8080** (sandbox API) are reserved by Blaxel.
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+The recommended pattern for sandbox creation is `createIfNotExists()` / `create_if_not_exists()`. Blaxel first checks for an existing sandbox with the provided `name` and either retrieves it or creates a new one using your specified configuration.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox if it doesn't exist
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",  // public or custom image
+  memory: 4096,    // in MB
+  ports: [{ target: 3000, protocol: "HTTP" }],  // optional; ports to expose
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"    // deployment region
+});
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+
+    # Create sandbox if it doesn't exist
+    sandbox = await SandboxInstance.create_if_not_exists({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # optional; ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+      "region": "us-pdx-1"   # deployment region
+    })
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Attach [volumes](https://docs.blaxel.ai/Sandboxes/Volumes) in the create call with `volumes: [{ name: "my-volume", mountPath: "/mnt/data" }]` (Python: `"volumes": [{"name": "my-volume", "mount_path": "/mnt/data"}]`). Drives cannot be attached at creation. Create or get a drive in the sandbox's region, then call `sandbox.drives.mount(...)` as shown in [Mount a drive to a sandbox](https://docs.blaxel.ai/Agent-drive/Overview#mount-a-drive-to-a-sandbox).
+
+For [real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url#blaxel-sdk), use a constant preview name such as `"app"` with `sandbox.previews.createIfNotExists()` / `create_if_not_exists()`. Names are scoped to each sandbox. Omit `prefixUrl` to get a stable URL without generating your own prefix.
+
+An alternative is to use `create()`, which raises an error when a sandbox with the specified name already exists:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",   // public or custom image
+  memory: 4096,   // in MB
+  ports: [{ target: 3000, protocol: "HTTP" }],   // optional; ports to expose
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"   // deployment region
+});
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+
+    sandbox = await SandboxInstance.create({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # optional; ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+      "region": "us-pdx-1"   # deployment region
+    })
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Using the CLI and Console
+
+It is also possible to create a sandbox via the Blaxel CLI or the Blaxel Console.
+
+**CLI**
+
+```shell
+    bl new sandbox my-sandbox
+    cd my-sandbox
+    bl deploy
+    ```
+
+    This command initializes a new sandbox project and configuration file in the named directory `my-sandbox` and then deploys the sandbox on Blaxel.
+
+    The project directory contains the Blaxel configuration file `blaxel.toml`, which can be further customized to suit your sandbox deployment requirements, by modifying the base image, memory, environment, etc. [`Learn more about the blaxel.toml file`](https://docs.blaxel.ai/deployment-reference).
+
+> [!TIP]
+>
+> Running `bl deploy` here also saves the image to be reused later. As an alternative, you can use `bl push` to push the image to Blaxel's registry. `bl push` only publishes the image; it does not create a new sandbox deployment, update existing deployments, or restart running processes.
+
+**Console**
+
+- Log in to the [Blaxel Console](https://app.blaxel.ai/).
+- Click **Sandboxes** in the left navigation menu.
+- Click **\+Create sandbox** -\> **Deploy from console**.
+- Select an image.
+- On the next page, configure the sandbox resources, including memory, time-to-live and region.
+- Click **Next** to proceed.
+- On the next page, reconfirm the sandbox parameters. Click **Create** to create the sandbox.
+
+### Using the API
+
+Although less common, it is also possible to [create a sandbox by directly interacting with the Blaxel REST API](https://docs.blaxel.ai/Sandboxes/Templates#blaxel-api).
+
+## Understand sandbox configuration
+
+### Images
+
+Blaxel provides [pre-built sandbox images](https://docs.blaxel.ai/Sandboxes/Templates#pre-built-images) for common needs (e.g. `blaxel/nextjs:latest`, `blaxel/py-app:latest`).
+
+It is also possible to build your own [custom images](https://docs.blaxel.ai/Sandboxes/Templates) to create sandboxes with a consistent, customized set of tools, configurations, or entrypoint scripts.
+
+### Memory and filesystem
+
+For maximum performance, Blaxel sandboxes store part of their filesystem in memory. The base of the filesystem (the user-supplied image) is stored as read-only files on host storage using a highly efficient format called [EROFS (Extendable Read-Only File System)](https://en.wikipedia.org/wiki/EROFS). On top of the read-only base, a writable layer lives entirely in the sandbox's RAM using `tmpfs`. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) serves as orchestrator, directing reads to the EROFS base and writes to the in-memory `tmpfs` filesystem.
+
+Due to this, Blaxel sandboxes reserve, when possible, approximately 50% of the available memory for the `tmpfs` filesystem. More information on our implementation is available in this [blog post](https://blaxel.ai/blog/how-to-slash-sandbox-memory-usage-by-75-using-overlayfs).
+
+Use [volumes](https://docs.blaxel.ai/Sandboxes/Volumes) or [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview) when data needs to live at a specific mount path or persist independently from the sandbox lifecycle. Volumes require deleting and recreating the sandbox first, while drives can be hot-mounted/-unmounted. Both are slower than the local sandbox filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+### Ports
+
+The following ports are reserved by Blaxel's system:
+
+- **443**: This port hosts the main [sandbox API](https://docs.blaxel.ai/api-reference/filesystem/get-file-or-directory-information) and is exposed via HTTPS
+- **80**: Reserved for system operations
+- **8080**: Reserved for sandbox API functionality
+
+You can expose specific non-reserved ports [**when creating a new sandbox**](https://docs.blaxel.ai/Sandboxes/Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox via the sandbox API.
+
+> [!NOTE]
+>
+> You only need to expose ports at sandbox creation time if you plan to access the port via the sandbox API. For access via [preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url), ports are dynamically opened as needed.
+
+### Regions
+
+Select the region where you want to deploy your sandbox. The `region` parameter is optional but recommended, and can reference any of the [supported region codes](https://docs.blaxel.ai/Infrastructure/Regions).
+
+It is also possible to set a default region using the `BL_REGION` environment variable (e.g. in your `.env` file) to avoid repeating it in every SDK call.
+
+> [!WARNING]
+>
+> The `region` parameter is currently optional but will become mandatory in future versions of the Blaxel SDK. To ensure compatibility, it is highly recommended to always specify a deployment region, either using the `region` parameter in your SDK call or via the `BL_REGION` environment variable.
+
+### Labels
+
+You can also add optional labels for sandboxes. Labels are specified as key-value pairs during sandbox creation.
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",   // public or custom image
+  memory: 4096,   // in MB
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+  region: "us-pdx-1"   // deployment region
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",   # public or custom image
+  "memory": 4096,   # in MB
+  "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+  "region": "us-pdx-1"   # deployment region
+})
+```
+
+You can use these labels for filtering sandboxes in the Blaxel CLI or Blaxel Console:
+
+```shell
+# Get sandboxes with specific label (e.g., env=dev)
+bl get sandboxes -o json | jq -r '.[] | select(.metadata.labels.env == "dev") | .metadata.name'
+```
+
+### External ID
+
+External IDs let you tag sandboxes with your own identifier so you can retrieve them later without scanning your entire workspace. Use them to index sandboxes by session ID, user ID, conversation ID, or any caller-owned key.
+
+> [!NOTE]
+>
+> Requires `@blaxel/core` ≥ 0.2.93 (TypeScript) or `blaxel` ≥ 0.2.57 (Python).
+
+External IDs are backed by a dedicated database index, making lookups fast regardless of how many sandboxes exist in the workspace.
+
+Rules for `externalId`:
+
+- Max 64 characters, alphanumeric and dashes only (`a-z`, `A-Z`, `0-9`, `-`)
+- Not unique: multiple sandboxes can share the same value
+- Mutable: can be changed after creation
+- Omitting it on update preserves the current value
+
+Set `externalId` in metadata at creation time:
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  externalId: "session-abc-123",
+  region: "us-pdx-1"
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "external_id": "session-abc-123",
+    "region": "us-pdx-1"
+})
+```
+
+Retrieve the most recent non-terminated sandbox matching an external ID:
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.getByExternalId("session-abc-123");
+```
+
+```python Python
+sandbox = await SandboxInstance.get_by_external_id("session-abc-123")
+```
+
+List all sandboxes with a given external ID (paginated, hides terminated sandboxes by default):
+
+```typescript TypeScript
+const sandboxes = await SandboxInstance.list({ externalId: "session-abc-123" });
+```
+
+```python Python
+sandboxes = await SandboxInstance.list(external_id="session-abc-123")
+```
+
+### Kernel networking
+
+By default, sandboxes run on a minimal kernel without iptables support. You can enable iptables by passing `extraArgs` at creation time.
+
+> [!NOTE]
+>
+> `extraArgs` can only be set when creating a sandbox. It cannot be changed after creation.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  extraArgs: { iptables: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "extra_args": {"iptables": "enabled"},
+})
+```
+
+For a complete example of using iptables to run Tailscale inside a sandbox, see the [Tailscale tutorial](https://docs.blaxel.ai/Tutorials/Tailscale).
+
+### Android kernel
+
+On [Carbon](https://docs.blaxel.ai/Infrastructure/Gens), a sandbox can boot an Android-compatible kernel for running Android in a container. Enable it with `android: enabled` in `extraArgs`.
+
+The Android kernel also supports loadable kernel modules and kernel tracing (kprobes, tracepoints, eBPF, and perf), for out-of-tree drivers and eBPF profilers. These kernel extensions are off by default. Enable them with `kernelExtensions: enabled`:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-android-sandbox",
+  extraArgs: { android: "enabled", kernelExtensions: "enabled" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-android-sandbox",
+    "extra_args": {"android": "enabled", "kernelExtensions": "enabled"},
+})
+```
+
+Without `kernelExtensions`, the sandbox's kernel refuses module loading and kernel tracing to every process, including root, and nothing inside the sandbox can turn them back on.
+
+> [!WARNING]
+>
+> With kernel extensions on, the sandbox's kernel no longer blocks features that let processes modify the running kernel or extract information from it, such as loading unsigned modules. Enable them only for workloads that need modules or kernel tracing.
+
+`kernelExtensions` is accepted only together with `android: enabled`, and only on Carbon. Blaxel rejects other combinations when the sandbox is created. Modules are not signed. Build them against the sandbox's kernel version (`uname -r`).
+
+### Creation timeout
+
+Blaxel gives every sandbox creation a default deadline to become ready before failing it. You can shorten this deadline for a single `create()` or `createIfNotExists()` call with the `timeout` option, expressed in seconds. When the deadline is reached, Blaxel cancels the creation, removes the sandbox, and the call raises a `SandboxCreationTimeoutError`.
+
+Catch that error to handle a slow creation explicitly, for example by reporting it to the user or falling back to another region:
+
+```typescript TypeScript
+import { SandboxInstance, isCreationTimeoutError } from "@blaxel/core";
+
+try {
+  const sandbox = await SandboxInstance.createIfNotExists(
+    {
+      name: "my-sandbox",
+      image: "blaxel/base-image:latest",
+      memory: 4096,
+      region: "us-pdx-1",
+    },
+    { timeout: 30 } // fail if the sandbox is not ready after 30 seconds
+  );
+} catch (error) {
+  if (isCreationTimeoutError(error)) {
+    // The sandbox was removed: log, alert, or fall back to another region.
+    console.error(`Sandbox ${error.sandboxName} was not ready after ${error.timeout}s`);
+    return;
+  }
+  throw error;
+}
+```
+
+```python Python
+from blaxel.core import SandboxCreationTimeoutError, SandboxInstance
+
+try:
+    sandbox = await SandboxInstance.create_if_not_exists(
+        {
+            "name": "my-sandbox",
+            "image": "blaxel/base-image:latest",
+            "memory": 4096,
+            "region": "us-pdx-1",
+        },
+        timeout=30,  # fail if the sandbox is not ready after 30 seconds
+    )
+except SandboxCreationTimeoutError as error:
+    # The sandbox was removed: log, alert, or fall back to another region.
+    print(f"Sandbox {error.sandbox_name} was not ready after {error.timeout}s")
+```
+
+`SandboxCreationTimeoutError` exposes the error code (`"CREATION_TIMEOUT"`), the HTTP status (`408`), the sandbox name and the requested `timeout` so you can log or branch on the failure (`code`/`status`/`sandboxName` in TypeScript, `code`/`status_code`/`sandbox_name` in Python, where it is a subclass of `SandboxAPIError`). The sandbox has already been removed when the error is raised, so its name is free again if you decide to create it again.
+
+> [!NOTE]
+>
+> `timeout` must be a whole number between 1 and 50 seconds. It can only shorten the creation deadline, not extend it.
+
+### Expiration
+
+Blaxel supports [automatic sandbox deletion](https://docs.blaxel.ai/Sandboxes/Expiration) based on specific conditions.
+
+## Retrieve an existing sandbox
+
+To reconnect to an existing sandbox, simply provide its name:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+```
+
+> [!TIP]
+>
+> Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+
+## List sandboxes
+
+To retrieve all sandboxes in your workspace, use the built-in SDK pagination helper functions.
+
+> [!NOTE]
+>
+> Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxes = await SandboxInstance.list({ limit: 50 });
+for await (const sandbox of sandboxes) {
+  console.log(sandbox.metadata?.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+    sandboxes = await SandboxInstance.list(limit=50)
+    async for sandbox in sandboxes.auto_paging_iter():
+        print(sandbox.metadata.name)
+
+asyncio.run(main())
+```
+
+Pagination is also available via the Management API list endpoint. For more information, refer to the [API](https://docs.blaxel.ai/api-reference/introduction#pagination) and [SDK](https://docs.blaxel.ai/sdk-reference/introduction#pagination) reference documentation.
+
+## Delete a sandbox
+
+> [!NOTE]
+>
+> When you delete a sandbox, all data is immediately erased. If the sandbox was never in standby mode, Blaxel guarantees ZDR (zero data retention).
+
+Delete a sandbox by calling:
+
+- the class-level `delete()` method with the sandbox `name` as argument, or
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Delete sandbox using class-level method
+await SandboxInstance.delete("my-sandbox");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Delete sandbox using class-level method
+await SandboxInstance.delete("my-sandbox")
+```
+
+- the instance-level `delete()` method:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Get existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Delete sandbox using instance-level method
+await sandbox.delete()
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Get existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Delete sandbox using instance-level method
+await sandbox.delete()
+```
+
+## Upgrade a sandbox's API
+
+Every Blaxel sandbox includes a [custom API binary](https://docs.blaxel.ai/Sandboxes/Templates#how-sandbox-images-work), which is necessary for sandbox functionality like process management and file operations. It is possible to perform an in-place upgrade of this API without needing to recreate or restart the sandbox.
+
+> [!NOTE]
+>
+> This feature is currently in beta and only available for sandboxes built or created with sandbox API v0.2.0 or later (sandboxes created after 2 Feb 2026). For sandboxes built or created earlier than this date/API version, in-place upgrade is not possible; the sandbox must be recreated to obtain the new API.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+// Upgrade sandbox API to "latest"
+await sandbox.system.upgrade({ version: "latest" })
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Upgrade sandbox API to "latest"
+await sandbox.system.upgrade(version="latest")
+```
+
+You can find a list of available API versions in [Blaxel's public repository](https://github.com/blaxel-ai/sandbox/).
+
+## Connect to a sandbox with an interactive terminal
+
+You can explore the contents of a sandbox with an interactive terminal. You can access this terminal in two ways:
+
+- From the Blaxel Console, by visiting the detail page for your sandbox in your web browser and selecting the **Terminal** tab:
+
+- From your local host, by running:
+
+  ```bash
+  bl connect sandbox your-sandbox-name
+  ```
+
+- [Expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration): Automatically delete sandboxes based on specific conditions.
+
+- [MCP server](https://docs.blaxel.ai/Sandboxes/MCP): Interact with a sandbox through its MCP server.
+
+- [Variables and secrets](https://docs.blaxel.ai/Sandboxes/Variables-and-secrets): Set environment variables and secrets in sandboxes.
+
+- [Processes and commands](https://docs.blaxel.ai/Sandboxes/Processes): Execute and manage processes in sandboxes.
+
+- [File system operations](https://docs.blaxel.ai/Sandboxes/Filesystem): Manage directories and files in sandboxes.
+
+- [Tools for AI codegen](https://docs.blaxel.ai/Sandboxes/Codegen-tools): Manage codebases with tools specifically designed for code generation.
+
+- [Log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming): Access logs generated in a sandbox.
+
+- [Ports](https://docs.blaxel.ai/Sandboxes/Ports): Expose and connect to ports of a sandbox.
+
+- [Preview in real-time](https://docs.blaxel.ai/Sandboxes/Preview-url): Render code in real-time via a direct preview URL.
+
+- [Sessions](https://docs.blaxel.ai/Sandboxes/Sessions): Manage temporary sessions to connect to sandboxes from a frontend client.
+
+- [Proxy & network](https://docs.blaxel.ai/Sandboxes/Proxy): Route outbound traffic through the proxy, configure firewalls, and bind egress IPs.
+
+- [Volumes](https://docs.blaxel.ai/Sandboxes/Volumes): Attach volumes to sandboxes to persist files.
+
+- [Images](https://docs.blaxel.ai/Sandboxes/Templates): Create custom sandbox images.
+
+- [Best practices](https://docs.blaxel.ai/Sandboxes/best-practices): Recommended practices for using Blaxel sandboxes.
+
+Sandboxes work alongside [Agents Hosting](https://docs.blaxel.ai/Agents/Overview), [MCP Servers](https://docs.blaxel.ai/Functions/Overview), and [Batch Jobs](https://docs.blaxel.ai/Jobs/Overview) to form a complete agentic architecture. See [observability](https://docs.blaxel.ai/Observability/Overview) for monitoring sandbox activity.
+
+See tutorials and examples:
+
+- [Example: Connect Claude Code to a Blaxel Sandbox](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-MCP): Connect a Claude Agent SDK agent to a Blaxel sandbox and operate it using its MCP server.
+
+- [See more tutorials and examples](https://docs.blaxel.ai/Tutorials/Sandboxes-Overview): Read tutorials for running applications built with popular frameworks like Astro, Expo and Next.js on Blaxel.
+
+Or explore the Sandbox API reference:
+
+- [Sandbox API](https://docs.blaxel.ai/api-reference/filesystem): Access your sandbox with an HTTP REST API.
+
+# Expiration policies
+Source: https://docs.blaxel.ai/Sandboxes/Expiration
+
+Configure expiration policies to automatically delete Blaxel sandboxes after inactivity, a TTL, or other conditions to control snapshot storage costs.
+
+While Blaxel is designed for you to keep your sandboxes in standby perpetually, it also supports automatic deletion of sandboxes based on specific expiration policies. This is useful if you want to avoid keeping snapshot storage for a long tail of sandboxes that will never be reactivated again.
+
+> [!NOTE]
+>
+> Blaxel has a [quota tiering system](https://app.blaxel.ai/account/quotas) that unlocks higher limits and features on the platform as your tier progresses. Some quota tiers enforce expiration dates (Tier 0 and 1, with respectively up to 7 and 30 days). In higher tiers, unlimited persistence is permitted.
+
+Automatic deletion differs from the automatic standby (_scale-to-zero_) which happens to **all sandboxes** when inactive and where the memory and filesystem are snapshotted to be resumed instantly.
+
+To let your code react before a sandbox is deleted or goes on standby, see [Lifecycle signals](https://docs.blaxel.ai/Sandboxes/Lifecycle-signals).
+
+## Expiration policies
+
+The following options are available for sandbox expiry and deletion:
+
+- expire after a total maximum lifetime (time-to-live or TTL) from creation using the `ttl` parameter
+- expire at a specific date using the `expires` parameter
+- expire based on a combination of one or more lifecycle policies, specified with the `lifecycle.expirationPolicies` / `lifecycle.expiration_policies` parameter
+  - `ttl-max-age`: Delete after total lifetime from creation (equivalent to `ttl`) (1h, 24h, 7d)
+  - `ttl-idle`: Delete after period of inactivity from last active time (1h, 24h, 7d)
+  - `date`: Delete at a specific date (equivalent to `expires`)
+
+> [!NOTE]
+>
+> If these parameters are absent, sandboxes will not be deleted.
+
+> [!WARNING]
+>
+> For `ttl-idle`, "activity" is counted as either a **resume** or a **suspend** - not anything in between. If a sandbox hasn't been in standby since it was last woken up, the idle timer starts from the time of that first wake-up. This means that if your session runs continuously for longer than the idle TTL without going into standby, the sandbox will be deleted once the TTL elapses, even if it is actively in use.
+
+The sandbox metadata includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
+
+## Configure sandbox expiry rules at creation
+
+You can define a sandbox's time-to-live (TTL) configuration at creation time:
+
+```typescript TypeScript highlight={11-23}
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  ports: [{ target: 3000, protocol: "HTTP" }],
+  region: "us-pdx-1",
+  ttl: "24h", // Total duration before auto-deletion. Supported units: h, d, w
+  // OR
+  // expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
+  // OR / AND
+  lifecycle: {
+    expirationPolicies: [
+      {
+        type: "ttl-idle",
+        value: "24h",  // Delete after 24 hours of inactivity. Supported units: h, d, w
+        action: "delete"
+      }
+    ]
+  }
+});
+```
+
+```python Python highlight={11-23}
+from blaxel.core import SandboxInstance, SandboxLifecycle, ExpirationPolicy
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "memory": 4096,
+  "ports": [{ "target": 3000 }],
+  "region": "us-pdx-1",
+  "ttl": "24h", ## Total duration before auto-deletion. Supported units: h, d, w
+  ## OR
+  ## expires: new Date(Date.now() + 86400000) // Alternative: set a date at which it will be deleted
+  ## OR / AND
+  "lifecycle": SandboxLifecycle(
+    expiration_policies=[
+      ExpirationPolicy(
+        type_="ttl-idle",
+        value="24h",  # Delete after 24 hours of inactivity. Supported units: h, d, w
+        action="delete"
+      )
+    ]
+  )
+})
+```
+
+Important notes:
+
+- Three lifecycle expiration policies are supported: `ttl-idle`, `ttl-max-age` and `date`. Check out the [API reference](https://docs.blaxel.ai/api-reference/compute/update-sandbox) for full documentation.
+- The `ttl`, `ttl-idle` and `ttl-max-age` parameters accept a string with the following time units: `h` (hours), `m` (minutes), `d` (days), and `w` (weeks).
+- The minimum value for `ttl` and `ttl-max-age` is `5m`, and for `ttl-idle` it is `1m`. Shorter values are rejected with a `400` error, such as `ttl 1m is too short: the minimum is 5m`. This does not apply to `expires` or `date` policies. To remove a sandbox sooner, delete it explicitly.
+- You can combine multiple expiration policies. Whichever condition is met first will trigger the deletion.
+
+## Update sandbox expiry rules
+
+Updating a sandbox's TTL or expiration policies applies to the running sandbox: it is not restarted and keeps its filesystem, forks included.
+
+You can update a sandbox's time-to-live (TTL) configuration after it has been created:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", "30m");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", "30m")
+```
+
+You can also update the expiration policy of a sandbox after it has been created:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Update sandbox expiration policy
+await SandboxInstance.updateLifecycle("my-sandbox", {
+  expirationPolicies: [
+    { type: "ttl-max-age", value: "30m", action: "delete" }
+  ]
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Update sandbox expiration policy
+await SandboxInstance.update_lifecycle(
+    "my-sandbox",
+    {
+        "expiration_policies": [
+            { "type": "ttl-max-age", "value": "30m", "action": "delete" }
+        ]
+    },
+)
+```
+
+## Clear sandbox expiry rules
+
+To make a sandbox persist again, clear its TTL or lifecycle policies. Clearing does not recreate the sandbox or affect its filesystem.
+
+Pass `null` (or an empty string) to `updateTtl` to remove the TTL:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Clear the sandbox TTL
+const sandbox = await SandboxInstance.updateTtl("my-sandbox", null);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Clear the sandbox TTL
+sandbox = await SandboxInstance.update_ttl("my-sandbox", None)
+```
+
+Pass `null` to `updateLifecycle` to remove all expiration policies:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Remove all expiration policies
+await SandboxInstance.updateLifecycle("my-sandbox", null);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+# Remove all expiration policies
+await SandboxInstance.update_lifecycle("my-sandbox", None)
+```
+
+# Lifecycle signals
+Source: https://docs.blaxel.ai/Sandboxes/Lifecycle-signals
+
+Let sandbox code clean up before deletion and prepare before standby with SIGTERM and SIGUSR2 grace periods.
+
+You can have your sandbox warned before it is deleted or put on standby. Blaxel sends a signal to the processes running in your sandbox, then gives them a grace period to act before it continues.
+
+| Event | Signal | Setting | Maximum |
+| --- | --- | --- | --- |
+| Deletion | `SIGTERM` | `terminationGracePeriodSeconds` | 300 seconds |
+| Standby | `SIGUSR2` | `standbyGracePeriodSeconds` | 300 seconds |
+
+Both settings default to `0`: no signal is sent and the sandbox is deleted or put on standby right away. A value above the maximum or below `0` is rejected with a `400` error.
+
+## Configure the grace periods
+
+Set the grace periods when you create the sandbox:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-pdx-1",
+  terminationGracePeriodSeconds: 30,
+  standbyGracePeriodSeconds: 30,
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "region": "us-pdx-1",
+  "termination_grace_period_seconds": 30,
+  "standby_grace_period_seconds": 30,
+})
+```
+
+The same fields are available in `spec.runtime` of the [Create sandbox API](https://docs.blaxel.ai/api-reference/compute/create-sandbox). They are read when the sandbox is created, so changing them requires a new sandbox.
+
+## Handle deletion
+
+When a sandbox with a termination grace period is deleted, its processes receive `SIGTERM`. The sandbox is deleted as soon as they exit, or when the grace period ends, whichever comes first. A sandbox in standby is resumed first so that it can receive the signal, and the time to resume counts against the grace period.
+
+```typescript TypeScript
+process.on("SIGTERM", async () => {
+  await flushPendingWork();
+  process.exit(0);
+});
+```
+
+```python Python
+import signal
+import sys
+
+def on_sigterm(signum, frame):
+    flush_pending_work()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, on_sigterm)
+```
+
+## Handle standby
+
+When a sandbox with a standby grace period goes idle, its processes receive `SIGUSR2`. The sandbox keeps running across the standby: use the signal to flush buffers, write a checkpoint or close outbound connections.
+
+The sandbox goes on standby when your code says it is done, or when the grace period ends, whichever comes first. To say it is done, write `done` to the file at `$BLAXEL_STANDBY_READY_FILE`. Write it even if the preparation fails, otherwise the sandbox waits for the full grace period.
+
+If the sandbox becomes active again during the grace period, the standby is cancelled: a new request, a new connection or a [keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive) cancels it. The next time the sandbox goes idle, it receives `SIGUSR2` again.
+
+```typescript TypeScript
+import { writeFileSync } from "node:fs";
+
+process.on("SIGUSR2", async () => {
+  try {
+    await saveCheckpoint();
+  } finally {
+    writeFileSync(process.env.BLAXEL_STANDBY_READY_FILE!, "done");
+  }
+});
+```
+
+```python Python
+import os
+import signal
+
+def on_sigusr2(signum, frame):
+    try:
+        save_checkpoint()
+    finally:
+        with open(os.environ["BLAXEL_STANDBY_READY_FILE"], "w") as f:
+            f.write("done")
+
+signal.signal(signal.SIGUSR2, on_sigusr2)
+```
+
+```shell Shell
+trap 'save_checkpoint; echo done > "$BLAXEL_STANDBY_READY_FILE"' USR2
+```
+
+> [!WARNING]
+>
+> The default action of `SIGUSR2` is to terminate the process. Blaxel only sends it to processes that install a handler for it, so processes without one are not affected.
+
+## Which processes receive the signals
+
+The [sandbox API](https://docs.blaxel.ai/Sandboxes/Templates) receives both signals and passes them on to the processes it started: the `--command` of the image and the processes started through the [process API](https://docs.blaxel.ai/Sandboxes/Processes). On deletion, it waits for all of them to exit before it shuts down.
+
+If the entrypoint of your image is your own program rather than the sandbox API, it receives both signals directly.
+
+- [Standby mode](https://docs.blaxel.ai/Sandboxes/Overview#standby-mode): Learn how sandboxes go on standby and resume.
+
+- [Sandbox keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive): Keep a sandbox awake while a process runs.
+
+# Process execution
+Source: https://docs.blaxel.ai/Sandboxes/Processes
+
+Execute shell commands, retrieve process information, stream output, and control process lifecycle in Blaxel sandboxes using the SDK.
+
+Execute and manage processes in your sandboxes with Blaxel SDK. Run shell commands, retrieve process information, and control process execution.
+
+> [!TIP]
+>
+> Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+
+## Execute processes and commands
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+| --- | --- |
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+### Execute command
+
+Execute shell commands:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Execute command
+const process = await sandbox.process.exec({
+  command: "echo 'Hello, World!'"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Execute command
+process = await sandbox.process.exec({
+  "command": "echo 'Hello, World!'"
+})
+```
+
+By default, `exec` returns after starting the process without waiting for it to finish. Its output may not be available yet.
+
+### Get command output
+
+Set `waitForCompletion: true` (`"wait_for_completion": True` in Python) to wait for the command to finish. The result then holds its `stdout`, `stderr`, and `exitCode` (`exit_code` in Python):
+
+```typescript TypeScript
+const result = await sandbox.process.exec({
+  command: "ls /",
+  waitForCompletion: true
+});
+
+console.log(result.exitCode);
+console.log(result.stdout);
+console.log(result.stderr);
+```
+
+```python Python
+result = await sandbox.process.exec({
+  "command": "ls /",
+  "wait_for_completion": True
+})
+
+print(result.exit_code)
+print(result.stdout)
+print(result.stderr)
+```
+
+The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Set `timeout` to limit how long the command can run: if it's still running when the timeout expires, the process is killed and the call fails. For longer commands, see [Wait for process completion](https://docs.blaxel.ai/Sandboxes/Processes#wait-for-process-completion).
+
+Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
+
+### Set the working directory
+
+Set the working directory for subsequent commands:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Execute command
+const process = await sandbox.process.exec({
+  workingDir: "/app",
+  command: "ls -al"
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Execute command
+process = await sandbox.process.exec({
+  "working_dir": "/app",
+  "command": "ls -al"
+})
+```
+
+`workingDir` is a JSON request-body field, not a URL path. Pass a normal absolute filesystem path such as `"/workspace"`; do not URL-encode it as `"%2Fworkspace"`. In Python, the equivalent field is `working_dir`.
+
+### Use process names
+
+When starting a process (running a command), you can specify a **process name**. This lets you interact with the process - such as retrieving logs or process information - without needing to store the process ID on your end.
+
+```typescript TypeScript highlight={2}
+const process = await sandbox.process.exec({
+  name: "hello-process",
+  command: "echo 'Hello, World!'"
+});
+const processInfo = await sandbox.process.get("hello-process");
+```
+
+```python Python highlight={2}
+process = await sandbox.process.exec({
+  "name": "hello-process",
+  "command": "echo 'Hello, World!'"
+})
+process_info = await sandbox.process.get("hello-process")
+```
+
+You can use either the process name or the process ID to get information about the process:
+
+```typescript TypeScript
+const completedProcess = await sandbox.process.get("hello-process");
+if (completedProcess.status === "completed") {
+  // ...
+}
+```
+
+```python Python
+completed_process = await sandbox.process.get("hello-process")
+if completed_process.status == "completed":
+    # ...
+```
+
+The exit code of the process is available in the `exitCode` parameter (`exit_code` in Python) of the process execution object returned by the `process.exec` and `process.get` methods.
+
+You can also use the process ID or name to [retrieve logs of your processes](https://docs.blaxel.ai/Sandboxes/Log-streaming).
+
+### Kill process
+
+Kill a process immediately by running:
+
+```typescript TypeScript
+await sandbox.process.kill("test")
+```
+
+```python Python
+await sandbox.process.kill("test")
+```
+
+## Long-running processes
+
+Blaxel Sandboxes are great for long-running processes. Processes you launch detach by design: their `stdout` and `stderr` are redirected to files and the process is monitored by background workers in the sandbox, so it survives independently of your client connection.
+
+By default, the general [sandbox lifecycle](https://docs.blaxel.ai/Sandboxes/Overview#sandbox-lifecycle) rules still apply: the sandbox only stays awake while a connection is maintained and will suspend after a few seconds of inactivity. Use `keepAlive` to override this for the duration of a process.
+
+Two independent flags let you tune how the behavior works.
+
+- `waitForCompletion` (default: `false`) controls only whether the SDK call blocks until the process exits and returns its output. It has no effect on the process or sandbox lifetime.
+- `keepAlive` (default: none) controls only whether the sandbox stays awake (auto-standby/scale-to-zero disabled) while the process runs, even with no active client connection. A counter tracks running `keepAlive` processes and is decremented automatically when each one completes, letting the sandbox return to standby on its own. See [Sandbox keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive) for details.
+
+### Wait for process completion
+
+You can wait for process completion when executing it:
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "build-process",
+  command: "npm run build",
+  waitForCompletion: true,
+  timeout: 60 // 60 seconds
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "build-process",
+  "command": "npm run build",
+  "wait_for_completion": True,
+  "timeout": 60  # 60 seconds
+})
+```
+
+When waiting for completion, the process execution object contains the command's [output](https://docs.blaxel.ai/Sandboxes/Processes#get-command-output): `stdout`, `stderr`, and both combined in `logs`. Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
+
+> [!WARNING]
+>
+> When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.
+
+> [!NOTE]
+>
+> `timeout` is the longest a process can run, in seconds, with or without `keepAlive`. When it expires, the process is killed and `restartOnFailure` doesn't restart it; a `waitForCompletion` call fails with a 422 error (`process timed out after N seconds`). Without `timeout`, a process runs until it exits, except `keepAlive` processes, which default to 600 seconds (see [Sandbox keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive)).
+
+You can also wait for a process after it has started:
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "long-task",
+  command: "sleep 10"
+});
+
+// Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", {
+  maxWait: 600000,
+  interval: 5000
+});
+```
+
+```python Python
+await sandbox.process.exec({
+  "name": "long-task",
+  "command": "sleep 10"
+})
+
+# Wait for completion (max 10 minutes, check every 5 seconds)
+await sandbox.process.wait("long-task", max_wait=600000, interval=5000)
+```
+
+Set a long completion duration if your process is expected to take longer.
+
+### Wait for ports
+
+In some cases, you may want to wait for a port to be opened while running - for example if you are running `npm run dev` and want to wait for port 3000 to be open. `exec` returns as soon as the ports are open, and the process keeps running in the background.
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "dev-server",
+  command: "npm run dev -- --host $HOST --port 3000",
+  waitForPorts: [3000]
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "dev-server",
+  "command": "npm run dev -- --host $HOST --port 3000",
+  "wait_for_ports": [3000]
+})
+```
+
+A port counts as open once the server listens on the address in `HOST` (or on all interfaces). A server bound only to `localhost` isn't reachable from outside the sandbox, so it doesn't count.
+
+Leave `timeout` unset (or set it to `0` with `keepAlive`) for a server that should keep running. `timeout` is the process's lifetime, not just the wait, so the server is killed when it expires, even after its ports open. Without it, the call waits until the ports open. If the server takes 120 seconds or more to open them, the gateway ends the call with a 504 error, but the process keeps running: check it with `process.get` and retry until the port responds. If the process fails before its ports open (it exits with a non-zero code or is killed), the call fails right away. The error includes the exit code and the last lines of the process's output:
+
+```typescript TypeScript
+try {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --host $HOST --port 3000",
+    waitForPorts: [3000]
+  });
+} catch (error) {
+  // e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
+  console.error(error.message);
+}
+```
+
+```python Python
+try:
+    await sandbox.process.exec({
+        "name": "dev-server",
+        "command": "npm run dev -- --host $HOST --port 3000",
+        "wait_for_ports": [3000]
+    })
+except Exception as error:
+    # e.g. "process exited with code 1 before ports [3000] opened; last output: ..."
+    print(error)
+```
+
+> [!NOTE]
+>
+> Don't end the command with `&`. The shell exits straight away and the server it put in the background isn't tracked as part of the process, so the call waits until the gateway ends it and a startup crash isn't reported. Failing fast needs sandbox-api 0.2.62 or later; custom images pick it up when rebuilt.
+
+## Process stdin
+
+By default, a process has no stdin: it reads end-of-file as soon as it starts. Start it with `stdin: true` to give it a writable pipe, then send input with `writeStdin` and close the pipe with `closeStdin`. Use this to drive programs that read from stdin, such as stdio MCP servers and other JSON-RPC programs.
+
+The pipe passes your bytes through unchanged. Unlike the [interactive terminal](https://docs.blaxel.ai/Sandboxes/Overview#connect-to-a-sandbox-with-an-interactive-terminal), there is no TTY in between, so nothing is echoed back or rewritten.
+
+> [!NOTE]
+>
+> Process stdin needs `@blaxel/core` 0.3.19 or later in TypeScript, `blaxel` 0.4.9 or later in Python, and sandbox-api 0.2.56 or later in the sandbox. Custom images pick it up when rebuilt.
+
+### Write to a process
+
+Start the process with a name and `stdin: true`, write to it, then close stdin to send end-of-file:
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "sort",
+  command: "sort",
+  stdin: true
+});
+
+await sandbox.process.writeStdin("sort", "cherry\napple\nbanana\n");
+await sandbox.process.closeStdin("sort");
+
+await sandbox.process.wait("sort");
+const output = await sandbox.process.logs("sort", "stdout");
+// "apple\nbanana\ncherry\n"
+```
+
+```python Python
+await sandbox.process.exec({
+  "name": "sort",
+  "command": "sort",
+  "stdin": True
+})
+
+await sandbox.process.write_stdin("sort", "cherry\napple\nbanana\n")
+await sandbox.process.close_stdin("sort")
+
+await sandbox.process.wait("sort")
+output = await sandbox.process.logs("sort", "stdout")
+# "apple\nbanana\ncherry\n"
+```
+
+`writeStdin` (`write_stdin` in Python) takes a string or bytes and writes them as is, so include the trailing newline your program expects. `closeStdin` (`close_stdin` in Python) can be called more than once.
+
+### Run a stdio MCP server
+
+A stdio MCP server reads JSON-RPC messages from stdin and writes one reply per line to stdout. Send each message with `writeStdin`, and read the replies by [streaming the process's stdout](https://docs.blaxel.ai/Sandboxes/Log-streaming):
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "mcp-fs",
+  command: "npx -y @modelcontextprotocol/server-filesystem /tmp",
+  stdin: true
+});
+
+// Each stdout line is one JSON-RPC message from the server
+const pending = new Map<number, (message: any) => void>();
+const stream = sandbox.process.streamLogs("mcp-fs", {
+  onStdout: (line) => {
+    const message = JSON.parse(line);
+    pending.get(message.id)?.(message);
+  }
+});
+
+const send = (message: object) =>
+  sandbox.process.writeStdin("mcp-fs", JSON.stringify(message) + "\n");
+const request = (id: number, method: string, params: object = {}) =>
+  new Promise<any>((resolve) => {
+    pending.set(id, resolve);
+    void send({ jsonrpc: "2.0", id, method, params });
+  });
+
+await request(1, "initialize", {
+  protocolVersion: "2025-06-18",
+  capabilities: {},
+  clientInfo: { name: "my-client", version: "1.0.0" }
+});
+await send({ jsonrpc: "2.0", method: "notifications/initialized" });
+const tools = await request(2, "tools/list");
+
+// Closing stdin shuts the server down
+await sandbox.process.closeStdin("mcp-fs");
+stream.close();
+```
+
+```python Python
+import asyncio
+import json
+
+await sandbox.process.exec({
+  "name": "mcp-fs",
+  "command": "npx -y @modelcontextprotocol/server-filesystem /tmp",
+  "stdin": True
+})
+
+# Each stdout line is one JSON-RPC message from the server
+pending = {}
+
+def on_stdout(line):
+    message = json.loads(line)
+    reply = pending.pop(message.get("id"), None)
+    if reply:
+        reply.set_result(message)
+
+stream = sandbox.process.stream_logs("mcp-fs", {"on_stdout": on_stdout})
+
+async def send(message):
+    await sandbox.process.write_stdin("mcp-fs", json.dumps(message) + "\n")
+
+async def request(request_id, method, params=None):
+    reply = asyncio.get_running_loop().create_future()
+    pending[request_id] = reply
+    await send({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params or {}})
+    return await reply
+
+await request(1, "initialize", {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {},
+    "clientInfo": {"name": "my-client", "version": "1.0.0"}
+})
+await send({"jsonrpc": "2.0", "method": "notifications/initialized"})
+tools = await request(2, "tools/list")
+
+# Closing stdin shuts the server down
+await sandbox.process.close_stdin("mcp-fs")
+stream.close()
+```
+
+The first `npx` run downloads the server package, so the first reply can take several seconds.
+
+### Stdin errors and restarts
+
+Sequential writes keep their order, and two concurrent writes never mix inside a message. The SDK does not retry a failed write, since a duplicate would corrupt the stream. A write fails with:
+
+- `409` if the process was started without `stdin: true`, or its stdin is closed
+- `413` if the data is larger than 8 MiB
+- `503` if the process stopped reading and the pipe stayed full for 10 seconds
+
+After a `503`, part of the data may have gone through, so restart the process.
+
+The pipe survives sandbox standby and resume. With [`restartOnFailure`](https://docs.blaxel.ai/Sandboxes/Processes#restart-process-on-failure), each restart gets a new pipe, and data written between the failure and the restart is lost. If the sandbox API itself restarts, the process reads end-of-file and writes fail with `409`: restart the process and redo your protocol's handshake.
+
+Over the Sandbox API, start the process with `"stdin": true` on `POST /process`, then [write to its stdin](https://docs.blaxel.ai/api-reference/process/write-to-a-processs-stdin) with `POST /process/{identifier}/stdin` and the raw bytes as the request body, and [close its stdin](https://docs.blaxel.ai/api-reference/process/close-a-processs-stdin) with `DELETE /process/{identifier}/stdin`.
+
+## Auto-restart
+
+### Restart process on failure
+
+You can restart a process if it fails, up to a maximum number of restart attempts:
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "start-server",
+  command: "npm run dev -- --host $HOST --port 8000",
+  restartOnFailure: true,
+  maxRestarts: 5
+});
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "start-server",
+  "command": "uvicorn main:app --reload --host $HOST --port 8000",
+  "restart_on_failure": True,
+  "max_restarts": 5
+})
+```
+
+## Sandbox keep-alive
+
+By default, sandboxes automatically switch to standby when there is no active connection to save resources. However, it is possible to adjust this behavior and keep the sandbox running when you launch a process, even if there isn't an active connection to it. This is typically used to keep a long-running task actively running within the sandbox environment even when it is not serving requests.
+
+You can include additional keep-alive metadata when launching a new process:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Start a dev server that keeps the sandbox awake
+await sandbox.process.exec({
+  name: "dev-server",
+  command: "npm run dev -- --hostname $HOST --port 3000",
+  keepAlive: true,        // Prevents auto-standby while the process runs
+  timeout: 3600           // Auto-kill the process after 1 hour. Set 0 to not auto-kill.
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Start a dev server that keeps the sandbox awake
+await sandbox.process.exec({
+  "name": "dev-server",
+  "command": "npm run dev -- --hostname $HOST --port 3000",
+  "keep_alive": True,        # Prevents auto-standby
+  "timeout": 3600            # Auto-kill after 1 hour
+})
+```
+
+`timeout` kills any process when it expires. Only `keepAlive` processes get a default: a `keepAlive` process started without a `timeout` is killed after **600 seconds (10 minutes)**. To run a `keepAlive` process indefinitely with no auto-kill, set `timeout: 0`.
+
+The table below summarizes how `keepAlive` and `timeout` interact:
+
+| Configuration | Process auto-kill behavior |
+| --- | --- |
+| `keepAlive` not set (default), no `timeout` | Never auto-killed. Runs until it completes on its own. |
+| `keepAlive` not set (default), `timeout: N` | Auto-killed after **N seconds**. |
+| `keepAlive: true`, no `timeout` | Auto-killed after **600 seconds** (10 minutes). |
+| `keepAlive: true`, `timeout: 0` | Never auto-killed. Runs until it completes on its own. |
+| `keepAlive: true`, `timeout: N` | Auto-killed after **N seconds**. |
+
+You can run multiple processes, and the sandbox will stay active until all of them complete. Here each one is killed after 1 hour:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.process.exec({
+  name: "api-server",
+  command: "npm run start:api",
+  keepAlive: true,
+  timeout: 3600
+});
+
+await sandbox.process.exec({
+  name: "worker",
+  command: "npm run start:worker",
+  keepAlive: true,
+  timeout: 3600
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+await sandbox.process.exec({
+  "name": "api-server",
+  "command": "npm run start:api",
+  "keep_alive": True,
+  "timeout": 3600
+})
+
+await sandbox.process.exec({
+  "name": "worker",
+  "command": "npm run start:worker",
+  "keep_alive": True,
+  "timeout": 3600
+})
+```
+
+## Disable process telemetry logging
+
+By default, process stdout and stderr are exported as structured telemetry logs (visible in external observability systems). You can disable this telemetry export by setting the `SANDBOX_DISABLE_PROCESS_LOGGING` environment variable inside the sandbox.
+
+When set to `true` or `1`, structured telemetry output is suppressed for **all** processes. File-based logging and [real-time log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming) via the SDK remain fully functional and are not affected.
+
+Set this variable in your Dockerfile or at sandbox creation time:
+
+```dockerfile
+ENV SANDBOX_DISABLE_PROCESS_LOGGING=true
+```
+
+Alternatively, you can disable process logging for sandboxes at workspace level using the Blaxel Console, in the **Workspace settings** section.
+
+> [!NOTE]
+>
+> This only suppresses the structured telemetry export. You can still retrieve process logs via the SDK's `process.logs()` method and stream them in real-time.
+
+## Process statuses
+
+A process can have any of the following statuses:
+
+- `running`
+- `completed`
+- `failed`
+- `killed`
+- `stopped`
+
+# File system
+Source: https://docs.blaxel.ai/Sandboxes/Filesystem
+
+Read, write, list, and delete files inside a Blaxel sandbox using a simple file system interface from the SDK, MCP server, or REST API.
+
+Manage files and directories within sandboxes through the `fs` module of Blaxel SDK. This module provides essential operations for creating, reading, writing, copying, and deleting files and directories.
+
+> [!TIP]
+>
+> Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+> [!TIP]
+>
+> Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+
+## Basic file system operations
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+### Create directory
+
+Create a new directory at a specific path in the sandbox:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.fs.mkdir("/blaxel/app/uploads");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.fs.mkdir("/blaxel/app/uploads")
+```
+
+### List files
+
+List files in a specific path:
+
+```typescript TypeScript
+const { subdirectories, files } = await sandbox.fs.ls("/blaxel/app");
+```
+
+```python Python
+result = await sandbox.fs.ls("/blaxel/app")
+directories = result.subdirectories
+files = result.files
+```
+
+#### Address file paths over HTTP
+
+Filesystem paths are part of the URL when you call the sandbox API directly over HTTP. The API resolves a path without a leading slash relative to the filesystem service's working directory. To address an absolute path, URL-encode the leading slash as `%2F`.
+
+For example, if the filesystem working directory is `/app`:
+
+| Request path | Resolved filesystem path |
+| --- | --- |
+| `/filesystem/workspace` | `/app/workspace` |
+| `/filesystem/%2Fworkspace` | `/workspace` |
+
+The CLI's double-slash form, such as `--path /filesystem//workspace`, is the CLI equivalent for an absolute path. For a direct HTTP request, use `%2F` for the leading slash:
+
+```bash
+curl -X GET \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem/%2Fworkspace" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>"
+```
+
+The same rule applies when initiating a multipart upload. The following example starts an upload to the absolute path `/workspace/archive.tar`, uploads one part, and completes the upload. Repeat the part request with increasing `partNumber` values for additional parts, then include every returned `etag` in the completion request.
+
+```bash
+# Initiate an upload to /workspace/archive.tar.
+curl -X POST \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/initiate/%2Fworkspace/archive.tar" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"permissions":"0644"}'
+
+# Use the uploadId returned above to upload each part.
+curl -X PUT \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/<UPLOAD_ID>/part?partNumber=1" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -F "file=@archive.part-1"
+
+# Complete the upload with the etag returned for each part.
+curl -X POST \
+  "https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/filesystem-multipart/<UPLOAD_ID>/complete" \
+  -H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"parts":[{"partNumber":1,"etag":"<PART_1_ETAG>"}]}'
+```
+
+This URL-encoding requirement applies only when the filesystem path is embedded in an HTTP URL. SDK filesystem methods accept normal paths such as `/workspace`.
+
+### Find files and directories
+
+> [!NOTE]
+>
+> Blaxel's Sandbox API uses an optimized `find()` method, which is faster than using the native `find` tool.
+
+Find files and directories matching specified patterns:
+
+```typescript TypeScript
+let result = await sandbox.fs.find(
+  "/app",
+  {
+    type: "file",
+    patterns: ["*.md", "*.html"],
+    maxResults: 1000,
+  }
+);
+
+if (result.matches && result.matches.length > 0) {
+  for (const file of result.matches) {
+    console.log(`Found file: ${file.path}`);
+  }
+} else {
+  console.log("No files found.");
+}
+```
+
+```python Python
+result = await sandbox.fs.find(
+    path="/app",
+    type="file",
+    patterns=["*.md", "*.html"],
+    max_results=1000,
+)
+if result.matches:
+    for file in result.matches:
+        logger.info(f"Found file: {file.path}")
+else:
+    logger.info("No files found.")
+```
+
+### Search for text content within files
+
+> [!NOTE]
+>
+> Blaxel's Sandbox API uses an optimized `grep()` method, which is faster than using the native `grep` tool.
+
+Find files containing specified text content:
+
+```typescript TypeScript
+let result = await sandbox.fs.grep(
+  "agentic",
+  "/app",
+  {
+    caseSensitive: true,
+    contextLines: 2,
+    maxResults: 5,
+    filePattern: "*.mdx",
+    excludeDirs: ["images", "node_modules"],
+  }
+);
+
+if (result.matches && result.matches.length > 0) {
+  for (const match of result.matches) {
+    console.log(`${match.path}:${match.line} -> ${match.text}`);
+  }
+} else {
+  console.log("No matches found.");
+}
+```
+
+```python Python
+result = await sandbox.fs.grep(
+    query="agentic",
+    path="/app",
+    case_sensitive=True,
+    context_lines=2,
+    max_results=5,
+    file_pattern="*.mdx",
+    exclude_dirs=["images", "node_modules"],
+)
+if result.matches:
+    for match in result.matches:
+        logger.info(
+            f"{match.path}:{match.line} -> {match.text}"
+        )
+else:
+    logger.info("No matches found.")
+```
+
+### Read file
+
+Read a file from a specific filepath:
+
+```typescript TypeScript
+const content = await sandbox.fs.read("/blaxel/app/config.json");
+```
+
+```python Python
+content = await sandbox.fs.read("/blaxel/app/config.json")
+```
+
+### Read many files
+
+Discover relative file paths with `fs.find`, then read text files in batches of four. This returns flat path/content pairs with one discovery call plus one read call per file, not a single bulk-read request.
+
+`find` defaults to 20 results, so do not assume its default response includes every file. Request one more than your chosen file cap and reject the result if that extra match is returned. `excludeDirs` (`exclude_dirs` in Python) matches directory names, not path globs; apply file exclusions by filtering paths separately.
+
+```typescript TypeScript
+const root = "/blaxel/app/schemas";
+const maxFiles = 20;
+const result = await sandbox.fs.find(root, {
+  type: "file",
+  patterns: ["*.json"],
+  excludeDirs: ["node_modules", ".git"],
+  maxResults: maxFiles + 1,
+});
+const matches = result.matches ?? [];
+if (matches.length > maxFiles) {
+  throw new Error("File cap exceeded; narrow your search.");
+}
+
+const files: Array<{ path: string; content: string }> = [];
+for (let offset = 0; offset < matches.length; offset += 4) {
+  const batch = await Promise.all(
+    matches.slice(offset, offset + 4).map(async (file) => ({
+      path: file.path,
+      content: await sandbox.fs.read(`${root}/${file.path}`),
+    }))
+  );
+  files.push(...batch);
+}
+```
+
+```python Python
+import asyncio
+
+root = "/blaxel/app/schemas"
+max_files = 20
+result = await sandbox.fs.find(
+    root,
+    type="file",
+    patterns=["*.json"],
+    exclude_dirs=["node_modules", ".git"],
+    max_results=max_files + 1,
+)
+matches = result.matches or []
+if len(matches) > max_files:
+    raise ValueError("File cap exceeded; narrow your search.")
+
+async def read_file(file):
+    return {
+        "path": file.path,
+        "content": await sandbox.fs.read(f"{root}/{file.path}"),
+    }
+
+files = []
+for offset in range(0, len(matches), 4):
+    batch = await asyncio.gather(
+        *(read_file(file) for file in matches[offset:offset + 4])
+    )
+    files.extend(batch)
+```
+
+### Export a whole directory as one archive
+
+Create an archive on disk with `tar`, then download it with one binary read. This uses two calls for creation and download, plus a cleanup call. Your sandbox image must include `tar`. Keep the temporary archive outside the directory you are exporting.
+
+```typescript TypeScript
+import { randomUUID } from "node:crypto";
+
+const archivePath = `/tmp/schemas-${randomUUID()}.tar.gz`;
+let archiveData: Blob;
+try {
+  const result = await sandbox.process.exec({
+    command: `tar -czf '${archivePath}' -C '/blaxel/app/schemas' .`,
+    waitForCompletion: true,
+    timeout: 30,
+  });
+  if (result.exitCode !== 0) {
+    throw new Error("Archive creation failed.");
+  }
+  archiveData = await sandbox.fs.readBinary(archivePath);
+} finally {
+  await sandbox.fs.rm(archivePath);
+}
+```
+
+```python Python
+from uuid import uuid4
+
+archive_path = f"/tmp/schemas-{uuid4()}.tar.gz"
+try:
+    result = await sandbox.process.exec({
+        "command": f"tar -czf '{archive_path}' -C '/blaxel/app/schemas' .",
+        "wait_for_completion": True,
+        "timeout": 30,
+    })
+    if result.exit_code != 0:
+        raise RuntimeError("Archive creation failed.")
+    archive_data = await sandbox.fs.read_binary(archive_path)
+finally:
+    await sandbox.fs.rm(archive_path)
+```
+
+> [!WARNING]
+>
+> Do not pipe base64-encoded file contents through process logs. Output can be truncated, and file contents are exposed in retained logs. Use the binary filesystem read instead.
+
+Neither recipe guarantees a consistent snapshot if files change during the operation.
+
+### Write file
+
+Create a file in a specific path:
+
+```typescript TypeScript
+await sandbox.fs.write("/blaxel/app/config.json", "{}");
+```
+
+```python Python
+await sandbox.fs.write("/blaxel/app/config.json", "{}")
+```
+
+See down below for how to upload/write a binary, or multiple files at once.
+
+### Write multiple files
+
+You can write multiple files or directories simultaneously. The second path parameter in `writeTree` specifies the base directory for writing the file tree, eliminating the need to repeat the full path for each file.
+
+```typescript TypeScript
+const files = [
+  { path: "src/app.js", content: "console.log('Hello');" },
+  { path: "src/utils.js", content: "export const helper = () => {};" },
+  { path: "package.json", content: '{"name": "my-app"}' },
+  { path: "docs/README.md", content: "# My App" }
+];
+await sandbox.fs.writeTree(files, "/blaxel/app");
+```
+
+```python Python
+files = [
+    {"path": "src/app.py", "content": "print('Hello')"},
+    {"path": "src/utils.py", "content": "def helper(): pass"},
+    {"path": "requirements.txt", "content": "flask==2.0.1"},
+    {"path": "docs/README.md", "content": "# My App"}
+]
+await sandbox.fs.write_tree(files, "/blaxel/app")
+```
+
+### Read binary file
+
+Read a binary file from the sandbox filesystem:
+
+```typescript TypeScript
+const binaryData = await sandbox.fs.readBinary("/tmp/image.webp");
+```
+
+```python Python
+binary_data = await sandbox.fs.read_binary("/tmp/image.webp")
+```
+
+The binary content is returned as a Web API *Blob* object.
+
+### Write binary file
+
+Write binary content to a file in the sandbox filesystem:
+
+```typescript TypeScript
+const binaryData = fs.readFileSync("./image.webp");
+await sandbox.fs.writeBinary("/blaxel/app/assets/image.webp", binaryData);
+```
+
+```python Python
+with open("image.webp", "rb") as f:
+    binary_data = f.read()
+    await sandbox.fs.write_binary("/blaxel/app/assets/image.webp", binary_data)
+```
+
+The binary content to write can be provided as:
+
+- *Buffer*: Node.js Buffer object
+- *Blob*: Web API Blob object
+- *File*: Web API File object
+- *Uint8Array*: Typed array containing binary data
+
+> [!NOTE]
+>
+> If you're calling the sandbox filesystem API directly over HTTP instead of using an SDK, a single request body may be limited. On sandboxes whose `nodeGeneration` is `mk3.0`, a proxy in front of the sandbox rejects bodies over 8 MiB (8,388,608 bytes) with an HTTP 413 and a plain HTML body, not a structured JSON error. Sandboxes on `mk3.1` don't apply this limit. To work on both, upload larger files in parts via the sandbox's multipart upload endpoints rather than in a single request. Blaxel SDKs handle this automatically: SDK functions like `write()`, `writeBinary()`, and `write_binary()` automatically split files over 5 MB and send via multipart upload in 5 MB chunks.
+
+### Download file to host
+
+Download a file from the sandbox filesystem to the host:
+
+```typescript TypeScript
+await sandbox.fs.download("/tmp/foo.bin", "foo2.bin");
+```
+
+```python Python
+await sandbox.fs.download("/tmp/foo.bin", "foo2.bin")
+```
+
+### Copy file
+
+Copy a file from a path to another path:
+
+```typescript TypeScript
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json");
+```
+
+```python Python
+await sandbox.fs.cp("/blaxel/app/config.json", "/blaxel/app/config.backup.json")
+```
+
+### Delete file or directory
+
+Delete a file or directory by specifying its path:
+
+```typescript TypeScript
+await sandbox.fs.rm(`/blaxel/app/config.json`);
+```
+
+```python Python
+await sandbox.fs.rm(f"/blaxel/app/config.json")
+```
+
+## Watch filesystem for events
+
+The `watch` function monitors all file system changes **in the specified directory.** You can also watch subdirectories by passing a `/my/directory/**` pattern.
+
+By default (when *withContent: false*), the events will only include metadata about the changes, not the actual file contents. Here's what you'll get in the callback events:
+
+1. For ALL operations (CREATE, WRITE, DELETE, etc.), you'll receive:
+    1. op: The operation type (e.g., "CREATE", "WRITE", "DELETE")
+    2. path: The directory path where the change occurred
+    3. name: The name of the file/directory that changed
+2. You will NOT receive:
+    1. The actual content of the files
+    2. File contents for CREATE or WRITE operations
+
+```typescript TypeScript
+// You can specify if you want the content of the files or not
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path, fileEvent.content)
+}, {
+  withContent: true
+});
+
+// Do file operations
+
+// At the end, close the watch handle
+handle.close();
+```
+
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path, file_event.content)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, { "with_content": True })
+
+# Do file operations
+
+# At the end, close the watch handle
+handle["close"]()
+```
+
+### Watch sub-directories
+
+Watch all sub-directories recursively with `/**`:
+
+```typescript TypeScript
+const handle = sandbox.fs.watch("/folder/**", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+});
+
+```
+
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/folder/**", watch_callback)
+```
+
+### Ignore files or directories
+
+You can ignore changes in certain files or directories by providing an array of filepaths to ignore:
+
+```typescript TypeScript
+const handle = sandbox.fs.watch("/", (fileEvent) => {
+  console.log(fileEvent.op, fileEvent.path)
+}, {
+  ignore: ["/folder", "/folder_two/test2.txt"]
+});
+```
+
+```python Python
+def watch_callback(file_event):
+  print(file_event.op, file_event.path)
+
+# You can specify if you want the content of the files or not
+handle = sandbox.fs.watch("/", watch_callback, {
+  "ignore": ["/folder", "/folder_two/test2.txt"]
+})
+```
+
+Specify `withContent: true` so the events include the actual file contents.
+
+# Code generation tools
+Source: https://docs.blaxel.ai/Sandboxes/Codegen-tools
+
+Use Blaxel sandbox tools and functions optimized for AI code generation, including file editing, formatting, search, and execution helpers.
+
+Blaxel Sandboxes provide tools for managing files and their contents, specialized for code generation ("*codegen*") use cases. These tools are accessible through the sandboxes' [MCP server](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox) and [REST API](https://docs.blaxel.ai/api-reference/fastapply/apply-code-edit).
+
+## Fast apply of file edits
+
+> [!NOTE]
+>
+> Fast apply of file edits is powered by [Morph](https://morphllm.com/) or [Relace](https://www.relace.ai/) and requires you to bring your own Morph/Relace account.
+
+With this tool, you can **apply code changes** suggested by an LLM to your existing code files fast (2000+ tokens/second).
+
+Traditional code generation requires generating the entire file every time, which can be slower for large files. With this approach your LLM only generates the specific changes needed, and this tool applies them to the original file.
+
+### Configure environment variables
+
+**Morph**
+
+Pass your [Morph API key](https://docs.morphllm.com/api-reference/introduction#authentication) and Morph model (default = *morph-v2*) set as environment variables when creating the sandbox.
+
+```tsx TypeScript
+
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox with Morph API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "MORPH_API_KEY", value: process.env.MORPH_API_KEY || "" },
+    { name: "MORPH_MODEL", value: process.env.MORPH_MODEL || "morph-v2" }
+  ]
+});
+
+```
+
+```python Python
+
+import os
+from blaxel.core import SandboxInstance
+
+# Create sandbox with Morph/Relace API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "region": "us-pdx-1",
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "MORPH_API_KEY", "value": os.getenv("MORPH_API_KEY") },
+    { "name": "MORPH_MODEL", "value": os.getenv("MORPH_MODEL") or "morph-v2" }
+  ]
+})
+
+```
+
+**Relace**
+
+Pass your [Relace API key](https://docs.relace.ai/api-reference/introduction#authentication) as an environment variable when creating the sandbox.
+
+```tsx TypeScript
+
+import { SandboxInstance } from "@blaxel/core";
+
+// Create sandbox with Relace API key for fast code edits
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "codegen-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+  ports: [
+    { name: "preview", target: 3000 }
+  ],
+  envs: [
+    { name: "RELACE_API_KEY", value: process.env.RELACE_API_KEY || "" }
+  ]
+});
+```
+
+```python Python
+
+import os
+from blaxel.core import SandboxInstance
+
+# Create sandbox with Relace API key for fast code edits
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "codegen-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "region": "us-pdx-1",
+  "ports": [
+    { "name": "preview", "target": 3000 }
+  ],
+  "envs": [
+    { "name": "RELACE_API_KEY", "value": os.getenv("RELACE_API_KEY") },
+  ]
+})
+```
+
+### Use the tool via Blaxel SDK
+
+Call the `fastapply` endpoint of the [Sandbox API](https://docs.blaxel.ai/api-reference/fastapply/apply-code-edit) via the Blaxel SDK to fast-apply a targeted edit to a specified file with Morph or Relace, with instructions and partial contents.
+
+```typescript TypeScript
+
+import { SandboxInstance } from "@blaxel/core";
+
+// Apply code changes
+await sandbox.codegen.fastapply(
+  "/tmp/test.ts",
+  "// keep existing code // add a typescript function to calculate the area of a circle"
+);
+
+// Read file with changes
+let content = await sandbox.fs.read("/tmp/test.ts");
+console.log(content)
+```
+
+```python Python
+
+from blaxel.core import SandboxInstance
+
+logger = logging.getLogger(__name__)
+
+# Apply code changes
+await sandbox.codegen.fastapply(
+    "/tmp/test.ts",
+    "// keep existing code // add a typescript function to calculate the area of a circle;"
+)
+
+# Read file with changes
+content = await sandbox.fs.read("/tmp/test.ts")
+logger.info(content)
+```
+
+### Use the tool via MCP
+
+Call the `codegenEditFile` tool on the **[MCP server of a sandbox](https://docs.blaxel.ai/Sandboxes/Overview#mcp-server-for-a-sandbox)** to fast-apply a targeted edit to a specified file, with instructions and partial contents.
+
+Use Blaxel SDK to retrieve the tool in any [compatible agent framework](https://docs.blaxel.ai/Tutorials/Agents-Overview) (here in AI SDK format):
+
+```typescript TypeScript
+import { blTools } from '@blaxel/vercel';
+
+// Get codegen tools from sandbox MCP
+const allTools = await blTools([`sandboxes/${sandbox.metadata.name}`]);
+
+// Filter for specific codegen tools
+const codegenTools = Object.fromEntries(
+  Object.entries(allTools).filter(([key]) =>
+    key.startsWith('codegen')
+  )
+);
+```
+
+```python Python
+from blaxel.langgraph import bl_tools
+
+# Get codegen tools from sandbox MCP
+all_tools = await bl_tools([f"sandboxes/{sandbox.metadata.name}"])
+
+# Filter for specific codegen tools
+codegen_tools = [tool for tool in all_tools if tool.name.startswith("codegen")]
+```
+
+## Other tools built for codegen
+
+Use the following codegen-optimized functions by making tool calls through the MCP server or REST API of a sandbox. See example above on how to retrieve and execute the tools.
+
+| Tool                    | Description                                                     |
+|-------------------------|-----------------------------------------------------------------|
+| `codegenCodebaseSearch` | Semantic search to find relevant code snippets                  |
+| `codegenFileSearch`     | Fast fuzzy file path search                                     |
+| `codegenGrepSearch`     | Exact regex search using ripgrep engine                         |
+| `codegenListDir`        | List directory contents (quick discovery)                       |
+| `codegenReadFileRange`  | Read file contents within a specific line range (max 250 lines) |
+| `codegenRerank` | Performs semantic search/reranking on code files in a directory |
+| `codegenParallelApply` | Plan parallel edits across multiple file locations |
+| `codegenReapply`       | Use smarter model to retry a failed edit           |
+
+- [Connect Claude Code to a Blaxel Sandbox](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-MCP): Build a Claude Agent SDK agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server.
+
+# Log streaming
+Source: https://docs.blaxel.ai/Sandboxes/Log-streaming
+
+Retrieve process output logs from sandboxes in batch or real-time streaming mode using the Blaxel SDK in TypeScript, Python, or Go.
+
+Logging provides developers with visibility into process outputs within sandboxes. You can retrieve logs either in batch or streaming.
+
+> [!TIP]
+>
+> Complete code examples demonstrating all operations are available on Blaxel's GitHub: [in TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/sandbox), [in Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/sandbox), and [in Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+## In batch
+
+### Retrieve from the execution object
+
+Logs for a [process](https://docs.blaxel.ai/Sandboxes/Processes) are available in the *process execution* object **if** the process is started with the `waitForCompletion: true` / `"wait_for_completion": True` parameter.
+
+Both standard output (stdout) and standard error (stderr) are surfaced. `logs` holds both, and `stdout` and `stderr` hold each one separately:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const process = await sandbox.process.exec({
+  name: "hello-process",
+  command: "echo 'Hello, World!'",
+  waitForCompletion: true
+});
+console.log(process.logs);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+process = await sandbox.process.exec({
+  "name": "hello-process",
+  "command": "echo 'Hello, World!'",
+  "waitForCompletion": True
+})
+print(process.logs)
+```
+
+Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
+
+### Retrieve from a completed process name or ID
+
+Retrieve logs for a specific [process](https://docs.blaxel.ai/Sandboxes/Processes) (using either its name or process ID) after it has completed execution. By default, this retrieves standard output (**stdout**) only:
+
+```typescript TypeScript
+const process = await sandbox.process.exec({
+  name: "hello-process",
+  command: "echo 'Hello, World!'"
+});
+
+const logs = await sandbox.process.logs("hello-process");
+```
+
+```python Python
+process = await sandbox.process.exec({
+  "name": "hello-process",
+  "command": "echo 'Hello, World!'"
+})
+
+logs = await sandbox.process.logs("hello-process")
+```
+
+To retrieve standard error (**stderr**):
+
+```typescript TypeScript
+const errorLogs = await sandbox.process.logs("hello-process", "stderr");
+```
+
+```python Python
+error_logs = await sandbox.process.logs("hello-process", "stderr")
+```
+
+To retrieve both *stderr* and *stdout*:
+
+```typescript TypeScript
+const allLogs = await sandbox.process.logs("hello-process", "all");
+```
+
+```python Python
+all_logs = await sandbox.process.logs("hello-process", "all")
+```
+
+## Streaming
+
+### Retrieve via a callback function
+
+The callback handlers receive log entries in real-time as they're generated by the process:
+
+- **onLog/on_log**: Receives complete log objects with additional metadata
+
+This method ensures you get a full view, as it first **backfills with all past logs** before beginning the real-time stream.
+
+This approach is ideal for long-running processes where you need to monitor progress or respond to specific log events during execution.
+
+```typescript TypeScript
+await sandbox.process.exec({
+  name: "streaming-demo",
+  command: "echo 'Starting process'; sleep 2; echo 'Processing...'; sleep 2; echo 'Completed!'",
+  onLog: (log) => {
+    console.log(`LOG: ${JSON.stringify(log)}`);
+  }
+});
+```
+
+```python Python
+def on_log(log):
+    print(f"LOG: {log}")
+
+await sandbox.process.exec({
+    "name": "streaming-demo",
+    "command": "echo 'Starting process'; sleep 2; echo 'Processing...'; sleep 2; echo 'Completed!'",
+    "on_log": on_log
+})
+```
+
+### Retrieve from a process name or ID
+
+Stream logs for a specific [process](https://docs.blaxel.ai/Sandboxes/Processes) (using either its name or process ID):
+
+```typescript TypeScript
+// Start a long-running process
+await sandbox.process.exec({
+  name: "stream-demo",
+  command: "sh -c 'for i in $(seq 1 5); do echo \"Output $i\"; sleep 1; done'"
+});
+
+const stream = sandbox.process.streamLogs("stream-demo", {
+  onLog: (log) => console.log("Log:", log),
+  onStdout: (stdout) => console.log("Stdout:", stdout),
+  onStderr: (stderr) => console.log("Stderr:", stderr)
+});
+
+// Wait for completion and cleanup
+await sandbox.process.wait("stream-demo");
+stream.close();
+```
+
+```python Python
+# Start a long-running process
+await sandbox.process.exec({
+  "name": "stream-demo",
+  "command": "sh -c 'for i in $(seq 1 5); do echo \"Output $i\"; sleep 1; done'"
+})
+
+stream = sandbox.process.stream_logs("stream-demo", {
+  "on_log": lambda log: print(f"Log: {log}"),
+  "on_stdout": lambda stdout: print(f"Stdout: {stdout}"),
+  "on_stderr": lambda stderr: print(f"Stderr: {stderr}")
+})
+
+# Wait for completion and cleanup
+await sandbox.process.wait("stream-demo")
+stream["close"]()
+```
+
+# Snapshots and forking
+Source: https://docs.blaxel.ai/Sandboxes/Fork
+
+Create point-in-time snapshots of sandboxes, roll them back to a checkpoint, and fork them into new sandboxes.
+
+> [!NOTE]
+>
+> This feature is currently in private preview and is not recommended for production use.
+
+A snapshot captures the state of a sandbox at a point in time: its filesystem, its running processes, and its memory. Use snapshots to checkpoint a sandbox before a risky change, to roll it back later, or as the basis for forking a new sandbox.
+
+A snapshot outlives the sandbox it was captured from: it stays usable, and forkable, after that sandbox is deleted.
+
+## Create a snapshot
+
+Capture a snapshot from the sandbox you want to checkpoint. Snapshot names are unique within a sandbox, and creating a snapshot with a name the sandbox already uses fails with a `409` error. Every snapshot also gets an `id`, unique across your workspace, which the operations that do not go through the sandbox take instead of the name.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const snapshot = await sandbox.snapshots.create("my-snapshot");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+snapshot = await sandbox.snapshots.create("my-snapshot")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+You can also create a snapshot directly through the snapshot API, by passing the name of the sandbox to snapshot as `source`:
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+const snapshot = await Snapshot.create({
+  name: "my-snapshot",
+  source: { name: "my-sandbox" },
+});
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+snapshot = await Snapshot.create({
+    "name": "my-snapshot",
+    "source": {"name": "my-sandbox"},
+})
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-snapshot",
+    "source": { "name": "my-sandbox" }
+  }'
+```
+
+> [!NOTE]
+>
+> `POST /sandboxes/{name}/snapshots` generates the snapshot name for you, so it cannot collide with an existing one. Use `POST /snapshots` with a `source` to choose the name. Sandbox-side operations take the snapshot name, workspace-side operations take `snapshot.id`.
+
+## List snapshots
+
+List from a sandbox to get only the snapshots captured from it:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const snapshots = await sandbox.snapshots.list();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+snapshots = await sandbox.snapshots.list()
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+List all your snapshots to also get the ones whose source sandbox no longer exists:
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+const snapshots = await Snapshot.list({ limit: 50 });
+for await (const snapshot of snapshots) {
+  console.log(snapshot.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import Snapshot
+
+async def main():
+    snapshots = await Snapshot.list(limit=50)
+    async for snapshot in snapshots.auto_paging_iter():
+        print(snapshot.name)
+
+asyncio.run(main())
+```
+
+```shell Blaxel CLI
+bl get snapshots
+```
+
+The list endpoint is cursor-paginated and supports full-text search on the snapshot name, source name, and status through the `q` parameter. Refer to the [API reference documentation](https://docs.blaxel.ai/api-reference/introduction#pagination) for how to page through the results.
+
+## Restore a sandbox to a snapshot
+
+Restoring rolls a sandbox back to one of its own snapshots, in place. The sandbox keeps its name, its URLs, its previews, and its configuration: only the instance behind it is torn down and rebuilt from the snapshot, on the same machine the snapshot was taken on.
+
+> [!WARNING]
+>
+> Everything the sandbox wrote after the snapshot was taken is lost: files, running processes, and memory state. Take a new snapshot first if you want to be able to come back to the current state.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.snapshots.restore("my-snapshot");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.snapshots.restore("my-snapshot")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot/restore \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+The restore returns as soon as it is accepted, without waiting for the sandbox to be back up. The sandbox answers again once its instance has been rebuilt, so retry your first calls while it resumes.
+
+Only a snapshot of that same sandbox can be restored, and only once it is `ready`. To roll back onto a different sandbox, [fork from the snapshot](https://docs.blaxel.ai/Sandboxes/Fork#fork-from-a-snapshot) instead.
+
+You can also restore from the Blaxel console: open your sandbox, go to the **Snapshots** tab, and use the **Restore** action on the snapshot you want to go back to.
+
+## Fork a sandbox
+
+Forking creates a new sandbox from an existing one, forking its entire memory state (files + running processes). The fork inherits the source sandbox's image, memory configuration, environment variables, and port settings.
+
+Calling `fork()` automatically snapshots the source sandbox's current state and forks from it. You don't need to create a snapshot first.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const result = await sandbox.fork("my-sandbox-copy");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork("my-sandbox-copy")
+```
+
+```bash CLI
+bl fork sbx/my-sandbox sbx/my-sandbox-copy
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-sandbox-copy"
+  }'
+```
+
+### Fork from a snapshot
+
+To create a sandbox from a snapshot you took earlier, pass its name as `snapshotId`. The fork is created from that snapshot instead of the source sandbox's current state:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const result = await sandbox.fork("my-sandbox-copy", {
+  targetType: "sandbox",
+  snapshotId: "my-snapshot",
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork(
+    "my-sandbox-copy",
+    target_type="sandbox",
+    snapshot_id="my-snapshot",
+)
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-sandbox-copy",
+    "snapshotId": "my-snapshot"
+  }'
+```
+
+A snapshot carries the image, the memory size, the ports, the infrastructure generation, the region, and the volumes of what it captured, so you can also fork it directly by its `id`, even after its source sandbox is deleted:
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+const snapshot = await Snapshot.get(snapshotId);
+const result = await snapshot.fork("my-new-sandbox");
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+snapshot = await Snapshot.get(snapshot_id)
+result = await snapshot.fork("my-new-sandbox")
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-new-sandbox"
+  }'
+```
+
+Set `targetType` to `application` to start an [application](https://docs.blaxel.ai/Applications/Overview) from the snapshot instead of a sandbox.
+
+When the source sandbox still exists, the fork also inherits what the snapshot does not carry, such as environment variables, lifecycle policies, and network configuration. When the source sandbox is gone, the fork runs with the configuration stored on the snapshot.
+
+### Fork with new environment variables
+
+Pass `envs` to give the fork a different environment from its source. Each variable the source already carries takes the value you pass, each variable it does not carry is added, and every other variable of the source is inherited. The source sandbox is left untouched.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const result = await sandbox.fork("my-sandbox-copy", {
+  envs: [
+    { name: "NODE_ENV", value: "staging" },
+    { name: "FEATURE_FLAG", value: "1" },
+  ],
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+from blaxel.core.client.models.env import Env
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork(
+    "my-sandbox-copy",
+    envs=[
+        Env(name="NODE_ENV", value="staging"),
+        Env(name="FEATURE_FLAG", value="1"),
+    ],
+)
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-sandbox-copy",
+    "envs": [
+      { "name": "NODE_ENV", "value": "staging" },
+      { "name": "FEATURE_FLAG", "value": "1" }
+    ]
+  }'
+```
+
+The fork starts with the new environment already applied, so processes you launch in it read the new values. Processes that were already running in the source when it was snapshotted keep the environment they were started with, as an environment change cannot reach a process that is already running.
+
+> [!NOTE]
+>
+> `envs` only sets and adds variables. A variable of the source cannot be removed through a fork.
+
+`envs` works the same way when forking from a snapshot.
+
+### Fork with an expiration policy
+
+A fork expires like its source: it inherits the source's `lifecycle` expiration policies, along with its `ttl` and `expires`. Pass `lifecycle` to give the fork its own expiration policies instead. The fork is then held to those policies alone, without the source's `ttl` or `expires`. See [Sandbox expiration](https://docs.blaxel.ai/Sandboxes/Expiration) for the available policies.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const result = await sandbox.fork("my-sandbox-copy", {
+  lifecycle: {
+    expirationPolicies: [
+      { type: "ttl-max-age", value: "45m", action: "delete" },
+    ],
+  },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+result = await sandbox.fork(
+    "my-sandbox-copy",
+    lifecycle={
+        "expirationPolicies": [
+            {"type": "ttl-max-age", "value": "45m", "action": "delete"},
+        ],
+    },
+)
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/fork \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "sandbox",
+    "targetName": "my-sandbox-copy",
+    "lifecycle": {
+      "expirationPolicies": [
+        { "type": "ttl-max-age", "value": "45m", "action": "delete" }
+      ]
+    }
+  }'
+```
+
+`lifecycle` works the same way when forking from a snapshot.
+
+### Fork request parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `targetType` | string | Target resource type: `sandbox` or `application` |
+| `targetName` | string | Name of the resource to create |
+| `port` | integer | Port to expose |
+| `snapshotId` | string | Name of the snapshot to fork from, instead of the current state |
+| `envs` | array | Environment variables the fork runs with, on top of the ones inherited from the source |
+| `lifecycle` | object | Expiration policies of the fork, instead of the ones inherited from the source. Takes `expirationPolicies`, like the sandbox's [`lifecycle`](https://docs.blaxel.ai/Sandboxes/Expiration) |
+
+## Delete a snapshot
+
+Delete a snapshot by its name from the sandbox it was captured from:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.snapshots.delete("my-snapshot");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.snapshots.delete("my-snapshot")
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/sandboxes/my-sandbox/snapshots/my-snapshot \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+Or by its `id`, which also works once the sandbox is deleted:
+
+```typescript TypeScript
+import { Snapshot } from "@blaxel/core";
+
+await Snapshot.delete(snapshotId);
+```
+
+```python Python
+from blaxel.core import Snapshot
+
+await Snapshot.delete(snapshot_id)
+```
+
+```bash HTTP API
+curl -X DELETE https://api.blaxel.ai/v0/snapshots/$SNAPSHOT_ID \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+```shell Blaxel CLI
+bl delete snapshot $SNAPSHOT_ID
+```
+
+Deleting a snapshot is the only thing that removes it. Snapshots have no expiration, and Blaxel never prunes them for you.
+
+## Snapshots and sandbox deletion
+
+Deleting a sandbox does not delete its snapshots. They keep their names and stay forkable, with `source.deleted` set to `true` to tell you their sandbox is gone.
+
+> [!WARNING]
+>
+> Snapshots keep consuming storage after their source sandbox is deleted, and they count against your workspace snapshot quota. Delete the snapshots you no longer need. Refer to [quotas](https://docs.blaxel.ai/Security/Quotas) for the limits that apply to your workspace.
+
+- [Archive a sandbox](https://docs.blaxel.ai/Sandboxes/Archive): Keep a sandbox's filesystem while shutting it down, and get it back later.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn more about sandbox lifecycle and configuration.
+
+# Archive and unarchive sandboxes
+Source: https://docs.blaxel.ai/Sandboxes/Archive
+
+Archive a sandbox to keep its filesystem while shutting it down, and unarchive it later to get it back.
+
+> [!NOTE]
+>
+> This feature is currently in private preview and is not recommended for production use. It requires a feature flag on your workspace: [contact us](https://blaxel.ai/contact) or email [support@blaxel.ai](mailto:support@blaxel.ai) to get access. Until then, the archive and unarchive actions are hidden in the Blaxel console, and both API operations answer `403 Forbidden`.
+
+Archiving a sandbox stores the filesystem changes it made over its image, then shuts the sandbox down: nothing runs and no memory is kept, and you stop paying for it. The sandbox keeps its name, its configuration, and its preview URLs, so unarchiving gives you the same sandbox back with its files.
+
+Archiving is not a snapshot: memory is not preserved. All processes that were running are restarted automatically from their configuration, with new IDs, when the sandbox is unarchived.
+
+## Archive a sandbox
+
+The export runs in the background. By default the SDK waits until the sandbox reaches the `ARCHIVED` status.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.archive();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.archive()
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/archive \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+Archive a sandbox by name, without retrieving it first:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.archive("my-sandbox");
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+await SandboxInstance.archive("my-sandbox")
+```
+
+## Unarchive a sandbox
+
+Unarchiving starts the sandbox again from its image and writes the archived filesystem back over it. All processes that were running are restarted automatically. The sandbox and its terminal answer while the restore runs, and the SDK waits until the sandbox is `DEPLOYED` again.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.unarchive();
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.unarchive()
+```
+
+```bash HTTP API
+curl -X POST https://api.blaxel.ai/v0/sandboxes/my-sandbox/unarchive \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+## Control the wait
+
+An archive and its restore take longer as the filesystem grows. Pass `wait: false` in TypeScript, or `wait=False` in Python, to return as soon as the operation is launched, then read the sandbox status yourself. Set `maxWait`/`max_wait` and `interval`, both in milliseconds, to change how long the SDK waits and how often it reads the sandbox.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+await sandbox.archive({ wait: false });
+
+await sandbox.unarchive({ maxWait: 600_000, interval: 5_000 });
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+await sandbox.archive(wait=False)
+
+await sandbox.unarchive(max_wait=600_000, interval=5_000)
+```
+
+## Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `ARCHIVING` | The filesystem is being exported and the sandbox is about to be shut down |
+| `ARCHIVED` | The filesystem is stored and the sandbox is shut down |
+| `UNARCHIVING` | The sandbox is running again and its archived filesystem is being restored |
+| `DEPLOYED` | The sandbox is running, and the restore is complete |
+
+> [!WARNING]
+>
+> A sandbox keeps a single archive. Archiving a sandbox again replaces the previous archive, and deleting a sandbox deletes its archive, whatever its status.
+
+- [Sandbox overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn more about sandbox lifecycle and configuration.
+
+- [Snapshots and forking](https://docs.blaxel.ai/Sandboxes/Fork): Checkpoint a sandbox, memory included, and fork it into a new one.
+
+# Sandbox schedules
+Source: https://docs.blaxel.ai/Sandboxes/Schedules
+
+Run a command inside a Blaxel sandbox on a recurring cron schedule, a future datetime, or after a delay, with execution history per run.
+
+Schedules run a process inside a sandbox automatically, without you triggering it from your client. Use them for recurring jobs (a nightly cleanup, a periodic sync), a one-off task at a future time, or a task that runs once after a delay. Each schedule fires a command through the sandbox process API and records the outcome in an execution history.
+
+A sandbox can hold up to 100 schedules.
+
+## Schedule types
+
+Every schedule has a `type` and a `value` that together define when it fires:
+
+- `cron`: recurring. `value` is a 5-field cron expression (e.g. `0 8 * * 1-5` for 8am on weekdays). Cron granularity is one minute.
+- `at`: one-off. `value` is an RFC 3339 datetime (e.g. `2026-07-01T09:00:00Z`). The schedule fires once, then deletes itself.
+- `sleep`: one-off. `value` is a duration from now (e.g. `2h`, `30m`, `7d`). On creation it is resolved to an `at` schedule, so a created `sleep` is returned with `type: at` and a concrete datetime.
+
+One-off schedules (`at` and `sleep`) are removed automatically after they fire. A `cron` schedule keeps firing until you delete it.
+
+## Schedule input
+
+The `input` object configures the process that each firing starts:
+
+| Field | Type | Description |
+|---|---|---|
+| `command` | string | Shell command to run inside the sandbox. Required. |
+| `name` | string | Optional process name, used to look up status and logs. |
+| `env` | object | Environment variables for the process. Values are encrypted at rest and masked in API responses. |
+| `workingDir` | string | Working directory for the command. |
+| `keepAlive` | boolean | Keep the sandbox awake (disable scale-to-zero) while the process runs. Defaults to `true`. |
+| `timeout` | integer | Process timeout in seconds. Defaults to `600`. Set to `0` for no timeout. |
+
+## Create a schedule
+
+Create a recurring schedule on an existing sandbox:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const schedule = await sandbox.schedules.create({
+  type: "cron",
+  value: "0 8 * * 1-5",
+  input: {
+    command: "python cleanup.py",
+    env: { TARGET: "staging" },
+  },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+schedule = await sandbox.schedules.create({
+    "type": "cron",
+    "value": "0 8 * * 1-5",
+    "input": {
+        "command": "python cleanup.py",
+        "env": {"TARGET": "staging"},
+    },
+})
+```
+
+```bash REST
+curl -X POST "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "cron",
+    "value": "0 8 * * 1-5",
+    "input": { "command": "python cleanup.py", "env": { "TARGET": "staging" } }
+  }'
+```
+
+Create a one-off task that runs once, 2 hours from now:
+
+```typescript TypeScript
+const schedule = await sandbox.schedules.create({
+  type: "sleep",
+  value: "2h",
+  input: { command: "python report.py" },
+});
+// Returned resolved to type "at" with a concrete datetime
+```
+
+```python Python
+schedule = await sandbox.schedules.create({
+    "type": "sleep",
+    "value": "2h",
+    "input": {"command": "python report.py"},
+})
+# Returned resolved to type "at" with a concrete datetime
+```
+
+```bash REST
+curl -X POST "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{ "type": "sleep", "value": "2h", "input": { "command": "python report.py" } }'
+```
+
+## List and manage schedules
+
+Read, update, and delete schedules by their `id`:
+
+```typescript TypeScript
+// List schedules (one page; iterate with `for await` to walk every page)
+const schedules = await sandbox.schedules.list({ limit: 50 });
+for (const schedule of schedules.data) {
+  console.log(schedule.id);
+}
+
+// Get one by id
+const schedule = await sandbox.schedules.get("schedule-0");
+
+// Update it
+await sandbox.schedules.update("schedule-0", {
+  type: "cron",
+  value: "0 9 * * 1-5",
+  input: { command: "python cleanup.py" },
+});
+
+// Delete it (stops further firings)
+await sandbox.schedules.delete("schedule-0");
+```
+
+```python Python
+# List schedules (one page; use auto_paging_iter() to walk every page)
+schedules = await sandbox.schedules.list(limit=50)
+for schedule in schedules.data:
+    print(schedule.id)
+
+# Get one by id
+schedule = await sandbox.schedules.get("schedule-0")
+
+# Update it
+await sandbox.schedules.update("schedule-0", {
+    "type": "cron",
+    "value": "0 9 * * 1-5",
+    "input": {"command": "python cleanup.py"},
+})
+
+# Delete it (stops further firings)
+await sandbox.schedules.delete("schedule-0")
+```
+
+```bash REST
+# List
+curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+
+# Delete
+curl -X DELETE "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedules/schedule-0" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+Deleting a schedule removes it from the underlying scheduler, so no further runs fire.
+
+## Execution history
+
+Each firing records one execution. The `statusCode` is the HTTP status returned when the command was submitted to the sandbox, not the command's own exit code: the scheduler does not wait for the command to finish. A 2xx or 3xx status means the command was accepted.
+
+List the execution history of a sandbox. It returns the runs of every schedule on the sandbox, newest first:
+
+```typescript TypeScript
+const executions = await sandbox.schedules.executions({ limit: 50 });
+
+for await (const execution of executions) {
+  console.log(execution.scheduleId, execution.statusCode, execution.processName);
+}
+```
+
+```python Python
+executions = await sandbox.schedules.executions(limit=50)
+
+async for execution in executions.auto_paging_iter():
+    print(execution.schedule_id, execution.status_code, execution.process_name)
+```
+
+```bash REST
+curl "https://api.blaxel.ai/v0/sandboxes/my-sandbox/schedule-executions" \
+  -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE"
+```
+
+Each record carries `scheduleId`, `statusCode`, `executedAt`, and the `processName` used to start the process, so you can look up its logs (see [Log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming)). History is a ring buffer per schedule: once it reaches `maxExecutions` (default 100), recording a new run drops the oldest.
+
+## Manage from the console
+
+You can create and inspect schedules from the [Blaxel Console](https://app.blaxel.ai), on the **Schedules** tab of a sandbox. The tab lists every schedule with its type, timing, and command, and shows the execution history for each one.
+
+- [Processes and commands](https://docs.blaxel.ai/Sandboxes/Processes): Execute and manage processes in sandboxes.
+
+- [Log streaming](https://docs.blaxel.ai/Sandboxes/Log-streaming): Access logs generated in a sandbox.
+
+- [Expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration): Automatically delete sandboxes based on specific conditions.
+
+# Sandbox MCP server
+Source: https://docs.blaxel.ai/Sandboxes/MCP
+
+Every Blaxel sandbox exposes a built-in MCP server so agents can operate the sandbox using tool calls for files, processes, ports, and previews.
+
+Every sandbox is exposed via an MCP server that allows agents to **operate it using tool calls.**
+
+## Connect to the MCP server
+
+The MCP server operates through streamable HTTP at the sandbox's base URL:
+
+```text
+https://<SANDBOX_BASE_URL>/mcp
+```
+
+The base URL of a sandbox can be [retrieved](https://docs.blaxel.ai/api-reference/compute/get-sandbox) via the management API of sandboxes under `metadata.url` or via the Blaxel [SDKs](https://docs.blaxel.ai/Sandboxes/Overview#retrieve-an-existing-sandbox).
+
+Connect to this MCP server [like any other MCP server](https://docs.blaxel.ai/Functions/Invoke-functions) through the endpoint shown above. Instructions for some popular applications are provided below.
+
+> [!NOTE]
+>
+> You must provide your [Blaxel API key](https://docs.blaxel.ai/Security) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+>
+> - Required: `Authorization: Bearer <APIKEY>`
+> - Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
+
+> [!TIP]
+>
+> Bearer-token authentication only - there is no OAuth for connecting to the sandbox MCP endpoint. See [MCP endpoints at a glance](https://docs.blaxel.ai/skills-mcp#mcp-endpoints-at-a-glance) for how this compares to the other MCP surfaces on Blaxel.
+
+### Add to Cursor
+
+Add the server to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://<SANDBOX_BASE_URL>/mcp",
+      "headers": {
+        "Authorization": "Bearer <APIKEY>",
+        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+      }
+    }
+  }
+}
+```
+
+### Add to Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --transport http blaxel https://<SANDBOX_BASE_URL>/mcp \\
+  --header "Authorization: Bearer <APIKEY>" \\
+  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
+```
+
+[Follow this tutorial to build a Claude Agent SDK-powered agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-MCP).
+
+### Add to Windsurf
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://<SANDBOX_BASE_URL>/mcp",
+      "headers": {
+        "Authorization": "Bearer <APIKEY>",
+        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+      }
+    }
+  }
+}
+```
+
+### Add to Goose
+
+Add to `~/.config/goose/config.yaml`:
+
+```yaml
+extensions:
+  sandbox-mcp:
+    enabled: true
+    type: streamable_http
+    name: sandbox-mcp
+    description: Sandbox MCP
+    uri: https://<SANDBOX_BASE_URL>/mcp
+    envs: {}
+    env_keys: []
+    headers:
+      Authorization: Bearer <APIKEY>
+      X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>
+    timeout: 300
+    bundled: null
+    available_tools: []
+```
+
+## Tools available in the MCP server
+
+### Process management
+
+| Tool             | Description                                                   |
+|------------------|---------------------------------------------------------------|
+| `processExecute` | Execute a command with options for timeout, restart, env vars |
+| `processGet`     | Get info about a process by PID or name                       |
+| `processGetLogs` | Get logs for a specific process                               |
+| `processesList`  | List all running processes                                    |
+| `processStop`    | Stop a specific process                                       |
+| `processKill`    | Kill a specific process                                       |
+
+### Filesystem operations
+
+| Tool                      | Description                       |
+|---------------------------|-----------------------------------|
+| `fsGetWorkingDirectory`   | Get the current working directory |
+| `fsListDirectory`         | List contents of a directory      |
+| `fsReadFile`              | Read contents of a file           |
+| `fsWriteFile`             | Create or update a file           |
+| `fsDeleteFileOrDirectory` | Delete a file or directory        |
+
+### Code search and navigation
+
+| Tool                    | Description                                                     |
+|-------------------------|-----------------------------------------------------------------|
+| `codegenCodebaseSearch` | Semantic search to find relevant code snippets                  |
+| `codegenFileSearch`     | Fast fuzzy file path search                                     |
+| `codegenGrepSearch`     | Exact regex search using ripgrep engine                         |
+| `codegenListDir`        | List directory contents (quick discovery)                       |
+| `codegenReadFileRange`  | Read file contents within a specific line range (max 250 lines) |
+| `codegenRerank` | Performs semantic search/reranking on code files in a directory |
+
+### Code editing
+
+| Tool                   | Description                                        |
+|------------------------|----------------------------------------------------|
+| `codegenEditFile`      | Propose and apply a [targeted edit to a file](https://docs.blaxel.ai/Sandboxes/Codegen-tools) (⚠️ requires Morph or Relace API key)       |
+| `codegenParallelApply` | Plan parallel edits across multiple file locations |
+| `codegenReapply`       | Use smarter model to retry a failed edit           |
+
+Using Blaxel SDK, you can retrieve the tools for a sandbox in any supported framework format by passing the sandbox’s name. For example, in LangGraph:
+
+```typescript TypeScript
+import { blTools } from "@blaxel/vercel";
+
+const tools = await blTools([`sandbox/${sandboxName}`])
+```
+
+```python Python
+from blaxel.langgraph import bl_tools
+
+tools = await bl_tools([f"sandbox/{sandbox_name}"])
+```
+
+[Read more documentation](https://docs.blaxel.ai/Functions/Invoke-functions) on connecting to the MCP server directly from your code.
+
+## Example: Connect to a sandbox from Claude Agent SDK
+
+- [Connect Claude Code to a Blaxel Sandbox](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-MCP): Build a Claude Agent SDK agent that connects to a Blaxel sandbox and operates it using the sandbox's MCP server.
+
+# Sandbox best practices
+Source: https://docs.blaxel.ai/Sandboxes/best-practices
+
+Recommended practices for sandbox lifecycle management, scale-to-zero behavior, persistent storage, agent architecture, and MCP server design.
+
+Unlike traditional sandbox providers, Blaxel Sandboxes automatically scale up and down at near-instant speeds, and persist forever in standby. As such, here are some recommended best practices so you can best make use of the platform features.
+
+## Use the sandbox lifecycle strategically
+
+**Treat sandboxes as persistent computers**, rather than thinking of them as ephemeral runtimes that must be wiped clean after every interaction. Just as your laptop isn't reformatted every time you close the lid, you shouldn't destroy a sandbox's state simply because a session ended. Blaxel Sandboxes are designed to maintain persistent storage and system state, allowing agents to retain context, shell history, and installed dependencies indefinitely.
+
+The most efficient way to manage lifecycle is to let the sandbox suspend automatically when idle, rather than explicitly destroying it. Auto-suspend happens automatically after 15s of inactivity. Resuming a standby sandbox is orders of magnitude faster than cold-booting a new box and re-running setup scripts (like `npm install` or `apt-get`). By relying on suspension, you ensure that when an agent returns (whether in ten minutes or ten weeks) the environment is restored exactly as it was left, enabling a seamless instant resume experience that saves both time and compute costs.
+
+> [!NOTE]
+>
+> The definition of a session is at your discretion. It's a tradeoff between instant resume times from standby mode (~25ms) and paying for the [standby snapshot storage cost](https://blaxel.ai/pricing). As a rule of thumb, most customers keep sandboxes in standby for 7-60 days -- see down below.
+
+## Choose the right storage
+
+Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers three options:
+
+- Sandbox filesystem: The sandbox itself has a stateful [filesystem](https://docs.blaxel.ai/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
+
+- Volumes: [Volumes](https://docs.blaxel.ai/Volumes/Overview) provide longer-term, durable block storage that is decoupled from compute. Data stored on a volume survives even if the associated sandbox is terminated, and newly-created sandboxes can access the data by attaching to the same volume.
+
+    However, relying solely on volumes for state management comes with a trade-off: you lose the "instant resume" benefit of the sandbox filesystem and will incur a cold-boot penalty when creating a new sandbox and attaching an existing volume to it.
+
+- Agent Drive: [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview) behaves like a shared, distributed filesystem that can be mounted to multiple sandboxes or agents at any time. Drives are highly optimized for small and medium-sized file operations.
+
+  Agent Drive uses a fine-grained replication strategy and it is also separately backed up. Drives scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
+
+Here's a table to help you decide:
+
+|   | Sandbox Filesystem |  Volume |  Agent Drive |
+|---|---|---|---|
+| Persistence | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
+| Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated) |
+| Access type | Single | Single | Multiple |
+| Hot-attach | N/A | No | Yes |
+| Interface | POSIX | POSIX | POSIX + S3 |
+| Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
+| Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
+
+Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+> [!NOTE]
+>
+> There is no built-in way to bulk-sync files between a sandbox and your local machine. Instead, use [`sandbox.fs.download()`](https://docs.blaxel.ai/Sandboxes/Filesystem#download-file-to-host) for single files, or the zip-upload-unzip pattern in the next section for bulk transfers.
+
+## Upload many files efficiently
+
+Writing files one by one with `write()` costs one network round trip per file: at ~100ms per call, restoring several hundred files sequentially is minutes of pure latency.
+
+For bulk transfers, bundle the files into a single zip archive, upload it with one `writeBinary()` (TypeScript) / `write_binary()` (Python) call, and extract it inside the sandbox. This turns N round trips into 2 calls, however many files you have.
+
+```typescript TypeScript
+import AdmZip from "adm-zip";
+
+const zip = new AdmZip();
+for (const file of files) {
+  zip.addFile(file.path, Buffer.from(file.content));
+}
+
+await sandbox.fs.writeBinary("/tmp/project.zip", zip.toBuffer());
+await sandbox.process.exec({
+  name: "unzip",
+  command: "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+  waitForCompletion: true,
+});
+```
+
+```python Python
+import io, zipfile
+
+buf = io.BytesIO()
+with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+    for file in files:
+        zf.writestr(file["path"], file["content"])
+
+await sandbox.fs.write_binary("/tmp/project.zip", buf.getvalue())
+await sandbox.process.exec({
+    "name": "unzip",
+    "command": "unzip -o /tmp/project.zip -d /blaxel/app && rm /tmp/project.zip",
+    "wait_for_completion": True,
+})
+```
+
+The TypeScript example uses the `adm-zip` package; any zip library works. The extraction step requires an `unzip` binary in the sandbox image. If your image lacks one, use `python3 -m zipfile -e /tmp/project.zip /blaxel/app` instead (Python is available in Blaxel Hub images), or install `unzip` in your template.
+
+For small file sets, `writeTree()` (TypeScript) / `write_tree()` (Python) in the [filesystem API](https://docs.blaxel.ai/Sandboxes/Filesystem) writes multiple files in one batched call and is simpler. Use the zip pattern when the file count is large enough that per-call latency dominates.
+
+If the resulting zip archive exceeds 5 MB, `writeBinary()` / `write_binary()` automatically splits it into multipart uploads. Refer to [the sandbox filesystem documentation](https://docs.blaxel.ai/Sandboxes/Filesystem#write-binary-file) for details.
+
+## Automate cleanup with TTLs
+
+In production, you will inevitably accumulate a long tail of sandboxes that will never be called upon again (completed tasks, abandoned user sessions, etc.). These can unnecessarily consume storage and add to your cost.
+
+Instead of writing scripts to manually filter and delete sandboxes, use [expiration parameters and lifecycle policies](https://docs.blaxel.ai/Sandboxes/Expiration) to automate when a sandbox should be retired. You can configure this based on idle duration (_e.g., delete if it hasn't been active for 7 days_) or absolute maximum age (_e.g., delete after 30 days_).
+
+> [!NOTE]
+>
+> In [quota tiers 0 and 1](https://app.blaxel.ai/account/quotas), a maximum TTL is enforced on all sandboxes. On quota tier 2 and above, no expiration policy is set by default.
+
+The sandbox metadata also includes a read-only parameter, `expiresIn`, that computes the number of seconds until a sandbox is terminated due to its TTL or lifecycle policy.
+
+## Use pagination for sandbox listings
+
+Requesting a list of all sandboxes in a single API call forces the platform to scan the full workspace, which is slow and resource-intensive at scale. Use the `cursor` and `limit` parameters to [retrieve sandboxes in pages](https://docs.blaxel.ai/Sandboxes/Overview#list-sandboxes) instead. For more information and examples, refer to the [API](https://docs.blaxel.ai/api-reference/introduction#pagination) and [SDK](https://docs.blaxel.ai/sdk-reference/introduction#pagination) reference documentation.
+
+## Index sandboxes with external IDs
+
+When you manage many sandboxes per workspace (hundreds or thousands), retrieving the right one by name alone becomes impractical. You often need to find a sandbox by a caller-owned identifier: a session ID, user ID, or conversation ID from your application.
+
+Use `externalId` to create a fast, indexed lookup without maintaining a separate mapping database. Unlike labels (which require client-side filtering), `externalId` is backed by a dedicated database index and returns results in constant time.
+
+Common patterns:
+
+- **One sandbox per user session**: Tag each sandbox with your session ID. When the user returns, call `getByExternalId` to reconnect to the same environment instantly.
+- **Idempotent provisioning**: Before creating a new sandbox, check if one already exists for your workflow ID. This avoids duplicate sandbox creation in retry scenarios.
+- **Multi-tenant isolation**: Tag sandboxes with tenant or user IDs for quick per-tenant enumeration via `list({ externalId })`.
+
+```typescript TypeScript
+// Reconnect to the user's sandbox, or create one if none exists
+let sandbox = await SandboxInstance.getByExternalId(sessionId);
+if (!sandbox) {
+  sandbox = await SandboxInstance.createIfNotExists({
+    name: uniqueName(),
+    image: "blaxel/base-image:latest",
+    externalId: sessionId,
+    region: "us-pdx-1"
+  });
+}
+```
+
+```python Python
+# Reconnect to the user's sandbox, or create one if none exists
+sandbox = await SandboxInstance.get_by_external_id(session_id)
+if not sandbox:
+    sandbox = await SandboxInstance.create_if_not_exists({
+        "name": unique_name(),
+        "image": "blaxel/base-image:latest",
+        "external_id": session_id,
+        "region": "us-pdx-1"
+    })
+```
+
+> [!NOTE]
+>
+> `externalId` is not unique. If multiple live sandboxes share the same value, `getByExternalId` returns the most recently created one. Use `list` with the `externalId` filter to retrieve all matches.
+
+Combine external IDs with [TTL policies](https://docs.blaxel.ai/Sandboxes/Expiration) and [labels](https://docs.blaxel.ai/Sandboxes/Overview#labels) for a complete sandbox management strategy: external IDs for fast lookup, labels for categorization, and TTLs for automatic cleanup.
+
+## Reduce cold start times with a pre-warmed pool
+
+For workloads with heavy images, you can maintain a pool of pre-warmed sandboxes to serve requests with near-zero latency.
+
+The pattern works as follows:
+
+1. Keep a pool of sandboxes ready, with their data recorded in a database or cache.
+2. When a task arrives, assign one sandbox from the pool to that task and mark it as in-use.
+3. After assigning a sandbox, create a replacement in the background to keep the pool at your target size.
+4. When the task finishes, either release the sandbox back to the pool or delete it and let the background replenishment fill the gap.
+
+If using this pattern, implement a queuing system to coordinate sandbox usage and flag which sandboxes are in use. Without this, the same sandbox could be assigned to two tasks arriving at the same instant.
+
+## Use idempotent creation for sandboxes and preview URLs
+
+When creating sandboxes and preview URLs, use `createIfNotExists()` (TypeScript) / `create_if_not_exists()` (Python) instead of `create()`.
+
+These methods are idempotent and handle conflicts gracefully when the requested resource already exists. If it exists, they return it; if not, they create it.
+
+You should use `create()` only if you explicitly want an error to be raised when a sandbox or preview URL with the specified name already exists.
+
+## Reconnect external connections after standby
+
+When transitioning to standby mode, Blaxel automatically creates a snapshot of the entire state (including the complete file system in memory, preserving both files and running processes).
+
+However, external network connections that were active at the time of transitioning to standby, such as database connections, message queues, and HTTP connection pools, are not preserved; the remote side will automatically time out and close. When the sandbox resumes, the sandbox side of the connection will be stale, and queries or commands using it will fail.
+
+The recommended approach in this case is to use the connection library's built-in health-check or reconnection option to check or reset a connection before using it. For example, you could configure `pool_pre_ping` (SQLAlchemy) for PostgreSQL/MySQL connections, or `retryStrategy` (ioredis) for Redis connections.
+
+## Retry strategically in case of errors
+
+Blaxel returns [structured error responses](https://docs.blaxel.ai/troubleshooting/error-codes) in case of sandbox creation or connection failures. To handle these errors, we recommend the following strategy:
+
+1. First, check the origin of the error.
+
+    Look at `error.origin` (or the `X-Blaxel-Source` header). If it is not `platform`, the 404 came from the application itself (e.g. a missing file), not from Blaxel. You should not re-create in that case.
+
+2. Then, branch on `error.code`:
+
+    - `WORKLOAD_UNAVAILABLE`: The sandbox record exists but no healthy replica is currently serving it. This is the "sandbox is down" signal. It's marked `retryable: true`, so retry with exponential backoff (500ms to 30s, give up after ~60s). If retries keep failing, treat it as gone and re-create.
+    - `WORKLOAD_NOT_FOUND`: The sandbox record itself doesn't exist in the platform (deleted, never created, or wrong name). Definitely re-create. Not retryable.
+    - `ROUTE_NOT_FOUND`: The URL is wrong. This is a URL construction bug, not a sandbox availability issue. Don't re-create, fix the URL. The SDK's `sandbox.metadata.url` is the canonical source.
+
+For more information, refer to the [list of error codes](https://docs.blaxel.ai/troubleshooting/error-codes).
+
+# Understanding sandbox active vs standby states and billing
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-active-vs-standby-states-and-billing
+
+Understand how active and standby sandbox states affect compute, storage, connections, and billing.
+
+Blaxel sandboxes operate in active and standby states. These states determine which resources are billed and how quickly a sandbox can resume.
+
+## Active mode
+
+A sandbox stays active while it has an active connection. In active mode, you are charged for allocated memory and storage.
+
+Blaxel allocates CPU based on your selected memory allocation. CPU is not charged separately.
+
+Active connection behavior includes:
+
+- HTTP, WebSocket, or TCP connections with data flow keep a sandbox active
+- Idle connections, such as WebSockets with no data flow, have a 15-minute timeout
+- After 15 minutes with no data transmission, the sandbox transitions to standby
+
+See [standby control](https://docs.blaxel.ai/Sandboxes/Standby-control) for ways to manage connections and activity.
+
+## Standby mode
+
+Without active connections, a sandbox transitions to standby in approximately 15 seconds.
+
+During the transition:
+
+- Blaxel snapshots the complete state, including the filesystem and running processes
+- You are not charged for CPU or memory while the sandbox is in standby
+- You are charged only for snapshot and volume storage
+- Reconnecting restores the sandbox in under 25 ms with its processes preserved
+
+## Common issues preventing standby
+
+### Missing sandbox API
+
+A missing or outdated sandbox API is the most common reason a sandbox fails to enter standby. The sandbox API is required for correct shutdown behavior.
+
+To correct the configuration:
+
+1. Use the latest sandbox API in your Dockerfile.
+2. Copy the binary into your image:
+
+   ```dockerfile
+   COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+   ```
+
+3. Start the sandbox API first in your entrypoint and wait for it to become ready on port `8080` before starting other processes.
+4. Delete and recreate the sandbox after updating the image.
+
+### Preview URL connections
+
+Deployed preview URLs do not maintain persistent connections and do not prevent standby. You do not need to recreate previews to allow a sandbox to enter standby.
+
+Each incoming request through a preview URL wakes the sandbox.
+
+### Process keep-alive
+
+Process keep-alive controls automatic hibernation. Starting a process with `keepAlive: true` in TypeScript or `keep_alive: True` in Python keeps the sandbox active until the process completes or times out.
+
+The default timeout is 600 seconds. Set the timeout to `0` for a process that should run until it completes naturally.
+
+## Monitor sandbox state
+
+The API reports `DEPLOYED` for both active and standby sandboxes. Use these methods to distinguish them:
+
+- Check CPU or memory charts in the Blaxel Console. A value of 0% indicates that the sandbox was in standby
+- Use Billing Explorer to inspect compute runtime charges, measured in GB-seconds
+- Treat continuous compute runtime charges as a sign that the sandbox may be stuck in active mode
+
+## Troubleshoot continuous billing
+
+If a sandbox that should be idle incurs continuous compute charges:
+
+1. Verify that the sandbox API is installed and running.
+2. Close every connection when it is idle.
+3. Check for background processes that keep connections open.
+4. Delete and recreate the sandbox after correcting the sandbox API.
+
+A correctly configured sandbox incurs compute charges only while it actively processes requests.
+
+- [Sandbox standby control](https://docs.blaxel.ai/Sandboxes/Standby-control): Manage active connections and automatic standby behavior.
+
+- [Process keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive): Keep a sandbox active while selected processes run.
+
+# Understanding sandbox TTL and expiration policies
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/understanding-sandbox-ttl-and-expiration-policies
+
+Configure sandbox TTL and expiration policies to control lifecycle, automatic deletion, and storage costs.
+
+Blaxel provides TTL and expiration policies that automatically manage sandbox lifecycles. Use them to control costs and remove unused sandboxes from your workspace.
+
+## TTL policy types
+
+Configure any of these lifecycle policies:
+
+- `ttl-idle`: Delete a sandbox after a specified period of inactivity
+- `ttl-max-age`: Delete a sandbox after a maximum age, regardless of activity
+- `date`: Delete a sandbox on a specific date
+
+You can also define TTL through top-level sandbox parameters:
+
+- `ttl`: Set a maximum age with simpler syntax
+- `expires`: Set an absolute expiration date
+
+## Configure TTL policies
+
+Set `ttl`, `expires`, or `lifecycle` when creating a sandbox:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-image",
+  ttl: "24h",
+  // OR
+  // expires: new Date(Date.now() + 86400000),
+  // OR / AND
+  lifecycle: {
+    expirationPolicies: [
+      { type: "ttl-idle", value: "1h", action: "delete" },
+    ],
+  },
+});
+```
+
+## Policy behavior
+
+### Idle TTL timing
+
+The `ttl-idle` timer starts only after the sandbox receives its first API call or connection. Creating a sandbox without using it does not start the idle timer.
+
+On Tier 1, a hard 30-day cap still applies. A sandbox is deleted after 30 days regardless of activity, so `ttl-idle` cannot provide rolling expiration. Rolling expiration based on activity is available on Tier 2 and above.
+
+### Processing frequency
+
+TTL enforcement does not operate at one-second precision. The cleanup process runs approximately every 60 seconds.
+
+### Computed termination time
+
+Sandbox metadata includes the read-only `expiresIn` field in TypeScript and `expires_in` field in Python. It reports the number of seconds until automatic termination under the current TTL or lifecycle policy.
+
+## Deletion process
+
+When a sandbox expires:
+
+1. Blaxel terminates the sandbox.
+2. The sandbox remains in the `terminated` state for a retention period, which depends on your tier configuration.
+3. Blaxel deletes the sandbox completely.
+
+## Tier limits
+
+TTL restrictions depend on your account tier:
+
+- Tier 0: A maximum TTL of 7 days is enforced
+- Tier 1: A hard 30-day maximum lifetime is enforced, and `expiresIn` reflects this limit
+- Tier 2 and above: No maximum TTL is enforced, and `ttl-idle` supports rolling expiration based on activity
+
+On every tier, `ttl` and `ttl-max-age` must be at least `5m`, and `ttl-idle` at least `1m`. The API rejects shorter values with a `400` error. To remove a sandbox sooner, delete it explicitly.
+
+## Idempotent sandbox creation
+
+When you call `createIfNotExists` with the same sandbox name, Blaxel replaces an existing terminated sandbox with a new one.
+
+Use TypeScript SDK v0.2.45 or later or Python SDK v0.2.21 or later for this behavior.
+
+## Update an existing sandbox
+
+Apply a TTL to an existing sandbox with `updateTtl` or update its lifecycle policies. This is useful when cleaning up sandboxes created without expiration rules.
+
+See [sandbox expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration#update-sandbox-expiry-rules) for TypeScript and Python examples.
+
+## Preview cleanup
+
+Deleting a sandbox, including automatic deletion through TTL, also removes all associated preview URLs. You do not need to delete previews separately because they are scoped to the sandbox.
+
+- [Sandbox expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration): Configure, update, and clear sandbox expiry rules.
+
+- [Sandbox best practices](https://docs.blaxel.ai/Sandboxes/best-practices#automate-cleanup-with-ttls): Apply TTLs as part of a lifecycle management strategy.
+
+# Sandbox inactivity with long-running processes
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/sandbox-inactivity-with-long-running-processes
+
+Keep long-running sandbox processes active by waiting, polling from a backend, or using an external agent architecture.
+
+Blaxel sandboxes enter standby when they have no active connections, even if processes are still running. This prevents background processes such as development servers from keeping sandboxes active indefinitely.
+
+## Standby behavior
+
+A sandbox can enter standby during a running command when:
+
+- No active connections remain
+- No API requests poll the sandbox for updates
+
+This behavior also applies to `sandbox.process.exec` with `waitForCompletion: false`. The process can enter standby before it finishes.
+
+## Wait for the process
+
+Use `sandbox.process.wait` to maintain polling while a long-running process executes. Set a maximum wait duration appropriate for your workload and choose a polling interval that meets your latency requirements.
+
+```typescript
+await sandbox.process.exec({
+  name: "long-task",
+  command: "run-long-task",
+  waitForCompletion: false,
+});
+
+await sandbox.process.wait("long-task", {
+  maxWait: 600000,
+  interval: 5000,
+});
+```
+
+## Poll from your backend
+
+Use a backend service for polling instead of relying entirely on a browser. Backend polling continues if a user closes the browser and prevents the sandbox from entering standby during a critical process.
+
+## Use an external agent
+
+You can move the agent outside the sandbox and connect it to the sandbox through tools. This architecture can provide more direct lifecycle control, but it may be more complex depending on your use case and toolchain.
+
+- [Long-running processes](https://docs.blaxel.ai/Sandboxes/Processes#long-running-processes): Wait for processes and configure keep-alive behavior.
+
+- [Sandbox standby control](https://docs.blaxel.ai/Sandboxes/Standby-control): Understand connections and automatic standby.

@@ -1,0 +1,905 @@
+# Blaxel docs: Get started
+
+> What Blaxel is, the quickstart, and the Blaxel skills and MCP servers for coding agents.
+
+This file has the full text of 3 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Blaxel: infrastructure for autonomous agents](https://docs.blaxel.ai/Overview)
+- [Get started](https://docs.blaxel.ai/Get-started)
+- [Blaxel Skills & MCP](https://docs.blaxel.ai/skills-mcp)
+
+# Blaxel: infrastructure for autonomous agents
+Source: https://docs.blaxel.ai/Overview
+
+Introduction to Blaxel core building blocks: perpetual sandboxes, Agent Drive shared filesystem, and networking primitives.
+
+Blaxel is the **infrastructure for autonomous agents**. Our platform lets you keep infinite, secure sandboxes on automatic standby while co-hosting your agents for near instant latency.
+
+> [!NOTE]
+>
+> **Using Cursor, Claude Code, Codex, Goose, or another AI coding agent?**
+>
+> The [Blaxel skills](https://docs.blaxel.ai/skills-mcp) give your agent the ability to deploy AI agents, create sandboxes for code execution, host MCP servers, run batch jobs, and more...all using simple prompts, zero code required!
+>
+> [Installing the Blaxel CLI](https://docs.blaxel.ai/Get-started) installs them for the coding agents on your machine. If you already have the CLI, run:
+>
+> ```shell
+> bl skills install
+> ```
+
+An *AI agent* is any application that leverages generative AI models to take autonomous actions in the real world. These agents often require computing power to execute their interactions.
+
+Some examples of agents include:
+
+- **Conversational agents** that are able to take action in the world while keeping a human in the loop for activation or validation: for example code generation agents with real-time previews.
+- **AI-powered data pipelines**: for example a data transformation pipeline that retrieves unstructured video files and uses an AI model to extract structured data then act on it.
+- **RAG agents**: for example, a chatbot assistant that can better answer consumers’ queries by autonomously running scripts to access relevant databases.
+- **Autonomous system agents** that handle machine-to-machine workflows: like a smart traffic monitoring system that analyzes video feeds, detects accidents in real-time, and automatically dispatches emergency services with AI-generated incident reports.
+
+Blaxel’s infrastructure platform gives production-grade agents their own computing environments including code sandboxes, tool servers, and LLMs. It offers infrastructure to run these agents on a global network that makes them run fast and reliably.
+
+This website provides comprehensive documentation and API, SDK and CLI references to help you work with Blaxel.
+
+## Essential concepts
+
+Blaxel is the infrastructure for autonomous agents. It **doesn't force you into any kind of workflow** or shaped box. While we encourage you to exploit architecture designs that we consider are more reliable, our toolkit gives you all the pieces you need to build reliable agentic systems exactly the way you want.
+
+Blaxel consists of modular services that are engineered to work seamlessly together, but you can also just use any one of them independently. Think of it as a purpose-built set of building blocks that you can use to power agents.
+
+### The building blocks
+
+At the heart of Blaxel is our flagship **perpetual sandbox** service. Sandboxes are secure, instant-launching compute environments that you can use for running AI code. Blaxel lets you keep sandboxes on automatic standby with optimized agent hosting for near instant latency.
+
+With Blaxel sandboxes, you get:
+
+- Automatic scale-to-zero after 5s inactivity, resume from standby under 25ms even after weeks.
+- microVMs with full access to file system, processes and logs - and native support for Zero Data Retention (ZDR).
+- Preview URLs with your own custom domain.
+
+You can co-locate agent APIs, MCP servers, and batch tasks directly alongside your sandboxes to eliminate network hops and ensure the lowest possible end-to-end latency. For this, Blaxel also offers:
+
+- **Agents Hosting** - Deploy your AI agents as serverless auto-scalable endpoints. Completely framework agnostic: just bring your code, Blaxel builds it and runs it for you.
+- **Batch Jobs** - Scalable compute engine designed for agents to schedule and execute many AI processing tasks in parallel in the background.
+- **MCP Servers Hosting** - Deploy custom tool servers on a fast-starting infrastructure to extend your agents' capabilities.
+- **Model Gateway** - Intelligent routing layer to LLM providers with built-in telemetry, token cost control, and fallback capabilities.
+- **Full observability** - out-of-the-box.
+
+### A cloud built for agents
+
+Agents will transform how we work in the coming years. Traditional cloud providers weren't designed to handle them and their one-size-fits-all architecture holds them back. We built Blaxel to fix that.
+
+Blaxel is a cloud where **AI agents themselves are the primary users**. All products are accessible through [MCP servers](https://docs.blaxel.ai/skills-mcp), allowing agents to create and manage resources via tool calls. Blaxel provides agents with all the compute they need to scale and perform optimally: products like Sandboxes give them their own dedicated personal computer(s) / computing environments, while Batch Jobs enable them to schedule background tasks at scale.
+
+Building effectively on this cloud means embracing a few operational practices unique to how Blaxel works:
+
+- Blaxel sandboxes automatically scale up and down at near-instant speeds, unlike traditional sandbox providers. Let sandboxes suspend automatically when idle instead of deleting them. Resuming from standby is near-instant, even after long periods away. Learn more about the [sandbox lifecycle](https://docs.blaxel.ai/Sandboxes/best-practices#use-the-sandbox-lifecycle-strategically), including session length and the standby-storage cost tradeoff in detail.
+- For guaranteed long-term data persistence beyond a sandbox's own lifecycle, use [Volumes](https://docs.blaxel.ai/Volumes/Overview) or [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview). If you persist data this way, you can delete the sandbox itself; to resume, re-create the sandbox (~2–4 seconds) and restart processes to restore state.
+- [TTLs and lifecycle policies](https://docs.blaxel.ai/Sandboxes/best-practices#automate-cleanup-with-ttls) let you automatically clean up sandboxes you no longer need.
+- When you delete a sandbox, all data is immediately erased. If the sandbox was never put into standby mode, Blaxel guarantees ZDR (zero data retention).
+- Break down and distribute your agents whenever possible. A single monolithic agent handling all tool calls, LLM calls, and task workflows can be deployed to Blaxel Agents Hosting - but it will be harder to maintain, monitor, and will use resources inefficiently. Blaxel SDKs allow builders to split services and connect them from your code.
+- Similarly, while direct tool calls are possible, deploying separate MCP servers improves reusability, optimizes resources, and simplifies monitoring. Blaxel also optimizes placement globally when your serverless tool server needs to make multiple backend calls.
+
+### Which component should I use?
+
+When building your agentic system, you'll need to make architecture design choices. Blaxel offers several high-performance compute options, summarized below in order of latency performance, alongside two storage products (Volumes and Agent Drive) for long-term persistence:
+
+- [**Sandboxes**](https://docs.blaxel.ai/Sandboxes/Overview): Perfect for maximum workload flexibility. These microVMs provide full access to filesystem, network, and processes, booting from standby in under 25ms.
+- [**Agents Hosting (sync mode)**](https://docs.blaxel.ai/Agents/Query-agents#default-synchronous-endpoint): Ideal for running HTTP API services that process requests within a few seconds.
+- [**Agents Hosting (async mode)**](https://docs.blaxel.ai/Agents/Query-agents#async-endpoint): Best for running HTTP API services handling longer requests without maintaining an open connection.
+- [**Batch Jobs**](https://docs.blaxel.ai/Jobs/Overview): Designed for asynchronous tasks that may run for extended periods where boot latency is less critical. These jobs are triggered by providing specific input parameters, unlike Agents that are a fully hosted API.
+
+| **Product** | **Typical use** | **Typical workload duration** | **Boot time** | **Input type** |
+| --- | --- | --- | --- | --- |
+| Sandboxes | Giving an agent its own compute runtime | seconds to hours | ~25ms (from standby) | Fully custom |
+| Agents Hosting (sync mode) | Agent API that answers fast | a few seconds (**maximum 100 s**) | ~25ms | Custom API endpoints |
+| Agents Hosting (async mode) | Agent API that processes data for a while | a few minutes (**maximum 10 mins**) | ~25ms | Custom API endpoints |
+| Batch Jobs | Sub-tasks scheduled in an agentic workflow | minutes to hours (**maximum 24 h**) | ~30s | Specific input parameters |
+| MCP Servers Hosting | Running an MCP server API | seconds to minutes (**maximum 10 mins**) | ~25ms | API following MCP |
+| Volumes | Long-term persistent block storage attached to a sandbox or agent | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Block storage (POSIX) |
+| Agent Drive | Shared distributed filesystem across sandboxes and agents | Persists independently of any sandbox/agent lifecycle | N/A (attaches near-instantly) | Distributed filesystem (POSIX + S3) |
+
+> [!NOTE]
+>
+> Volumes and Agent Drive are storage products, so "boot time" and "workload duration" don't apply.
+
+### Which storage solution to choose
+
+Choose storage based on durability and sharing needs:
+
+- [**Sandbox filesystem**](https://docs.blaxel.ai/Sandboxes/Overview#memory-and-filesystem): Fastest option (in-memory, no network or disk I/O). Use it for scratch files, working directories, and outputs that only need to live for the current sandbox. It survives standby and resume, but is erased when the sandbox is deleted. Not replicated or durable; capacity is roughly half the sandbox memory allocation.
+- [**Volumes**](https://docs.blaxel.ai/Volumes/Overview): Durable block storage that survives sandbox deletion and attaches to one sandbox at a time. Use it for high-performance persistence in a single sandbox lineage (databases, source checkouts, agent memories). Mounts only at sandbox creation; re-attaching to a new sandbox costs a cold boot of a few hundred ms.
+- [**Agent Drive**](https://docs.blaxel.ai/Agent-drive/Overview): Shared distributed filesystem that multiple sandboxes or agents can mount and write concurrently. Use it to share state across sandboxes, sessions, or tenants. Attach or detach on running sandboxes at any path, with fine-grained permissions. Prefer a Volume for single-writer block workloads like databases.
+
+As a rule of thumb: if the data only needs to survive the current sandbox session, use the sandbox filesystem. If it needs to outlive the sandbox but only one sandbox will ever touch it at a time, use a Volume. If more than one sandbox or agent needs to read or write it at the same time, use Agent Drive. Because the sandbox filesystem is not replicated or durable, if the data is not easily recreated, use a Volume or Agent Drive instead of relying on it alone.
+
+For a deeper comparison, see [Choose the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents).
+
+## The Blaxel powerhouse
+
+Blaxel is a fully managed cloud platform. For regulated or enterprise customers who require "self-hosted" options: private network connectivity and bring-your-own-server arrangements are available; [contact us](https://blaxel.ai/contact) to discuss your requirements.
+
+When you deploy workloads to Blaxel, they run on a technical backbone called the **Global Agentics Network**. Its natively serverless architecture automatically scales computing resources without any server management on your part.
+
+Global Agentics Network serves as the powerhouse for the entire Blaxel platform, from Agents Hosting to Sandboxes. It is natively **distributed** in order to optimize for low-latency or other strategies. It allows for multi-region deployment, enabling AI workloads (such as an AI agent processing inference requests) to run across multiple geographic areas or cloud providers. This is accomplished by decoupling this execution layer from a data layer made of a smart distributed network that federates all those execution locations.
+
+Finally, the platform implements advanced security measures, including fine-grained authentication and authorization through Blaxel IAM, ensuring that your AI infrastructure remains protected. It can be interacted with through various methods, including APIs, CLI, web console, and MCP servers.
+
+## Documentation structure
+
+You might want to start with any of the following articles:
+
+- [**Get started**](https://docs.blaxel.ai/Get-started): Deploy your first workload on Blaxel in just 3 minutes.
+- [**Agent Skill & MCP:**](https://docs.blaxel.ai/skills-mcp) Let your coding agent (Cursor, Claude Code, Windsurf…) create and manage Blaxel resources using natural language.
+- **Product Documentation**
+    - [**Sandboxes**](https://docs.blaxel.ai/Sandboxes/Overview): Equip your agents with fast & secure virtual machines to run AI code.
+    - [**Agents Hosting**](https://docs.blaxel.ai/Agents/Overview): Host and run AI agents as serverless auto-scalable endpoints.
+    - [**Batch Jobs**](https://docs.blaxel.ai/Jobs/Overview): Background tasks for your AI workflows that run in batches.
+    - [**MCP Servers Hosting**](https://docs.blaxel.ai/Functions/Overview): Expose capabilities and execute tool calls using MCP.
+    - [**Model APIs**](https://docs.blaxel.ai/Models/Overview): Learn about supported model types on our global AI gateway.
+    - [**Agent Drive**](https://docs.blaxel.ai/Agent-drive/Overview): Share files across sandboxes and agents with a distributed filesystem.
+    - [**Volumes**](https://docs.blaxel.ai/Volumes/Overview): Persist files long-term by attaching volumes to your resources.
+    - [**Integrations**](https://docs.blaxel.ai/Integrations): Discover how Blaxel works with other tools, frameworks, and platforms.
+    - [**Observability**](https://docs.blaxel.ai/Observability/Overview): Monitor logs, traces and metrics for your agent runs.
+    - [**Governance**](https://docs.blaxel.ai/Model-Governance/Policies): Manage your AI deployment strategies with policies and environments.
+    - [**Security**](https://docs.blaxel.ai/Security/Workspace-access-control): Implement robust security measures for your AI infrastructure.
+    - [**Regions**](https://docs.blaxel.ai/Infrastructure/Regions): Discover where Blaxel is available in the world.
+    - [**Troubleshooting**](https://docs.blaxel.ai/troubleshooting): Resolve common issues with Blaxel deployments.
+- **Tutorials & Examples**
+    - [**Sandbox tutorials**](https://docs.blaxel.ai/Tutorials/Sandboxes-Overview): Run web applications in sandboxes with Astro, Expo, and Next.js.
+    - [**Agent tutorials**](https://docs.blaxel.ai/Tutorials/Agents-Overview): Deploy agents using popular frameworks like Claude Agent SDK, LangChain, CrewAI, and more.
+- **References**
+    - [**API reference**](https://docs.blaxel.ai/api-reference/introduction): Comprehensive guide to Blaxel's APIs.
+    - [**SDK reference**](https://docs.blaxel.ai/sdk-reference/introduction): Manage Blaxel resources programmatically using TypeScript, Python, or Go SDKs.
+    - [**CLI reference**](https://docs.blaxel.ai/cli-reference/introduction): Learn how to use Blaxel's command-line interface.
+    - [**Deployment reference**](https://docs.blaxel.ai/deployment-reference): Complete reference for the blaxel.toml configuration file.
+
+# Get started
+Source: https://docs.blaxel.ai/Get-started
+
+Step-by-step quickstart guide to install the Blaxel CLI, create a cloud sandbox, run processes, manage files, and deploy your first AI agent.
+
+Blaxel is the **infrastructure for autonomous agents**. Our platform lets you keep infinite, secure sandboxes on automatic standby while co-hosting your agents and context for near instant latency.
+
+> [!NOTE]
+>
+> **Using Cursor, Claude Code, Codex, Goose, or another AI coding agent?**
+>
+> The [Blaxel skills](https://docs.blaxel.ai/skills-mcp) give your agent the ability to deploy AI agents, create sandboxes for code execution, host MCP servers, run batch jobs, and more...all using simple prompts, zero code required!
+>
+> Installing Blaxel (step 1 below) sets them up for the coding agents on your machine, with the Blaxel MCP servers. If you already have the CLI, run:
+>
+> ```shell
+> bl setup
+> ```
+
+## Quickstart
+
+Welcome there! 👋 Make sure you have created an account on Blaxel (here → [https://app.blaxel.ai](https://app.blaxel.ai)), and created a first [workspace](https://docs.blaxel.ai/Security/Workspace-access-control) (you’ll need the workspace ID).
+
+**1. Install Blaxel**
+
+Run the installer in a terminal:
+
+```shell macOS and Linux
+curl -fsSL https://blaxel.ai/install.sh | sh
+```
+
+```powershell Windows
+irm https://blaxel.ai/install.ps1 | iex
+```
+
+The installer checks the Blaxel CLI (`bl`) against the release checksums, installs it, and adds it to your `PATH`. On macOS and Linux, it also installs completions for your current shell if you use zsh, bash, or fish. On Windows, [configure PowerShell completions](https://docs.blaxel.ai/cli-reference/introduction#shell-autocompletion) separately. It then runs [`bl setup`](https://docs.blaxel.ai/cli-reference/commands/bl_setup), which shows what it found and installs it when you press Enter: the [Blaxel skills](https://docs.blaxel.ai/skills-mcp#blaxel-skills) and MCP servers for the coding agents on your machine (Claude Code, Codex, Cursor and others), then the browser login. Run it again at any time to add what is missing.
+
+**Install with Homebrew**
+
+```shell
+brew install blaxel-ai/blaxel/blaxel
+bl setup
+```
+
+Homebrew 6.0.0+ requires explicit trust for non-official taps, so use the fully qualified formula name.
+
+**Installer options**
+
+On macOS and Linux, set these variables for `sh`:
+
+| Variable | Effect |
+|---|---|
+| `VERSION=v0.1.119` | Install that release instead of the latest |
+| `BINDIR=/usr/local/bin` | Install to that folder instead of `~/.local/bin` |
+| `BL_INSTALL_SETUP=false` | Install the CLI only, and run `bl setup` later |
+| `BL_INSTALL_SKILLS=false` | Leave your coding agents alone |
+| `BL_INSTALL_PATH=false` | Do not add `bl` to your `PATH` |
+| `BL_INSTALL_COMPLETION=false` | Skip the shell completions |
+
+For example, to install a specific release for all users:
+
+```shell
+curl -fsSL https://blaxel.ai/install.sh | sudo VERSION=v0.1.119 BINDIR=/usr/local/bin sh
+```
+
+Under `sudo`, the installer still sets up your own shell, coding agents and login. In CI, it installs the CLI only and leaves the shell configuration and coding agents alone. On Windows, run `$env:BL_INSTALL_SETUP = "false"` before the installer to install the CLI only.
+
+**2. Login**
+
+The installer logs you in. To log in again or to another workspace, open a terminal and run:
+
+```bash
+bl login
+```
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+**3. Create your first resource**
+
+Blaxel is the ultimate toolkit for AI agent builders. Our flagship product is the **sandbox**, although we also offer other services for the rest of your agentic workloads on our infrastructure.
+
+Sandboxes are secure, instant-launching compute environments that you can use for running AI code. Blaxel lets you keep sandboxes on automatic standby with optimized agent hosting for near instant latency.
+
+With Blaxel sandboxes, you get:
+
+- Automatic scale-to-zero after 5s inactivity, resume from standby under 25ms even after weeks.
+- Micro-VMs with full access to file system, processes and logs - and native support for Zero Data Retention (ZDR).
+- Preview URLs with your own custom domain.
+
+**Create a sandbox**
+
+Sandboxes can be created programmatically using Blaxel SDK. Install the SDK:
+
+```shell Python (pip)
+
+pip install blaxel
+
+```
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/core
+
+```
+
+Create your first sandbox:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+async function main() {
+  // Create a new sandbox
+  const sandbox = await SandboxInstance.createIfNotExists({
+    name: "my-sandbox",
+    image: "blaxel/base-image:latest",   // public or custom image
+    memory: 4096,   // in MB
+    ports: [{ target: 3000, protocol: "HTTP" }],   // ports to expose
+    labels: { env: "dev", project: "my-project" }, // labels
+    region: "us-pdx-1"   // deployment region
+  });
+  console.log("Sandbox created: ", {sandbox});
+}
+
+main().catch(console.error);
+```
+
+```python Python
+import asyncio
+from blaxel.core import SandboxInstance
+
+async def main():
+    # Create a new sandbox
+    sandbox = await SandboxInstance.create_if_not_exists({
+      "name": "my-sandbox",
+      "image": "blaxel/base-image:latest",   # public or custom image
+      "memory": 4096,   # in MB
+      "ports": [{ "target": 3000 }],   # ports to expose
+      "labels": {"env": "dev", "project": "my-project"},  # labels
+      "region": "us-pdx-1"   # deployment region
+    })
+    print(f"Sandbox created: {sandbox}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+- [Learn how to manage sandboxes](https://docs.blaxel.ai/Sandboxes/Overview): Read the complete guide for creating & connecting to sandboxes using Blaxel SDK.
+
+Or deploy another type of resource:
+
+**Deploy an agent, batch job or MCP server**
+
+Deploy your agent’s components on a purpose-built computing infrastructure for agentics.
+
+**1. Create the resource**
+
+**Create an agent app**
+
+> [!WARNING]
+>
+> In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.
+
+Let’s initialize a first app. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your agent on Blaxel.
+
+```bash
+bl new agent
+```
+
+You can now develop your agent application using any framework you want (or none), and use the [Blaxel](https://docs.blaxel.ai/sdk-reference/introduction) [SDK](https://docs.blaxel.ai/sdk-reference) to [leverage other Blaxel deployments](https://docs.blaxel.ai/Agents/Develop-an-agent). A placeholder HTTP API server is already preconfigured in `/src/main.py` or `/src/main.ts`.
+
+**Create a batch job**
+
+> [!WARNING]
+>
+> In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.
+
+Let’s initialize a first batch job definition. The following command initializes a new **pre-scaffolded local repository** ready for developing and deploying your job on Blaxel.
+
+```bash
+bl new job
+```
+
+You can now develop your job and use the [Blaxel](https://docs.blaxel.ai/sdk-reference/introduction) [SDK](https://docs.blaxel.ai/sdk-reference) to leverage other Blaxel deployments in `/src/index.py` or `/src/index.ts`.
+
+**Create an MCP server**
+
+> [!WARNING]
+>
+> In Python, you will need to [have pip installed](https://pip.pypa.io/en/stable/installation/); in TypeScript, you will need to [have npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for this.
+
+You can quickly **initialize a new MCP server from scratch** by using CLI command `bl new`. This initializes a new pre-scaffolded local repo where your entire code can be added.
+
+```bash
+bl new mcp
+```
+
+You can now [develop your MCP server](https://docs.blaxel.ai/Functions/Create-MCP-server) using the [Blaxel](https://docs.blaxel.ai/sdk-reference/introduction) [SDK](https://docs.blaxel.ai/sdk-reference) in `/src/server.py` or `/src/server.ts`.
+
+**2. Test and deploy your workload**
+
+Run the following command to serve your workload locally, replacing `<<DIRECTORY-NAME>>` with the name of the workload's root directory:
+
+```bash
+cd <<DIRECTORY-NAME>>;
+bl serve;
+```
+
+**Agent: send a test invocation**
+
+Query your agent locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"inputs": "Hello world!"}`:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"inputs": "Hello world!"}' http://localhost:1338
+```
+
+**Job: execute the job locally**
+
+Execute your job locally by making a **POST** request to this endpoint: [`http://localhost:1338`](http://localhost:1338) with the following payload format: `{"tasks": [{"param1": "value1"}]}`
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"tasks": [{"name": "John"}, {"name": "Jane"}]}' http://localhost:1338
+```
+
+**MCP server: test the server**
+
+You can test it by running the following command which launches **both** the MCP server and a web application to query it ([MCP Inspector](https://github.com/modelcontextprotocol/inspector), managed by MCP) locally.
+
+```shell TypeScript
+
+pnpm inspect
+
+```
+
+```shell Python
+
+BL_DEBUG=true uv run mcp dev src/server.py
+
+```
+
+The web application is accessible at: [http://127.0.0.1:6274](http://127.0.0.1:6274/). Alternatively, you can just simply [serve the server](https://docs.blaxel.ai/Functions/Deploy-a-function) locally by running `bl serve --hotreload`.
+
+To **push to Blaxel**, run the following command. Blaxel will handle the build and deployment:
+
+```bash
+bl deploy
+```
+
+Your workload is made available as a **serverless auto scalable** **global endpoint** 🌎.
+
+**3. Query your deployment**
+
+**Agent: send an invocation request**
+
+Run an inference from a terminal with the following command:
+
+```bash
+bl chat <<AGENT-NAME>>
+```
+
+This gives you a chat-like interface where you can interact with your agent. To use this when serving locally, just add option `--local`.
+
+Alternatively, **just call the** [global endpoint](https://docs.blaxel.ai/Agents/Query-agents).
+
+**Job: execute the job**
+
+Trigger an execution of your batch job from a terminal by running:
+
+```bash
+# Run a job using Blaxel CLI with --data argument
+bl run job <<JOB-NAME>> --data '{"tasks": [{"name": "John"}, {"name": "Jane"}]}'
+```
+
+Alternatively, **just call the** [global endpoint](https://docs.blaxel.ai/Jobs/Overview).
+
+**MCP server: test the server**
+
+When you deploy an MCP server on Blaxel, an **HTTP endpoint** is generated on Global Agentics Network to connect to the server.
+
+The server endpoint looks like this:
+
+```http Connect to an MCP server
+
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
+
+```
+
+Read more about [how to connect to the server here](https://docs.blaxel.ai/Functions/Invoke-functions).
+
+## Next steps
+
+You are ready to run AI with Blaxel! Here’s a curated list of guides which may be helpful for you to make the most of Blaxel, but feel free to explore the product on your own!
+
+- [Connect your coding agent to Blaxel](https://docs.blaxel.ai/skills-mcp): Let your AI coding assistant (Cursor, Claude Code, Windsurf…) create and manage Blaxel resources using natural language.
+
+- [Create agentic code sandboxes](https://docs.blaxel.ai/Sandboxes/Overview): Complete guide for spawning sandboxed VMs for your agents to access.
+
+- [Schedule and execute batch tasks](https://docs.blaxel.ai/Jobs/Overview): Complete guide for creating and running batch jobs from your agents.
+
+- [Host serverless agents](https://docs.blaxel.ai/Agents/Overview): Complete guide for deploying AI agents on Blaxel.
+
+- [Enforce policies](https://docs.blaxel.ai/Model-Governance/Policies): Complete guide for managing deployment and routing policies on the Global Agentics Network.
+
+## Questions?
+
+Although we designed this documentation to be as comprehensive as possible, you are welcome to contact [support@blaxel.ai](mailto:support@blaxel.ai) or the community on [Discord](https://discord.gg/CsWKUZUHFQ) with any questions or feedback you have.
+
+# Blaxel Skills & MCP
+Source: https://docs.blaxel.ai/skills-mcp
+
+Connect Claude, Codex, Cursor, Claude Code, Windsurf, or other AI assistants to manage your Blaxel resources and search the Blaxel docs via MCP.
+
+Blaxel provides LLM-accessible tools that you can connect to your coding assistant (Cursor, Windsurf, Claude Desktop, etc.). There are several options:
+
+1. The Blaxel **plugin** for Claude Code, Codex, and Cursor installs the agent skills and the resource management MCP server together.
+2. The Blaxel **agent skills** let your coding agent autonomously create sandboxes, deploy agents, run jobs, and launch MCP servers on Blaxel using simple prompts, with support for both command-line (CLI) and code-driven (SDK) operations.
+3. The Blaxel **resource management MCP server** lets your coding agent directly manage your Blaxel resources using natural language.
+4. The Blaxel **documentation MCP server** lets your coding agent directly read and ask questions of this documentation in real-time for up-to-date commands and features.
+5. An **`llms-full.txt`** text file with the entire documentation compiled and formatted for LLMs.
+6. A **native AI assistant** built into this documentation portal.
+
+> [!TIP]
+>
+> To set up the skills and both MCP servers at once, [install Blaxel](https://docs.blaxel.ai/Get-started) with `curl -fsSL https://blaxel.ai/install.sh | sh` (on Windows, `irm https://blaxel.ai/install.ps1 | iex`). It adds them to the coding agents on your machine and logs you in. If you already have the Blaxel CLI, run `bl setup`.
+
+## Blaxel plugin
+
+The Blaxel plugin installs the `blaxel-cli` and `blaxel-sdk` [agent skills](https://docs.blaxel.ai/skills-mcp#blaxel-skills) and the [resource management MCP server](https://docs.blaxel.ai/skills-mcp#mcp-server-for-resource-management) in one step. The MCP server signs you in with OAuth, so no API key goes in your configuration.
+
+Add the Blaxel marketplace first, then install the plugin from it:
+
+**Claude Code**
+
+```shell
+claude plugin marketplace add blaxel-ai/agent-skills
+claude plugin install blaxel
+```
+
+Then run `/mcp` in Claude Code, select `plugin:blaxel:blaxel`, and sign in to Blaxel in your browser.
+
+**Codex**
+
+```shell
+codex plugin marketplace add blaxel-ai/agent-skills
+codex plugin add blaxel@blaxel
+codex mcp login blaxel
+```
+
+The last command opens Blaxel sign-in in your browser.
+
+**Cursor**
+
+```shell
+cursor-agent plugin marketplace add https://github.com/blaxel-ai/agent-skills
+```
+
+Then install **Blaxel** from the marketplace in Cursor and approve the Blaxel sign-in prompt.
+
+> [!NOTE]
+>
+> In Claude Code, running only the install command fails with `Plugin "blaxel" not found in any configured marketplace`. Add the marketplace first.
+
+## Agent skills
+
+[Agent skills](https://agentskills.io/specification) are instruction sets to extend coding agents with additional knowledge and tools. An agent can load these instructions into its context and use them to complete the tasks assigned to it.
+
+Blaxel offers open source agent skills to help coding agents autonomously spin up and manage sandboxes on Blaxel, and migrate sandbox code from other providers to Blaxel.
+
+### Blaxel skills
+
+The open source [Blaxel skills](https://github.com/blaxel-ai/agent-skills) let agents:
+
+- create perpetual sandboxes on Blaxel to run code and execute commands
+- start application servers within sandboxes
+- generate URLs to preview applications running within sandboxes
+- create Agent Drives (shared filesystems) on Blaxel
+- create and deploy AI agents on Blaxel
+- create and deploy MCP servers on Blaxel
+- deploy and run batch jobs on Blaxel
+
+Two skills are currently available:
+- The `blaxel-cli` skill lets coding agents create and manage Blaxel resources from the command line using the `bl` CLI.
+- The `blaxel-sdk` skill lets coding agents write code to create and manage Blaxel resources using the Blaxel SDKs.
+
+> [!TIP]
+>
+> Use the `blaxel-cli` skill when you're troubleshooting, or bootstrapping a project on Blaxel. Use the `blaxel-sdk` skill when building agents or MCP servers on Blaxel, or when you need to programmatically manage Blaxel resources.
+
+The [Blaxel installer](https://docs.blaxel.ai/Get-started) sets up the Blaxel skills, and `bl upgrade` keeps them up to date. They go to `~/.agents/skills`, which Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and other agents read, and to Claude Code and other coding agents detected on your machine. To install or refresh them at any time, run:
+
+```shell
+bl skills install
+```
+
+To set up the MCP servers too, run `bl setup` instead. Neither needs Node.js. Set `BL_INSTALL_SKILLS=false` to stop the installer and upgrades from installing the skills automatically.
+
+Without the Blaxel CLI, add the skills with the command below. You'll be prompted to choose skills and select your coding agent and installation location.
+
+```shell
+npx skills add blaxel-ai/agent-skills
+```
+
+To install the skills together with the resource management MCP server in Claude Code, Codex, or Cursor, use the [Blaxel plugin](https://docs.blaxel.ai/skills-mcp#blaxel-plugin).
+
+The Blaxel skills are also [available as a ZIP file](https://github.com/blaxel-ai/agent-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+
+> [!TIP]
+>
+> See [examples of using the Blaxel skills](https://blaxel.ai/blog/give-your-coding-agent-blaxel-superpowers) in our announcement blog post.
+
+### Blaxel migration skill
+
+The open source [Blaxel migration skill](https://github.com/blaxel-ai/agent-migration-skills) gives agents the knowledge they need to migrate sandbox code from other providers to Blaxel. It is currently able to migrate sandbox code from Daytona, E2B and Modal.
+
+Add the Blaxel migration skill to your coding agent with the command below, depending on which sandbox provider you wish to migrate from:
+
+```shell
+# migrate from Daytona
+npx skills add blaxel-ai/agent-migration-skills/daytona
+
+# migrate from E2B
+npx skills add blaxel-ai/agent-migration-skills/e2b
+
+# migrate from Modal
+npx skills add blaxel-ai/agent-migration-skills/modal
+```
+
+You'll be prompted to select your coding agent and installation location.
+
+The Blaxel migration skill is also [available as a ZIP file](https://github.com/blaxel-ai/agent-migration-skills/releases) for [use with Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+
+## MCP servers
+
+### MCP server for resource management
+
+Blaxel's MCP server lets compatible AI apps (Claude, Codex, Claude Code, Cursor, Devin Desktop, Goose, OpenCode, VS Code, etc.) manage your Blaxel resources using natural language. It is available as a **remote hosted HTTP server**.
+
+The [Blaxel installer](https://docs.blaxel.ai/Get-started) and `bl setup` add it, with the [documentation MCP server](https://docs.blaxel.ai/skills-mcp#mcp-server-for-documentation), to Claude Code, Codex, Cursor, Gemini CLI, OpenCode, Windsurf and Devin Desktop on your machine, and tell you how to sign each one in. To add it to another client, or by hand, follow the steps below.
+
+Talk with your preferred agent to:
+
+- Create new services
+- Follow what is happening on your infrastructure
+- Manage your users
+
+#### How it works
+
+The MCP server is hosted at `https://api.blaxel.ai/v0/mcp`.
+
+Clients connect over HTTPS and stream MCP messages. The server supports OAuth 2.1 sign-in and API key authentication.
+
+##### OAuth
+
+Use OAuth when your client supports it. Your client opens Blaxel sign-in in a browser and stores the resulting token.
+
+The server advertises its authorization server at `https://signin.blaxel.ai`. It supports PKCE with the `S256` challenge method, dynamic client registration, Client ID Metadata Documents, and public clients. Requested scopes are `openid`, `email`, `profile`, and `offline_access`.
+
+##### Authentication headers
+
+For clients without OAuth support, provide your [API key](https://docs.blaxel.ai/Security/Access-tokens) in the `Authorization` header. If your user has access to multiple workspaces, include the workspace header as well.
+
+- Required: `Authorization: Bearer <APIKEY>`
+- Optional (multi-workspace): `X-Blaxel-Workspace: <WORKSPACE_NAME_OR_ID>`
+
+> [!WARNING]
+>
+> Store your API key in an environment variable. Do not commit it to a repository.
+
+#### Installation
+
+**Claude.ai and Claude Desktop**
+
+You need a Claude account, a Blaxel account, and access to a Blaxel workspace. Custom connectors are available on individual Claude accounts as well as Team and Enterprise plans. Organization policies can restrict which connectors you can add.
+
+**1. Add the connector**
+
+In Claude, open Customize → Connectors and select Add custom connector.
+Enter `Blaxel` as the name and `https://api.blaxel.ai/v0/mcp` as the remote MCP server URL.
+
+**2. Use automatic OAuth setup**
+
+Leave OAuth Client ID and OAuth Client Secret blank. Keep Individual sign-in enabled if Claude shows that option.
+
+**3. Sign in to Blaxel**
+
+Add the connector and select Connect if prompted. Complete Blaxel sign-in and review the authorization screen before continuing back to Claude.
+
+**4. Verify a read operation**
+
+Enable Blaxel in a conversation and ask: "Use Blaxel to list the agents in workspace YOUR_WORKSPACE_NAME."
+Replace `YOUR_WORKSPACE_NAME` with your workspace name. Confirm that the response identifies resources from that workspace.
+
+  Available actions depend on your Blaxel workspace role. Service-account management requires an admin or owner. Review the workspace and resource names before approving write actions. Starting a batch job returns execution details; it does not wait for the execution to finish.
+
+  If your account has several workspaces, name the intended workspace in your request. To reconnect after an authorization error, open the connector in Claude's Connectors settings and complete sign-in again.
+
+##### Codex
+
+Add the hosted server. Codex detects OAuth support and starts the sign-in flow:
+
+```bash
+codex mcp add blaxel --url https://api.blaxel.ai/v0/mcp
+```
+
+To sign in again later, run:
+
+```bash
+codex mcp login blaxel
+```
+
+To use an API key instead, set it in your shell and reference it from `~/.codex/config.toml`:
+
+```bash
+export BLAXEL_MCP_API_KEY="<APIKEY>"
+```
+
+```toml
+[mcp_servers.blaxel]
+url = "https://api.blaxel.ai/v0/mcp"
+bearer_token_env_var = "BLAXEL_MCP_API_KEY"
+```
+
+##### Claude Code
+
+[Add the remote HTTP server to Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) with user scope, so it is available in all your projects:
+
+```bash
+claude mcp add --scope user --transport http blaxel https://api.blaxel.ai/v0/mcp
+```
+
+Sign in to Blaxel in your browser:
+
+```bash
+claude mcp login blaxel
+```
+
+You can also run `/mcp` in Claude Code, select `blaxel`, and follow the authentication prompts.
+
+To use an API key instead, set the headers when you add the server:
+
+```bash
+claude mcp add --scope user --transport http blaxel https://api.blaxel.ai/v0/mcp \
+  --header "Authorization: Bearer <APIKEY>" \
+  --header "X-Blaxel-Workspace: <OPTIONAL_WORKSPACE>"
+```
+
+##### Cursor
+
+Add the server to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://api.blaxel.ai/v0/mcp"
+    }
+  }
+}
+```
+
+Open Cursor settings, select MCP, then connect `blaxel`. Cursor opens Blaxel sign-in.
+
+Cursor Agent users can start sign-in from a terminal:
+
+```bash
+cursor-agent mcp login blaxel
+```
+
+> [!NOTE]
+>
+> When you run `cursor-agent` in your home folder, `~/.cursor/mcp.json` is also the project config, so `cursor-agent mcp list` shows each server in it, such as `blaxel`, as `not loaded (needs approval)`. Approve each once, for example `cursor-agent mcp enable blaxel` (and `cursor-agent mcp enable blaxel-docs` if you added the documentation server). A server needs approval again if its config changes.
+
+To use an API key instead, add the headers to the server entry:
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "url": "https://api.blaxel.ai/v0/mcp",
+      "headers": {
+        "Authorization": "Bearer <APIKEY>",
+        "X-Blaxel-Workspace": "<OPTIONAL_WORKSPACE>"
+      }
+    }
+  }
+}
+```
+
+##### Devin Desktop (formerly Windsurf)
+
+Add the server to `~/.config/devin/mcp_config.json` (Windows: `%APPDATA%\devin\mcp_config.json`). Windsurf releases from before the rename use `~/.codeium/windsurf/mcp_config.json`.
+
+```json
+{
+  "mcpServers": {
+    "blaxel": {
+      "serverUrl": "https://api.blaxel.ai/v0/mcp"
+    }
+  }
+}
+```
+
+Refresh the MCP servers in Cascade and complete the Blaxel sign-in in your browser. To use an API key instead, add a `headers` object with the [authentication headers](https://docs.blaxel.ai/skills-mcp#how-it-works).
+
+##### Goose
+
+Add the server to `~/.config/goose/config.yaml` (Windows: `%APPDATA%\Block\goose\config\config.yaml`):
+
+```yaml
+extensions:
+  blaxel:
+    enabled: true
+    type: streamable_http
+    name: blaxel
+    description: Blaxel resource management
+    uri: https://api.blaxel.ai/v0/mcp
+    timeout: 300
+```
+
+Goose opens Blaxel sign-in in your browser the first time it connects. To use an API key instead, add a `headers` map with the [authentication headers](https://docs.blaxel.ai/skills-mcp#how-it-works).
+
+##### OpenCode
+
+Add the hosted server to your global OpenCode config, then sign in:
+
+```bash
+opencode mcp add blaxel --url https://api.blaxel.ai/v0/mcp
+opencode mcp auth blaxel
+```
+
+##### VS Code
+
+Add the hosted server to your VS Code user profile:
+
+```bash
+code --add-mcp '{"name":"blaxel","type":"http","url":"https://api.blaxel.ai/v0/mcp"}'
+```
+
+VS Code prompts you to sign in to Blaxel when it starts the server.
+
+#### Selecting a workspace
+
+Every tool accepts an optional `workspace` argument. Ask your client to use that argument when you want a tool to act on a specific workspace.
+
+If your account has multiple workspaces, you can also set the active workspace by including the `X-Blaxel-Workspace` header. If neither is set, your AI app may prompt you to specify one when a tool is invoked.
+
+#### Example prompts
+
+Ask your AI app to perform actions using Blaxel MCP tools, for example:
+
+- List my agents
+- Create a new MCP server named search with blaxel-search integration
+- Invite test@mydomain.com to my workspace
+
+#### Supported actions
+
+The Blaxel MCP server exposes tools for common platform operations.
+
+You can list, create and remove services (Sandboxes, Agents, MCP Servers, Jobs, Models, …), as well as manage users and service accounts.
+
+See the [open-source definitions](https://github.com/blaxel-ai/blaxel-mcp-server) for the latest list and schemas.
+
+#### Running locally
+
+Prefer using the hosted server at `https://api.blaxel.ai/v0/mcp`. If you must run locally or customize behavior, clone the repository and follow its instructions.
+
+#### Limitations
+
+- The server requires an OAuth sign-in or a valid API key.
+- When using multiple workspaces, set the `workspace` argument or the `X-Blaxel-Workspace` header to disambiguate.
+
+Check out Blaxel MCP server's [source here](https://github.com/blaxel-ai/blaxel-mcp-server).
+
+### MCP server for documentation
+
+You can also give your coding assistant real-time access to this documentation.
+
+Connect your coding assistant directly to the Blaxel documentation via MCP at `https://docs.blaxel.ai/mcp`.
+
+#### Claude Code
+
+[Add the remote HTTP server to your Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp#option-3%3A-add-a-remote-http-server) by running the following command:
+
+```bash
+claude mcp add --scope user --transport http blaxel-docs https://docs.blaxel.ai/mcp
+```
+
+#### Cursor
+
+1. Open **Cursor Settings**
+2. Go to **MCP & Integrations**
+3. Click **"+ Add a custom MCP server"**
+4. Add this configuration:
+
+```json
+{
+  "mcpServers": {
+    ... // Your other MCP servers
+    "blaxel-docs": {
+      "url": "https://docs.blaxel.ai/mcp"
+    }
+  }
+}
+```
+
+### MCP server for sandboxes
+
+Every Blaxel sandbox also exposes its own built-in [MCP server](https://docs.blaxel.ai/Sandboxes/MCP), hosted via streamable HTTP at `https://<SANDBOX_BASE_URL>/mcp`, so agents can operate that specific sandbox directly.
+
+### MCP server hosting
+
+Blaxel also lets you deploy and host your [own MCP servers](https://docs.blaxel.ai/Functions/Overview) as serverless, autoscaling endpoints.
+
+### MCP endpoints at a glance
+
+| Surface | Endpoint pattern | Purpose | Persistence |
+| --- | --- | --- | --- |
+| Resource management | `https://api.blaxel.ai/v0/mcp` | Manage your Blaxel workspace (create/list/delete resources) from a coding assistant | Fixed platform endpoint |
+| Documentation | `https://docs.blaxel.ai/mcp` | Give a coding assistant real-time access to this documentation | Fixed platform endpoint |
+| Per deployed MCP server | `https://run.blaxel.ai/{workspace}/functions/{server-name}/mcp` | Call tools exposed by an MCP server deployed by you | Fixed so long as the function's name is unchanged |
+| Per deployed sandbox | `https://<SANDBOX_BASE_URL>/mcp` | Let an agent operate a sandbox deployed by you | Tied to the sandbox's `name`; fixed across standby/resume. |
+
+## llms-full.txt
+
+A compiled text document of the entire documentation, formatted for LLMs. Copy and paste it directly into your coding assistant's prompt:
+
+[https://docs.blaxel.ai/llms-full.txt](https://docs.blaxel.ai/llms-full.txt)
+
+## Built-in documentation agent
+
+This documentation portal has a built-in AI assistant. Click "✨**Ask AI**" at the top of any page to use it.

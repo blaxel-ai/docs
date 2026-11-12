@@ -1,0 +1,27 @@
+# Blaxel documentation, full text
+
+> Blaxel documentation: cloud sandboxes, AI agent hosting, MCP servers, batch jobs, and model gateway for building and deploying AI-powered applications.
+
+The full text of the Blaxel docs is 790.4 KB, more than fits in most context windows, so it is split by product into files of at most 200 KB. Fetch the file for your task, not all of them.
+
+- https://docs.blaxel.ai/llms.txt lists every page with a one-line description and starts with the most-used recipes.
+- Each page is also available on its own as Markdown: add .md to its URL, for example https://docs.blaxel.ai/Sandboxes/Overview.md.
+
+## Product files
+
+- [Get started](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-get-started.txt): What Blaxel is, the quickstart, and the Blaxel skills and MCP servers for coding agents. 3 pages, 45.6 KB.
+- [Sandboxes](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-sandboxes.txt): Create, reuse, expire, snapshot and archive sandboxes; run processes, use the file system, stream logs and schedule work. 15 pages, 151 KB.
+- [Sandbox images and templates](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-sandbox-images.txt): Pre-built and custom sandbox images, environment variables and secrets, non-root users and infrastructure generations. 6 pages, 84.7 KB.
+- [Networking and previews](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-networking.txt): Ports, preview URLs, dev server setup for previews, CORS, sessions, standby control, the outbound proxy, regions, egress gateways and custom domains. 18 pages, 139.8 KB.
+- [Storage](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-storage.txt): Volumes, volume templates and Agent Drive. 7 pages, 44.3 KB.
+- [Agents, MCP servers and jobs](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-agents-jobs.txt): Deploy agents and other applications, host MCP servers, run batch jobs, and configure deployments with blaxel.toml. 21 pages, 131.6 KB.
+- [Models and integrations](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-models.txt): The Model Gateway, model provider integrations, MCP server integrations and agent framework integrations. 17 pages, 53.4 KB.
+- [Errors, limits and troubleshooting](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-troubleshooting.txt): Error codes, quotas and fixes for common errors. 14 pages, 46.6 KB.
+- [API, SDK and CLI reference](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-api.txt): Authentication, the REST APIs, the Management API endpoint index, and the SDK and CLI overviews. 11 pages, 84.5 KB.
+- [Administration and security](https://raw.githubusercontent.com/blaxel-ai/docs/main/llms-admin.txt): Workspace access control, data collection and privacy, and model governance policies. 3 pages, 22.9 KB.
+
+## Not in these files
+
+- CLI commands: run `bl <command> --help`, or install the Blaxel skills described in https://docs.blaxel.ai/skills-mcp. The CLI overview is in the API, SDK and CLI reference file.
+- Tutorials, the community page and Console-only administration pages: they are listed in https://docs.blaxel.ai/llms.txt; fetch each page as Markdown.
+- Release notes: https://docs.blaxel.ai/changelog.
