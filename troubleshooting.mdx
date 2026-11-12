@@ -110,7 +110,7 @@ Blaxel has a tiering system that unlocks higher limits and features on the platf
 
 To see more details on which quota was exceeded or to upgrade to a higher tier, visit the [**Quotas** page of the Blaxel Console](https://app.blaxel.ai/account/quotas).
 
-`QUOTA_EXCEEDED` can also return HTTP `429`, like the `WORKSPACE_RATE_LIMIT_EXCEEDED` rate limit: read the `code` field, because retrying a quota error returns the same error. A `403` without a JSON error body isn't a quota error: the request was blocked or throttled before the API could answer it, by an auth check that failed while the backend was throttled or by the network edge blocking an IP address that sent too many requests to `api.blaxel.ai`. Slow down and retry after about 60 seconds. See [sandbox creation errors](/Security/Quotas#sandbox-creation-errors) for every code and whether to retry.
+`QUOTA_EXCEEDED` can also return HTTP `429`, like the `WORKSPACE_RATE_LIMIT_EXCEEDED` rate limit: read the `code` field, because retrying a quota error returns the same error. A `403` without a JSON error body isn't a quota error: the request was blocked or throttled before the API could answer it, for example by the network edge blocking an IP address that sent too many requests to `api.blaxel.ai`. Slow down and retry after about 60 seconds. A `503` with the code `AUTHENTICATION_UNAVAILABLE` isn't a credential error either: wait for `Retry-After` and retry. See [sandbox creation errors](/Security/Quotas#sandbox-creation-errors) for every code and whether to retry.
 
 ## Models return a 429 error
 
