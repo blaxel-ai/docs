@@ -6386,7 +6386,8 @@ paths:
         removes images that are not currently referenced by any active agent, function,
         sandbox, or job deployment. One call runs for a limited time; when hasMore
         is true, only part of the unused images were deleted and the call should be
-        repeated.
+        repeated. Images are never removed automatically, only by this call or an
+        explicit delete, so an image does not need a running sandbox to be kept.
       operationId: CleanupImages
       parameters:
       - description: Only report the image tags a cleanup would delete, without deleting
@@ -6650,6 +6651,42 @@ paths:
       summary: Get container image
       tags:
       - images
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+  /images/{resourceType}/{imageName}/build:
+    delete:
+      description: Ends every build of this image that is queued or running on the
+        build queue, whether it waits for capacity or runs in its build environment.
+        Each cancelled build is filed as failed with the message "The build was cancelled.",
+        releases its build quota and its tag reservation, and a build that was waiting
+        on it fails the same way; a running build's environment is removed within
+        seconds of the answer. Answers 404 when nothing is building, or when the workspace's
+        builds do not use the build queue.
+      operationId: CancelImageBuild
+      responses:
+        "204":
+          description: the builds in progress were cancelled
+        "404":
+          description: no build of this image is queued or running
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Cancel container image builds in progress
+      tags:
+      - images
+      x-blaxel-audit: image_build.cancelled
     parameters:
     - description: Resource type (agents, functions, sandboxes, jobs)
       in: path
