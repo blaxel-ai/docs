@@ -124,12 +124,17 @@ Common patterns:
 - **Idempotent provisioning**: Before creating a new sandbox, check if one already exists for your workflow ID. This avoids duplicate sandbox creation in retry scenarios.
 - **Multi-tenant isolation**: Tag sandboxes with tenant or user IDs for quick per-tenant enumeration via `list({ externalId })`.
 
+A lookup with no live match fails with a `404` error. In Python, `SandboxInstance` has no external ID helpers, so use the API client and set `externalId` in `metadata`:
+
 <CodeGroup>
 
 ```typescript TypeScript
 // Reconnect to the user's sandbox, or create one if none exists
-let sandbox = await SandboxInstance.getByExternalId(sessionId);
-if (!sandbox) {
+let sandbox;
+try {
+  sandbox = await SandboxInstance.getByExternalId(sessionId);
+} catch (error: any) {
+  if (error?.code !== 404) throw error;
   sandbox = await SandboxInstance.createIfNotExists({
     name: uniqueName(),
     image: "blaxel/base-image:latest",
@@ -140,14 +145,21 @@ if (!sandbox) {
 ```
 
 ```python Python
+from blaxel.core import SandboxInstance, client
+from blaxel.core.client.api.compute import get_sandbox_by_external_id
+from blaxel.core.client.models import Sandbox
+
 # Reconnect to the user's sandbox, or create one if none exists
-sandbox = await SandboxInstance.get_by_external_id(session_id)
-if not sandbox:
+found = await get_sandbox_by_external_id.asyncio(session_id, client=client)
+if isinstance(found, Sandbox):
+    sandbox = SandboxInstance(found)
+else:
     sandbox = await SandboxInstance.create_if_not_exists({
-        "name": unique_name(),
-        "image": "blaxel/base-image:latest",
-        "external_id": session_id,
-        "region": "us-pdx-1"
+        "metadata": {"name": unique_name(), "externalId": session_id},
+        "spec": {
+            "region": "us-pdx-1",
+            "runtime": {"image": "blaxel/base-image:latest"},
+        },
     })
 ```
 
