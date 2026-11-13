@@ -746,6 +746,70 @@
     {
       "source": "/troubleshooting/help-center",
       "destination": "/knowledge-base/overview"
+    },
+    {
+      "source": "/api-reference/agents/update-agent-by-name",
+      "destination": "/api-reference/agents/update-agent"
+    },
+    {
+      "source": "/api-reference/agents/get-agent-by-name",
+      "destination": "/api-reference/agents/get-agent"
+    },
+    {
+      "source": "/api-reference/functions/get-function-by-name",
+      "destination": "/api-reference/functions/get-mcp-server"
+    },
+    {
+      "source": "/api-reference/models/create-model",
+      "destination": "/api-reference/models/create-model-endpoint"
+    },
+    {
+      "source": "/api-reference/vpcs/create-a-vpc",
+      "destination": "/api-reference/vpcs/create-a-vpc-for-the-workspace"
+    },
+    {
+      "source": "/api-reference/vpcs/create-an-egress-gateway",
+      "destination": "/api-reference/vpcs/create-an-egress-gateway-in-a-vpc"
+    },
+    {
+      "source": "/cli-reference/bl_apply",
+      "destination": "/cli-reference/commands/bl_apply"
+    },
+    {
+      "source": "/cli-reference/bl_run",
+      "destination": "/cli-reference/commands/bl_run"
+    },
+    {
+      "source": "/cli-reference/commands/bl_completion_zsh",
+      "destination": "/cli-reference/commands/bl_completion"
+    },
+    {
+      "source": "/cli-reference/commands/bl_completion_bash",
+      "destination": "/cli-reference/commands/bl_completion"
+    },
+    {
+      "source": "/Functions/oauth-flow-mcp",
+      "destination": "/Functions/oauth-flow"
+    },
+    {
+      "source": "/Tutorials/OpenAI-Agents",
+      "destination": "/Tutorials/OpenAI-Agents-SDK-Deployment"
+    },
+    {
+      "source": "/Examples/Claude-Agent-SDK-MCP",
+      "destination": "/Tutorials/Claude-Agent-SDK-MCP"
+    },
+    {
+      "source": "/Agents/Deploy-an-agentreflect",
+      "destination": "/Agents/Deploy-an-agent"
+    },
+    {
+      "source": "/Functions/Deploy-a-functionYour",
+      "destination": "/Functions/Deploy-a-function"
+    },
+    {
+      "source": "/Security/Data-collection-and-privacyNot",
+      "destination": "/Security/Data-collection-and-privacy"
     }
   ]
 }
