@@ -239,6 +239,7 @@
                 ]
               },
               "Security/Quotas",
+              "pricing",
               "Security/Data-collection-and-privacy",
               "Model-Governance/Policies",
               {
