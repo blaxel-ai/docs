@@ -297,11 +297,12 @@
     {
       "key": "wait_for_completion_max",
       "group": "sandbox",
-      "label": "Maximum `waitForCompletion` wait",
-      "value": 120,
+      "label": "Maximum `waitForCompletion` or `waitForPorts` wait in one `exec` call",
+      "value": 115,
       "unit": "seconds",
-      "on_exceed": "The call fails with 504 Gateway Timeout; watch the process instead",
-      "source": "/Sandboxes/Processes",
+      "display": "115 seconds",
+      "on_exceed": "422 `PROCESS_WAIT_LIMIT_REACHED` while the process keeps running (a 504 at 120 seconds on older sandbox images); wait with `process.wait` or stream output with `onLog`",
+      "source": "/Sandboxes/Processes; platform config",
       "verified": true
     },
     {
