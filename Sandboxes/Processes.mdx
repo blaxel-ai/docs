@@ -135,6 +135,10 @@ process = await sandbox.process.exec({
 
 `workingDir` is a JSON request-body field, not a URL path. Pass a normal absolute filesystem path such as `"/workspace"`; do not URL-encode it as `"%2Fworkspace"`. In Python, the equivalent field is `working_dir`.
 
+If the directory doesn't exist, it is created with any missing parents, like `docker run -w`, as the user the command runs as. So a setup command such as `mkdir -p /app` can use `/app` as its working directory.
+
+If the directory can't be used, the command does not run. This happens when the path exists but is not a directory, when one of its parents is a file, or when the command's user is not allowed to create it. The call fails with a 422 and code `PROCESS_WORKING_DIR_UNUSABLE`. A streamed exec (`onLog`) ends with an `error` event that carries the same `code`. Sending the same call again fails the same way: point `workingDir` at a directory that user can create, such as one under its home directory or `/tmp`, then run the command again.
+
 ### Use process names
 
 When starting a process (running a command), you can specify a **process name**. This lets you interact with the process—such as retrieving logs or process information—without needing to store the process ID on your end.
