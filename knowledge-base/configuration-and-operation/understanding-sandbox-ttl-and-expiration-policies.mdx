@@ -44,13 +44,13 @@ const sandbox = await SandboxInstance.create({
 
 ### Idle TTL timing
 
-The `ttl-idle` timer starts only after the sandbox receives its first API call or connection. Creating a sandbox without using it does not start the idle timer.
+The `ttl-idle` timer only runs while the sandbox is in standby. It starts when the sandbox goes on standby and resets when it resumes. A sandbox that is created and never used also goes on standby after its creation request ends, so its idle timer starts then. In practice, a sandbox created with a `60s` `ttl-idle` policy and never used is deleted about a minute and a half after creation.
 
 On Tier 1, a hard 30-day cap still applies. A sandbox is deleted after 30 days regardless of activity, so `ttl-idle` cannot provide rolling expiration. Rolling expiration based on activity is available on Tier 2 and above.
 
 ### Processing frequency
 
-TTL enforcement does not operate at one-second precision. The cleanup process runs approximately every 60 seconds.
+TTL enforcement does not operate at one-second precision. In practice, an expired sandbox is deleted within a few seconds of its deadline.
 
 ### Computed termination time
 

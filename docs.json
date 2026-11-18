@@ -66,6 +66,7 @@
             "group": "Sandboxes",
             "pages": [
               "Sandboxes/Overview",
+              "Sandboxes/Lifecycle-recipe",
               {
                 "group": "Expiration policies",
                 "pages": [
