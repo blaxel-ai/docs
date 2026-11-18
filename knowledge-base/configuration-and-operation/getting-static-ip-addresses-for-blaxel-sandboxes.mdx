@@ -3,6 +3,8 @@ title: 'Getting static IP addresses for Blaxel sandboxes'
 description: 'Retrieve the regional public IP address ranges used by Blaxel sandboxes for network allowlists.'
 ---
 
+import Regions from '/snippets/limits/regions.mdx';
+
 If network restrictions require you to allowlist IP addresses for Blaxel deployments, including sandbox traffic, retrieve the current public IP ranges through the Blaxel API. The API returns addresses as CIDR ranges for each region.
 
 ## Retrieve public IP addresses
@@ -23,12 +25,9 @@ Retrieve the list from the API whenever you need the latest ranges.
 
 ## Regional IP addresses
 
-Blaxel offers sandboxes in four regions:
+Blaxel offers sandboxes in the following regions. The `auto` region places a sandbox in the closest one.
 
-- `us-pdx-1`: Portland
-- `us-was-1`: North Virginia
-- `eu-lon-1`: London
-- `eu-fra-1`: Frankfurt
+<Regions />
 
 To retrieve addresses for one region, add the `region` query parameter:
 
