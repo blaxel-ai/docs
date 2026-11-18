@@ -1,0 +1,1798 @@
+# Blaxel docs: API, SDK and CLI reference
+
+> Authentication, the REST APIs, the Management API endpoint index, and the SDK and CLI overviews.
+
+This file has the full text of 11 pages from https://docs.blaxel.ai, plus an index of the Management API endpoints. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Service accounts](https://docs.blaxel.ai/Security/Service-accounts)
+- [Access tokens](https://docs.blaxel.ai/Security/Access-tokens)
+- [How to authenticate the Blaxel CLI in CI environments](https://docs.blaxel.ai/knowledge-base/security-and-authentication/how-to-authenticate-the-bl-cli-in-ci-environments)
+- [REST API overview](https://docs.blaxel.ai/api-reference/introduction)
+- [Inference API](https://docs.blaxel.ai/api-reference/inference)
+- [Billing API endpoint reference](https://docs.blaxel.ai/api-reference/billing)
+- [Blaxel SDKs overview](https://docs.blaxel.ai/sdk-reference/introduction)
+- [TypeScript SDK](https://docs.blaxel.ai/sdk-reference/sdk-ts)
+- [Python SDK](https://docs.blaxel.ai/sdk-reference/sdk-python)
+- [Go SDK](https://docs.blaxel.ai/sdk-reference/sdk-go)
+- [Blaxel CLI overview](https://docs.blaxel.ai/cli-reference/introduction)
+- [Management API endpoints](https://docs.blaxel.ai/api-reference/introduction): 176 endpoints
+
+# Service accounts
+Source: https://docs.blaxel.ai/Security/Service-accounts
+
+Use Blaxel service accounts with non-user API credentials to automate the full life-cycle of resources in CI/CD pipelines and backend systems.
+
+Service accounts are workspace users (i.e. identities) that represent an external system that needs to access Blaxel to operate resources in **one specific workspace**.
+
+## Authentication of service accounts
+
+### API keys
+
+Service accounts can use [API keys](https://docs.blaxel.ai/Security/Access-tokens) to authenticate on Blaxel. These API keys can be created and managed by admins from the service account’s page, in your workspace settings.
+
+API keys can have an infinite validity duration.
+
+### Client credentials (OAuth 2.0)
+
+Service accounts can also use the *client credentials* [OAuth 2.0 grant type](https://docs.blaxel.ai/Security/Access-tokens), via their **client ID** and **client secret**. A pair of client ID / client secret is generated automatically by Blaxel when you create a new service account.
+
+> [!WARNING]
+>
+> Make sure to copy the client secret when you create the service account as you will never be able to access it again after you leave the page.
+
+## Permissions of service accounts
+
+Service accounts have a [role](https://docs.blaxel.ai/Security/Workspace-access-control#user-roles) in the workspace, like other users from your team: **admin**, **member** or **viewer**. API keys and client credentials of a service account act with the permissions of its role.
+
+The role is set when the service account is created (**admin** by default):
+
+- from **Workspace settings > Service accounts**, when creating a service account
+- from **Create workspace API key**, which creates a service account and its API key in one step
+
+Admins can change the role of a service account from its page in the workspace settings.
+
+With the Blaxel API, set `role` to `admin`, `member` or `viewer` when creating (`POST /service_accounts`) or updating (`PUT /service_accounts/{clientId}`) a service account. When `role` is omitted on update, the role stays the same.
+
+# Access tokens
+Source: https://docs.blaxel.ai/Security/Access-tokens
+
+Authenticate to Blaxel APIs and the CLI using personal access tokens, with guidance on creating, scoping, rotating, and revoking tokens securely.
+
+User access tokens can be used in order to authenticate to Blaxel by API or CLI. They apply for both [users](https://docs.blaxel.ai/Security/Workspace-access-control) and [service accounts](https://docs.blaxel.ai/Security/Service-accounts). They are generated through a variety of methods, which are documented below.
+
+## Overview of authentication methods on Blaxel
+
+Blaxel employs two main authentication paradigms: **short-lived tokens** (OAuth) and **long-lived tokens** (API keys).
+
+Long-lived tokens are easier to use but are less secure as their validity can go from multiple days to infinite. They are generated as **API keys** from the Blaxel console.
+
+**OAuth tokens** are recommended for security reasons, as their duration is only 2 hours (short-lived). They are generated through [OAuth 2.0](https://oauth.net/2/) authentication endpoints.
+
+> [!NOTE]
+>
+> A personal API key or personal OAuth login grants access to every [workspace](https://docs.blaxel.ai/Security/Workspace-access-control) your account belongs to, while a service account's API key or client-credentials token only grants access to the single workspace that service account belongs to. If a request fails with a 403 error even though the credential is valid, this usually means the credential doesn't have access to the specified workspace.
+
+## API keys
+
+Long-lived authentication tokens are called **API keys** on Blaxel. Their validity duration can be infinite.
+
+API keys can be used in the Blaxel APIs, CLI and SDK.
+
+**To authenticate in the SDKs**, use the following two variables **`BL_WORKSPACE`** and **`BL_API_KEY`**, which can be set in one of these sources:
+
+1. your **`.env`** file
+2. your machine's environment variables
+3. the local configuration file created when you log in through the CLI (see below)
+
+**To authenticate in the CLI**, use this command:
+
+```bash
+export BL_API_KEY=YOUR-API-KEY
+bl login YOUR-WORKSPACE
+```
+
+**To authenticate in the APIs**, use the API key as an authorization bearer in the headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs. For example, to list models:
+
+```bash
+curl 'https://api.blaxel.ai/v0/models' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Authorization: Bearer YOUR-API-KEY'
+```
+
+### Use API keys in CI
+
+#### GitHub Action
+
+The easiest way to integrate the Blaxel CLI into a CI pipeline is with the official [Blaxel GitHub Action](https://github.com/blaxel-ai/bl-action).
+
+To use this, add a new secret to your GitHub repository named `BL_API_KEY` and set it to the value of your Blaxel API key. You can then use the GitHub Action in a GitHub workflow, as shown below:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to Blaxel
+        uses: blaxel-ai/bl-action@v1
+        with:
+          workspace: "YOUR_WORKSPACE"
+          apikey: ${{ secrets.BL_API_KEY }}
+      - name: Deploy to Blaxel
+        run: bl deploy
+```
+
+#### Manual configuration
+
+If you prefer to set up authentication manually or are using a different CI platform, follow these steps:
+
+- Set the API key as an environment variable in your CI environment:
+
+    ```shell
+    export BL_API_KEY=YOUR-API-KEY
+    ```
+
+- Add steps to [Download and install the Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction#install) in your CI environment and log in to your Blaxel workspace:
+
+    ```shell
+    bl login YOUR-WORKSPACE
+    ```
+
+You can now use the Blaxel CLI to interact with your workspace, including creating sandboxes, executing batch jobs, or deploying agents or MCP servers.
+
+> [!TIP]
+>
+> For security, you should always create a separate API key for your CI environment. [Create an API key in the Blaxel Console](https://app.blaxel.ai/profile/security).
+
+### Use API keys via middleware
+
+If you wish to call the Blaxel API directly from a client Web application, you would have to include your Blaxel API key in client-side code. This creates a serious security vulnerability, as the key will become visible in network requests or in the source code on the client end of the connection.
+
+The solution is to add authentication middleware between your client application and the Blaxel API. The middleware serves as a secure "translator", which intercepts requests from the client application, injects your Blaxel API key, and then forwards them to Blaxel.
+
+This solution requires a catch-all route in the client application (e.g. `/api/blaxel`) that forwards all SDK requests to Blaxel's API. The route reads the Blaxel workspace and API key securely from host environment variables (e.g. `BL_WORKSPACE` and `BL_API_KEY`) and injects them into each request by adding `Authorization` and `X-Blaxel-Workspace` headers.
+
+Here is a sample implementation of this catch-all route implemented in Next.js:
+
+> [!WARNING]
+>
+> The above code is illustrative and not intended for production use. It has no authentication, allowing access to anyone who knows the endpoint URL. You must add authentication (session validation, API keys, rate limiting) before deploying in production.
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+
+async function handleRequest(request: NextRequest, { params }: { params: { slug: string[] } }) {
+  params = await params;
+  const path = params.slug.slice(1).join('/');
+
+  const workspace = process.env.BL_WORKSPACE;
+  const apiKey = process.env.BL_API_KEY; // Securely stored in environment variables
+
+  const headers = new Headers(request.headers);
+  headers.set('Authorization', `Bearer ${apiKey}`);
+  headers.set('X-Blaxel-Workspace', workspace);
+
+  const fetchOptions: RequestInit = {
+    method: request.method,
+    headers,
+    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
+  };
+
+  const response = await fetch(`https://api.blaxel.ai/v0/${path}`, fetchOptions);
+
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.delete('content-encoding');
+  responseHeaders.delete('content-length');
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    headers: responseHeaders,
+  });
+}
+
+export { handleRequest as DELETE, handleRequest as GET, handleRequest as PATCH, handleRequest as POST, handleRequest as PUT };
+```
+
+Now, within the application, the Blaxel SDK should be configured at init-time to use the catch-all route, as shown below. With this change, SDK requests are routed through the middleware rather than directly transmitted to the Blaxel API.
+
+```typescript
+import blaxel from "@blaxel/core";
+
+blaxel.initialize({
+  proxy: 'http://localhost:3000/api/blaxel',  // Your catch-all route
+  workspace: 'YOUR_WORKSPACE',
+});
+
+// Now use the SDK as normal
+const sandbox = await blaxel.SandboxInstance.create({
+  // ...
+});
+```
+
+Under this approach, your Blaxel API key is never exposed to the calling client, ensuring security. SDK requests continue to work as before, except that now they are routed through the catch-all route rather than directly to the Blaxel API.
+
+### Manage API keys
+
+You can create private API keys for your Blaxel account to authenticate directly when using the Blaxel APIs or CLI. Your [permissions in each workspace](https://docs.blaxel.ai/Security/Workspace-access-control) will be the ones given to your account in each of them.
+
+API keys can be managed from the Blaxel console in **Profile > Security**.
+
+For production-grade access to workspace resources that should be independent of individual users, it's strongly recommended to use [service accounts](https://docs.blaxel.ai/Security/Service-accounts) in the workspace.
+
+## OAuth 2.0 tokens
+
+These short-lived tokens are based on the [OAuth 2.0](https://oauth.net/2/) authentication protocol, and have a validity period of **2 hours**.
+
+### Use OAuth tokens in the CLI
+
+Use the `bl login` command.
+
+You will then be redirected to the Blaxel console to finish logging in. Sign in using your Blaxel account if you aren’t already.
+
+Once this is done, return to your terminal: the login will be finalized and you will then be able to run CLI commands.
+
+> [!TIP]
+>
+> Your [permissions in each workspace](https://docs.blaxel.ai/Security/Workspace-access-control) will be the ones given to your account in each of them.
+
+### Use OAuth tokens in the API via service accounts
+
+[Service accounts](https://docs.blaxel.ai/Security/Service-accounts) can retrieve a short-lived token via the *OAuth client credentials grant type* in the authentication API, using their *client ID* and *client secret*. These two keys are generated automatically when creating a service account. Make sure to copy the secret at its generation as you will never be able to see it again after.
+
+> [!NOTE]
+>
+> Service accounts can also connect to the API using a long-lived API key, as detailed [in the section below](https://docs.blaxel.ai/Security/Access-tokens).
+
+To retrieve the token, pass the service account’s *client ID* and *client secret* in the header to the `/oauth/token` endpoint.
+
+```bash
+curl --request POST \
+  --url https://api.blaxel.ai/v0/oauth/token \
+  --header 'Authorization: Basic base64(CLIENT_ID:CLIENT_SECRET)' \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"grant_type":"client_credentials"
+}'
+```
+
+Alternatively, you can also pass the *client ID* and *client secret* in the body:
+
+```bash
+curl --request POST \
+  --url https://api.blaxel.ai/v0/oauth/token \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"grant_type":"client_credentials",
+    "client_id": CLIENT_ID,
+    "client_secret": CLIENT_SECRET
+}'
+```
+
+You will retrieve a bearer token valid for 2 hours, which can then be passed in any call to the Blaxel APIs through any of the following headers: `Authorization` or `X-Blaxel-Authorization`, as such:
+
+```bash
+curl 'https://api.blaxel.ai/v0/models' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR_TOKEN'
+```
+
+> [!NOTE]
+>
+> **Common errors**: a missing or incorrect `grant_type` value, or an invalid/missing `client_secret`, both return a `400` error describing the specific parameter that's invalid or missing. Double check the *client ID* and *client secret* were copied correctly - the secret is only shown once at creation and can't be retrieved again.
+
+### (Advanced) Use OAuth tokens in the APIs
+
+> [!NOTE]
+>
+> This section assumes you are a developer experienced with OAuth 2.0. For a simpler guide of how to use short-lived tokens in Blaxel APIs, read the [section on authenticating service accounts](https://docs.blaxel.ai/Security/Access-tokens).
+
+Blaxel implements all **grant types** in the OAuth 2.0 convention, including [client credentials](https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), [authorization code](https://www.oauth.com/oauth2-servers/access-tokens/authorization-code-request/), and [refresh tokens](https://www.oauth.com/oauth2-servers/access-tokens/refreshing-access-tokens/). If you are a developer experienced with OAuth 2.0, you can find the **well-known configuration endpoint** at the following URL:
+
+```text
+https://api.blaxel.ai/v0/.well-known/openid-configuration
+```
+
+Through the endpoints discoverable in the aforementioned URL, you can implement any authentication flow in your application, and use the retrieved tokens in any of the following headers: `Authorization` or `X-Blaxel-Authorization`.
+
+Alternatively, you can retrieve a token using the SDK:
+
+```tsx
+import { settings } from "@blaxel/core"
+
+await settings.authenticate() // Refreshes the token only if needed
+console.log(settings.token)
+```
+
+*Note: when using the Blaxel SDK to operate Blaxel (e.g. to create an agent), token retrieval and refresh [are done automatically based on either being authenticated with CLI or using environment variables](https://docs.blaxel.ai/sdk-reference/introduction).*
+
+# How to authenticate the Blaxel CLI in CI environments
+Source: https://docs.blaxel.ai/knowledge-base/security-and-authentication/how-to-authenticate-the-bl-cli-in-ci-environments
+
+Authenticate the Blaxel CLI with a dedicated API key to automate deployments and other tasks in CI/CD environments.
+
+To use the Blaxel CLI in CI/CD environments for tasks such as pushing sandbox images, authenticate with an API key.
+
+## GitHub Action
+
+The recommended way to integrate the Blaxel CLI into a GitHub CI pipeline is the official [Blaxel GitHub Action](https://github.com/blaxel-ai/bl-action).
+
+## Manual authentication
+
+For another CI platform or a manual setup:
+
+1. Create a dedicated workspace API key in the [Blaxel Console](https://app.blaxel.ai/profile/security).
+2. Set the API key as an environment variable and log in:
+
+```bash
+export BL_API_KEY=your-api-key-here
+bl login your-workspace
+```
+
+3. After login succeeds, run any Blaxel CLI command in your CI environment.
+
+> [!TIP]
+>
+> Use a dedicated workspace API key for CI/CD automation instead of your personal API key.
+
+## Resources
+
+- [Access tokens](https://docs.blaxel.ai/Security/Access-tokens): Learn how to create and manage API keys for the CLI and CI environments.
+
+- [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction): Install the CLI and review its available commands.
+
+# REST API overview
+Source: https://docs.blaxel.ai/api-reference/introduction
+
+Authenticate and interact with all Blaxel resources using REST APIs, with support for API key and OAuth 2.0 authentication methods.
+
+Blaxel APIs allow you to interact with all resources inside of and across your workspace(s).
+
+## Get started
+
+Authentication to the Blaxel APIs can either be done using [API keys](https://docs.blaxel.ai/Security/Access-tokens) created from the Blaxel console, or through a [classic OAuth 2.0 flow](https://docs.blaxel.ai/Security/Access-tokens).
+
+**API keys** allow you to get started quickly. Simply [generate an API key](https://docs.blaxel.ai/Security/Access-tokens) for your user or service account and use the API key as a bearer token in place of the authorization headers `Authorization` or `X-Blaxel-Authorization` in any call to the Blaxel APIs.
+
+For example, to list models:
+
+```bash
+curl 'https://api.blaxel.ai/v0/models' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY'
+```
+
+To use **short-lived JWTs**, see [the guide on using an OAuth 2.0 flow](https://docs.blaxel.ai/Security/Access-tokens).
+
+See the reference documentation below for more information:
+
+- [Inference API](https://docs.blaxel.ai/api-reference/inference): Run inference requests on your deployments.
+
+- [Billing API](https://docs.blaxel.ai/api-reference/billing): Programmatically retrieve cost and usage metrics.
+
+- [Management API](https://docs.blaxel.ai/api-reference/agents/list-all-agents): Manage agents, functions, policies and much more.
+
+## API Versioning
+
+The Blaxel API uses header-based versioning to evolve response formats and behavior without breaking existing clients.
+
+### Version Header
+
+All requests should include the `Blaxel-Version` header:
+
+```bash curl
+curl 'https://api.blaxel.ai/v0/agents' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-16'
+```
+
+### Version Format
+
+Versions follow a Stripe-style date-based format:
+
+- **Stable**: `YYYY-MM-DD` (e.g., `2026-04-16`)
+- **Preview**: `YYYY-MM-DD.preview` (e.g., `2026-04-16.preview`)
+
+### Default Behavior
+
+> [!NOTE]
+>
+> If you omit the `Blaxel-Version` header, the API defaults to the earliest stable version (`2026-04-16`). This ensures backward compatibility - existing clients work without changes.
+
+### Pinning to a Specific Version
+
+To guarantee consistent response shapes across API updates, pin your client to a specific version:
+
+```bash
+curl -H 'Blaxel-Version: 2026-04-20' https://api.blaxel.ai/v0/agents
+```
+
+Once a new version is released, you can update your client at your own pace.
+
+### Unknown Versions
+
+If you send an unsupported version, the API returns `400 Bad Request`:
+
+```json
+{
+  "error": "invalid_api_version",
+  "message": "Unknown API version \"2026-99-99\". Valid versions: 2026-04-16. See https://docs.blaxel.ai/api-reference/introduction#api-versioning for the list of supported versions."
+}
+```
+
+Update your client to use a version from the table below.
+
+### Version History
+
+<table>
+  <thead>
+    <tr>
+      <th>Version</th>
+      <th>Released</th>
+      <th>Status</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>2026-04-16</code></td>
+      <td>2026-04-16</td>
+      <td>Stable</td>
+      <td>Initial version</td>
+    </tr>
+  </tbody>
+</table>
+
+## Pagination
+
+> [!WARNING]
+>
+> Pagination is currently only available for the Management API.
+
+List operations on the Management API return paginated results. Each response includes a `data` array and a `meta` object with cursor information for fetching subsequent pages.
+
+> [!NOTE]
+>
+> Pagination requires `Blaxel-Version: 2026-04-28` or later. Requests without this header use the earliest stable version, which returns a bare array without pagination metadata.
+
+### Request parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `string` | Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page. |
+| `limit` | `integer` | Maximum number of items to return per page. Defaults to 50, maximum `200`. |
+| `sort` | `string` | Sort order. Options: `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. |
+
+> [!TIP]
+>
+> For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+
+### Response metadata
+
+Each paginated response includes a `meta` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hasMore` | `boolean` | `true` when additional pages are available. |
+| `nextCursor` | `string` | Opaque cursor to pass as `cursor` on the next request. Empty when there are no more pages. |
+| `total` | `integer` | Total number of items in the workspace, ignoring filters. |
+
+### Fetch pages manually
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes `meta.nextCursor`. Pass it as `cursor` to fetch the next page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/agents?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+Continue fetching pages until `meta.hasMore` is `false`.
+
+You can also paginate results using [built-in SDK helpers](https://docs.blaxel.ai/sdk-reference/introduction#pagination).
+
+# Inference API
+Source: https://docs.blaxel.ai/api-reference/inference
+
+HTTP reference for the inference endpoints automatically generated when you deploy agents, model APIs, and MCP servers on the Global Agentics Network.
+
+Whenever you deploy a workload on Blaxel, an **inference endpoint** is generated on Global Agentics Network, the [infrastructure powerhouse](https://docs.blaxel.ai/Infrastructure/Global-Inference-Network) that hosts it.
+
+The inference API URL depends on the type of workload ([sandbox](https://docs.blaxel.ai/Sandboxes/Overview), [agent](https://docs.blaxel.ai/Agents/Overview), [model API](https://docs.blaxel.ai/Models/Overview), [MCP server](https://docs.blaxel.ai/Functions/Overview)) you are interacting with:
+
+```http Connect to a sandbox's MCP server
+
+https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/mcp
+
+```
+
+```http Connect to a sandbox's REST API base URL
+
+https://sbx-{YOUR-SANDBOX}-{YOUR-WORKSPACE}.{REGION}.bl.run/
+
+```
+
+```http Query agent
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/agents/{YOUR-AGENT}
+
+```
+
+```http Query model API
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/models/{YOUR-MODEL}
+
+```
+
+```http Connect to an MCP server
+
+https://run.blaxel.ai/{YOUR-WORKSPACE}/functions/{YOUR-SERVER-NAME}/mcp
+
+```
+
+```http Execute a job
+
+POST https://api.blaxel.ai/{YOUR-WORKSPACE}/jobs/{YOUR-JOB-NAME}/executions
+
+```
+
+Showing the full request, with the input payload:
+
+**Query sandbox**
+
+```http
+curl -X GET "https://sbx-{your-sandbox}-{your-workspace}.{region}.bl.run/filesystem/tree/etc" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>"
+```
+
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X GET "https://sbx-{your-sandbox}-$(bl workspace --current).{region}.bl.run/filesystem/tree/etc" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)"
+```
+
+`etc` is resolved relative to the filesystem service's working directory. To address the absolute path `/etc`, URL-encode the leading slash as `%2Fetc`. See [Address file paths over HTTP](https://docs.blaxel.ai/Sandboxes/Filesystem#address-file-paths-over-http) for details and multipart upload examples.
+
+**Query agent**
+
+```http
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"inputs":"Hello, world!"}'
+```
+
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/agents/{your-agent}" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"inputs":"Hello, world!"}'
+```
+
+**Query model API (example on a chat completion model)**
+
+```http
+curl -X POST "https://run.blaxel.ai/{your-workspace}/models/{your-model}/chat/completions" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X POST "https://run.blaxel.ai/$(bl workspace --current)/models/{your-model}/chat/completions" \
+-H "Content-Type: application/json" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+**Execute a job**
+
+```http
+curl -X POST "https://api.blaxel.ai/{your-workspace}/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-d '{"tasks":[{"my_arg":"my_value"}]}'
+```
+
+If you have the Blaxel CLI `bl` installed, you can use it to directly interpolate your API key into the HTTP request, as shown below:
+
+```http
+curl -X POST "https://api.blaxel.ai/$(bl workspace --current)/jobs/{your-job-name}/executions" \
+-H "X-Blaxel-Authorization: Bearer $(bl token)" \
+-d '{"tasks":[{"my_arg":"my_value"}]}'
+```
+
+### Connect to MCP servers
+
+**MCP servers** ([Model Context Protocol](https://github.com/modelcontextprotocol)) provide a toolkit of multiple capabilities for agents. These servers can be interacted with using Blaxel's streamable HTTP transport implementation on the server's global endpoint.
+
+- [Connect to an MCP server](https://docs.blaxel.ai/Functions/Invoke-functions): Learn how to run tool calls through your MCP server.
+
+### Manage sessions
+
+To simulate multi-turn conversations, you can pass on request headers. You'll need your client to generate this ID and pass it using any header which you can retrieve via the code (e.g. `Thread-Id`). Without a thread ID, the agent won't maintain or use any conversation memory when processing the request.
+
+This is only available for agent requests.
+
+```http Query agent with thread ID
+
+curl -X POST "https://run.blaxel.ai/{your-workspace}/agents/{your-agent}" \
+-H 'Content-Type: application/json' \
+-H "X-Blaxel-Authorization: Bearer <YOUR_API_KEY>" \
+-H "X-Blaxel-Thread-Id: <THREAD_ID>" \
+-d '{"inputs":"Hello, world!"}'
+
+```
+
+- [Product documentation](https://docs.blaxel.ai/Agents/Query-agents): Read our product guide on querying an agent.
+
+# Billing API endpoint reference
+Source: https://docs.blaxel.ai/api-reference/billing
+
+HTTP endpoint reference for the Blaxel Billing Explorer API to programmatically retrieve cost, usage, and consumption metrics for your account.
+
+## Endpoint
+
+```http
+GET https://api.blaxel.ai/v0/accounts/{accountId}/metrics
+```
+
+The `{accountId}` path segment is the identifier of the Blaxel account that owns the workspaces you want to query. You can retrieve it from your account settings in the Blaxel Console, or by calling `GET /v0/accounts`.
+
+All requests must be authenticated with a Bearer token. See [Access tokens](https://docs.blaxel.ai/Security/Access-tokens) for how to obtain one.
+
+```bash
+curl "https://api.blaxel.ai/v0/accounts/{accountId}/metrics?startTime=2025-10-01T00:00:00Z&endTime=2025-11-01T00:00:00Z&groupBy=resource_type" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Query parameters
+
+### Required
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `startTime` | `string` (RFC3339 UTC) | Start of the window, **inclusive**. Example: `2025-10-01T00:00:00Z`. |
+| `endTime` | `string` (RFC3339 UTC) | End of the window, **exclusive**. Example: `2025-11-01T00:00:00Z`. |
+
+### Optional
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `resolution` | `string` | Bucket size for the returned timeseries. One of `hourly`, `daily`, `weekly`, `monthly`. Auto-picked from the window length when omitted. See [Resolution rules](https://docs.blaxel.ai/api-reference/billing#resolution-rules). |
+| `groupBy` | `string` | Dimension(s) to split the response along. Accepts a single value or a comma-separated list of up to 3 dimensions (e.g. `groupBy=resource_uuid,workspace`). Valid dimensions: `workspace`, `resource_type`, `resource_name`, `resource_uuid`, `billing_dimension`. When multiple dimensions are provided, results are grouped by their cross-product. Dimensions are canonically sorted, so `resource_uuid,workspace` and `workspace,resource_uuid` yield the same result. When omitted the response contains a single aggregated entry. |
+| `workspace` | `string` | Restrict to a single workspace name. **Admin-only.** |
+| `resourceType` | `string` | Filter by raw `resource_type` (e.g. `sandbox`, `agent`, `job`, `mcp_server`, `volume`, `custom_domain`). |
+| `resourceName` | `string` | Filter by resource name (primary identifier). |
+| `resourceUuid` | `string` | Filter by resource UUID / instance id. Best-effort - not every resource type carries an instance id. |
+| `billingDimension` | `string` | Filter by canonical billing dimension. See [Billing dimensions](https://docs.blaxel.ai/api-reference/billing#billing-dimensions). |
+| `limit` | `integer` | Page size for grouped results. Default `100`, max `100`. Values above `100` are silently clamped. |
+| `cursor` | `string` | Opaque pagination cursor returned in `meta.nextCursor` of a previous response. |
+
+Use the [enum discovery endpoints](https://docs.blaxel.ai/api-reference/billing#enum-discovery-endpoints) to populate dropdowns for `groupBy` and `resourceType` values without hard-coding them.
+
+## Resolution rules
+
+When `resolution` is omitted, Blaxel picks one based on the window length:
+
+| Window length | Default resolution |
+|---------------|--------------------|
+| `< 7 days` | `hourly` |
+| `< 90 days` | `daily` |
+| `< 1 year` | `weekly` |
+| `≥ 1 year` | `monthly` |
+
+Explicit values have maximum window caps to keep responses bounded:
+
+| Resolution | Max window |
+|------------|-----------|
+| `hourly` | 7 days |
+| `daily` | 90 days |
+| `weekly` | 1 year |
+| `monthly` | unbounded |
+
+Requesting a resolution that exceeds its cap returns `400 Bad Request`.
+
+## Admin-only parameters
+
+The following two features are restricted to **account admins** - non-admin callers get `403 Access denied`:
+
+- `workspace=<name>` - filtering to a single workspace
+- `groupBy=workspace` - splitting the response by workspace (including when `workspace` appears as one dimension in a multi-dimension `groupBy`, e.g. `groupBy=resource_type,workspace`)
+
+Non-admin members can still query their own workspace's data via `workspace=` when they are admins of the **account**, which is distinct from the workspace admin role. See [workspace access control](https://docs.blaxel.ai/Security/Workspace-access-control) for more on the role model.
+
+## Billing dimensions
+
+A **billing dimension** is the canonical, unit-stable metric that Blaxel bills against. Each resource type maps to one or more dimensions, and each dimension carries a single unit (`gbs` = GB-seconds, `count` = discrete events, `hours` = active hours).
+
+| Billing dimension | Resource type | Unit |
+|-------------------|--------------|------|
+| `sandbox_compute_runtime_gbs` | sandbox | GB-seconds |
+| `sandbox_image_storage_gbs` | sandbox | GB-seconds |
+| `sandbox_snapshot_storage_gbs` | sandbox | GB-seconds |
+| `agent_compute_runtime_gbs` | agent | GB-seconds |
+| `agent_image_storage_gbs` | agent | GB-seconds |
+| `agent_async_requests_count` | agent (async requests) | count |
+| `job_compute_runtime_gbs` | job | GB-seconds |
+| `job_image_storage_gbs` | job | GB-seconds |
+| `mcp_server_compute_runtime_gbs` | mcp_server | GB-seconds |
+| `mcp_server_image_storage_gbs` | mcp_server | GB-seconds |
+| `volume_storage_gbs` | volume | GB-seconds |
+| `custom_domain_active_time_hours` | custom_domain | hours |
+
+> [!TIP]
+>
+> Because different dimensions use different units, **mixed-unit totals are deliberately omitted**. `summary.totalUsage` (and per-group `summary.usage`) is **only populated when `billing_dimension` is among the requested `groupBy` dimensions** - this guarantees every row shares a single unit. This applies to both `groupBy=billing_dimension` alone and multi-dimension queries that include it (e.g. `groupBy=billing_dimension,workspace`). For groupings that do not include `billing_dimension` you will only see `totalCost` / `cost` in USD - the unit-safe common denominator.
+
+## Response
+
+A successful call returns `200 OK` with an `AccountMetricsResponse`. Example for `groupBy=resource_type` - `usage` fields are omitted per the rule above:
+
+```json
+{
+  "startTime": "2025-10-01T00:00:00Z",
+  "endTime":   "2025-11-01T00:00:00Z",
+  "resolution": "daily",
+  "summary": {
+    "totalCost": 142.37
+  },
+  "data": [
+    {
+      "resourceType": "sandbox",
+      "summary": { "cost": 102.11 },
+      "timeseries": [
+        { "timestamp": "2025-10-01T00:00:00Z", "cost": 3.41 },
+        { "timestamp": "2025-10-02T00:00:00Z", "cost": 3.12 },
+        "..."
+      ]
+    },
+    {
+      "resourceType": "agent",
+      "summary": { "cost": 28.90 },
+      "timeseries": ["..."]
+    }
+  ],
+  "meta": {
+    "hasMore":    false,
+    "nextCursor": ""
+  }
+}
+```
+
+### Top-level fields
+
+| Field | Description |
+|-------|-------------|
+| `startTime` / `endTime` | Echo of the queried window, in RFC3339 UTC. |
+| `resolution` | Bucket size actually applied (either what you asked for, or the auto-picked default). |
+| `summary.totalCost` | Total cost in USD across the full window. Sum of every group's cost in `data`. |
+| `summary.totalUsage` | Total usage across the window. **Only populated** when `billing_dimension` is among the requested `groupBy` dimensions, where every row shares a single unit. Omitted otherwise. |
+| `data` | Array of grouped entries. When `groupBy` is not set, contains a single aggregated entry. |
+| `meta.hasMore` / `meta.nextCursor` | See [Pagination](https://docs.blaxel.ai/api-reference/billing#pagination). |
+
+### Per-group entry
+
+Each item in `data` is an `AccountMetricsDataEntry`. The fields populated depend on which `groupBy` dimension(s) were requested:
+
+| Field | Populated when `groupBy` includes |
+|-------|------------------------------|
+| `workspace` | `workspace`, `resource_uuid` (enriched), `resource_name` (enriched) |
+| `resourceType` | `resource_type`, `resource_uuid` (enriched), `resource_name` (enriched), `billing_dimension` (enriched) |
+| `resourceName` | `resource_name`, `resource_uuid` (enriched) |
+| `resourceUuid` | `resource_uuid` |
+| `billingDimension` | `billing_dimension` |
+
+When using multi-dimension `groupBy`, all fields from each requested dimension are populated. Additionally, **metadata enrichment** fills in contextual fields - for example, `groupBy=resource_uuid` also populates `workspace`, `resourceName`, and `resourceType` from the underlying data.
+
+Every entry also carries:
+
+- `summary.cost` - cost in USD for this group over the window.
+- `summary.usage` - usage for this group. Only populated when `billing_dimension` is among the requested `groupBy` dimensions (same unit-safety rule as the top-level summary).
+- `timeseries` - one entry per resolution bucket for the full window. Buckets with no activity have `cost: 0`. Bucket-level `usage` follows the same rule as group-level `usage`.
+
+## Pagination
+
+Grouped responses are paginated. To request the next page, pass the `nextCursor` value from the previous response back as the `cursor` query parameter:
+
+```bash
+curl "https://api.blaxel.ai/v0/accounts/{accountId}/metrics?startTime=...&endTime=...&groupBy=resource_name&limit=100&cursor=$NEXT_CURSOR" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+When `meta.hasMore` is `false`, `meta.nextCursor` is empty and there are no more pages.
+
+`limit` defaults to `100` and is capped at `100`; values above the cap are silently clamped.
+
+## Enum discovery endpoints
+
+Two helper endpoints expose the valid values for `groupBy` and `resourceType` so you can render dropdowns without baking the list into your client.
+
+### `GET /v0/accounts/{accountId}/metrics/enums/group-by`
+
+Returns every valid value for the `groupBy` query parameter. The enum is static but exposed as an endpoint so it stays in sync automatically if new groupings are added.
+
+```json
+{ "values": ["workspace", "resource_type", "resource_name", "resource_uuid", "billing_dimension"] }
+```
+
+### `GET /v0/accounts/{accountId}/metrics/enums/resource-types`
+
+Returns the distinct `resource_type` values **actually observed for the account in the supplied window**. Unlike the `group-by` enum, this list is dynamic: a resource type only appears once there is at least one metric event for it in range.
+
+Required query parameters: `startTime`, `endTime` (same format as the main endpoint).
+
+```json
+{ "values": ["sandbox", "agent", "job", "mcp_server"] }
+```
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400 Bad Request` | Missing/invalid parameter, unsupported feature (`label`, `unit`), a `resolution` that exceeds its window cap, more than 3 `groupBy` dimensions, or an invalid/duplicate dimension name. |
+| `403 Access denied` | Non-admin caller used `workspace=` or `groupBy=workspace` (including as part of a multi-dimension groupBy). |
+
+## Multi-dimension groupBy
+
+You can group by multiple dimensions at once by passing a comma-separated list. For example, `groupBy=resource_type,workspace` returns the cross-product - one entry per unique (resource_type, workspace) combination:
+
+```json
+{
+  "startTime": "2025-10-01T00:00:00Z",
+  "endTime":   "2025-11-01T00:00:00Z",
+  "resolution": "daily",
+  "summary": {
+    "totalCost": 142.37
+  },
+  "data": [
+    {
+      "resourceType": "sandbox",
+      "workspace": "production",
+      "summary": { "cost": 80.00 },
+      "timeseries": [
+        { "timestamp": "2025-10-01T00:00:00Z", "cost": 2.67 },
+        "..."
+      ]
+    },
+    {
+      "resourceType": "sandbox",
+      "workspace": "staging",
+      "summary": { "cost": 22.11 },
+      "timeseries": ["..."]
+    },
+    {
+      "resourceType": "agent",
+      "workspace": "production",
+      "summary": { "cost": 28.90 },
+      "timeseries": ["..."]
+    }
+  ],
+  "meta": {
+    "hasMore":    false,
+    "nextCursor": ""
+  }
+}
+```
+
+**Constraints:**
+- Maximum **3 dimensions** per query. Exceeding this returns `400 Bad Request`.
+- Pagination works the same way - the cursor is opaque and handles the composite grouping internally.
+- `summary.usage` follows the same unit-safety rule: only populated when `billing_dimension` is among the requested dimensions.
+
+## Example: daily cost per resource type over 30 days
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "resolution=daily" \
+  --data-urlencode "groupBy=resource_type" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: hourly sandbox compute cost for the last 24 hours
+
+```bash
+START=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:00:00Z)
+END=$(date -u +%Y-%m-%dT%H:00:00Z)
+
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=$START" \
+  --data-urlencode "endTime=$END" \
+  --data-urlencode "resolution=hourly" \
+  --data-urlencode "billingDimension=sandbox_compute_runtime_gbs" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: per-workspace breakdown (account admin only)
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "groupBy=workspace" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+## Example: cost per resource type per workspace (multi-dimension, admin only)
+
+```bash
+curl -G "https://api.blaxel.ai/v0/accounts/$ACCOUNT_ID/metrics" \
+  --data-urlencode "startTime=2025-10-01T00:00:00Z" \
+  --data-urlencode "endTime=2025-11-01T00:00:00Z" \
+  --data-urlencode "groupBy=resource_type,workspace" \
+  -H "Authorization: Bearer $BL_API_KEY"
+```
+
+# Blaxel SDKs overview
+Source: https://docs.blaxel.ai/sdk-reference/introduction
+
+Use the Blaxel SDKs for TypeScript, Python, and Go to programmatically manage sandboxes, agents, MCP servers, jobs, and other resources.
+
+Blaxel features SDKs in three languages: **Python**, **TypeScript**, and **Go**. Check out down below the installation instructions, as well as documentation on **how the SDK** **authenticates** to Blaxel.
+
+## Install
+
+- [TypeScript SDK](https://docs.blaxel.ai/sdk-reference/sdk-ts): Install the TypeScript SDK.
+
+- [Python SDK](https://docs.blaxel.ai/sdk-reference/sdk-python): Install the Python SDK.
+
+- [Go SDK](https://docs.blaxel.ai/sdk-reference/sdk-go): Install the Go SDK.
+
+## Prerequisites
+
+To use any Blaxel SDK, you need a [Blaxel account](https://app.blaxel.ai) and the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+Or add them to a `.env` file at the root of your project.
+
+## Authentication
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must be supplied through one of the following sources, checked in priority order:
+
+1. when running on Blaxel, authentication is handled automatically
+2. `BL_WORKSPACE` and `BL_API_KEY` environment variables or `.env` file (see [this page](https://docs.blaxel.ai/Agents/Variables-and-secrets) for other authentication options)
+3. configuration file created locally when you log in through [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) (or deploy on Blaxel)
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI:**
+
+```bash
+bl login
+```
+
+This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, this connection persists automatically.
+
+## Pagination
+
+List endpoints in the Blaxel SDKs return paginated results. Each call fetches one page of items and a cursor that points to the next page. The SDKs expose two ways to consume these pages: auto-paging, which iterates every item across all pages for you, and manual pagination, which gives you control over each page request.
+
+Pagination is cursor-based. Every page carries an opaque `cursor` to the next page and a flag that tells you whether more pages exist. You never build cursors yourself: pass the page through the auto-pager or call the next-page helper, and the SDK forwards the cursor for you.
+
+Each page also reports the total number of items in the workspace, ignoring any filters applied to the request.
+
+### Auto-paging
+
+Auto-paging is the recommended approach. The SDK fetches each page on demand as you iterate, so you can walk an entire result set without tracking cursors.
+
+```typescript TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drives = await DriveInstance.list({ limit: 50 });
+for await (const drive of drives) {
+  console.log(drive.name);
+}
+```
+
+```python Python (sync)
+from blaxel.core import SyncDriveInstance
+
+for drive in SyncDriveInstance.list(limit=50).auto_paging_iter():
+    print(drive.name)
+```
+
+```python Python (async)
+import asyncio
+from blaxel.core import DriveInstance
+
+async def main():
+    drives = await DriveInstance.list(limit=50)
+    async for drive in drives.auto_paging_iter():
+        print(drive.name)
+
+asyncio.run(main())
+```
+
+```go Go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/blaxel-ai/sdk-go"
+)
+
+func main() {
+	client := blaxel.NewClient()
+	iter := client.Drives.ListAutoPaging(context.Background(), blaxel.DriveListParams{})
+	for iter.Next() {
+		drive := iter.Current()
+		fmt.Println(drive.Metadata.Name)
+	}
+	if err := iter.Err(); err != nil {
+		panic(err)
+	}
+}
+```
+
+In TypeScript, you can also collect items into an array with `autoPagingToArray({ limit })`, which stops once it reaches the requested number of items.
+
+### Manual pagination
+
+Use manual pagination when you need control over each request, for example to process one page at a time or to stop early based on the page contents. Read the current page from `data`, check whether more pages exist, then fetch the next page.
+
+```typescript TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+let page = await DriveInstance.list({ limit: 50 });
+while (page) {
+  for (const drive of page.data) {
+    console.log(drive.name);
+  }
+  page = await page.nextPage();
+}
+```
+
+```python Python (sync)
+from blaxel.core import SyncDriveInstance
+
+page = SyncDriveInstance.list(limit=50)
+while True:
+    for drive in page.data:
+        print(drive.name)
+    if not page.has_more:
+        break
+    page = page.next_page()
+```
+
+```python Python (async)
+import asyncio
+from blaxel.core import DriveInstance
+
+async def main():
+    page = await DriveInstance.list(limit=50)
+    while True:
+        for drive in page.data:
+            print(drive.name)
+        if not page.has_more:
+            break
+        page = await page.next_page()
+
+asyncio.run(main())
+```
+
+```go Go
+client := blaxel.NewClient()
+page, err := client.Drives.List(context.Background(), blaxel.DriveListParams{Limit: blaxel.Int(50)})
+if err != nil {
+	panic(err)
+}
+for {
+	for _, drive := range page.Data {
+		fmt.Println(drive.Metadata.Name)
+	}
+	if !page.Meta.HasMore {
+		break
+	}
+	page, err = page.GetNextPage()
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+### Pagination parameters
+
+List endpoints accept the following query parameters:
+
+| Parameter | Description |
+|---|---|
+| `limit` | Maximum number of items per page. Defaults to `50`. |
+| `cursor` | Opaque token pointing to a page. The SDK sets this for you when you use auto-paging or the next-page helper. |
+
+The page object also exposes pagination state so you can inspect it directly: the items (`data`), whether more pages exist (`hasMore` in TypeScript, `has_more` in Python, `Meta.HasMore` in Go), and the next cursor.
+
+### Supported endpoints
+
+Pagination applies to list endpoints across SDK resources. Agent Drives, volumes, and sandboxes support it in all three SDKs. The TypeScript and Python SDKs also paginate a sandbox's schedules and schedule executions (`sandbox.schedules.list` and `sandbox.schedules.executions`), as well as jobs, functions, and agents (`list_jobs`, `list_functions`, and `list_agents`). The Go SDK additionally exposes cursor pagination on its generated list endpoints, including agents, functions, jobs, models, policies, and sandboxes.
+
+> [!NOTE]
+>
+> You can also paginate results using the [API](https://docs.blaxel.ai/api-reference/introduction#pagination).
+
+## Data collection and privacy
+
+[Read more about the data collected by the Blaxel SDKs](https://docs.blaxel.ai/Security/Data-collection-and-privacy).
+
+## Complete SDK reference
+
+Visit the GitHub pages below for detailed documentation on each SDK's commands and classes.
+
+- [TypeScript SDK](https://github.com/blaxel-ai/sdk-typescript): Open the GitHub repository for Blaxel SDK in TypeScript.
+
+- [Python SDK](https://github.com/blaxel-ai/sdk-python): Open the GitHub repository for Blaxel SDK in Python.
+
+- [Go SDK](https://github.com/blaxel-ai/sdk-go): Open the GitHub repository for Blaxel SDK in Go.
+
+# TypeScript SDK
+Source: https://docs.blaxel.ai/sdk-reference/sdk-ts
+
+Install and use the Blaxel TypeScript SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other resources from Node.js.
+
+Blaxel features an SDK in **TypeScript**. To install, follow the instructions below.
+
+## Install
+
+To manage Blaxel resources, use the core SDK `@blaxel/core`:
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/core
+
+```
+
+For automatic trace and metric exports when running workloads with Blaxel SDK, you'll want to use `@blaxel/telemetry`. Import this SDK at your project's entry point.
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/telemetry
+
+```
+
+For compatibility with agent frameworks (i.e. to import tools and models in the framework’s format), import the corresponding SDK:
+
+```shell TypeScript (pnpm)
+
+pnpm install @blaxel/langgraph
+
+pnpm install @blaxel/vercel
+
+pnpm install @blaxel/mastra
+
+pnpm install @blaxel/llamaindex
+
+```
+
+## Prerequisites
+
+To use this SDK, you need a [Blaxel account](https://app.blaxel.ai) and the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+Or add them to a `.env` file at the root of your project. For other authentication options, see [Variables and secrets](https://docs.blaxel.ai/Agents/Variables-and-secrets).
+
+Alternatively, you can authenticate via the [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction):
+
+```bash
+bl login
+```
+
+When you deploy on Blaxel, authentication is handled automatically.
+
+## Guides
+
+- [Create sandboxes](https://docs.blaxel.ai/Sandboxes/Overview): Use Blaxel SDK to create and connect to sandboxes and sandbox previews.
+
+- [Interact with a sandbox](https://docs.blaxel.ai/Sandboxes/Processes): Use Blaxel SDK to manage the filesystem, processes and logs of a sandbox.
+
+- [Connect to MCP servers](https://docs.blaxel.ai/Agents/Develop-an-agent-ts#Connect-to-tools): Use Blaxel SDK to retrieve tools from a deployed MCP server.
+
+- [Connect to model APIs](https://docs.blaxel.ai/Agents/Develop-an-agent-ts#Connect-to-a-model-API): Use Blaxel SDK to retrieve an LLM client when building agents.
+
+- [Deploy your MCP server](https://docs.blaxel.ai/Functions/Create-MCP-server): Use Blaxel SDK to create and host a custom MCP server.
+
+- [Chain agents](https://docs.blaxel.ai/Agents/Develop-an-agent-ts#Connect-to-another-agent-multi-agent-chaining): Use Blaxel SDK to chain calls to multiple agents.
+
+## Complete SDK reference
+
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
+
+- [TypeScript SDK](https://github.com/blaxel-ai/sdk-typescript): Open the GitHub repository for Blaxel SDK in TypeScript.
+
+# Python SDK
+Source: https://docs.blaxel.ai/sdk-reference/sdk-python
+
+Install and use the Blaxel Python SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other workspace resources from Python.
+
+Blaxel features an SDK in **Python**. To install, follow the instructions below.
+
+## Install
+
+```shell Python (pip)
+
+pip install blaxel
+
+```
+
+```shell Python (uv add)
+
+uv init && uv add blaxel
+
+```
+
+## Prerequisites
+
+To use this SDK, you need a [Blaxel account](https://app.blaxel.ai) and the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+Or add them to a `.env` file at the root of your project. For other authentication options, see [Variables and secrets](https://docs.blaxel.ai/Agents/Variables-and-secrets).
+
+Alternatively, you can authenticate via the [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction):
+
+```bash
+bl login
+```
+
+When you deploy on Blaxel, authentication is handled automatically.
+
+## Guides
+
+- [Create sandboxes](https://docs.blaxel.ai/Sandboxes/Overview): Use Blaxel SDK to create and connect to sandboxes and sandbox previews.
+
+- [Interact with a sandbox](https://docs.blaxel.ai/Sandboxes/Processes): Use Blaxel SDK to manage the filesystem, processes and logs of a sandbox.
+
+- [Connect to MCP servers](https://docs.blaxel.ai/Agents/Develop-an-agent-py#Connect-to-tools): Use Blaxel SDK to retrieve tools from a deployed MCP server.
+
+- [Connect to model APIs](https://docs.blaxel.ai/Agents/Develop-an-agent-py#Connect-to-a-model-API): Use Blaxel SDK to retrieve an LLM client when building agents.
+
+- [Deploy your MCP server](https://docs.blaxel.ai/Functions/Create-MCP-server): Use Blaxel SDK to create and host a custom MCP server.
+
+- [Chain agents](https://docs.blaxel.ai/Agents/Develop-an-agent-ts#Connect-to-another-agent-multi-agent-chaining): Use Blaxel SDK to chain calls to multiple agents.
+
+## Complete SDK reference
+
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
+
+- [Python SDK](https://github.com/blaxel-ai/sdk-python): Open the GitHub repository for Blaxel SDK in Python.
+
+# Go SDK
+Source: https://docs.blaxel.ai/sdk-reference/sdk-go
+
+Install and use the Blaxel Go SDK to programmatically manage sandboxes, agents, MCP servers, jobs, and other workspace resources from Go.
+
+Blaxel features an SDK in **Go**. To install, follow the instructions below.
+
+## Install
+
+```go
+import (
+	"github.com/blaxel-ai/sdk-go" // imported as blaxel
+)
+```
+
+Or to use a specific version:
+
+```shell Go
+go get -u 'github.com/blaxel-ai/sdk-go@v0.15.0'
+```
+
+## Prerequisites
+
+To use this SDK, you need a [Blaxel account](https://app.blaxel.ai) and the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+Or add them to a `.env` file at the root of your project. For other authentication options, see [Variables and secrets](https://docs.blaxel.ai/Agents/Variables-and-secrets).
+
+Alternatively, you can authenticate via the [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction):
+
+```bash
+bl login
+```
+
+When you deploy on Blaxel, authentication is handled automatically.
+
+## Complete SDK reference
+
+Visit the GitHub page below for detailed documentation on the SDK's commands and classes.
+
+- [Go SDK](https://github.com/blaxel-ai/sdk-go): Open the GitHub repository for Blaxel SDK in Go.
+
+# Blaxel CLI overview
+Source: https://docs.blaxel.ai/cli-reference/introduction
+
+Install the Blaxel CLI (bl) to manage sandboxes, agents, MCP servers, jobs, and other resources from your terminal, with auth and command reference.
+
+Blaxel CLI (`bl`) is a command line tool to interact with the Blaxel APIs.
+
+## Install
+
+Run the installer in a terminal:
+
+```shell macOS and Linux
+curl -fsSL https://blaxel.ai/install.sh | sh
+```
+
+```powershell Windows
+irm https://blaxel.ai/install.ps1 | iex
+```
+
+The installer checks the Blaxel CLI (`bl`) against the release checksums, installs it, and adds it to your `PATH`. On macOS and Linux, it also installs completions for your current shell if you use zsh, bash, or fish. On Windows, [configure PowerShell completions](https://docs.blaxel.ai/cli-reference/introduction#shell-autocompletion) separately. It then runs [`bl setup`](https://docs.blaxel.ai/cli-reference/commands/bl_setup), which shows what it found and installs it when you press Enter: the [Blaxel skills](https://docs.blaxel.ai/skills-mcp#blaxel-skills) and MCP servers for the coding agents on your machine (Claude Code, Codex, Cursor and others), then the browser login. Run it again at any time to add what is missing.
+
+**Install with Homebrew**
+
+```shell
+brew install blaxel-ai/blaxel/blaxel
+bl setup
+```
+
+Homebrew 6.0.0+ requires explicit trust for non-official taps, so use the fully qualified formula name.
+
+**Installer options**
+
+On macOS and Linux, set these variables for `sh`:
+
+| Variable | Effect |
+|---|---|
+| `VERSION=v0.1.119` | Install that release instead of the latest |
+| `BINDIR=/usr/local/bin` | Install to that folder instead of `~/.local/bin` |
+| `BL_INSTALL_SETUP=false` | Install the CLI only, and run `bl setup` later |
+| `BL_INSTALL_SKILLS=false` | Leave your coding agents alone |
+| `BL_INSTALL_PATH=false` | Do not add `bl` to your `PATH` |
+| `BL_INSTALL_COMPLETION=false` | Skip the shell completions |
+
+For example, to install a specific release for all users:
+
+```shell
+curl -fsSL https://blaxel.ai/install.sh | sudo VERSION=v0.1.119 BINDIR=/usr/local/bin sh
+```
+
+Under `sudo`, the installer still sets up your own shell, coding agents and login. In CI, it installs the CLI only and leaves the shell configuration and coding agents alone. On Windows, run `$env:BL_INSTALL_SETUP = "false"` before the installer to install the CLI only.
+
+## Update
+
+**Update on Mac**
+
+Update Blaxel CLI by running the following command in a terminal:
+
+```shell
+bl upgrade
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
+
+```shell
+bl upgrade --version 0.1.21
+```
+
+You can also upgrade using Homebrew:
+
+```shell
+brew upgrade blaxel
+```
+
+**Update on Linux**
+
+Update Blaxel CLI by running the following command in a terminal:
+
+```shell
+bl upgrade
+```
+
+If you need to update to a specific version (e.g. v0.1.21):
+
+```shell
+bl upgrade --version 0.1.21
+```
+
+**Update on Windows**
+
+Run the installer again in PowerShell. It installs the latest release and sets up anything new:
+
+```powershell
+irm https://blaxel.ai/install.ps1 | iex
+```
+
+## Shell autocompletion
+
+On macOS and Linux, the installer sets up autocompletion for your current shell if you use zsh, bash, or fish. To set it up yourself, or for PowerShell, run one of the following:
+
+```zsh zsh
+echo 'eval "$(bl completion zsh)"' >> ~/.zshrc
+```
+
+```bash bash
+echo 'eval "$(bl completion bash)"' >> ~/.bashrc
+```
+
+```fish fish
+echo 'bl completion fish' > ~/.config/fish/completions/bl.fish
+```
+
+```powershell powershell
+if (!(Test-Path -Path $PROFILE)) {
+New-Item -ItemType File -Path $PROFILE -Force
+}
+Add-Content -Path $PROFILE -Value '(& bl completion powershell) | Out-String | Invoke-Expression'
+```
+
+## Get started
+
+First, create a [workspace](https://docs.blaxel.ai/Security/Workspace-access-control) on the Blaxel console. The installer logs you in; to log in again, run:
+
+```bash
+bl login
+```
+
+If you have multiple workspaces, the one you last logged into will be used automatically in every subsequent command you run. You can log in to as many workspaces as you want.
+
+To set your context to a different workspace you already logged in to, use the following command:
+
+```bash
+bl workspaces your-workspace
+
+### You can retrieve the list of all your workspaces by running:
+bl workspaces
+```
+
+Basic commands to scaffold, develop, and deploy your resources:
+
+| Command | Purpose |
+| --- | --- |
+| `bl new` | Scaffold a new local project (code \+ `blaxel.toml`) |
+| `bl deploy` | Build image \+ push image \+ create/update resource \+ watch logs |
+| `bl push` | Build image \+ push image to Blaxel registry (no resource created or updated) |
+| `bl apply` | Declarative resource creation/update using YAML files, similar to `kubectl apply` |
+| `bl serve` | Local execution _(not available for sandboxes)_ |
+
+`bl deploy` is an all-in-one command that packages local files into an image, pushes it as a template, and deploys it as a resource on Blaxel. Use the `--skip-build` flag to skip image rebuilding. Use `bl push` instead to only build and push the image.
+
+Interact with existing resources in your workspace:
+
+```shellscript
+bl get sandboxes
+```
+
+## **Options**
+
+```text
+-h, --help               Get the help for Blaxel
+-w, --workspace string   Specify the Blaxel workspace to work on.
+-o, --output string      Output format. One of: pretty, yaml, json, table
+-v, --verbose            Enable verbose output
+```
+
+# Management API endpoints
+Source: https://docs.blaxel.ai/api-reference/introduction
+
+All 176 endpoints of the Blaxel Management API at https://api.blaxel.ai/v0, by tag. Each endpoint page has the parameters, request body and responses. The full OpenAPI spec is at https://api.blaxel.ai/v0/openapi/controlplane.yml.
+
+## agents
+
+- [GET /agents](https://docs.blaxel.ai/api-reference/agents/list-all-agents.md): List all agents
+- [POST /agents](https://docs.blaxel.ai/api-reference/agents/create-agent.md): Create agent
+- [DELETE /agents/{agentName}](https://docs.blaxel.ai/api-reference/agents/delete-agent.md): Delete agent
+- [GET /agents/{agentName}](https://docs.blaxel.ai/api-reference/agents/get-agent.md): Get agent
+- [PUT /agents/{agentName}](https://docs.blaxel.ai/api-reference/agents/update-agent.md): Update agent
+- [GET /agents/{agentName}/revisions](https://docs.blaxel.ai/api-reference/agents/list-all-agent-revisions.md): List all agent revisions
+
+## applications
+
+- [GET /applications](https://docs.blaxel.ai/api-reference/applications/list-all-applications.md): List all applications
+- [POST /applications](https://docs.blaxel.ai/api-reference/applications/create-application.md): Create application
+- [DELETE /applications/{applicationName}](https://docs.blaxel.ai/api-reference/applications/delete-application.md): Delete application
+- [GET /applications/{applicationName}](https://docs.blaxel.ai/api-reference/applications/get-application.md): Get application
+- [PUT /applications/{applicationName}](https://docs.blaxel.ai/api-reference/applications/update-application.md): Update application
+- [GET /applications/{applicationName}/revisions](https://docs.blaxel.ai/api-reference/applications/list-all-application-revisions.md): List all application revisions
+
+## changelog
+
+- [GET /changelog](https://docs.blaxel.ai/api-reference/changelog/get-latest-changelog-entries.md): Get latest changelog entries
+
+## compute
+
+- [GET /sandboxes](https://docs.blaxel.ai/api-reference/compute/list-sandboxes.md): List sandboxes
+- [POST /sandboxes](https://docs.blaxel.ai/api-reference/compute/create-sandbox.md): Create sandbox
+- [DELETE /sandboxes/{sandboxName}](https://docs.blaxel.ai/api-reference/compute/delete-sandbox.md): Delete sandbox
+- [GET /sandboxes/{sandboxName}](https://docs.blaxel.ai/api-reference/compute/get-sandbox.md): Get sandbox
+- [PUT /sandboxes/{sandboxName}](https://docs.blaxel.ai/api-reference/compute/update-sandbox.md): Update sandbox
+- [POST /sandboxes/{sandboxName}/archive](https://docs.blaxel.ai/api-reference/compute/archive-sandbox.md): Archive sandbox
+- [POST /sandboxes/{sandboxName}/fork](https://docs.blaxel.ai/api-reference/compute/fork-sandbox.md): Fork sandbox
+- [GET /sandboxes/{sandboxName}/previews](https://docs.blaxel.ai/api-reference/compute/list-sandbox-previews.md): List Sandbox Previews
+- [POST /sandboxes/{sandboxName}/previews](https://docs.blaxel.ai/api-reference/compute/create-sandbox-preview.md): Create Sandbox Preview
+- [DELETE /sandboxes/{sandboxName}/previews/{previewName}](https://docs.blaxel.ai/api-reference/compute/delete-sandbox-preview.md): Delete Sandbox Preview
+- [GET /sandboxes/{sandboxName}/previews/{previewName}](https://docs.blaxel.ai/api-reference/compute/get-sandbox-preview.md): Get Sandbox Preview
+- [PUT /sandboxes/{sandboxName}/previews/{previewName}](https://docs.blaxel.ai/api-reference/compute/update-sandbox-preview.md): Update Sandbox Preview
+- [GET /sandboxes/{sandboxName}/previews/{previewName}/tokens](https://docs.blaxel.ai/api-reference/compute/get-tokens-for-sandbox-preview.md): Get tokens for Sandbox Preview
+- [POST /sandboxes/{sandboxName}/previews/{previewName}/tokens](https://docs.blaxel.ai/api-reference/compute/create-token-for-sandbox-preview.md): Create token for Sandbox Preview
+- [DELETE /sandboxes/{sandboxName}/previews/{previewName}/tokens/{tokenName}](https://docs.blaxel.ai/api-reference/compute/delete-token-for-sandbox-preview.md): Delete token for Sandbox Preview
+- [GET /sandboxes/{sandboxName}/schedule-executions](https://docs.blaxel.ai/api-reference/compute/list-sandbox-schedule-executions.md): List Sandbox Schedule Executions
+- [GET /sandboxes/{sandboxName}/schedules](https://docs.blaxel.ai/api-reference/compute/list-sandbox-schedules.md): List Sandbox Schedules
+- [POST /sandboxes/{sandboxName}/schedules](https://docs.blaxel.ai/api-reference/compute/create-sandbox-schedule.md): Create Sandbox Schedule
+- [DELETE /sandboxes/{sandboxName}/schedules/{scheduleId}](https://docs.blaxel.ai/api-reference/compute/delete-sandbox-schedule.md): Delete Sandbox Schedule
+- [GET /sandboxes/{sandboxName}/schedules/{scheduleId}](https://docs.blaxel.ai/api-reference/compute/get-sandbox-schedule.md): Get Sandbox Schedule
+- [PUT /sandboxes/{sandboxName}/schedules/{scheduleId}](https://docs.blaxel.ai/api-reference/compute/update-sandbox-schedule.md): Update Sandbox Schedule
+- [GET /sandboxes/{sandboxName}/snapshots](https://docs.blaxel.ai/api-reference/compute/list-sandbox-snapshots.md): List sandbox snapshots
+- [POST /sandboxes/{sandboxName}/snapshots](https://docs.blaxel.ai/api-reference/compute/create-sandbox-snapshot.md): Create sandbox snapshot
+- [DELETE /sandboxes/{sandboxName}/snapshots/{snapshotId}](https://docs.blaxel.ai/api-reference/compute/delete-sandbox-snapshot.md): Delete sandbox snapshot
+- [POST /sandboxes/{sandboxName}/snapshots/{snapshotId}/restore](https://docs.blaxel.ai/api-reference/compute/restore-sandbox-from-snapshot.md): Restore sandbox from snapshot
+- [POST /sandboxes/{sandboxName}/unarchive](https://docs.blaxel.ai/api-reference/compute/unarchive-sandbox.md): Unarchive sandbox
+- [GET /sandboxes/by-external-id/{externalId}](https://docs.blaxel.ai/api-reference/compute/get-sandbox-by-external-id.md): Get sandbox by external ID
+- [GET /schedule-executions](https://docs.blaxel.ai/api-reference/compute/list-workspace-schedule-executions.md): List Workspace Schedule Executions
+- [GET /schedules](https://docs.blaxel.ai/api-reference/compute/list-workspace-schedules.md): List Workspace Schedules
+- [GET /schedules/metrics](https://docs.blaxel.ai/api-reference/compute/get-sandbox-scheduling-metrics.md): Get Sandbox Scheduling Metrics
+- [GET /snapshots](https://docs.blaxel.ai/api-reference/compute/list-snapshots.md): List snapshots
+- [POST /snapshots](https://docs.blaxel.ai/api-reference/compute/create-snapshot.md): Create snapshot
+- [DELETE /snapshots/{snapshotName}](https://docs.blaxel.ai/api-reference/compute/delete-snapshot.md): Delete snapshot
+- [GET /snapshots/{snapshotName}](https://docs.blaxel.ai/api-reference/compute/get-snapshot.md): Get snapshot
+- [POST /snapshots/{snapshotName}/fork](https://docs.blaxel.ai/api-reference/compute/fork-snapshot.md): Fork snapshot
+
+## configurations
+
+- [GET /configuration](https://docs.blaxel.ai/api-reference/configurations/get-platform-configuration.md): Get platform configuration
+
+## customdomains
+
+- [POST /applications/{applicationName}/customdomains](https://docs.blaxel.ai/api-reference/customdomains/create-application-custom-domain.md): Create application custom domain
+- [GET /customdomains](https://docs.blaxel.ai/api-reference/customdomains/list-custom-domains.md): List custom domains
+- [POST /customdomains](https://docs.blaxel.ai/api-reference/customdomains/create-custom-domain.md): Create custom domain
+- [DELETE /customdomains/{domainName}](https://docs.blaxel.ai/api-reference/customdomains/delete-custom-domain.md): Delete custom domain
+- [GET /customdomains/{domainName}](https://docs.blaxel.ai/api-reference/customdomains/get-custom-domain.md): Get custom domain
+- [PUT /customdomains/{domainName}](https://docs.blaxel.ai/api-reference/customdomains/update-custom-domain.md): Update custom domain
+- [GET /customdomains/{domainName}/share](https://docs.blaxel.ai/api-reference/customdomains/list-custom-domain-shares.md): List custom domain shares
+- [POST /customdomains/{domainName}/share](https://docs.blaxel.ai/api-reference/customdomains/share-a-custom-domain.md): Share a custom domain
+- [DELETE /customdomains/{domainName}/share/{targetWorkspace}](https://docs.blaxel.ai/api-reference/customdomains/unshare-a-custom-domain.md): Unshare a custom domain
+- [POST /customdomains/{domainName}/verify](https://docs.blaxel.ai/api-reference/customdomains/verify-custom-domain.md): Verify custom domain
+
+## drives
+
+- [GET /drives](https://docs.blaxel.ai/api-reference/drives/list-drives.md): List drives
+- [POST /drives](https://docs.blaxel.ai/api-reference/drives/create-a-drive.md): Create a drive
+- [DELETE /drives/{driveName}](https://docs.blaxel.ai/api-reference/drives/delete-a-drive.md): Delete a drive
+- [GET /drives/{driveName}](https://docs.blaxel.ai/api-reference/drives/get-a-drive.md): Get a drive
+- [PUT /drives/{driveName}](https://docs.blaxel.ai/api-reference/drives/update-a-drive.md): Update a drive
+- [POST /drives/{driveName}/access-token](https://docs.blaxel.ai/api-reference/drives/create-drive-access-token.md): Create drive access token
+- [DELETE /drives/{driveName}/folders](https://docs.blaxel.ai/api-reference/drives/delete-a-folder-and-its-contents.md): Delete a folder and its contents
+- [GET /drives/by-external-id/{externalId}](https://docs.blaxel.ai/api-reference/drives/get-drive-by-external-id.md): Get drive by external ID
+- [GET /drives/jwks.json](https://docs.blaxel.ai/api-reference/drives/get-drive-token-jwks.md): Get drive token JWKS
+
+## featureflags
+
+- [GET /features/{featureKey}](https://docs.blaxel.ai/api-reference/featureflags/retrieve-feature-flag-evaluation-for-workspace.md): Retrieve feature flag evaluation for workspace
+
+## functions
+
+- [GET /functions](https://docs.blaxel.ai/api-reference/functions/list-all-mcp-servers.md): List all MCP servers
+- [POST /functions](https://docs.blaxel.ai/api-reference/functions/create-mcp-server.md): Create MCP server
+- [DELETE /functions/{functionName}](https://docs.blaxel.ai/api-reference/functions/delete-mcp-server.md): Delete MCP server
+- [GET /functions/{functionName}](https://docs.blaxel.ai/api-reference/functions/get-mcp-server.md): Get MCP server
+- [PUT /functions/{functionName}](https://docs.blaxel.ai/api-reference/functions/update-mcp-server.md): Update MCP server
+- [GET /functions/{functionName}/revisions](https://docs.blaxel.ai/api-reference/functions/list-function-revisions.md): List function revisions
+
+## images
+
+- [DELETE /images](https://docs.blaxel.ai/api-reference/images/cleanup-unused-container-images.md): Cleanup unused container images
+- [GET /images](https://docs.blaxel.ai/api-reference/images/list-container-images.md): List container images
+- [POST /images](https://docs.blaxel.ai/api-reference/images/build-a-container-image.md): Build a container image
+- [DELETE /images/{resourceType}/{imageName}](https://docs.blaxel.ai/api-reference/images/delete-container-image.md): Delete container image
+- [GET /images/{resourceType}/{imageName}](https://docs.blaxel.ai/api-reference/images/get-container-image.md): Get container image
+- [GET /images/{resourceType}/{imageName}/share](https://docs.blaxel.ai/api-reference/images/list-image-shares.md): List image shares
+- [POST /images/{resourceType}/{imageName}/share](https://docs.blaxel.ai/api-reference/images/share-a-container-image.md): Share a container image
+- [DELETE /images/{resourceType}/{imageName}/share/{targetWorkspace}](https://docs.blaxel.ai/api-reference/images/unshare-a-container-image.md): Unshare a container image
+- [GET /images/{resourceType}/{imageName}/tags](https://docs.blaxel.ai/api-reference/images/list-image-tags.md): List image tags
+- [DELETE /images/{resourceType}/{imageName}/tags/{tagName}](https://docs.blaxel.ai/api-reference/images/delete-container-image-tag.md): Delete container image tag
+- [GET /pending-image-shares](https://docs.blaxel.ai/api-reference/images/list-pending-image-shares.md): List pending image shares
+- [POST /pending-image-shares/{pendingShareId}/accept](https://docs.blaxel.ai/api-reference/images/accept-a-pending-image-share.md): Accept a pending image share
+- [POST /pending-image-shares/{pendingShareId}/decline](https://docs.blaxel.ai/api-reference/images/decline-a-pending-image-share.md): Decline a pending image share
+
+## integrations
+
+- [GET /integrations/{integrationName}](https://docs.blaxel.ai/api-reference/integrations/get-integration-provider-info.md): Get integration provider info
+- [GET /integrations/connections](https://docs.blaxel.ai/api-reference/integrations/list-integration-connections.md): List integration connections
+- [POST /integrations/connections](https://docs.blaxel.ai/api-reference/integrations/create-integration-connection.md): Create integration connection
+- [DELETE /integrations/connections/{connectionName}](https://docs.blaxel.ai/api-reference/integrations/delete-integration-connection.md): Delete integration connection
+- [GET /integrations/connections/{connectionName}](https://docs.blaxel.ai/api-reference/integrations/get-integration-connection.md): Get integration connection
+- [PUT /integrations/connections/{connectionName}](https://docs.blaxel.ai/api-reference/integrations/update-integration-connection.md): Update integration connection
+- [GET /integrations/connections/{connectionName}/endpointConfigurations](https://docs.blaxel.ai/api-reference/integrations/get-integration-connection-model-endpoint-configurations.md): Get integration connection model endpoint configurations
+- [GET /integrations/connections/{connectionName}/models](https://docs.blaxel.ai/api-reference/integrations/list-integration-connection-models.md): List integration connection models
+- [GET /integrations/connections/{connectionName}/models/{modelId}](https://docs.blaxel.ai/api-reference/integrations/get-integration-connection-model.md): Get integration connection model
+
+## jobs
+
+- [GET /jobs](https://docs.blaxel.ai/api-reference/jobs/list-batch-jobs.md): List batch jobs
+- [POST /jobs](https://docs.blaxel.ai/api-reference/jobs/create-batch-job.md): Create batch job
+- [DELETE /jobs/{jobId}](https://docs.blaxel.ai/api-reference/jobs/delete-batch-job.md): Delete batch job
+- [GET /jobs/{jobId}](https://docs.blaxel.ai/api-reference/jobs/get-batch-job.md): Get batch job
+- [PUT /jobs/{jobId}](https://docs.blaxel.ai/api-reference/jobs/update-batch-job.md): Update batch job
+- [GET /jobs/{jobId}/executions](https://docs.blaxel.ai/api-reference/jobs/list-job-executions.md): List job executions
+- [POST /jobs/{jobId}/executions](https://docs.blaxel.ai/api-reference/jobs/create-job-execution.md): Create job execution
+- [DELETE /jobs/{jobId}/executions/{executionId}](https://docs.blaxel.ai/api-reference/jobs/cancel-job-execution.md): Cancel job execution
+- [GET /jobs/{jobId}/executions/{executionId}](https://docs.blaxel.ai/api-reference/jobs/get-job-execution.md): Get job execution
+- [GET /jobs/{jobId}/executions/{executionId}/tasks](https://docs.blaxel.ai/api-reference/jobs/list-execution-tasks.md): List execution tasks
+- [GET /jobs/{jobId}/revisions](https://docs.blaxel.ai/api-reference/jobs/list-job-revisions.md): List job revisions
+
+## locations
+
+- [GET /locations](https://docs.blaxel.ai/api-reference/locations/list-deployment-regions.md): List deployment regions
+
+## mcphub
+
+- [GET /mcp/hub](https://docs.blaxel.ai/api-reference/mcphub/list-mcp-hub-servers.md): List MCP Hub servers
+
+## models
+
+- [GET /models](https://docs.blaxel.ai/api-reference/models/list-model-endpoints.md): List model endpoints
+- [POST /models](https://docs.blaxel.ai/api-reference/models/create-model-endpoint.md): Create model endpoint
+- [DELETE /models/{modelName}](https://docs.blaxel.ai/api-reference/models/delete-model-endpoint.md): Delete model endpoint
+- [GET /models/{modelName}](https://docs.blaxel.ai/api-reference/models/get-model-endpoint.md): Get model endpoint
+- [PUT /models/{modelName}](https://docs.blaxel.ai/api-reference/models/update-model-endpoint.md): Update model endpoint
+- [GET /models/{modelName}/revisions](https://docs.blaxel.ai/api-reference/models/list-model-revisions.md): List model revisions
+
+## policies
+
+- [GET /policies](https://docs.blaxel.ai/api-reference/policies/list-governance-policies.md): List governance policies
+- [POST /policies](https://docs.blaxel.ai/api-reference/policies/create-governance-policy.md): Create governance policy
+- [DELETE /policies/{policyName}](https://docs.blaxel.ai/api-reference/policies/delete-governance-policy.md): Delete governance policy
+- [GET /policies/{policyName}](https://docs.blaxel.ai/api-reference/policies/get-governance-policy.md): Get governance policy
+- [PUT /policies/{policyName}](https://docs.blaxel.ai/api-reference/policies/update-governance-policy.md): Update governance policy
+- [GET /policies/{policyName}/usages](https://docs.blaxel.ai/api-reference/policies/list-resources-using-a-policy.md): List resources using a policy
+
+## publicips:list
+
+- [GET /publicIps](https://docs.blaxel.ai/api-reference/publicips:list/list-public-ips.md): List public ips
+
+## sandboxhub
+
+- [GET /sandbox/hub](https://docs.blaxel.ai/api-reference/sandboxhub/list-sandbox-hub-templates.md): List Sandbox Hub templates
+
+## secrets
+
+- [DELETE /secrets](https://docs.blaxel.ai/api-reference/secrets/delete-secret-by-query.md): Delete secret by query
+- [GET /secrets](https://docs.blaxel.ai/api-reference/secrets/list-secrets.md): List secrets
+- [POST /secrets](https://docs.blaxel.ai/api-reference/secrets/upsert-secret.md): Upsert secret
+- [DELETE /secrets/{secretName}](https://docs.blaxel.ai/api-reference/secrets/delete-secret.md): Delete secret
+
+## service_accounts
+
+- [GET /service_accounts](https://docs.blaxel.ai/api-reference/service_accounts/list-service-accounts.md): List service accounts
+- [POST /service_accounts](https://docs.blaxel.ai/api-reference/service_accounts/create-service-account.md): Create service account
+- [DELETE /service_accounts/{clientId}](https://docs.blaxel.ai/api-reference/service_accounts/delete-service-account.md): Delete service account
+- [PUT /service_accounts/{clientId}](https://docs.blaxel.ai/api-reference/service_accounts/update-service-account.md): Update service account
+- [GET /service_accounts/{clientId}/api_keys](https://docs.blaxel.ai/api-reference/service_accounts/list-service-account-api-keys.md): List service account API keys
+- [POST /service_accounts/{clientId}/api_keys](https://docs.blaxel.ai/api-reference/service_accounts/create-service-account-api-key.md): Create service account API key
+- [DELETE /service_accounts/{clientId}/api_keys/{apiKeyId}](https://docs.blaxel.ai/api-reference/service_accounts/revoke-service-account-api-key.md): Revoke service account API key
+
+## templates
+
+- [GET /templates](https://docs.blaxel.ai/api-reference/templates/list-deployment-templates.md): List deployment templates
+- [GET /templates/{templateName}](https://docs.blaxel.ai/api-reference/templates/get-template.md): Get template
+
+## volumes
+
+- [GET /volumes](https://docs.blaxel.ai/api-reference/volumes/list-persistent-volumes.md): List persistent volumes
+- [POST /volumes](https://docs.blaxel.ai/api-reference/volumes/create-persistent-volume.md): Create persistent volume
+- [DELETE /volumes/{volumeName}](https://docs.blaxel.ai/api-reference/volumes/delete-persistent-volume.md): Delete persistent volume
+- [GET /volumes/{volumeName}](https://docs.blaxel.ai/api-reference/volumes/get-persistent-volume.md): Get persistent volume
+- [PUT /volumes/{volumeName}](https://docs.blaxel.ai/api-reference/volumes/update-volume.md): Update volume
+- [GET /volumes/by-external-id/{externalId}](https://docs.blaxel.ai/api-reference/volumes/get-volume-by-external-id.md): Get volume by external ID
+
+## volumetemplates
+
+- [GET /volume_templates](https://docs.blaxel.ai/api-reference/volumetemplates/list-volume-templates.md): List volume templates
+- [POST /volume_templates](https://docs.blaxel.ai/api-reference/volumetemplates/create-volume-template.md): Create volume template
+- [DELETE /volume_templates/{volumeTemplateName}](https://docs.blaxel.ai/api-reference/volumetemplates/delete-volume-template.md): Delete volume template
+- [GET /volume_templates/{volumeTemplateName}](https://docs.blaxel.ai/api-reference/volumetemplates/get-volume-template.md): Get volume template
+- [PUT /volume_templates/{volumeTemplateName}](https://docs.blaxel.ai/api-reference/volumetemplates/create-or-update-volume-template.md): Create or update volume template
+- [DELETE /volume_templates/{volumeTemplateName}/versions/{versionName}](https://docs.blaxel.ai/api-reference/volumetemplates/delete-volume-template-version.md): Delete volume template version
+
+## vpcs
+
+- [GET /egressgateways](https://docs.blaxel.ai/api-reference/vpcs/list-all-egress-gateways-across-all-vpcs-in-the-workspace.md): List all egress gateways across all VPCs in the workspace
+- [GET /egressgateways/usage](https://docs.blaxel.ai/api-reference/vpcs/egress-gateway-sandbox-attachments.md): Egress gateway sandbox attachments
+- [GET /egressips](https://docs.blaxel.ai/api-reference/vpcs/list-all-egress-ips-across-all-vpcs-and-gateways-in-the-workspace.md): List all egress IPs across all VPCs and gateways in the workspace
+- [GET /vpcs](https://docs.blaxel.ai/api-reference/vpcs/list-all-vpcs-in-the-workspace.md): List all VPCs in the workspace
+- [POST /vpcs](https://docs.blaxel.ai/api-reference/vpcs/create-a-vpc-for-the-workspace.md): Create a VPC for the workspace
+- [DELETE /vpcs/{vpcName}](https://docs.blaxel.ai/api-reference/vpcs/delete-a-vpc.md): Delete a VPC
+- [GET /vpcs/{vpcName}](https://docs.blaxel.ai/api-reference/vpcs/get-a-vpc-by-name.md): Get a VPC by name
+- [GET /vpcs/{vpcName}/egressgateways](https://docs.blaxel.ai/api-reference/vpcs/list-egress-gateways-in-a-vpc.md): List egress gateways in a VPC
+- [POST /vpcs/{vpcName}/egressgateways](https://docs.blaxel.ai/api-reference/vpcs/create-an-egress-gateway-in-a-vpc.md): Create an egress gateway in a VPC
+- [DELETE /vpcs/{vpcName}/egressgateways/{gatewayName}](https://docs.blaxel.ai/api-reference/vpcs/delete-an-egress-gateway.md): Delete an egress gateway
+- [GET /vpcs/{vpcName}/egressgateways/{gatewayName}](https://docs.blaxel.ai/api-reference/vpcs/get-an-egress-gateway-by-name.md): Get an egress gateway by name
+- [GET /vpcs/{vpcName}/egressgateways/{gatewayName}/ips](https://docs.blaxel.ai/api-reference/vpcs/list-egress-ips-in-a-gateway.md): List egress IPs in a gateway
+- [POST /vpcs/{vpcName}/egressgateways/{gatewayName}/ips](https://docs.blaxel.ai/api-reference/vpcs/allocate-a-new-egress-ip-from-the-gateway.md): Allocate a new egress IP from the gateway
+- [DELETE /vpcs/{vpcName}/egressgateways/{gatewayName}/ips/{ipName}](https://docs.blaxel.ai/api-reference/vpcs/delete-an-egress-ip.md): Delete an egress IP
+- [GET /vpcs/{vpcName}/egressgateways/{gatewayName}/ips/{ipName}](https://docs.blaxel.ai/api-reference/vpcs/get-an-egress-ip-by-name.md): Get an egress IP by name
+
+## workspaces
+
+- [GET /features](https://docs.blaxel.ai/api-reference/workspaces/get-enabled-features-for-workspace.md): Get enabled features for workspace
+- [GET /users](https://docs.blaxel.ai/api-reference/workspaces/list-workspace-team-members.md): List workspace team members
+- [POST /users](https://docs.blaxel.ai/api-reference/workspaces/invite-user-to-workspace.md): Invite user to workspace
+- [DELETE /users/{subOrEmail}](https://docs.blaxel.ai/api-reference/workspaces/remove-user-from-workspace-or-revoke-invitation.md): Remove user from workspace or revoke invitation
+- [PUT /users/{subOrEmail}](https://docs.blaxel.ai/api-reference/workspaces/update-user-role-in-workspace.md): Update user role in workspace
+- [GET /workspaces](https://docs.blaxel.ai/api-reference/workspaces/list-accessible-workspaces.md): List accessible workspaces
+- [POST /workspaces](https://docs.blaxel.ai/api-reference/workspaces/create-workspace-tenant.md): Create workspace tenant
+- [DELETE /workspaces/{workspaceName}](https://docs.blaxel.ai/api-reference/workspaces/delete-workspace-tenant.md): Delete workspace tenant
+- [GET /workspaces/{workspaceName}](https://docs.blaxel.ai/api-reference/workspaces/get-workspace-details.md): Get workspace details
+- [PUT /workspaces/{workspaceName}](https://docs.blaxel.ai/api-reference/workspaces/update-workspace.md): Update workspace
+- [DELETE /workspaces/{workspaceName}/leave](https://docs.blaxel.ai/api-reference/workspaces/leave-workspace.md): Leave workspace
+- [POST /workspaces/availability](https://docs.blaxel.ai/api-reference/workspaces/check-workspace-availability.md): Check workspace availability
+
+## Sandbox API Reference
+
+Endpoints served by the API inside each sandbox (processes, filesystem, network, drives). The SDK pages on processes, the file system, log streaming and ports cover the same operations with examples. OpenAPI spec: https://raw.githubusercontent.com/blaxel-ai/sandbox/refs/heads/main/sandbox-api/docs/openapi.yml

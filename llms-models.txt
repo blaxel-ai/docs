@@ -1,0 +1,907 @@
+# Blaxel docs: Models and integrations
+
+> The Model Gateway, model provider integrations, MCP server integrations and agent framework integrations.
+
+This file has the full text of 17 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Model APIs](https://docs.blaxel.ai/Models/Overview)
+- [External model APIs](https://docs.blaxel.ai/Models/External-model-apis)
+- [Query a model API](https://docs.blaxel.ai/Models/Query-a-model)
+- [Integrations](https://docs.blaxel.ai/Integrations)
+- [OpenAI integration](https://docs.blaxel.ai/Integrations/OpenAI)
+- [Anthropic integration](https://docs.blaxel.ai/Integrations/Anthropic)
+- [Mistral AI integration](https://docs.blaxel.ai/Integrations/MistralAI)
+- [Cohere integration](https://docs.blaxel.ai/Integrations/Cohere)
+- [xAI integration](https://docs.blaxel.ai/Integrations/xAI)
+- [DeepSeek integration](https://docs.blaxel.ai/Integrations/DeepSeek)
+- [HuggingFace integration](https://docs.blaxel.ai/Integrations/HuggingFace)
+- [Azure AI Foundry integration](https://docs.blaxel.ai/Integrations/Azure-AI-Foundry)
+- [Google Maps](https://docs.blaxel.ai/Integrations/Google-Maps)
+- [Gmail](https://docs.blaxel.ai/Integrations/Gmail)
+- [OpenAI Agents API on Blaxel](https://docs.blaxel.ai/Integrations/OpenAI-Agents-API)
+- [AgentMail](https://docs.blaxel.ai/Integrations/AgentMail)
+- [Rippletide](https://docs.blaxel.ai/Integrations/Rippletide)
+
+# Model APIs
+Source: https://docs.blaxel.ai/Models/Overview
+
+Connect external model API providers or deploy custom models on Blaxel for unified gateway access with centralized credentials and observability.
+
+AI models are the brain of AI agents, as they are able to reason, talk, and generate payloads for the tools that the agent can use.
+
+There are two ways to approach models on Blaxel:
+
+- **Using an external model API provider** (e.g. Baseten, OpenAI, etc.): Blaxel acts as a unified gateway for model APIs, centralizing access credentials, tracing and telemetry. You can achieve this by defining workspace integrations to any major model API provider, and creating gateway endpoints on Blaxel for any of their models.
+- **Bringing your own model**: Deploy a custom model on Blaxel, allowing you to use fine-tuned SLMs/LLMs or any other kind of AI model. When a model is deployed on Blaxel, you get a global API endpoint to call it. This option is part of our Enterprise offering. Contact us at [support@blaxel.ai](mailto:support@blaxel.ai) for more information.
+
+- [External model APIs](https://docs.blaxel.ai/Models/External-model-apis): Complete guide for connecting to an external model provider like Anthropic or OpenAI.
+
+# External model APIs
+Source: https://docs.blaxel.ai/Models/External-model-apis
+
+Control and secure agent access to AI models from OpenAI, Anthropic, Mistral, and other top providers behind the Blaxel Global Inference Network.
+
+You can query any LLM or other generative AI model from top API providers via Blaxel, in order to benefit from a **unified layer of access control and telemetry,** especially when running whole AI agents.
+
+## Creating a model endpoint on Blaxel
+
+Adding model endpoints from external providers on Blaxel gives you single endpoints to call the model on the same base URL, rather than calling each provider separately. Blaxel handles the authentication, authorization and monitoring automatically for you.
+
+This is done in a two-step process:
+
+1. First, you need to create a workspace integration that will contain the credentials to connect to your model API provider. Check out the dedicated documentation for each available integration.
+2. Second, you can create a dedicated endpoint for a specific model from this provider. You will need to choose the model from the list of available models for the provider.
+
+You can then query the model using its [dedicated global inference endpoint](https://docs.blaxel.ai/Models/Query-a-model). Any call to this endpoint will be passed to the underlying provider.
+
+## Provider reference
+
+The following providers are available:
+
+- [OpenAI](https://docs.blaxel.ai/Integrations/OpenAI)
+- [Anthropic](https://docs.blaxel.ai/Integrations/Anthropic)
+- [Mistral AI](https://docs.blaxel.ai/Integrations/MistralAI)
+- [Cohere](https://docs.blaxel.ai/Integrations/Cohere)
+- [xAI](https://docs.blaxel.ai/Integrations/xAI)
+- [DeepSeek](https://docs.blaxel.ai/Integrations/DeepSeek)
+
+# Query a model API
+Source: https://docs.blaxel.ai/Models/Query-a-model
+
+Make inference requests to model APIs via their global endpoints on the Global Agentics Network, with ChatCompletions and custom sub-endpoint support.
+
+Model APIs on Blaxel have a unique **inference endpoint** which can be used by external consumers and agents to request an inference execution. Inference requests are then routed on the [Global Agentics Network](https://docs.blaxel.ai/Infrastructure/Global-Inference-Network) based on the [deployment policies](https://docs.blaxel.ai/Model-Governance/Policies) associated with your model API.
+
+## Inference endpoints
+
+Whenever you deploy a model API on Blaxel, an **inference endpoint** is generated on Global Agentics Network.
+
+The inference URL looks like this:
+
+```http Query model API
+
+POST https://run.blaxel.ai/{YOUR-WORKSPACE}/models/{YOUR-MODEL}
+
+```
+
+### Specific API endpoints in your model
+
+The URL above calls your model and can be called directly. However, your model may **implement additional endpoints.** These sub-endpoints will be hosted on this URL.
+
+For example, if you are calling a text generation model that also implements the ChatCompletions API:
+
+- calling `run.blaxel.ai/your-workspace/models/your-model` (the base endpoint) will generate text based on a prompt
+- calling `run.blaxel.ai/your-workspace/models/your-model/v1/chat/completions` (the ChatCompletions API implementation) will generate a response based on a list of messages
+
+### Endpoint authentication
+
+It is necessary to authenticate all inference requests, via a [bearer token](https://docs.blaxel.ai/Security/Access-tokens). The evaluation of authentication/authorization for inference requests is managed by the Global Agentics Network based on the [access given in your workspace](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+> [!NOTE]
+>
+> Making a workload publicly available is not yet available. Please contact us at [support@blaxel.ai](mailto:support@blaxel.ai) if this is something that you need today.
+
+## Make an inference request
+
+### Blaxel API
+
+Make a **POST** request to the [inference endpoint](https://docs.blaxel.ai/Models/Query-a-model) for the model API you are requesting, making sure to fill in the [authentication token](https://docs.blaxel.ai/Models/Query-a-model):
+
+```bash
+curl 'https://run.blaxel.ai/YOUR-WORKSPACE/models/YOUR-MODEL' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'x-Blaxel-authorization: Bearer YOUR-TOKEN' \
+  -H 'x-Blaxel-workspace: YOUR-WORKSPACE' \
+  --data-raw $'{"inputs":"Enter your input here."}'
+```
+
+Read about [the API parameters in the reference](https://docs.blaxel.ai/api-reference/inference).
+
+### Blaxel CLI
+
+The following command will make a default POST request to the model API.
+
+```bash
+bl run model your-model --data '{"inputs":"Enter your input here."}'
+```
+
+You can call [specific API endpoints](https://docs.blaxel.ai/Models/Query-a-model) that your model implements with the option `--path`:
+
+```bash
+bl run model your-model --path /v1/chat/completions --data '{"inputs":"Hello there!"}' 
+```
+
+Read about [the CLI parameters in the reference](https://docs.blaxel.ai/cli-reference/commands/bl_run).
+
+### Blaxel console
+
+Inference requests can be made from the Blaxel console from the model API’s **Playground** page.
+
+# Integrations
+Source: https://docs.blaxel.ai/Integrations
+
+Browse Blaxel integrations that connect your agents to LLM providers, SaaS apps, databases, and private APIs through pre-built MCP servers.
+
+**Blaxel Integrations** enable you to let Blaxel resources access various external APIs, private networks and AI services, and to connect to downstream interfaces such as your applications. With integrations, you can **manage access control, credentials, and observability** across different providers and systems from a single platform.
+
+Blaxel supports integration with:
+
+- LLM providers like OpenAI or Anthropic
+- APIs and SaaS for agents’ tools like Slack or GitHub
+- gateways for tools/agents
+- downstream applications
+
+Connections in the workspace settings must be configured by a [workspace admin](https://docs.blaxel.ai/Security/Workspace-access-control) before they can be used by team members. Agent frameworks and tools have their own setup requirements in the linked guides.
+
+[oauth-flow](https://docs.blaxel.ai/Functions/oauth-flow)
+
+## All integrations
+
+### LLM APIs
+
+These integrations let you connect your agents to LLMs from top providers, while controlling access and cost.
+
+[OpenAI](https://docs.blaxel.ai/Integrations/OpenAI)
+
+[Anthropic](https://docs.blaxel.ai/Integrations/Anthropic)
+
+[MistralAI](https://docs.blaxel.ai/Integrations/MistralAI)
+
+[Cohere](https://docs.blaxel.ai/Integrations/Cohere)
+
+[xAI](https://docs.blaxel.ai/Integrations/xAI)
+
+[DeepSeek](https://docs.blaxel.ai/Integrations/DeepSeek)
+
+[Azure-AI-Foundry](https://docs.blaxel.ai/Integrations/Azure-AI-Foundry)
+
+[HuggingFace](https://docs.blaxel.ai/Integrations/HuggingFace)
+
+**AWS Bedrock**
+
+**Gemini**
+
+**Google Vertex AI**
+
+### Tools and APIs
+
+These integrations let you equip your agents with tools to access APIs, SaaS and databases.
+
+[**AgentMail**](https://agentmail.to/)
+
+[**Airweave**](https://airweave.ai/)
+
+**AWS S3**
+
+**AWS SES**
+
+**Brave Search**
+
+**Cloudflare**
+
+**Dall-E**
+
+**Discord**
+
+**Exa**
+
+**GitHub**
+
+**GitLab**
+
+[Google-Maps](https://docs.blaxel.ai/Integrations/Google-Maps)
+
+[Gmail](https://docs.blaxel.ai/Integrations/Gmail)
+
+**HubSpot**
+
+**Linear**
+
+**Linkup**
+
+[**Nia**](https://app.trynia.ai/sign-in?redirect_url=https://app.trynia.ai/)
+
+**Notion**
+
+**PostgreSQL**
+
+**Qdrant**
+
+**Sendgrid**
+
+**Shopify**
+
+**Slack**
+
+**Smartlead**
+
+**Snowflake**
+
+**Supabase**
+
+**Tavily**
+
+**Telegram**
+
+**Trello**
+
+**Twilio**
+
+### Frameworks
+
+Blaxel lets you bring agents developed in many of the most popular AI agent frameworks, optimizing how your agent builds and runs no matter how you coded it.
+
+[OpenClaw](https://docs.blaxel.ai/Tutorials/OpenClaw)
+
+[Claude Agent SDK](https://docs.blaxel.ai/Tutorials/Claude-Agent-SDK-Index)
+
+[Claude Managed Agents](https://docs.blaxel.ai/Tutorials/Claude-Managed-Agents)
+
+[CrewAI](https://docs.blaxel.ai/Tutorials/CrewAI)
+
+[Google ADK](https://docs.blaxel.ai/Tutorials/ADK)
+
+[LangChain](https://docs.blaxel.ai/Tutorials/LangChain)
+
+[LlamaIndex](https://docs.blaxel.ai/Tutorials/LlamaIndex)
+
+[Mastra](https://docs.blaxel.ai/Tutorials/Mastra)
+
+[n8n](https://docs.blaxel.ai/Tutorials/n8n)
+
+[OpenAI Agents SDK](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-SDK-Index)
+
+[OpenAI Agents API](https://docs.blaxel.ai/Integrations/OpenAI-Agents-API)
+
+[PydanticAI](https://docs.blaxel.ai/Tutorials/PydanticAI)
+
+[Vercel AI SDK](https://docs.blaxel.ai/Tutorials/Vercel-AI)
+
+[Custom agents](https://docs.blaxel.ai/Tutorials/Custom-Agents)
+
+### Integrate in your applications
+
+These integrations let you **expose or use Blaxel resources** in downstream applications, gateways and marketplaces.
+
+[AgentMail](https://docs.blaxel.ai/Integrations/AgentMail)
+
+[Rippletide](https://docs.blaxel.ai/Integrations/Rippletide)
+
+# OpenAI integration
+Source: https://docs.blaxel.ai/Integrations/OpenAI
+
+Set up the OpenAI integration on Blaxel to call OpenAI models through a unified endpoint with centralized access control and observability.
+
+The OpenAI integration allows Blaxel users to **call OpenAI models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+> [!NOTE]
+>
+> To connect an OpenAI-hosted agent to a Blaxel Sandbox, see [OpenAI Agents API](https://docs.blaxel.ai/Integrations/OpenAI-Agents-API). This page covers OpenAI model access through Model Gateway.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register an OpenAI access token into your Blaxel workspace settings. The scope of this access token (i.e. the OpenAI resources it is allowed to access) will be the scope that Blaxel has access to.
+
+First, generate an [OpenAI API key](https://platform.openai.com/docs/api-reference/authentication) from [your OpenAI Platform settings](https://platform.openai.com/api-keys). Set this API key in `Read-only` mode.
+
+On Blaxel, in Workspace Settings > OpenAI integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to an OpenAI model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference an OpenAI model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select OpenAI. You can search for any model from the OpenAI catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to OpenAI, using your OpenAI credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your OpenAI account, as if you queried the model directly on OpenAI.
+
+# Anthropic integration
+Source: https://docs.blaxel.ai/Integrations/Anthropic
+
+Set up the Anthropic integration on Blaxel to call Claude models through a unified endpoint with centralized access control and observability.
+
+The Anthropic integration allows Blaxel users to **call Anthropic models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register an Anthropic access token into your Blaxel workspace settings. The scope of this access token (i.e. the Anthropic workspace it is allowed to access) will be the scope that Blaxel has access to.
+
+First, generate an [Anthropic API key](https://docs.anthropic.com/en/api/getting-started) from [your Anthropic organization settings](https://console.anthropic.com/settings/keys). Select the workspace to use for this key.
+
+On Blaxel, in Workspace Settings > Anthropic integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to an Anthropic model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference an Anthropic model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select Anthropic. You can search for any model from the Anthropic catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Anthropic, using your Anthropic credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Anthropic account, as if you queried the model directly on Anthropic.
+
+# Mistral AI integration
+Source: https://docs.blaxel.ai/Integrations/MistralAI
+
+Set up the Mistral AI integration on Blaxel to call Mistral models through a unified endpoint with centralized access control and observability.
+
+The Mistral AI integration allows Blaxel users to **call Mistral AI models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register a Mistral AI access token into your Blaxel workspace settings. First, generate a Mistral AI API key from [your Mistral AI La Plateforme settings](https://console.mistral.ai/api-keys/).
+
+On Blaxel, in Mistral AI integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to a Mistral AI model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a Mistral AI model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select Mistral AI. You can search for any model from the Mistral AI catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Mistral AI, using your Mistral AI credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Mistral AI account, as if you queried the model directly on Mistral AI.
+
+# Cohere integration
+Source: https://docs.blaxel.ai/Integrations/Cohere
+
+Set up the Cohere integration on Blaxel to call Cohere models through a unified endpoint with centralized access control and observability.
+
+The Cohere integration allows Blaxel users to **call Cohere models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register a Cohere access token into your Blaxel workspace settings. First, generate a [Cohere API key](https://docs.cohere.com/v2/docs/rate-limits) from [the Cohere platform](https://dashboard.cohere.com/api-keys).
+
+On Blaxel, in Workspace Settings > Cohere integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to a Cohere model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a Cohere model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select Cohere. You can search for any model from the Cohere catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Cohere, using your Cohere credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Cohere account, as if you queried the model directly on Cohere.
+
+# xAI integration
+Source: https://docs.blaxel.ai/Integrations/xAI
+
+Set up the xAI integration on Blaxel to call xAI models through a unified endpoint with centralized access control and observability.
+
+The xAI integration allows Blaxel users to **call xAI models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register an xAI access token into your Blaxel workspace settings. First, generate an [xAI API key](https://docs.x.ai/docs/tutorial#step-2-generate-an-api-key) from [your xAI team console](https://console.x.ai/team/default/api-keys). This key must have access to at least the *Chat* and *Models* endpoints.
+
+On Blaxel, in Workspace Settings > xAI integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to an xAI model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference an xAI model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select xAI. You can search for any model from the xAI catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to xAI, using your xAI credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your xAI account, as if you queried the model directly on xAI.
+
+# DeepSeek integration
+Source: https://docs.blaxel.ai/Integrations/DeepSeek
+
+Set up the DeepSeek integration on Blaxel to call DeepSeek models through a unified endpoint with centralized access control and observability.
+
+The DeepSeek integration allows Blaxel users to **call DeepSeek models using a Blaxel endpoint** in order to unify access control, credentials and observability management.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register a DeepSeek access token into your Blaxel workspace settings. First, generate a DeepSeek API key from [your DeepSeek console](https://platform.deepseek.com/api_keys).
+
+On Blaxel, in Workspace Settings > DeepSeek integration, create a new connection and paste this token into the “API key” section.
+
+## Connect to a DeepSeek model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a DeepSeek model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select DeepSeek. You can search for any model from the DeepSeek catalog.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to DeepSeek, using your DeepSeek credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your DeepSeek account, as if you queried the model directly on DeepSeek.
+
+# HuggingFace integration
+Source: https://docs.blaxel.ai/Integrations/HuggingFace
+
+Deploy public or private AI models from Hugging Face on Blaxel and serve them as auto-scalable inference endpoints for your agents.
+
+The [HuggingFace](https://huggingface.co/) integration enables Blaxel users to **connect to [serverless endpoints](https://huggingface.co/docs/api-inference/en/index) from HuggingFace** - whether public, gated, or private - directly through their agents on Blaxel. The integration is bidirectional, letting you create new [deployments](https://huggingface.co/docs/inference-endpoints/index) on HuggingFace from the Blaxel console to use as [model APIs](https://docs.blaxel.ai/Models/External-model-apis).
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Set up the integration
+
+In order to use this integration, you must register a HuggingFace access token into your Blaxel workspace settings. The scope of this access token (i.e. the HuggingFace resources it is allowed to access) will be the scope that Blaxel has access to.
+
+First, generate a [HuggingFace access token](https://huggingface.co/docs/hub/security-tokens) from [your HuggingFace settings](https://huggingface.co/settings/tokens). Give this access token the scope that you want Blaxel to access on HuggingFace (e.g. repositories, etc.).
+
+On Blaxel, in the workspace settings, in the *HuggingFace* integration, paste this token into the “API key” section.
+
+## Connect to a HuggingFace model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference a HuggingFace model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+### Public and private models
+
+When [creating a model API](https://docs.blaxel.ai/Models/Overview) on Blaxel, select “HuggingFace”. You can search for:
+
+- any **public model** from [Inference API (serverless)](https://huggingface.co/docs/api-inference/index)
+- any **private model** from [Inference Endpoints (dedicated)](https://huggingface.co/docs/inference-endpoints/index) in the organizations & repositories allowed by the integration’s token.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to HuggingFace, using your HuggingFace credentials for authentication and authorization.
+
+### Gated models
+
+If the model you're trying to connect to is [gated](https://huggingface.co/docs/hub/models-gated), you'll **first need to request access on HuggingFace,** and accept their terms and conditions of usage (if applicable). Access to some HuggingFace models is granted immediately after request, while others require manual approval.
+
+When the model gets deployed, Blaxel will check if the **integration token is allowed access to the model** on HuggingFace. If you have not been allowed access, the model deployment will fail in error.
+
+## Create a HuggingFace Inference Endpoint
+
+You can deploy a model in HuggingFace’s [Inference Endpoints](https://huggingface.co/docs/inference-endpoints/index) directly from the Blaxel console when creating a new [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+- **Organization**: select the HuggingFace namespace in which the endpoint will be deployed
+- **Model**: select the model to deploy
+- **Instance**: choose the type (GPU) and size of the instance to use for the deployment. Blaxel will trigger a deployment on Google Cloud Platform with default auto-scaling parameters.
+- **Endpoint**: enter the name for your endpoint on HuggingFace
+
+> [!WARNING]
+>
+> This action will incur costs on your HuggingFace subscription, depending on the choice of instance selected.
+
+Once you launch a deployment, it will be available in your HuggingFace console, as well as your Blaxel console. You will receive a dedicated global Blaxel endpoint to call the model which proxies the requests to the HuggingFace endpoint and enforces token usage control and observability.
+
+# Azure AI Foundry integration
+Source: https://docs.blaxel.ai/Integrations/Azure-AI-Foundry
+
+Connect your Blaxel agents to LLMs deployed in Azure AI Inference, Azure OpenAI Service, and Azure AI Services through the Foundry integration.
+
+The Azure AI Foundry integration allows Blaxel users to **call model deployments from [Azure AI Foundry](https://learn.microsoft.com/en-us/azure/ai-studio/what-is-ai-studio) services** (Azure AI Inference, Azure OpenAI Service, and Azure AI Services) through a Blaxel endpoint that unifies access control, credentials and observability management.
+
+There are 2 types of integrations related to this service:
+
+- **Azure AI Inference**: connect to a model endpoint deployed as an “Azure AI Services” model on Azure. This typically includes OpenAI models.
+- **Azure AI Marketplace**: connect to a model deployed from the Azure Marketplace. This typically includes Llama models.
+
+The integration must be set up by an [admin](https://docs.blaxel.ai/Security/Workspace-access-control) in the Integrations section in the [workspace settings](https://docs.blaxel.ai/Security/Workspace-access-control).
+
+## Azure AI Inference
+
+### Set up the integration
+
+In order to use this integration, you must register an Azure AI Inference endpoint and access key into your Blaxel workspace settings.
+
+First, go to the [Azure AI Foundry console](https://ai.azure.com/build/overview), and open your project. Select the “Azure AI Inference” capability, and retrieve both:
+
+- the **API key**
+- the **Azure AI model inference endpoint**
+
+On Blaxel, in Workspace Settings > Azure AI Inference integration, create a new connection and paste the endpoint and the Access token there.
+
+### Connect to a model
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to reference an “Azure AI Services” model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select “Azure AI Inference”. Then, input the **name** of your model just as it is deployed on Azure.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Azure account, as if you queried the model directly on Azure.
+
+## Azure AI Marketplace
+
+### Set up the integration & connect to a model
+
+In order to use this integration, you must register an Azure endpoint and access token into your Blaxel workspace settings.
+
+> [!WARNING]
+>
+> The difference with most other model API integrations is that the integration will be tied to your model.
+
+First, go to the [Azure AI Foundry console](https://ai.azure.com/build/overview), and open your project. Go to your models, and open the model you want to connect to. Retrieve:
+
+- the **API key**
+- the **Azure AI model inference endpoint**
+
+On Blaxel, in Workspace Settings > Azure Marketplace integration, create a new connection and paste this token into the “Access token” section.
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to connect to the model as an [external model API](https://docs.blaxel.ai/Models/External-model-apis).
+
+When creating a model API, select Azure Marketplace, input the name of the endpoint as you want it on Blaxel, and finish creating the model.
+
+After the model API is created, you will receive a dedicated global Blaxel endpoint to call the model. Blaxel will forward inference requests to Azure, using your Azure credentials for authentication and authorization.
+
+> [!NOTE]
+>
+> Because your own credentials are used, any inference request on this endpoint will incur potential costs on your Azure account, as if you queried the model directly on Azure.
+
+# Google Maps
+Source: https://docs.blaxel.ai/Integrations/Google-Maps
+
+Connect the Google Maps API to your Blaxel agents to enable geocoding, directions, place search, and other location-based capabilities.
+
+The *Google Maps integration* lets you equip your agents with tools to interact with Google Maps services, enabling location-based functionalities and geographic data processing within your applications.
+
+## Set up the integration
+
+In order to use this integration, you must register a Google Cloud Platform (GCP) API access token. The scope of this access token will be the scope that Blaxel has access to.
+
+First, generate a GCP API key from [your GCP 'API & Services' section](https://console.cloud.google.com/apis/credentials). Then on Blaxel, in the workspace settings, in the *Google Maps* integration, paste this token into the “API key” section.
+
+## Create a Google Maps function
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to create a Google Maps [function](https://docs.blaxel.ai/Functions/Overview).
+
+When creating a function, select Google Maps. After the function is created, you will receive a dedicated global Blaxel endpoint to call it.
+
+### Available tools
+
+This integration provides the following tools:
+
+- `maps_geocode`: Convert an address into geographic coordinates
+- `maps_reverse_geocode`: Convert coordinates into an address
+- `maps_search_places`: Search for places using Google Places API
+- `maps_place_details`: Get detailed information about a specific place
+- `maps_distance_matrix`: Calculate travel distance and time for multiple origins and destinations
+- `maps_elevation`: Get elevation data for locations on the earth
+- `maps_directions`: Get directions between two points
+
+# Gmail
+Source: https://docs.blaxel.ai/Integrations/Gmail
+
+Connect Gmail to your Blaxel agents to give them email communication capabilities, including reading, drafting, and sending messages.
+
+The *Gmail integration* allows you to equip your agents with tools to interact with Gmail services, enabling email communication and message processing within your applications.
+
+## Set up the integration
+
+In order to use this integration, you must sign in to your Google account. This will create an integration to Gmail in your workspace settings.
+
+### Single tenant
+
+Create the integration yourself from Blaxel Console.
+
+### Multi-tenant
+
+Follow [this guide](https://docs.blaxel.ai/Functions/oauth-flow) to learn how to automate the creation of dedicated Gmail integrations through a user-facing OAuth flow.
+
+- [OAuth flow for integrations](https://docs.blaxel.ai/Functions/oauth-flow): Create integrations for your users with OAuth.
+
+## Create a Gmail function
+
+Once you’ve set up the integration in the workspace, any workspace member can use it to create a Gmail [function](https://docs.blaxel.ai/Functions/Overview).
+
+When creating a function, select Gmail. After the function is created, you will receive a dedicated global Blaxel endpoint to call it.
+
+### Available tools
+
+This integration provides the following tools:
+
+- `send_email`: Send an email using Gmail. No sender will be needed, it uses a default configuration. You just have to set the recipient as an email string address inside the parameter "to", a subject and a body in string format.
+
+# OpenAI Agents API on Blaxel
+Source: https://docs.blaxel.ai/Integrations/OpenAI-Agents-API
+
+Connect OpenAI-hosted agents to Blaxel computers, retain useful files with Agent Drive, and choose the cookbook execution mode for your application.
+
+Give an OpenAI-hosted agent a Blaxel computer to turn a source report into a summary. The cookbook saves a verified local result and optionally uses Agent Drive so a fresh session can review the work after the first computer is deleted.
+
+> [!NOTE]
+>
+> The Agents API is a public beta. The [cookbook](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook) uses the public `openai` package and `client.beta.agents`; private GitHub access is not required.
+
+## Architecture
+
+OpenAI manages the agent, model calls, and session state. Blaxel supplies the computer that runs its commands, plus storage and controls for that computer. Your application defines the task, agent instructions, and resource lifecycle.
+
+The cookbook connects `codex exec-server` in each worker Sandbox to the session's self-hosted environment. That connection is outbound, so the worker does not need a public inbound port.
+
+```mermaid actions={false}
+flowchart LR
+    App["Your script"] -->|"create session and submit work"| API["OpenAI Agents API"]
+    App -->|"create computer"| Worker["Blaxel Sandbox"]
+    Worker -->|"outbound executor connection"| API
+    Worker --- Drive[("Agent Drive when enabled")]
+    Worker -->|"verified file"| Output["Local summary.md"]
+```
+
+The baseline is application-managed: the script starts one computer, runs the file task, verifies the result, and deletes its session and computer. The optional handoff starts a fresh pair only after the first has been deleted. Follow the [tutorial](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-API) for that reader journey.
+
+Webhook-managed execution is an optional extension. A controller starts or reconnects a worker when OpenAI requests an environment. Its [separate cookbook guide](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook/blob/main/webhook/README.md) covers deployment and registration.
+
+## Credentials and access
+
+The cookbook requires Python 3.11 through 3.14, Git, OpenAI Agents API access, and a Blaxel workspace. Application-managed examples accept `BL_WORKSPACE` and `BL_API_KEY`, or an [installed Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) with a `bl login` session. The deployed handler requires `BL_WORKSPACE` and `BL_API_KEY` because it creates workers after your local process exits.
+
+| Credential | Used by | Purpose |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Your application and the webhook controller | Create agents and sessions, submit work, and retrieve session state |
+| `OPENAI_EXECUTOR_API_KEY` | Worker Sandboxes | Authenticate the executor's connection to OpenAI |
+| `BL_WORKSPACE` and `BL_API_KEY` | Your application or webhook controller | Create and manage resources in the selected Blaxel workspace |
+| `OPENAI_WEBHOOK_SECRET` | Webhook controller | Verify incoming OpenAI webhook signatures |
+
+Create `OPENAI_API_KEY` on the [API keys page](https://platform.openai.com/api-keys) with Agents read/write and Responses write permissions. Create a separate `OPENAI_EXECUTOR_API_KEY` on the [Agents environment-key page](https://platform.openai.com/agents?tab=environments&environment_view=keys), in the same organization, project, and user or service account as the session. Set all other permissions to None. The environment key permits connecting the executor only; a generic restricted API key with List models access does not establish that permission.
+
+Both keys are required. Missing or identical keys fail before a worker is provisioned. The application key stays outside workers; only the environment key is passed as `CODEX_API_KEY` to `codex exec-server`. Follow the [OpenAI self-hosted setup](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted#authentication) for the current dashboard flow.
+
+This integration connects directly to the Agents API. It does not require a Model Gateway connection in Blaxel's OpenAI integration settings.
+
+## Persistent files
+
+The baseline saves a verified local copy in `outputs/<run-id>/summary.md`. Handoff saves `review.md` beside it. These copies let the reader inspect the result after temporary resources are removed.
+
+Agent Drive mounts durable files at `/workspace/context` in the cookbook. Those files survive deletion of the Sandbox that wrote them. Unmounted Sandbox files remain temporary.
+
+| Workflow | What continues | Drive scope |
+| --- | --- | --- |
+| Fresh-session handoff | A new session reads `summary.md` and writes `review.md` after the first session and Sandbox are deleted | One Drive shared by the trusted handoff |
+| Parallel agent team | Engineering and support specialists write separate findings; a coordinator reads both and writes `plan.md` | A unique Drive and workload label for each team run |
+| Worker replacement | The same OpenAI session reconnects to a fresh worker and reads files from its previous worker | A separate Drive and matching access labels for each session |
+
+The team example uses Python to schedule two specialists in parallel and wait for their verified outputs before submitting the coordinator's task. Agent Drive stores their files; it does not schedule tasks or transfer conversation history or model memory.
+
+Use [Agent Drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions) to define which workloads can access each Drive and path. A mount subdirectory alone does not isolate unrelated tenants or sessions.
+
+## Webhook lifecycle
+
+The cookbook includes a handler deployed in a controller Sandbox with a public webhook endpoint. The first deployment saves its agent ID and controller identity in `.runs/deployment-<prefix-or-default>.json`. Later deployments and reconnection reuse that saved identity; `OPENAI_AGENT_ID` can select an existing saved agent explicitly. Register the handler's URL in your OpenAI project for `agent.session.action_required` and `agent.session.failed`.
+
+- The handler verifies each signature and accepts environment work only for its configured `OPENAI_AGENT_ID`.
+- On an `agent.session.action_required` delivery with an `environment_connection` action, it stores the session ID in SQLite, acknowledges the delivery, and re-reads the session before provisioning.
+- One worker serves each session. The worker connects outbound to OpenAI, and the pending input continues without being resubmitted.
+- The handler keeps the worker awake while its executor is connected. It does not delete a worker when the session becomes `idle`.
+- A failed session triggers worker cleanup. Deleting a session sends no cleanup webhook, so your application must also delete its worker.
+
+To release a worker deliberately, stop its executor before deleting the Sandbox. Wait for OpenAI's `agent.session.environment.disconnected` event before sending the next input. OpenAI can then request a replacement worker, which mounts the same session's Drive.
+
+> [!WARNING]
+>
+> Sending input before OpenAI reports the environment disconnected can leave the turn without file access and does not trigger the provisioning webhook. Wait for the event rather than assuming deletion has already updated the OpenAI session.
+
+The controller's SQLite queue survives process restarts inside that Sandbox. Deleting or expiring the controller loses the local queue.
+
+## Configuration and limits
+
+These are cookbook defaults and behavior, not platform-wide limits.
+
+| Setting | Behavior |
+| --- | --- |
+| `BL_AGENT_DRIVE_MODE` | `auto` uses Agent Drive when available; `required` stops when it is unavailable; `off` uses temporary storage |
+| Region | Agent Drive requires `us-was-1`, the default for both application-managed runs and webhook deployment |
+| Application-managed Sandbox lifetime | 15 minutes from creation |
+| `WORKER_TTL` | Webhook workers default to `2h` from creation |
+| `CONTROLLER_TTL` | The controller defaults to `24h` from creation; restarting its process does not renew this lifetime |
+| Resource namespace | `OPENAI_WEBHOOK_RESOURCE_PREFIX` selects a separate controller and worker namespace; use the same prefix for deployment and reconnection |
+| Client and executor | The public client range is `openai>=3.13.0,<4`; Codex uses the prescribed `alpha` npm tag. Update dependencies deliberately and rerun the lifecycle checks; the README records verified versions |
+
+The baseline can complete with temporary storage when Agent Drive access is unavailable. The fresh-session handoff, team example, and file-preserving reconnection check require Agent Drive. With temporary storage, a replacement worker starts with an empty filesystem.
+
+The examples verify a completed turn and durable idle state before reading the output file. They submit each task once, reject concurrent input to the same session, and use bounded waits: 180 seconds for application-managed turns and 600 seconds for webhook-managed turns, including worker setup.
+
+## Examples and cleanup
+
+The [cookbook README](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook#run-it-yourself) provides installation and credential setup. Start with the baseline, then try the optional handoff. The remaining commands are separate advanced examples:
+
+| Command | Result |
+| --- | --- |
+| `./run.sh` | One agent reads the sample brief and creates a verified `summary.md` |
+| `./run.sh --handoff` | Runs both stages: a summary, first-pair cleanup, then a fresh session that creates `review.md` |
+| `.venv/bin/python -m examples.openai_agent_drive` | Two specialists and a coordinator create a shared plan |
+| `.venv/bin/python -m examples.agent_drive` | A storage-only handoff verifies the same file in a replacement Sandbox without invoking a model |
+| `./run.sh --deploy-webhook` | Deploys the controller; run it again after registering the URL and exporting its signing secret |
+| `./run.sh --reconnect` | Verifies that a replacement worker in the same session reads the first worker's file |
+
+These examples create hosted resources, and the agent examples invoke a model. Check their printed cleanup results: the scripts delete temporary sessions and workers, while Agent Drive is retained deliberately. The reconnect example also retains the controller and webhook registration.
+
+When a deployment is no longer needed, remove its OpenAI webhook, controller, remaining workers, and API sessions. Inspect or export retained files before deleting their Drive, and use the configured resource prefix to avoid removing another deployment's resources.
+
+Temporary resources are recorded immediately in `.runs/<run-id>.json`. Receipts distinguish created/reused ownership, deletion requested, deletion verified, intentional retention, and cleanup failure. Preserve the receipt if the process is interrupted:
+
+```bash
+.venv/bin/python cleanup_run.py .runs/<run-id>.json
+```
+
+The recovery command acts on the exact owned sessions and workers in that receipt and preserves Drives. Inspect or export retained files before deleting their named Drive.
+
+For a webhook deployment, keep the same `OPENAI_WEBHOOK_RESOURCE_PREFIX` and inspect or tear down its recorded resources:
+
+```bash
+.venv/bin/python -m webhook.deploy --inspect
+.venv/bin/python -m webhook.deploy --teardown
+```
+
+The deployment manifest binds recovery to the original Blaxel workspace and API endpoint. A target mismatch stops cleanup. The controller records the workers and Drives it actually allocates, including resources left by partial setup; teardown stops provisioning before reading that inventory. Reused resources and application-owned OpenAI sessions are preserved. Before removing the controller, teardown saves its final inventory locally so a later cleanup attempt can resume. If the controller expires before that inventory is captured, automatic teardown stops because ownership cannot be recovered safely.
+
+Teardown retains Drives by default. Add `--delete-drives` only when you intend to remove the deployment's recorded owned Drives and their files.
+
+OpenAI webhook registration is a separate dashboard resource. Export `OPENAI_WEBHOOK_ID` when deploying to record its identity. Teardown reports manual registration removal as pending until you remove that exact registration in the OpenAI dashboard and record your confirmation:
+
+```bash
+.venv/bin/python -m webhook.deploy --confirm-registration-removed
+```
+
+This command records your dashboard verification; it does not delete the registration through an API. Keep the signing secret in the environment, never in the manifest.
+
+## Troubleshooting
+
+| Error or symptom | Cause and action |
+| --- | --- |
+| `invalid_beta`, missing beta header, or `agent_api_sdk` import error | Install the public dependencies from the current cookbook with `python -m pip install -e '.[dev]'`. Public `openai` supplies `OpenAI-Beta: agents=v1`; raw HTTP clients must supply it too. |
+| Unknown `session.input.message` event | Use the current public client and `agent.session.input.message`. Update the checkout; do not patch generated SDK files. |
+| Executor `403` or missing `api.agents.environments.connect` | Create an environment key on the Agents dashboard. Confirm the same organization, project, and owner as the application key. Do not substitute the application key. |
+| Exported Blaxel key fails while `bl login` works | The deployed controller uses the exported key. Replace it with a valid key for `BL_WORKSPACE`; a local login does not prove that key works. |
+| Executor exits or installation fails | Check the reported worker, process status, and bounded logs. Verify Node/npm, Codex, ripgrep, outbound registration, and WebSocket access. |
+| Connection or turn deadline expires | Inspect the exact session and controller/worker IDs. OpenAI allows five minutes for an input-time connection; an expired request does not replay itself when a worker connects later. Do not blindly resend uncertain input. |
+| Agent Drive unavailable or wrong region | Request access at the printed Console URL, use `us-was-1`, or choose `BL_AGENT_DRIVE_MODE=off` for the baseline. Handoff, team, and file-preserving reconnect require Drive access. Auth and mount errors are not fallback cases. |
+| Webhook returns `503` | Register the deployment URL and export its signing secret before redeploying. Controller health alone does not prove signing is configured. |
+| No worker after submitting webhook work | Confirm the saved agent, registration events, signature status, delivery history, and queued/failed jobs on this deployment. Successful local signing is not proof of an OpenAI-origin delivery. |
+| Turn is `failed`, `cancelled`, or idle without a new completed turn | Inspect the original error. Idle alone is not success; require the current turn and independently verified file. |
+| Cleanup `409` | Retry only the bounded cancellation/cleanup path for the exact receipt. If `no durably bound CCA root` persists, retain the session/request IDs for OpenAI support; do not start an extra model turn as a deletion workaround. |
+| Interrupted process | Use its exact `.runs` receipt to inspect and clean up owned resources. Verify session 404 and worker absence or `TERMINATED`; a deletion request or TTL is not proof. |
+
+- [OpenAI Agents API tutorial](https://docs.blaxel.ai/Tutorials/OpenAI-Agents-API): Create a summary, open the result, and let a fresh agent review the saved file.
+
+- [OpenAI Agents API cookbook](https://github.com/blaxel-ai/blaxel-openai-agents-api-cookbook): Run the examples and inspect their lifecycle, verification, and cleanup code.
+
+- [Agent Drive](https://docs.blaxel.ai/Agent-drive/Overview): Configure durable files and access permissions.
+
+- [Blaxel Sandboxes](https://docs.blaxel.ai/Sandboxes/Overview): Configure the computer, network controls, and resource lifetime.
+
+# AgentMail
+Source: https://docs.blaxel.ai/Integrations/AgentMail
+
+Use AgentMail with Blaxel to build an intelligent assistant that autonomously answers technical questions over email through agentic inboxes.
+
+This example shows how to integrate agentic inbox provider [AgentMail](https://agentmail.to/) with Blaxel to create a customer success agent that autonomously handles technical questions via email (inbound and outbound).
+
+## Requirements
+
+To use this example, you'll need:
+
+- the unique username for your AgentMail inbox
+- an AgentMail API key
+
+## Create an AgentMail inbox and API key
+
+From your AgentMail dashboard, create a new inbox, providing a unique username (by default, the domain is set to `agentmail.to`):
+
+From the same dashboard, obtain an API key:
+
+## Configure the project
+
+Clone the [example repository](https://github.com/blaxel-templates/template-agentmail-docbot) and follow the instructions provided.
+
+Note that you must configure the following environment variables for your deployment:
+
+```bash
+INBOX_USERNAME=      # a unique username for your inbox
+AGENTMAIL_API_KEY=   # your AgentMail API key
+
+```
+
+Create a `.env` file in the project root with these variables, or set them in your deployment environment.
+
+> [!WARNING]
+>
+> The `AGENTMAIL_API_KEY` variable is required. If it is missing or not correctly set, the AgentMail client will fail to authenticate and return a **403 Forbidden** error at runtime. Confirm this variable is configured before deploying.
+
+## Deploy the agent
+
+[Deploy the agent](https://docs.blaxel.ai/Agents/Deploy-an-agent) on Blaxel. Once the agent is deployed, retrieve its [inference endpoint](https://docs.blaxel.ai/Agents/Query-agents).
+
+You will need an API key to query the agent externally. Follow [this guide to create a service account in your workspace and generate an API key](https://docs.blaxel.ai/Security/Service-accounts).
+
+- [AgentMail Documentation](https://docs.agentmail.to/welcome): Complete documentation for using AgentMail.
+
+# Rippletide
+Source: https://docs.blaxel.ai/Integrations/Rippletide
+
+Combine Rippletide guardrails with Blaxel sandboxes to enforce agent safety, prevent hallucinations, and run trusted agent code securely.
+
+This integration combines [Rippletide](https://www.rippletide.com/) with Blaxel to ensure agent safety and trust. Rippletide's hypergraph database ensures agents respect guardrails and prevent hallucinations, while Blaxel provides secure sandboxes for agent code execution, enabling reliable and trusted agent deployments.
+
+> **About this example:** This page describes the original Python customer-support example. For the current Rippletide connection workflow, start with the [official Quickstart](https://docs.rippletide.com/docs/quickstart). That CLI setup supports JavaScript and TypeScript agents and MCP servers. It is not a drop-in replacement for this Python example.
+
+## Requirements
+
+To use this example, you'll need a Rippletide API key, which you can obtain at [https://eval.rippletide.com](https://eval.rippletide.com).
+
+## Clone the example repository
+
+Clone the [example repository](https://github.com/blaxel-templates/template-rippletide-customer-support) and follow the instructions provided to install dependencies.
+
+## Customize the knowledge base
+
+Update the files in the `knowledge-base` directory with business- or scenario-specific information and workflows. The agent will use this information to respond to customer enquiries and to transition between workflow states.
+
+## Create an agent
+
+Configure the following environment variable in order to obtain an agent ID:
+
+```bash
+RIPPLETIDE_API_KEY=   # your Rippletide API key
+```
+
+Create an agent:
+
+```bash
+uv run src/setup.py
+```
+
+Once your agent is created, the setup process will return an agent ID.
+
+Create a `.env` file in the project root with both variables, or set them in your deployment environment.
+
+```bash
+RIPPLETIDE_API_KEY=   # your Rippletide API key
+RIPPLETIDE_AGENT_ID=  # your Rippletide agent ID
+```
+
+## Deploy the agent
+
+[Deploy the agent](https://docs.blaxel.ai/Agents/Deploy-an-agent) on Blaxel. Once the agent is deployed, retrieve its [inference endpoint](https://docs.blaxel.ai/Agents/Query-agents).
+
+You will need an API key to query the agent externally. Follow [this guide to create a service account in your workspace and generate an API key](https://docs.blaxel.ai/Security/Service-accounts).
+
+- [Rippletide Documentation](https://docs.rippletide.com/): Complete documentation for using Rippletide.
