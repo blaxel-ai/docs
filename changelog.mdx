@@ -7,6 +7,14 @@ description: 'Chronological log of all Blaxel platform updates, new feature rele
   [Subscribe to this changelog's RSS feed](https://docs.blaxel.ai/changelog/rss.xml) for automated notifications of platform changes and new features.
 </Tip>
 
+<Update label="2026-11-17">
+
+### Update sandbox variables with the SDK
+
+The SDKs can now [update the environment variables of an existing sandbox](/Sandboxes/Variables-and-secrets#update-variables-on-an-existing-sandbox) in one call. `SandboxInstance.updateEnvs` (`update_envs` in Python) sets the variables you pass, keeps the others, removes the ones set to `null`/`None`, and keeps the `secret` flag of a variable whose value changes.
+
+</Update>
+
 <Update label="2026-10-13">
 
 ### Build environment size in the SDK image builder
