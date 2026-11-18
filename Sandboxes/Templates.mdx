@@ -113,7 +113,11 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 ```
 
-**Always include** the _sandbox-api_ binary from the Blaxel base image. This is required for sandbox functionality like process management and file operations.
+Include the _sandbox-api_ binary from the Blaxel base image, and start it from your entrypoint (step 4). It serves the sandbox API: process management, file operations and previews. If your image ships sandbox-api but its entrypoint never starts it, the sandbox can reach `DEPLOYED` while its sandbox API calls fail with `502 UPSTREAM_ERROR`.
+
+<Note>
+  On [Carbon (Mark 3.1)](/Infrastructure/Gens), an image that doesn't ship sandbox-api still works as a sandbox: Blaxel provides sandbox-api and runs your image's `ENTRYPOINT` and `CMD` through it, in its `WORKDIR` and as its `USER`. An image without `/bin/sh` gets sandbox-api alone, and its own command doesn't run. Shipping sandbox-api yourself pins the version you tested and works on every generation.
+</Note>
 
 <Warning>
   This example installs `make` and `g++`. Those compilers are available in `RUN` steps, then removed by [image slimming](#image-slimming) before the sandbox starts. Set `slim = false` when the running sandbox needs them.
@@ -1025,7 +1029,7 @@ Ensure that you have the following:
 
 Create a directory with the following project contents:
 
-- `Dockerfile` (required) - Defines your custom sandbox image and must include `sandbox-api`
+- `Dockerfile` (required) - Defines your custom sandbox image, which should include and start `sandbox-api` (see above)
 - Any custom scripts (e.g., `entrypoint.sh` for initialization logic)
 - Configuration files or data files as needed
 - Additional dependencies or binaries your sandbox requires
