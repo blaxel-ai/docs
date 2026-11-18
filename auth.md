@@ -27,7 +27,7 @@ You are an agent. This file tells you how to authenticate to Blaxel for a user. 
 Current behavior to plan around:
 
 - The MCP server answers `401` with `WWW-Authenticate: Bearer realm="Blaxel MCP", resource_metadata="..."`. Follow it.
-- The Blaxel API answers `401` with `{"code":401,"error":"Unauthorized"}` and no `WWW-Authenticate` header. Come back to this file.
+- The Blaxel API answers `401` with `WWW-Authenticate: Bearer realm="Blaxel API", resource_metadata="https://api.blaxel.ai/.well-known/oauth-protected-resource"` and `Link: <https://docs.blaxel.ai/auth.md>; rel="help"`, which points back to this file.
 - `https://api.blaxel.ai/.well-known/oauth-protected-resource` describes the MCP server (`resource` is `https://api.blaxel.ai/v0/mcp`). The Blaxel API has no protected resource metadata of its own yet.
 - The metadata only advertises the `openid`, `email`, `profile` and `offline_access` scopes. Access follows the role of the user or service account in each workspace, not the token scope.
 - The CLI device login and the client credentials grant are not advertised in the metadata. Use them as described below.
