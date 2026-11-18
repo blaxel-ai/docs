@@ -6,4 +6,6 @@
 | SDK multipart upload threshold and part size | 5 MiB (5,242,880 bytes) | SDK `write()`, `writeBinary()` and `write_binary()` split larger files into parts of this size |
 | Parts per multipart upload | 10,000 | The part is rejected |
 | Single process stdin write | 8 MiB (8,388,608 bytes) | 413; send larger input in several writes |
+| Output returned per stream by `exec` with `waitForCompletion`, and by `process.logs` | 4 MiB (4,194,304 bytes) | Only the end of the stream is returned, after a `[... truncated, see the process log file for the full output ...]` line, with `outputTruncated` set to `true` and `outputLimitBytes`; stream the logs to read all of it |
+| Output returned per stream by `process.get` and `process.list` | 64 KiB (65,536 bytes) | Only the end of the stream is returned, with `outputTruncated` set to `true` and `outputLimitBytes`; use `process.logs` for more |
 | JSON body merged by proxy secrets injection | 1 MB | The request is forwarded without injected body fields |

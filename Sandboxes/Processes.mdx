@@ -97,6 +97,15 @@ print(result.stderr)
 
 The `logs` field holds `stdout` and `stderr` together. A command that exits with a non-zero code does not raise an error: its `status` is `failed`, so check the exit code. Set `timeout` to limit how long the command can run: if it's still running when the timeout expires, the process is killed and the call fails. For longer commands, see [Wait for process completion](#wait-for-process-completion).
 
+When the exit code alone doesn't say why the command ended, `exitReason` (`exit_reason` in Python) does:
+
+- `oom_killed`: the sandbox ran out of memory and the kernel killed the process, or the last command its shell ran. Give the sandbox more memory or make the command use less.
+- `disk_full`: the command failed while the sandbox's disk was full, so its output, error message included, may be missing. See [ENOSPC errors](/troubleshooting#sandbox-commands-return-an-enospc-no-space-left-on-device-error).
+
+`oomKills` (`oom_kills`) counts the processes the kernel killed for lack of memory while the command ran, including ones it started, such as test workers. Neither field is set for a process you stopped or killed, or one that hit its `timeout`.
+
+Each stream of the result is capped at its last 4 MiB. When the start of a stream is missing, `outputTruncated` (`output_truncated`) is `true`, `outputLimitBytes` (`output_limit_bytes`) gives the limit that applied, and the stream starts with a `[... truncated, see the process log file for the full output ...]` line. To read everything a command prints, [stream its logs](/Sandboxes/Log-streaming) while it runs. All output limits are listed under [Request and payload sizes](/pricing#request-and-payload-sizes).
+
 Process execution logs are also visible in the Blaxel Console. Refer to the **Logs** section of the sandbox detail page, as shown below:
 
 ![process logs](/images/sandboxes/process-logs.webp)
