@@ -18,9 +18,11 @@ The most efficient way to manage lifecycle is to let the sandbox suspend automat
 
 ## Choose the right storage
 
-Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers three options:
+Choosing the right storage for your sandbox data is important, as it can impact your agent's performance, reliability, and overall consistency. Blaxel offers four options:
 
 - Sandbox filesystem: The sandbox itself has a stateful [filesystem](/Sandboxes/Filesystem) optimized for speed. Data stored here persists for as long as the sandbox exists in standby, but is erased when the sandbox is terminated.
+
+- Ephemeral volumes: [Ephemeral volumes](/Volumes/Ephemeral-volumes) are disks created with the sandbox and destroyed with it. They extend the writable disk space of a sandbox beyond the default filesystem, with a size you choose at creation. Use them for large scratch data such as build outputs, package caches, or datasets that do not need to outlive the sandbox.
 
 - Volumes: [Volumes](/Volumes/Overview) provide longer-term, durable block storage that is decoupled from compute. Data stored on a volume survives even if the associated sandbox is terminated, and newly-created sandboxes can access the data by attaching to the same volume.
 
@@ -32,15 +34,15 @@ Choosing the right storage for your sandbox data is important, as it can impact 
 
 Here's a table to help you decide:
 
-|   | Sandbox Filesystem |  Volume |  Agent Drive |
-|---|---|---|---|
-| Persistence | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
-| Durability | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated) |
-| Access type | Single | Single | Multiple |
-| Hot-attach | N/A | No | Yes |
-| Interface | POSIX | POSIX | POSIX + S3 |
-| Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, expandable | No size limit |
-| Optimized for | Data that doesn’t require high durability | Data that requires durability with high performance | Shared data |
+|   | Sandbox Filesystem | Ephemeral Volume |  Volume |  Agent Drive |
+|---|---|---|---|---|
+| Persistence | Until sandbox deletion | Until sandbox deletion | Survives sandbox deletion | Survives sandbox deletion |
+| Durability | Low (lost on sandbox deletion or crash) | Low (lost on sandbox deletion or crash) | High (block storage, replicated) | High (distributed storage, replicated) |
+| Access type | Single | Single | Single | Multiple |
+| Hot-attach | N/A | No | No | Yes |
+| Interface | POSIX | POSIX | POSIX | POSIX + S3 |
+| Size | ~50% of sandbox memory by default; configurable with root storage | User-defined at creation, several per sandbox | User-defined at creation, expandable | No size limit |
+| Optimized for | Data that doesn’t require high durability | Large scratch data that doesn't need durability | Data that requires durability with high performance | Shared data |
 
 Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
 
