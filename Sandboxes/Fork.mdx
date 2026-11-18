@@ -6,7 +6,7 @@ tag: "private preview"
 ---
 
 <Note>
-  This feature is currently in private preview and is not recommended for production use.
+  This feature is currently in private preview and is not recommended for production use. It must be enabled on your workspace: until it is, every snapshot and fork call returns `403` with code `FEATURE_NOT_ENABLED`. To check first, see [preview features](/troubleshooting#a-preview-feature-returns-a-403-feature_not_enabled-error).
 </Note>
 
 A snapshot captures the state of a sandbox at a point in time: its filesystem, its running processes, and its memory. Use snapshots to checkpoint a sandbox before a risky change, to roll it back later, or as the basis for forking a new sandbox.

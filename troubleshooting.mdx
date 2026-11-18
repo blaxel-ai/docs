@@ -152,6 +152,49 @@ To resolve this error, first confirm the workspace name in your request matches 
 
 Personal API keys and OAuth logins grant access to every workspace you belong to, while [service account](/Security/Service-accounts) API keys and client-credentials tokens are scoped to a single workspace. Ensure that you're using credentials that are actually valid for the workspace you're targeting.
 
+## A preview feature returns a 403 `FEATURE_NOT_ENABLED` error
+
+Some features are enabled per workspace while they are in private preview. Calling one that your workspace doesn't have returns HTTP `403`. Snapshots and forks return the code `FEATURE_NOT_ENABLED`, with the feature's key in the `feature` field. The other features return a `403` whose message names the feature.
+
+This isn't a permission or API key problem: a new key, a higher role or a retry doesn't help. Continue without the feature, or [contact us](https://blaxel.ai/contact) to enable it for your workspace.
+
+| Feature | Key | When the feature is off |
+|---|---|---|
+| [Snapshots and forking](/Sandboxes/Fork) | `fork` | Every snapshot, restore and fork call returns `FEATURE_NOT_ENABLED` with `"feature": "fork"` |
+| [Agent Drive](/Agent-drive/Overview) | `drives` | Drive calls return `403` |
+| [Dedicated egress gateways](/Infrastructure/Dedicated-egress-gateways) | `dedicated_ips` | VPC and egress gateway calls return `403` |
+| [Applications](/Applications/Overview) | `applications` | Creating, updating or deleting an application returns `403` |
+| [Archive](/Sandboxes/Archive) | `sandbox-archive` | Archive and unarchive return `403` |
+| Workspace secrets | `workspace-secrets` | Secret calls (`/v0/secrets`) return `403` |
+| [Custom domains with HTTP validation](/Infrastructure/Custom-domains-http-validation) | `custom-domain-http-validation` | Creating a custom domain with HTTP validation returns `403`. DNS validation, the default, still works |
+
+To check before calling, read the features enabled for your workspace. `GET /v0/features` lists only the enabled ones, by the key in the table, and `GET /v0/features/{key}` returns `{"enabled": true}` or `{"enabled": false}` for one key.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { getWorkspaceFeatures } from "@blaxel/core";
+
+const { data } = await getWorkspaceFeatures({ throwOnError: true });
+const canSnapshot = data.features?.fork === true;
+```
+
+```python Python
+from blaxel.core.client.api.workspaces.get_workspace_features import asyncio as get_workspace_features
+from blaxel.core.client.client import client
+
+features = await get_workspace_features(client=client)
+can_snapshot = bool((features.to_dict().get("features") or {}).get("fork"))
+```
+
+```bash HTTP API
+curl https://api.blaxel.ai/v0/features \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace"
+```
+
+</CodeGroup>
+
 ## Sandbox commands return a `404 WORKSPACE_NOT_FOUND` error
 
 This error occurs when a [workspace is not provisioned correctly](/troubleshooting/error-codes).
