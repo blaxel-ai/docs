@@ -238,7 +238,7 @@ process = await sandbox.process.exec({
 When waiting for completion, the process execution object contains the command's [output](#get-command-output): `stdout`, `stderr`, and both combined in `logs`. Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
 
 <Warning>
-  When using `waitForCompletion`, Blaxel enforces a **timeout limit of 60 seconds**. Don't set your timeout longer than this. For longer waiting periods, use the process-watching option described below.
+  When using `waitForCompletion`, Blaxel holds the request open for at most **about 120 seconds**. A longer wait fails with a `504 Gateway Timeout`, even if your `timeout` is higher. For longer waiting periods, use the process-watching option described below.
 </Warning>
 
 <Note>
