@@ -33,7 +33,7 @@ python main.py --host $HOST
 ```
 </CodeGroup>
 
-Read more about this in our [troubleshooting page](/troubleshooting).
+When nothing is listening on the port, the 502 response has the error code `PORT_NOT_LISTENING` and names the port in its message. The platform waits up to 30 seconds for a server that is still starting before it answers. See [error codes](/troubleshooting/error-codes) and our [troubleshooting page](/troubleshooting).
 </Note>
 
 You can also set a **custom domain** on a preview URL (see down below).
