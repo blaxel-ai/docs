@@ -19,7 +19,7 @@ The Blaxel SDK supports two network features when creating sandboxes:
 Proxy and network configuration can be updated after creation: you can rotate secrets, add or remove routing rules, and change the domain allowlist or denylist on a running sandbox.
 
 <Warning>
-  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Enabling or disabling the proxy requires a new sandbox: an update that adds domain filters, routing rules or bypass rules to a sandbox created without them fails with [`NETWORK_PROXY_NOT_ENABLED`](/troubleshooting/error-codes#network-proxy-not-enabled) (HTTP `400`) and changes nothing. If you remove all routing rules and domain filters from an existing proxy-enabled sandbox, the proxy remains active transparently: traffic continues to flow through it without any secret injection or domain blocking.
+  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Enabling or disabling the proxy requires a new sandbox: an update that adds domain filters, routing rules or bypass rules to a sandbox created without them fails with [`NETWORK_PROXY_NOT_ENABLED`](/troubleshooting/error-codes) (HTTP `400`) and changes nothing. If you remove all routing rules and domain filters from an existing proxy-enabled sandbox, the proxy remains active transparently: traffic continues to flow through it without any secret injection or domain blocking.
 </Warning>
 
 ## How it works
@@ -313,7 +313,7 @@ curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
 The update replaces the entire `network` configuration. Include all routing rules, domain filters, and secrets you want active after the update.
 
 <Warning>
-  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. On a sandbox created without the proxy, an update that adds domain filters, routing rules or bypass rules fails with [`NETWORK_PROXY_NOT_ENABLED`](/troubleshooting/error-codes#network-proxy-not-enabled) (HTTP `400`) and changes nothing. Removing all routing rules and domain filters does not disable the proxy: traffic continues to flow through it transparently without any injection or blocking.
+  You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. On a sandbox created without the proxy, an update that adds domain filters, routing rules or bypass rules fails with [`NETWORK_PROXY_NOT_ENABLED`](/troubleshooting/error-codes) (HTTP `400`) and changes nothing. Removing all routing rules and domain filters does not disable the proxy: traffic continues to flow through it transparently without any injection or blocking.
 </Warning>
 
 ## Full example: agent sandbox with proxy + firewall
