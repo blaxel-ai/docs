@@ -247,7 +247,7 @@ process = await sandbox.process.exec({
 When waiting for completion, the process execution object contains the command's [output](#get-command-output): `stdout`, `stderr`, and both combined in `logs`. Also, notice the `timeout` parameter which allows you to set the process timeout duration in seconds.
 
 <Warning>
-  When using `waitForCompletion`, Blaxel holds the request open for at most **about 120 seconds**. A longer wait fails with a `504 Gateway Timeout`, even if your `timeout` is higher. For longer waiting periods, use the process-watching option described below.
+  When using `waitForCompletion`, Blaxel holds the request open for at most **115 seconds**, even if your `timeout` is higher. A longer wait fails with a 422 error (code `PROCESS_WAIT_LIMIT_REACHED`; sandboxes on older images return a `504` at 120 seconds instead) while the process keeps running, so don't call `exec` again. For longer waiting periods, stream the output with `onLog` (`on_log` in Python) or use the process-watching option described below.
 </Warning>
 
 <Note>
