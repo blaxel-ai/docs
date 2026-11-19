@@ -116,13 +116,13 @@ This section provides details on quotas for:
 
 ### Read quotas through the API
 
-You can read your quotas, how much of each is in use and the sandbox creation limit through the API, for example to size a large run or to slow down before it reaches a quota. Any credential of the workspace can read them, service account API keys included: `GET https://api.blaxel.ai/v0/workspaces/{workspace}/quotas`.
+You can read your quotas, how much of each is in use and the sandbox creation limit through the API, for example to size a large run or to slow down before it reaches a quota. Any credential of the workspace can read them, service account API keys included: `GET https://api.blaxel.ai/v0/workspaces/{workspace}/quotas`. A credential with no role in that workspace gets a `403` error with `WORKSPACE_ACCESS_DENIED`.
 
 ```bash
 # A user login (`bl login`), a personal API key or a service account API key
 TOKEN=$(bl token)
 WORKSPACE=my-workspace
-curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $WORKSPACE" \
+curl -s -H "Authorization: Bearer $TOKEN" \
   "https://api.blaxel.ai/v0/workspaces/$WORKSPACE/quotas"
 ```
 
