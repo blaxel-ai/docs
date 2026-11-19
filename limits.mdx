@@ -1,0 +1,148 @@
+---
+title: "Limits"
+description: "Every Blaxel limit on one page: how many sandboxes can run at the same time, how many sandbox creations and image builds can run at once, request rate limits and sizes. What each limit counts, where to read your live values and how to raise them."
+---
+
+import BuildLimits from '/snippets/limits/build-limits.mdx';
+import CpuPerMemory from '/snippets/limits/cpu-per-memory.mdx';
+import RateLimits from '/snippets/limits/rate-limits.mdx';
+import RequestLimits from '/snippets/limits/request-limits.mdx';
+import SandboxLimits from '/snippets/limits/sandbox-limits.mdx';
+import TierAccount from '/snippets/limits/tier-account.mdx';
+import TierBuilds from '/snippets/limits/tier-builds.mdx';
+import TierEphemeralVolumes from '/snippets/limits/tier-ephemeral-volumes.mdx';
+import TierSandboxFeatures from '/snippets/limits/tier-sandbox-features.mdx';
+import TierSandboxes from '/snippets/limits/tier-sandboxes.mdx';
+import TierStorage from '/snippets/limits/tier-storage.mdx';
+import TierWorkloads from '/snippets/limits/tier-workloads.mdx';
+import UploadLimits from '/snippets/limits/upload-limits.mdx';
+
+This page lists every limit Blaxel applies: what each one counts, its default, where to read the value that applies to you and how to raise it. Blaxel has three kinds of limits:
+
+| Kind | Applies to | Past the limit | Clears |
+| --- | --- | --- | --- |
+| Quota | Your account, across all its workspaces. Defaults depend on your [tier](/Security/Quotas#quota-tiers) | `QUOTA_EXCEEDED`, HTTP `429` (`400` for an ephemeral volume that is too large) | When you delete resources or your quota is raised. Sending the same request again returns the same error |
+| Rate limit | A workspace or an IP address. The same on every tier | `WORKSPACE_RATE_LIMIT_EXCEEDED` or `RATE_LIMITED`, HTTP `429` | On its own, within seconds to a minute. Retry with backoff |
+| Fixed limit | One request, sandbox, process or build | Usually `400` or `413` | Never. Change the request |
+
+## Build, create, run
+
+Three steps take your code to a running sandbox. Each step has its own limit, so "how many at once" has three answers.
+
+1. **Build an image** (minutes). `bl deploy` or an SDK image build turns a Dockerfile or a template into an image. All the builds of your account, queued and running, share your [build quotas](#image-builds): memory, vCPUs and scratch disk. With the default build size, the **Default builds at once** column shows how many fit. A build that doesn't fit waits in the queue, with no error.
+2. **Create a sandbox** (seconds). Blaxel starts a sandbox from an image. Up to 100 sandbox creations can be in progress at once in each workspace and region. One more gets `WORKSPACE_RATE_LIMIT_EXCEEDED` and nothing is created: send it again once earlier creations finish. Sandbox creation has no per-minute limit of its own, only the [request rate limits](#request-rate-limits).
+3. **Run** (until you delete it). Every sandbox that exists counts toward your account's `sandboxes` quota, running or in standby, until it's deleted. Failed, terminated and archived sandboxes don't count.
+
+## Quick answers
+
+- **How many sandboxes can run at the same time?** Your account's `sandboxes` quota, shared by all your workspaces: see the [defaults by tier](#sandboxes). Sandboxes in standby count too.
+- **How many sandboxes can I create at once?** Up to 100 creations in progress at once, per workspace and region. Past that, wait for earlier creations to finish.
+- **How many image builds can I run at once?** As many as fit in your [build quotas](#image-builds), shown for the default build size in **Default builds at once**. Workspaces not yet on the build queue have a fixed number of builds at once, in the [build limits](#image-builds) table.
+- **How many API requests can I send?** See [request rate limits](#request-rate-limits). They count per IP address, across all your workspaces and keys.
+- **How large can a sandbox be?** Your tier's memory per sandbox, within the [sandbox limits](#sandbox-limits). The vCPUs follow from the memory.
+
+## Read your live values
+
+- **Console**: click the workspace name at the bottom left, then **Account**, then the **Quotas** tab. It lists your quotas and how much of each is in use.
+- **API**: `GET https://api.blaxel.ai/v0/workspaces/{workspace}/quotas` returns your quotas, how much of each is in use, and your workspace's sandbox creation limit. Any API key of the workspace can call it, service account keys included. See [read quotas through the API](/Security/Quotas#read-quotas-through-the-api).
+- **Errors**: a quota error names the quota and its limit.
+
+```bash
+curl -s -H "Authorization: Bearer $BL_API_KEY" \
+  "https://api.blaxel.ai/v0/workspaces/$WORKSPACE/quotas"
+```
+
+Rate limits and fixed limits are the same for everyone, so the tables below are your live values. The one exception is a sandbox creation limit raised for your workspace: the API above returns it.
+
+## Raise a limit
+
+- **Quotas**: move to a higher tier with a top-up, or request an increase in the Console. See [increase account quotas](/Security/Quotas#increase-account-quotas). A raised quota applies to your next request: Blaxel doesn't keep a refusal.
+- **Sandbox creations at once**: can be raised for a workspace on request to [support@blaxel.ai](mailto:support@blaxel.ai). A new value applies within a minute.
+- **Request rate limits and fixed limits**: can't be raised. Spread requests over time, and back off on a `429`.
+
+## What each quota counts
+
+The API and quota errors name each quota by its `resourceType`. The tables after this one give the defaults of each tier.
+
+| Quota | `resourceType` | What it counts |
+| --- | --- | --- |
+| Sandboxes | `sandboxes` | Sandboxes in all workspaces of the account, running or in standby. Failed, terminated and archived sandboxes don't count |
+| Memory per sandbox, agent, MCP server or job | `memory` | The memory of one sandbox, agent, MCP server or job, in MB. A cap on each one, not a total |
+| Maximum sandbox TTL | `sandbox_ttl` | The longest TTL one sandbox can have, in days |
+| Terminated sandbox retention | `sandbox_terminated_retention` | How long a terminated sandbox stays listed with its logs, in minutes |
+| Preview URLs | `previews` | Preview URLs of all sandboxes |
+| Snapshots | `sandbox_snapshots` | Snapshots of all sandboxes |
+| Snapshots per sandbox | `sandbox_snapshots_per_sandbox` | Snapshots of one sandbox |
+| Schedules per sandbox | `sandbox_schedules` | Schedules of one sandbox |
+| Volumes | `volumes` | Volumes that aren't deleted |
+| Maximum size per volume | `volume_max_size` | The size of one volume, in MB |
+| Total volume size | `volume_total_max_size` | The sizes of all volumes added up, in MB |
+| Volume templates | `volume_templates` | Volume templates |
+| Total image storage | `image_total_max_size` | The sizes of all stored images added up, in MB |
+| Maximum size per ephemeral volume | `ephemeral_volume_max_size` | The ephemeral volume of one sandbox, in MB |
+| Total ephemeral volume size | `ephemeral_volume_total_max_size` | The ephemeral volumes of all sandboxes that aren't terminated, standby included, in MB |
+| Agents, MCP servers, jobs | `agents`, `functions`, `jobs` | Deployed agents, MCP servers and jobs, failed deployments included |
+| Concurrent job tasks | `jobs_max_concurrent_tasks` | Job tasks running at once |
+| Memory of concurrent job tasks | `jobs_total_memory_quota` | The memory of the job tasks running at once added up, in MB |
+| Build memory, vCPUs and scratch disk | `builds_total_memory_quota`, `builds_total_cpu_quota`, `builds_total_disk_quota` | What your queued and running image builds reserve together |
+| Workspaces | `workspaces` | Workspaces of the account |
+| Workspace users | `workspace_users` | Users of a workspace |
+| Custom domains | `customdomains` | Custom domains |
+
+The API can list more quotas than this table, for features this page doesn't cover.
+
+## Defaults by tier
+
+Quotas apply to your whole account, across all its workspaces. A [quota increase](/Security/Quotas#manually-request-a-quota-increase) can raise yours above these defaults.
+
+### Sandboxes
+
+<TierSandboxes />
+
+### Previews, snapshots and schedules
+
+<TierSandboxFeatures />
+
+### Volumes and images
+
+<TierStorage />
+
+### Ephemeral volumes
+
+<TierEphemeralVolumes />
+
+### Image builds
+
+On the build queue, image builds aren't limited by a count: your account's builds together, queued and running, may reserve up to its build quotas. A build gets the vCPUs of its memory size, and the default build size fits the number of builds in the last column. See [image build quotas](/Security/Quotas#image-build-quotas).
+
+<TierBuilds />
+
+<BuildLimits />
+
+### Agents, MCP servers and jobs
+
+<TierWorkloads />
+
+### Account
+
+<TierAccount />
+
+## Request rate limits
+
+These don't depend on your tier. A `429` with the code `RATE_LIMITED` comes from the network edge, before the API sees the request: wait for the number of seconds in the `Retry-After` header, then retry with exponential backoff and jitter.
+
+<RateLimits />
+
+## Sandbox limits
+
+<SandboxLimits />
+
+The vCPUs of a sandbox follow from its memory:
+
+<CpuPerMemory />
+
+## Request and upload sizes
+
+<RequestLimits />
+
+<UploadLimits />
