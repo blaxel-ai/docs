@@ -53,6 +53,7 @@ Structured platform errors have a consistent JSON body and response header, as s
 | `TOKEN_REVOKED` | 401 | No | Token was valid but has been revoked since it was issued |
 | `FORBIDDEN` | 403 | No | Authenticated but not authorized |
 | `BAD_REQUEST` | 400 | No | Malformed request |
+| `NETWORK_PROXY_NOT_ENABLED` | 400 | No | An update adds domain filters, routing rules or bypass rules to a sandbox created without the network proxy. Nothing changes and outbound traffic stays unfiltered. Create a new sandbox with these settings (see [proxy](/Sandboxes/Proxy)), or resend the update without them |
 | `USAGE_LIMIT_EXCEEDED` | 402 | No | Plan quota reached |
 | `ROUTING_UNAVAILABLE` | 503 | **Yes** | A lookup the gateway needs to route or authenticate the request didn't answer; the request wasn't forwarded |
 | `UPSTREAM_CONNECT_FAILED` | 502 | **Yes** | Connection to the workload failed (refused, no route, TLS failure); the request didn't reach it |
