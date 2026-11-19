@@ -135,6 +135,7 @@ By default, Blaxel allocates vCPUs from the memory you set.
 | Default timeout of a `keepAlive` process | 10 minutes | The process is stopped; set `timeout` to `0` to run until it exits |
 | Maximum `waitForCompletion` or `waitForPorts` wait in one `exec` call | 115 seconds | 422 `PROCESS_WAIT_LIMIT_REACHED` while the process keeps running (a 504 at 120 seconds on older sandbox images); wait with `process.wait` or stream output with `onLog` |
 | Idle WebSocket connection through a preview URL | 1 minute | The connection closes and the sandbox can go on standby; send messages or pings more often to keep it open |
+| Output the sandbox keeps per process stream | 32 MiB (33,554,432 bytes) | The oldest output is dropped and responses set `outputTruncated`. All process output shares 10% of the sandbox's memory, so the limit is lower when many processes keep a lot of output |
 
 ## Request and payload sizes
 
@@ -144,6 +145,8 @@ By default, Blaxel allocates vCPUs from the memory you set.
 | SDK multipart upload threshold and part size | 5 MiB (5,242,880 bytes) | SDK `write()`, `writeBinary()` and `write_binary()` split larger files into parts of this size |
 | Parts per multipart upload | 10,000 | The part is rejected |
 | Single process stdin write | 8 MiB (8,388,608 bytes) | 413; send larger input in several writes |
+| Output returned per stream by `exec` with `waitForCompletion`, and by `process.logs` | 4 MiB (4,194,304 bytes) | Only the end of the stream is returned, after a `[... truncated, see the process log file for the full output ...]` line, with `outputTruncated` set to `true` and `outputLimitBytes`; stream the logs to read all of it |
+| Output returned per stream by `process.get` and `process.list` | 64 KiB (65,536 bytes) | Only the end of the stream is returned, with `outputTruncated` set to `true` and `outputLimitBytes`; use `process.logs` for more |
 | JSON body merged by proxy secrets injection | 1 MB | The request is forwarded without injected body fields |
 
 See [write binary file](/Sandboxes/Filesystem#write-binary-file) for multipart uploads, and [error codes](/troubleshooting/error-codes) for the structured errors.
