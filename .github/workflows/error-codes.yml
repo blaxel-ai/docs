@@ -32,6 +32,6 @@ jobs:
         with:
           node-version: '22'
       - name: Test the generator
-        run: node --test scripts/error-codes/
+        run: node --test scripts/error-codes/generate.test.mjs
       - name: Check the page
         run: node scripts/error-codes/generate.mjs --check
