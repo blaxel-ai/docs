@@ -1,6 +1,6 @@
 ---
 title: "Limits"
-description: "Every Blaxel limit on one page: how many sandboxes can run at the same time, how many sandbox creations and image builds can run at once, request rate limits, sizes and process output. What each limit counts, where to read your live values and how to raise them."
+description: "Every Blaxel limit on one page: how many sandboxes can run at the same time, how many sandbox creations and image builds can run at once, request rate limits and sizes. What each limit counts, where to read your live values and how to raise them."
 ---
 
 import BuildLimits from '/snippets/limits/build-limits.mdx';
@@ -40,7 +40,6 @@ Three steps take your code to a running sandbox. Each step has its own limit, so
 - **How many image builds can I run at once?** As many as fit in your [build quotas](#image-builds), shown for the default build size in **Default builds at once**. Workspaces not yet on the build queue have a fixed number of builds at once, in the [build limits](#image-builds) table.
 - **How many API requests can I send?** See [request rate limits](#request-rate-limits). They count per IP address, across all your workspaces and keys.
 - **How large can a sandbox be?** Your tier's memory per sandbox, within the [sandbox limits](#sandbox-limits). The vCPUs follow from the memory.
-- **How much output does a process keep?** See [sandbox limits](#sandbox-limits). Older output is dropped first.
 
 ## Read your live values
 
