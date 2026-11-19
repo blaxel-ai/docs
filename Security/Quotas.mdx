@@ -47,7 +47,7 @@ To prevent service disruptions and maintain your quotas without manual intervent
 
 #### Default quotas of each tier
 
-The tables below list the default quotas of each tier. Quotas apply to your whole account, across all its workspaces. A [quota increase](#manually-request-a-quota-increase) can raise your quotas above these defaults. See [pricing and limits](/pricing) for the other platform limits.
+The tables below list the default quotas of each tier. Quotas apply to your whole account, across all its workspaces. [Limits](/limits) lists every limit on one page, with what each one counts. A [quota increase](#manually-request-a-quota-increase) can raise your quotas above these defaults. See [pricing and limits](/pricing) for the other platform limits.
 
 <AccordionGroup>
   <Accordion title="Sandboxes">
@@ -83,7 +83,7 @@ On sandbox creation, a rate limit and a quota both answer HTTP `429`. Read the `
 - `WORKSPACE_RATE_LIMIT_EXCEEDED` is a rate limit. Nothing was created, and the limit clears as earlier creations finish: send the same request again after a short wait.
 - `QUOTA_EXCEEDED` is a quota. Sending the same request again returns the same error until you delete resources or your quota is raised. Keep the sandboxes you run at once under your quotas instead, and [read them through the API](#read-quotas-through-the-api) before a large run.
 
-A `403` without a JSON error body isn't a quota error either: the network edge blocked the IP address for sending too many requests, before the API could answer.
+A `429` with the code `RATE_LIMITED` isn't a quota either: too many requests came from your IP address, and the network edge refused this one before the API saw it. Wait for the number of seconds in the `Retry-After` header, then retry with backoff.
 
 #### Image build quotas
 
