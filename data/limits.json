@@ -316,6 +316,16 @@
       "verified": true
     },
     {
+      "key": "process_output_kept_max",
+      "group": "sandbox",
+      "label": "Output the sandbox keeps per process stream",
+      "value": 33554432,
+      "unit": "bytes",
+      "on_exceed": "The oldest output is dropped and responses set `outputTruncated`. All process output shares 10% of the sandbox's memory, so the limit is lower when many processes keep a lot of output",
+      "source": "platform config",
+      "verified": true
+    },
+    {
       "key": "upload_body_mk30",
       "group": "requests",
       "label": "Single HTTP request body to a sandbox (`mk3.0`)",
@@ -353,6 +363,26 @@
       "unit": "bytes",
       "on_exceed": "413; send larger input in several writes",
       "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "exec_output_max",
+      "group": "requests",
+      "label": "Output returned per stream by `exec` with `waitForCompletion`, and by `process.logs`",
+      "value": 4194304,
+      "unit": "bytes",
+      "on_exceed": "Only the end of the stream is returned, after a `[... truncated, see the process log file for the full output ...]` line, with `outputTruncated` set to `true` and `outputLimitBytes`; stream the logs to read all of it",
+      "source": "platform config; /Sandboxes/Processes",
+      "verified": true
+    },
+    {
+      "key": "process_get_output_max",
+      "group": "requests",
+      "label": "Output returned per stream by `process.get` and `process.list`",
+      "value": 65536,
+      "unit": "bytes",
+      "on_exceed": "Only the end of the stream is returned, with `outputTruncated` set to `true` and `outputLimitBytes`; use `process.logs` for more",
+      "source": "platform config; /Sandboxes/Processes",
       "verified": true
     },
     {
