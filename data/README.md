@@ -16,7 +16,8 @@ Never edit `snippets/limits/*.mdx` or `pricing.mdx` by hand: the next run overwr
 - `source`: where the value comes from. Use a public docs path (`/Sandboxes/Filesystem`), a public blaxel.ai page (`https://blaxel.ai/pricing`), or `platform config` for a value read from the platform's configuration. Several sources are separated with `;`. Don't cite private repositories, tickets or chats: the check rejects them.
 - `verified`: `true` when the value was confirmed against the platform's configuration or behavior, `false` when it is only taken from existing docs and still needs confirmation by the owning team.
 - `tiers.quotas[].values`: one value per tier, from tier 0 up. `null` means the feature is not available on that tier, and is shown with `null_label`.
-- `limits[].group`: `requests`, `rate` or `sandbox`, which decides the table the limit appears in. `display` overrides the formatted value.
+- `limits[].group`: `requests`, `rate`, `sandbox` or `builds`, which decides the table the limit appears in. `display` overrides the formatted value.
+- Some tier table columns are computed rather than stored: the 30-day top-up of each tier, and the default builds at once, from the build quotas and the memory of a default build (`build_default_memory`) with the vCPUs of that memory size (`cpu`).
 - `unit`: `count`, `bytes`, `MB` (shown in GB and TB of 1,024), `seconds`, `minutes`, `days` or `usd`.
 - `snippets` and `scan`: which limits go in the upload table, and which limits the consistency scan checks pages against.
 

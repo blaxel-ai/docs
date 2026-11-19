@@ -1,6 +1,6 @@
 {
   "about": "Single source for the limits, quotas, regions and prices in these docs. Edit this file, then run `npm run limits:generate`. Every entry needs a `source` (a public docs page, a public blaxel.ai page, or \"platform config\") and `verified`. See data/README.md.",
-  "reviewed": "2026-11-02",
+  "reviewed": "2026-11-19",
   "tiers": {
     "source": "platform config; /Security/Quotas; https://blaxel.ai/pricing",
     "verified": true,
@@ -178,9 +178,41 @@
       },
       {
         "key": "ephemeral_volume_max_size",
-        "label": "Maximum ephemeral volume size",
+        "label": "Maximum size per ephemeral volume",
         "unit": "MB",
         "values": [10240, 20480, 40960, 40960, 81920, 81920, 163840, 327680, 655360, 1310720],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "ephemeral_volume_total_max_size",
+        "label": "Total ephemeral volume size",
+        "unit": "MB",
+        "values": [20480, 40960, 81920, 163840, 327680, 655360, 1310720, 2621440, 5242880, 10485760],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "build_memory_total",
+        "label": "Build memory",
+        "unit": "MB",
+        "values": [81920, 81920, 163840, 163840, 327680, 327680, 655360, 655360, 655360, 655360],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "build_cpu_total",
+        "label": "Build vCPUs",
+        "unit": "count",
+        "values": [40, 40, 80, 80, 160, 160, 320, 320, 320, 320],
+        "source": "platform config",
+        "verified": true
+      },
+      {
+        "key": "build_disk_total",
+        "label": "Build scratch disk",
+        "unit": "MB",
+        "values": [655360, 655360, 1310720, 1310720, 2621440, 2621440, 5242880, 5242880, 5242880, 5242880],
         "source": "platform config",
         "verified": true
       },
@@ -368,10 +400,104 @@
     {
       "key": "sandbox_create_concurrency",
       "group": "rate",
-      "label": "Sandbox creations in progress at once, per workspace",
+      "label": "Sandbox creations in progress at once, per workspace and region",
       "value": 100,
       "unit": "count",
-      "on_exceed": "429 `WORKSPACE_RATE_LIMIT_EXCEEDED`; retry when earlier creations finish",
+      "on_exceed": "429 `WORKSPACE_RATE_LIMIT_EXCEEDED`. Nothing was created: send the same request again once earlier creations finish. Can be raised for a workspace on request",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "api_requests_per_ip",
+      "group": "rate",
+      "label": "Requests to `api.blaxel.ai` with an API key or token, from one IP address",
+      "value": 20000,
+      "unit": "count",
+      "display": "20,000 per minute",
+      "on_exceed": "429 `RATE_LIMITED` from the network edge, with a `Retry-After` header: wait that many seconds, then retry with backoff. Addresses on public IP reputation lists get a lower limit",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "anonymous_requests_per_ip",
+      "group": "rate",
+      "label": "Requests to `api.blaxel.ai` without a credential (sign-in, browser), from one IP address",
+      "value": 6000,
+      "unit": "count",
+      "display": "6,000 per minute",
+      "on_exceed": "429 `RATE_LIMITED` from the network edge, with a `Retry-After` header",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_default_memory",
+      "group": "builds",
+      "label": "Memory of a build",
+      "value": 8192,
+      "unit": "MB",
+      "on_exceed": "The default. A build reserves the memory set in its project's build configuration, and the vCPUs that come with that memory, against the build quotas",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_scratch_disk_max",
+      "group": "builds",
+      "label": "Scratch disk of a build, at most",
+      "value": 131072,
+      "unit": "MB",
+      "on_exceed": "A build runs in memory and reserves no scratch disk, unless its project's build configuration asks for one or its build context doesn't fit in memory",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_queue_wait_max",
+      "group": "builds",
+      "label": "Wait in the build queue, at most",
+      "value": 82800,
+      "unit": "seconds",
+      "on_exceed": "The build fails; start it again once earlier builds finish",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_queue_backlog",
+      "group": "builds",
+      "label": "What queued builds reserve, at most",
+      "value": 5,
+      "unit": "count",
+      "display": "5 times the build quotas",
+      "on_exceed": "429 when uploading a new build context, with a message that starts with \"Too many image builds are waiting\". It clears as builds finish: retry later",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_concurrency_legacy",
+      "group": "builds",
+      "label": "Image builds running at once per workspace, older build path",
+      "value": 10,
+      "unit": "count",
+      "on_exceed": "No error: extra builds wait and show as building. Can be raised for a workspace on request",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_concurrency_legacy_platform",
+      "group": "builds",
+      "label": "Image builds running at once across the platform, older build path",
+      "value": 100,
+      "unit": "count",
+      "on_exceed": "No error: extra builds wait and show as building",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "build_start_wait_legacy",
+      "group": "builds",
+      "label": "Wait to start, older build path",
+      "value": 2760,
+      "unit": "seconds",
+      "display": "About 46 minutes",
+      "on_exceed": "The build fails; start it again once earlier builds finish",
       "source": "platform config",
       "verified": true
     }

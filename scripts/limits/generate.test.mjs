@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { scanRules } from './generate.mjs';
+import { defaultBuildsAtOnce, scanRules } from './generate.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../../data/limits.json', import.meta.url), 'utf8'));
 const rule = (id) => scanRules(data).find((r) => r.id === id);
@@ -13,6 +13,19 @@ test('ttl-minimum accepts each minimum stated for its own policy', () => {
   assert.deepEqual(check('The minimum value for ttl and ttl-max-age is 5m, and for ttl-idle it is 60s.'), []);
   assert.deepEqual(check('On every tier, ttl and ttl-max-age must be at least 5m, and ttl-idle at least 1m.'), []);
   assert.deepEqual(check('Shorter values are rejected, such as ttl 1m is too short: the minimum is 5m.'), []);
+});
+
+test('default builds at once take the tightest of build memory and build vCPUs', () => {
+  const tier = structuredClone(data);
+  const set = (key, value) => (tier.tiers.quotas.find((q) => q.key === key).values[0] = value);
+  // A default build: 8 GB of memory, so 4 vCPUs.
+  set('build_memory_total', 81920);
+  set('build_cpu_total', 40);
+  assert.equal(defaultBuildsAtOnce(tier, 0), 10);
+  set('build_memory_total', 163840);
+  assert.equal(defaultBuildsAtOnce(tier, 0), 10, 'vCPUs bind when memory is doubled alone');
+  set('build_cpu_total', 100);
+  assert.equal(defaultBuildsAtOnce(tier, 0), 20, 'memory binds when vCPUs are raised further');
 });
 
 test('ttl-minimum rejects minimums swapped between policies', () => {

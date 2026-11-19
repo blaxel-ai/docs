@@ -171,28 +171,51 @@ const TIER_TABLES = {
   'tier-sandboxes': ['top_up', 'sandboxes', 'memory_per_instance', 'sandbox_max_ttl', 'terminated_retention'],
   'tier-sandbox-features': ['previews', 'snapshots_total', 'snapshots_per_sandbox', 'schedules_per_sandbox'],
   'tier-storage': ['volumes', 'volume_max_size', 'volume_total_size', 'volume_templates', 'image_storage'],
-  'tier-workloads': ['agents', 'mcp_servers', 'jobs', 'job_concurrent_tasks', 'job_memory_total', 'runtime_timeout', 'ephemeral_volume_max_size'],
+  'tier-ephemeral-volumes': ['ephemeral_volume_max_size', 'ephemeral_volume_total_max_size'],
+  'tier-builds': ['build_memory_total', 'build_cpu_total', 'build_disk_total', 'default_builds'],
+  'tier-workloads': ['agents', 'mcp_servers', 'jobs', 'job_concurrent_tasks', 'job_memory_total', 'runtime_timeout'],
   'tier-account': ['workspaces', 'workspace_users', 'custom_domains', 'metrics_retention'],
+};
+
+// Tier table columns computed from the data rather than stored in tiers.quotas.
+const DERIVED_COLUMNS = {
+  top_up: { label: '30-day top-ups', value: (data, level) => level.requirement },
+  default_builds: { label: 'Default builds at once', value: (data, level, i) => formatValue(defaultBuildsAtOnce(data, i), 'count') },
 };
 
 const LIMIT_GROUPS = {
   requests: 'Request and payload sizes',
   rate: 'Rate and concurrency',
   sandbox: 'Sandbox settings',
+  builds: 'Image builds',
 };
+
+// A build gets the vCPUs of its memory size, like a sandbox (see cpuTable).
+function vcpusFor(data, memoryMb) {
+  const rows = data.cpu.rows;
+  return (rows.find((r) => memoryMb <= r.memory_mb) ?? rows.at(-1)).vcpus;
+}
+
+// How many builds of the default size a tier's build quotas hold at once: the
+// tightest of memory and vCPUs. A default build reserves no scratch disk.
+export function defaultBuildsAtOnce(data, tier) {
+  const quota = (key) => data.tiers.quotas.find((q) => q.key === key).values[tier];
+  const memory = byKeys(data, ['build_default_memory'])[0].value;
+  return Math.floor(Math.min(quota('build_memory_total') / memory, quota('build_cpu_total') / vcpusFor(data, memory)));
+}
 
 function tierTable(data, columns) {
   const quotas = new Map(data.tiers.quotas.map((q) => [q.key, q]));
   const headers = ['Tier'];
   for (const key of columns) {
-    if (key === 'top_up') headers.push('30-day top-ups');
+    if (DERIVED_COLUMNS[key]) headers.push(DERIVED_COLUMNS[key].label);
     else if (!quotas.has(key)) throw new Error(`tier table column "${key}" is not in tiers.quotas`);
     else headers.push(quotas.get(key).label);
   }
   const rows = data.tiers.levels.map((level, i) => [
     String(level.tier),
     ...columns.map((key) => {
-      if (key === 'top_up') return level.requirement;
+      if (DERIVED_COLUMNS[key]) return DERIVED_COLUMNS[key].value(data, level, i);
       const q = quotas.get(key);
       return formatValue(q.values[i], q.unit, q.null_label);
     }),
@@ -258,6 +281,7 @@ function buildSnippets(data) {
   out['request-limits.mdx'] = snippet(limitsTable(byGroup(data, 'requests')));
   out['upload-limits.mdx'] = snippet(limitsTable(byKeys(data, data.snippets.upload_limits)));
   out['rate-limits.mdx'] = snippet(limitsTable(byGroup(data, 'rate')));
+  out['build-limits.mdx'] = snippet(limitsTable(byGroup(data, 'builds')));
   out['sandbox-limits.mdx'] = snippet(limitsTable(byGroup(data, 'sandbox')));
   out['regions.mdx'] = snippet(regionsTable(data));
   out['pricing.mdx'] = snippet(pricingTable(data));
@@ -300,6 +324,20 @@ ${tierTable(data, TIER_TABLES['tier-sandbox-features'])}
 ### Volumes and images
 
 ${tierTable(data, TIER_TABLES['tier-storage'])}
+
+### Ephemeral volumes
+
+The total counts the ephemeral volumes of every sandbox in your account that isn't terminated, including sandboxes in standby.
+
+${tierTable(data, TIER_TABLES['tier-ephemeral-volumes'])}
+
+### Image builds
+
+On the build queue, your account's builds together, queued and running, reserve at most these quotas. A build gets the vCPUs of its memory size, as in [sandbox resources](#sandbox-resources).
+
+${tierTable(data, TIER_TABLES['tier-builds'])}
+
+${limitsTable(byGroup(data, 'builds'))}
 
 ### Agents, MCP servers and jobs
 
@@ -408,7 +446,7 @@ export function scanRules(data) {
       check: (s) => sizes(s).filter((x) => !allowed.has(x.bytes)).map((x) => `${x.text} is not ${what} in data/limits.json`),
     };
   };
-  const volumeQuotas = ['volume_max_size', 'volume_total_size', 'ephemeral_volume_max_size'];
+  const volumeQuotas = ['volume_max_size', 'volume_total_size', 'ephemeral_volume_max_size', 'ephemeral_volume_total_max_size'];
   return [
     sizeRule('upload-limit', data.scan.upload_413, [], `a 413 limit (${data.scan.upload_413.join(', ')})`, (s) => /\b413\b/.test(s)),
     sizeRule('multipart-chunk', data.scan.multipart, [], `the multipart part size (${data.scan.multipart.join(', ')})`, (s) => /multipart/i.test(s) && /\b(split|chunk|part)s?\b/i.test(s)),
