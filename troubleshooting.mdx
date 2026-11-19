@@ -182,7 +182,7 @@ To resolve this error, first confirm the workspace name in your request matches 
 
 Personal API keys and OAuth logins grant access to every workspace you belong to, while [service account](/Security/Service-accounts) API keys and client-credentials tokens are scoped to a single workspace. Ensure that you're using credentials that are actually valid for the workspace you're targeting.
 
-A `403` without a JSON error body (`403 Request blocked`, an HTML page or an empty body) has a different cause: the network edge refused the request before the API could check the credentials, for example because your IP address is on a public IP reputation list. Sending too many requests gets a `429` with the code `RATE_LIMITED` instead: slow down, for example by polling less often, and retry after the number of seconds in the `Retry-After` header. See [request rate limits](/limits#request-rate-limits).
+A `403` without a JSON error body (`403 Request blocked`, an HTML page or an empty body) has a different cause: the network edge's abuse protection refused the request before the API could check the credentials. Sending too many requests gets a `429` with the code `RATE_LIMITED` instead: slow down, for example by polling less often, and retry after the number of seconds in the `Retry-After` header. See [rate limits](/Security/Quotas#rate-limits).
 
 ## Sandbox commands return a `404 WORKSPACE_NOT_FOUND` error
 
