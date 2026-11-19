@@ -1113,7 +1113,7 @@ After uploading, poll the sandbox status endpoint to track the build and deploym
 Make a GET request to `https://api.blaxel.ai/v0/sandboxes/<SANDBOX-NAME>`, where SANDBOX-NAME is the `metadata.name` specified in the initial POST request.
 
 ```bash
-watch -n 1 'curl -s -X GET https://api.blaxel.ai/v0/sandboxes/my-sandbox -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE" | jq -r ".status"'
+watch -n 5 'curl -s -X GET https://api.blaxel.ai/v0/sandboxes/my-sandbox -H "Authorization: Bearer $BL_API_KEY" -H "X-Blaxel-Workspace: $BL_WORKSPACE" | jq -r ".status"'
 ```
 
 The `status` field of the response will progress through these values:
@@ -1128,7 +1128,7 @@ The `status` field of the response will progress through these values:
 
 See [sandbox deployment statuses](/Sandboxes/Overview#sandbox-deployment-statuses) for the full list of statuses a sandbox can report outside of this initial deployment flow.
 
-Continue polling every 3-5 seconds until the status reaches `DEPLOYED` or `FAILED`.
+Poll with a growing delay, not a fixed interval: wait 2 seconds before the second check, then double the wait after each check, up to 30 seconds, and stop when the status reaches `DEPLOYED` or `FAILED`. Every check is a request to the API, and all requests from one IP address share the [request rate limit](/Security/Quotas#rate-limits) of 20,000 per minute, so many builds polled at a short fixed interval from one machine can reach it. If a check gets a `429` error, wait the number of seconds in its `Retry-After` header before the next one.
 
 A first sandbox from that image is automatically created on Blaxel once deployment succeeds. You can safely delete the sandbox and keep using the image for new sandboxes.
 
@@ -1266,6 +1266,12 @@ echo -e "${BLUE}[3/4] Monitoring deployment status...${NC}"
 MAX_WAIT=900  # 15 minutes
 START_TIME=$(date +%s)
 LAST_STATUS=""
+DELAY=2  # seconds; doubles after each check, up to 30
+
+wait_and_back_off() {
+  sleep "$DELAY"
+  DELAY=$(( DELAY * 2 > 30 ? 30 : DELAY * 2 ))
+}
 
 while true; do
   # Check timeout
@@ -1285,7 +1291,7 @@ while true; do
 
   if [ -z "$STATUS" ]; then
     echo -e "${YELLOW}Warning: Could not get status, retrying...${NC}"
-    sleep 3
+    wait_and_back_off
     continue
   fi
 
@@ -1336,7 +1342,7 @@ while true; do
   fi
 
   # Wait before next poll
-  sleep 3
+  wait_and_back_off
 done
 ```
 
@@ -1354,6 +1360,11 @@ async function poll() {
   const maxWait = 900;
   const startTime = Date.now();
   let lastStatus: string | null = null;
+  let delayMs = 2000; // doubles after each check, up to 30 s
+  const waitAndBackOff = async () => {
+    await new Promise((r) => setTimeout(r, delayMs));
+    delayMs = Math.min(delayMs * 2, 30000);
+  };
 
   while (true) {
     if ((Date.now() - startTime) / 1000 > maxWait) {
@@ -1367,7 +1378,7 @@ async function poll() {
 
       if (!status) {
         console.log("Warning: Could not get status, retrying...");
-        await new Promise((r) => setTimeout(r, 3000));
+        await waitAndBackOff();
         continue;
       }
 
@@ -1399,7 +1410,7 @@ async function poll() {
       console.log("Warning: Could not get status, retrying...");
     }
 
-    await new Promise((r) => setTimeout(r, 3000));
+    await waitAndBackOff();
   }
 }
 
@@ -1568,6 +1579,7 @@ try:
         max_wait = 900
         start_time = time.time()
         last_status = None
+        delay = 2  # seconds; doubles after each check, up to 30
 
         while True:
             if time.time() - start_time > max_wait:
@@ -1579,12 +1591,14 @@ try:
                 status = sandbox.status
             except Exception:
                 print("Warning: Could not get status, retrying...")
-                await asyncio.sleep(3)
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, 30)
                 continue
 
             if status is None:
                 print("Warning: Could not get status, retrying...")
-                await asyncio.sleep(3)
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, 30)
                 continue
 
             if status != last_status:
@@ -1602,7 +1616,8 @@ try:
                 print(f"\nUnexpected status: {status}")
                 sys.exit(1)
 
-            await asyncio.sleep(3)
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 30)
 
     asyncio.run(poll())
 
