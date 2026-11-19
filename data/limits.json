@@ -1,6 +1,6 @@
 {
   "about": "Single source for the limits, quotas, regions and prices in these docs. Edit this file, then run `npm run limits:generate`. Every entry needs a `source` (a public docs page, a public blaxel.ai page, or \"platform config\") and `verified`. See data/README.md.",
-  "reviewed": "2026-11-18",
+  "reviewed": "2026-11-19",
   "tiers": {
     "source": "platform config; /Security/Quotas; https://blaxel.ai/pricing",
     "verified": true,
@@ -410,11 +410,22 @@
     {
       "key": "api_requests_per_ip",
       "group": "rate",
-      "label": "Requests to `api.blaxel.ai` from one IP address",
+      "label": "Requests to `api.blaxel.ai` with an API key or token, from one IP address",
+      "value": 20000,
+      "unit": "count",
+      "display": "20,000 per minute",
+      "on_exceed": "429 `RATE_LIMITED` from the network edge, with a `Retry-After` header: wait that many seconds, then retry with backoff. Addresses on public IP reputation lists get a lower limit",
+      "source": "platform config",
+      "verified": true
+    },
+    {
+      "key": "anonymous_requests_per_ip",
+      "group": "rate",
+      "label": "Requests to `api.blaxel.ai` without a credential (sign-in, browser), from one IP address",
       "value": 6000,
       "unit": "count",
-      "display": "6,000 per 60 seconds",
-      "on_exceed": "403 without a JSON error body (`403 Request blocked` or an HTML page), from the network edge rather than the API. Slow down and retry after a minute",
+      "display": "6,000 per minute",
+      "on_exceed": "429 `RATE_LIMITED` from the network edge, with a `Retry-After` header",
       "source": "platform config",
       "verified": true
     },

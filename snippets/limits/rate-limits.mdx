@@ -3,4 +3,5 @@
 | Limit | Value | When exceeded |
 | --- | --- | --- |
 | Sandbox creations in progress at once, per workspace and region | 100 | 429 `WORKSPACE_RATE_LIMIT_EXCEEDED`. Nothing was created: send the same request again once earlier creations finish. Can be raised for a workspace on request |
-| Requests to `api.blaxel.ai` from one IP address | 6,000 per 60 seconds | 403 without a JSON error body (`403 Request blocked` or an HTML page), from the network edge rather than the API. Slow down and retry after a minute |
+| Requests to `api.blaxel.ai` with an API key or token, from one IP address | 20,000 per minute | 429 `RATE_LIMITED` from the network edge, with a `Retry-After` header: wait that many seconds, then retry with backoff. Addresses on public IP reputation lists get a lower limit |
+| Requests to `api.blaxel.ai` without a credential (sign-in, browser), from one IP address | 6,000 per minute | 429 `RATE_LIMITED` from the network edge, with a `Retry-After` header |
