@@ -76,7 +76,7 @@ Deleting and recreating will cause the current state of the sandbox to be lost.
 
 ## Sandbox creation returns `202 Accepted` with the sandbox in `DEPLOYING`
 
-Sandbox creation waits up to 20 seconds for the sandbox to be ready. If it takes longer, the API answers `202 Accepted` instead of `200 OK`. The body is the sandbox with its `status` set to `DEPLOYING`. This does not mean sandbox creation failed. The deployment continues in the background.
+Sandbox creation (`POST /v0/sandboxes`) waits up to 45 seconds for the sandbox to be ready. If it takes longer, the API answers `202 Accepted` instead of `200 OK`. The body is the sandbox with its `status` set to `DEPLOYING`. This does not mean sandbox creation failed. The deployment continues in the background.
 
 To get the ready sandbox, get it by name until its `status` is `DEPLOYED` or `FAILED`, using the polling pattern shown in the [custom image deployment guide](/Sandboxes/Templates#4-monitor-deployment-status).
 
