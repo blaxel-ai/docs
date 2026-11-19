@@ -116,13 +116,42 @@ This section provides details on quotas for:
 
 ### Read quotas through the API
 
-You can read your account's quotas and current usage through the API, for example to size a large run or alert before it reaches a quota. This endpoint takes a user login (`bl login`) or a personal API key. A service account API key gets a `400` error, and partner platform tokens can't read it either. The older build path's limit on builds at once and the sandbox creation rate limits aren't quotas, so this endpoint doesn't list them; see [rate limits](#rate-limits).
-
-1. Get your account ID: `GET https://api.blaxel.ai/v0/workspaces/{workspace}` returns it in `accountId`.
-2. Get the quotas: `GET https://api.blaxel.ai/v0/quotas/account/{accountId}`.
+You can read your quotas, how much of each is in use and the sandbox creation limit through the API, for example to size a large run or to slow down before it reaches a quota. Any credential of the workspace can read them, service account API keys included: `GET https://api.blaxel.ai/v0/workspaces/{workspace}/quotas`.
 
 ```bash
-# A user login (`bl login`) or a personal API key; service account keys get a 400
+# A user login (`bl login`), a personal API key or a service account API key
+TOKEN=$(bl token)
+WORKSPACE=my-workspace
+curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $WORKSPACE" \
+  "https://api.blaxel.ai/v0/workspaces/$WORKSPACE/quotas"
+```
+
+```json
+{
+  "workspace": "my-workspace",
+  "account": "<accountId>",
+  "quotas": [
+    {"resourceType": "ephemeral_volume_total_max_size", "limit": 163840, "used": 40960},
+    {"resourceType": "memory", "limit": 8192},
+    {"resourceType": "sandboxes", "limit": 800, "used": 312}
+  ],
+  "rateLimits": [
+    {"name": "sandbox_creation_concurrency", "limit": 100}
+  ]
+}
+```
+
+- `quotas`: one entry per quota of your account, sorted by `resourceType`. Quotas apply to the whole account, so `limit` and `used` cover all of its workspaces.
+  - `resourceType`: the quota, such as `sandboxes`, `memory`, `ephemeral_volume_max_size`, `ephemeral_volume_total_max_size`, `image_total_max_size`, `volumes` or `volume_max_size`. Sizes are in MB.
+  - `limit`: the quota that applies to your account, including any increase.
+  - `used`: how much is in use now, in the unit of `limit`. It's left out for quotas with nothing to add up, such as per-sandbox maximums (`memory`, `ephemeral_volume_max_size`) and durations (`sandbox_ttl`).
+- `rateLimits`: limits on this workspace alone. `sandbox_creation_concurrency` is how many sandbox creations can be in progress at once in the workspace, counted separately in each region, including a raised limit. The number in progress isn't returned. See [rate limits](#rate-limits).
+
+#### Account quotas with a user login
+
+`GET https://api.blaxel.ai/v0/quotas/account/{accountId}` also lists your account's quotas. It takes a user login or a personal API key: a service account API key gets a `400` error, and partner platform tokens can't read it either. It returns `used: 0` for quotas it doesn't count, including `ephemeral_volume_total_max_size`, so read the workspace endpoint above for that one.
+
+```bash
 TOKEN=$(bl token)
 WORKSPACE=my-workspace
 ACCOUNT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $WORKSPACE" \
@@ -130,19 +159,6 @@ ACCOUNT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $
 curl -s -H "Authorization: Bearer $TOKEN" -H "X-Blaxel-Workspace: $WORKSPACE" \
   "https://api.blaxel.ai/v0/quotas/account/$ACCOUNT_ID"
 ```
-
-The response lists one entry per quota:
-
-```json
-[
-  {"subjectType": "account", "subjectId": "<accountId>", "resourceType": "sandboxes", "value": 800, "used": 312},
-  {"subjectType": "account", "subjectId": "<accountId>", "resourceType": "ephemeral_volume_total_max_size", "value": 163840, "used": 40960}
-]
-```
-
-- `resourceType`: the quota, such as `sandboxes`, `memory`, `ephemeral_volume_max_size`, `ephemeral_volume_total_max_size`, `image_total_max_size`, `volumes` or `volume_max_size`. Sizes are in MB.
-- `value`: the quota that applies to your account, including any increase.
-- `used`: current usage for quotas that count or add up resources. It stays `0` for per-resource maximums such as `memory`.
 
 Snapshots count against two quotas, both numbers of snapshots: `sandbox_snapshots` and `sandbox_snapshots_per_sandbox`, the **Snapshots** and **Snapshots per sandbox** columns of the [default quotas](#default-quotas-of-each-tier).
 
