@@ -3,7 +3,11 @@ title: "Usage and quotas"
 description: "Monitor account usage in the Blaxel Console, view current quotas for sandboxes, agents, jobs, and other resources, and request quota increases."
 ---
 
+import BuildLimits from '/snippets/limits/build-limits.mdx';
+import RateLimits from '/snippets/limits/rate-limits.mdx';
 import TierAccount from '/snippets/limits/tier-account.mdx';
+import TierBuilds from '/snippets/limits/tier-builds.mdx';
+import TierEphemeralVolumes from '/snippets/limits/tier-ephemeral-volumes.mdx';
 import TierSandboxFeatures from '/snippets/limits/tier-sandbox-features.mdx';
 import TierSandboxes from '/snippets/limits/tier-sandboxes.mdx';
 import TierStorage from '/snippets/limits/tier-storage.mdx';
@@ -41,54 +45,6 @@ Because tier eligibility relies on a rolling 30-day window, your tier will autom
 
 To prevent service disruptions and maintain your quotas without manual intervention, you can configure **Auto top-up** in the Billing section of your Console.
 
-#### Ephemeral volume quotas by tier
-
-Your account can have higher quotas than its tier after a quota increase.
-
-| Tier | Maximum size per ephemeral volume | Total ephemeral volume size |
-| --- | --- | --- |
-| 0 | 10 GB | 20 GB |
-| 1 | 20 GB | 40 GB |
-| 2 | 40 GB | 80 GB |
-| 3 | 40 GB | 160 GB |
-| 4 | 80 GB | 320 GB |
-| 5 | 80 GB | 640 GB |
-| 6 | 160 GB | 1.25 TB |
-| 7 | 320 GB | 2.5 TB |
-| 8 | 640 GB | 5 TB |
-| 9 | 1.25 TB | 10 TB |
-
-The total ephemeral volume size counts the ephemeral volumes of every sandbox in your account that isn't terminated, including sandboxes in standby.
-
-#### Rate limits
-
-These limits don't depend on your tier.
-
-| Limit | Value | When exceeded |
-| --- | --- | --- |
-| Sandbox creations in progress at once, per workspace and region | 100 | 429 `WORKSPACE_RATE_LIMIT_EXCEEDED` with `Retry-After: 1` and `x-should-retry: true`; resend the same request after that second. Can be raised for a workspace on request |
-| Image builds running at once, per workspace (older build path) | 10 (builds also share a platform-wide limit of 100) | No error: extra builds wait in a queue and show as building. A build that hasn't started after about 46 minutes fails. Can be raised for a workspace on request |
-| Requests to `api.blaxel.ai` from one IP address | 6,000 per 60 seconds | A 403 without a JSON error body (`403 Request blocked`, or an HTML page), from the network edge rather than the API; slow down and retry after a minute |
-
-#### Image build quotas
-
-Blaxel is moving workspaces to a build queue. On the build queue, image builds aren't limited by a count. Your account's builds together, queued and running, may reserve up to its build quotas:
-
-| Tier | Memory | vCPUs | Scratch disk | Default builds at once |
-| --- | --- | --- | --- | --- |
-| 0, 1 | 80 GB | 40 | 640 GB | 10 |
-| 2, 3 | 160 GB | 80 | 1.25 TB | 20 |
-| 4, 5 | 320 GB | 160 | 2.5 TB | 40 |
-| 6 and up | 640 GB | 320 | 5 TB | 80 |
-
-A default build reserves 8 GB of memory and 4 vCPUs, plus scratch disk (up to 64 GB) when its context needs it. Your account can have higher quotas than its tier after a quota increase. Builds also share a per-region limit.
-
-- A build that doesn't fit waits in the queue, with no error, until earlier builds finish. A build still waiting after 23 hours fails.
-- A build that needs more than your account's build quota on its own fails at once. Lower its sizes in the project's build configuration.
-- When your queued builds reserve more than five times your build quotas, uploading a new build context (an SDK image build, or `bl deploy`) fails with HTTP 429 and a message that starts with "Too many image builds are waiting". This clears as builds finish: retry later, it is not a quota you have to raise.
-
-Workspaces not yet on the build queue use the older limit of 10 builds at once per workspace, in the [rate limits](#rate-limits) above.
-
 #### Default quotas of each tier
 
 The tables below list the default quotas of each tier. Quotas apply to your whole account, across all its workspaces. A [quota increase](#manually-request-a-quota-increase) can raise your quotas above these defaults. See [pricing and limits](/pricing) for the other platform limits.
@@ -103,6 +59,11 @@ The tables below list the default quotas of each tier. Quotas apply to your whol
   <Accordion title="Volumes and images">
     <TierStorage />
   </Accordion>
+  <Accordion title="Ephemeral volumes">
+    The total ephemeral volume size counts the ephemeral volumes of every sandbox in your account that isn't terminated, including sandboxes in standby.
+
+    <TierEphemeralVolumes />
+  </Accordion>
   <Accordion title="Agents, MCP servers and jobs">
     <TierWorkloads />
   </Accordion>
@@ -110,6 +71,33 @@ The tables below list the default quotas of each tier. Quotas apply to your whol
     <TierAccount />
   </Accordion>
 </AccordionGroup>
+
+#### Rate limits
+
+These limits don't depend on your tier.
+
+<RateLimits />
+
+On sandbox creation, a rate limit and a quota both answer HTTP `429`. Read the `code` field of the error to tell them apart:
+
+- `WORKSPACE_RATE_LIMIT_EXCEEDED` is a rate limit. Nothing was created, and the limit clears as earlier creations finish: send the same request again after a short wait.
+- `QUOTA_EXCEEDED` is a quota. Sending the same request again returns the same error until you delete resources or your quota is raised. Keep the sandboxes you run at once under your quotas instead, and [read them through the API](#read-quotas-through-the-api) before a large run.
+
+A `403` without a JSON error body isn't a quota error either: the network edge blocked the IP address for sending too many requests, before the API could answer.
+
+#### Image build quotas
+
+Blaxel is moving workspaces to a build queue. On the build queue, image builds aren't limited by a count. Your account's builds together, queued and running, may reserve up to its build quotas. A build gets the vCPUs of its memory size, the same as a [sandbox](/pricing#sandbox-resources), and the default build size fits the number of builds shown in the last column.
+
+<TierBuilds />
+
+<BuildLimits />
+
+- A build that doesn't fit waits in the queue, with no error, until earlier builds finish.
+- A build that needs more than your account's build quota on its own fails at once. Lower its sizes in the project's build configuration.
+- When your queued builds already reserve more than the queue allows, uploading a new build context (an SDK image build, or `bl deploy`) fails with HTTP `429`. This clears as builds finish: retry later. It isn't a quota you have to raise.
+
+Workspaces not yet on the build queue use the older build path's limit on builds running at once instead, in the last rows of the table above.
 
 ### Quota usage
 
@@ -156,32 +144,7 @@ The response lists one entry per quota:
 - `value`: the quota that applies to your account, including any increase.
 - `used`: current usage for quotas that count or add up resources. It stays `0` for per-resource maximums such as `memory`.
 
-Snapshots count against two quotas, both numbers of snapshots: `sandbox_snapshots`, twice your sandbox quota, and `sandbox_snapshots_per_sandbox`: 5 at tier 0, 10 at tier 1 and 20 from tier 2.
-
-### Sandbox creation errors
-
-When sandbox creation fails, the API returns a JSON body with a machine-readable `code`:
-
-```json
-{"code": "QUOTA_EXCEEDED", "message": "You have reached the maximum memory (32768) for your account. Requested: 65536", "status_code": 429}
-```
-
-Read `code`, not only the HTTP status: a quota error and a rate limit both return `429`, but only the rate limit goes away if you retry. The `x-should-retry` response header and the body field `retryable` say the same thing for clients that don't read codes: `WORKSPACE_RATE_LIMIT_EXCEEDED` has `x-should-retry: true`, `Retry-After: 1` and `"retryable": true`, and `QUOTA_EXCEEDED` with `429` has `x-should-retry: false` and `"retryable": false`. The Go SDK and the CLI follow these headers: they resend a rate limit after `Retry-After` and don't resend a quota error.
-
-| Code | HTTP | Retry | Meaning |
-| --- | --- | --- | --- |
-| `QUOTA_EXCEEDED` | 429 | No | The request would take your account over a quota. For a sandbox: its number of sandboxes, the memory or vCPUs of one sandbox, the timeout, the total ephemeral volume size or the total image storage; on `PUT /sandboxes/{name}`, also one ephemeral volume over the maximum size per ephemeral volume. Agents, functions, jobs, volumes, snapshots and the other resources return it for their own quotas too, including one job ephemeral volume over the per-volume maximum. Retrying returns the same error until you delete resources or your quota rises; on sandbox creation the response also has `x-should-retry: false`. Quotas on usage (number of sandboxes, total ephemeral volume size) also clear as your sandboxes end. Rather than retrying, keep the sandboxes you run at once under the quota: read it with [`GET /v0/quotas/account/{accountId}`](#quota-usage). |
-| `QUOTA_EXCEEDED` | 400 | No | Sandbox create or fork only: one ephemeral volume is larger than the maximum size per ephemeral volume of your tier. Request a smaller volume. `PUT /sandboxes/{name}` and jobs return `429` for the same case. |
-| `WORKSPACE_RATE_LIMIT_EXCEEDED` | 429 | Yes | Too many sandbox creations are in progress at once in the workspace and region (see [rate limits](#rate-limits)). Nothing was created, so the same request is safe to send again: wait for the `Retry-After` header (1 second), then resend it. The response also has `x-should-retry: true`. |
-| `RATE_LIMIT_EXCEEDED` | 429 | Yes | Blaxel is handling too many sandbox creations in the region at the moment. No `Retry-After` header is sent: back off exponentially, starting at a few seconds. |
-| None (`code` is the number `429`) | 429 | No | A quota error from a path that doesn't return `QUOTA_EXCEEDED` yet. It may carry no retry signal; don't retry it. Today it covers an image build or registry image import that found your image storage quota full (the message starts with "Image storage quota reached"), and creating or updating a sandbox with `PUT /sandboxes/{name}` (SDK image builds do this) or unarchiving one when that goes over the number of sandboxes, the memory, the timeout or the total ephemeral volume size. Job quotas keep this numeric code: concurrent tasks, the memory of running executions, and the total ephemeral volume size of a job. |
-| None (`code` is the number `429`), message starts with "Too many image builds are waiting" | 429 | Yes, later | Your account's queued image builds already reserve more than five times its [build quotas](#image-build-quotas). Not a quota error, though the message links the quotas page: retry once some builds finish, with backoff. Newer API versions return the code `BUILD_QUEUE_FULL` with `x-should-retry: false`: the upload may already have been saved, so check before sending it again. |
-| `UNAUTHORIZED`, `UNAUTHORIZED_WORKSPACE` | 403 | No | The credentials are invalid, or they don't give write access to the workspace. The body is JSON. |
-| `TOKEN_REVOKED` | 401 | No | The token was revoked. Get a new one. |
-| `AUTHENTICATION_UNAVAILABLE` | 503 | Yes | Blaxel couldn't check the credentials at the moment, for example while its backend is throttled. Not a credential or permission error: nothing was decided about the credentials, and the same request can succeed. No `Retry-After` header is sent: wait a few seconds, then retry with backoff. |
-| None (no JSON error body) | 403 | Yes, after slowing down | Not a quota. The request was blocked or throttled before the API could answer it, for example by the network edge blocking an IP address that sent too many requests to `api.blaxel.ai` (`403 Request blocked`, an HTML page or an empty body; see [rate limits](#rate-limits)). Quota errors always have a JSON `code`. Reduce the request rate, for example by polling less often, and retry after about 60 seconds. |
-
-See [error codes](/troubleshooting/error-codes) for the errors returned by sandboxes, agents and other workloads once they run.
+Snapshots count against two quotas, both numbers of snapshots: `sandbox_snapshots` and `sandbox_snapshots_per_sandbox`, the **Snapshots** and **Snapshots per sandbox** columns of the [default quotas](#default-quotas-of-each-tier).
 
 ### Increase account quotas
 
