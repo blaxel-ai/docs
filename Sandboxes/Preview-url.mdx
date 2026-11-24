@@ -352,8 +352,38 @@ preview = await sandbox.previews.create_if_not_exists({
 </CodeGroup>
 
 <Warning>
-`createIfNotExists` (`create_if_not_exists` in Python) returns an existing preview unchanged, without this setting. To add the setting to a preview that already exists, send a `PUT` request with the full spec, as shown in [Configure CORS headers on a preview](./CORS#configure-cors-headers-on-a-preview). Changes apply within a few seconds.
+`createIfNotExists` (`create_if_not_exists` in Python) returns an existing preview unchanged, without this setting.
 </Warning>
+
+To add the setting to a preview that already exists, call `update()`. The `spec` you pass replaces the stored one, so start from the current spec. Changes apply within a few seconds.
+
+<CodeGroup>
+
+```typescript TypeScript
+const current = await sandbox.previews.get("app");
+const preview = await sandbox.previews.update({
+    metadata: { name: "app" },
+    spec: {
+        ...current.spec,
+        responseHeaders: {
+            ...current.spec.responseHeaders,
+            "X-Blaxel-Embed-Origins": "https://app.example.com"
+        }
+    }
+});
+```
+
+```python Python
+current = await sandbox.previews.get("app")
+spec = current.spec.to_dict()
+spec["responseHeaders"] = {
+    **spec.get("responseHeaders", {}),
+    "X-Blaxel-Embed-Origins": "https://app.example.com"
+}
+preview = await sandbox.previews.update({"metadata": {"name": "app"}, "spec": spec})
+```
+
+</CodeGroup>
 
 Write each origin as scheme, host and port, without a path or a trailing slash:
 
