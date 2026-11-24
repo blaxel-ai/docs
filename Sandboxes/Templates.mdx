@@ -1685,6 +1685,8 @@ To configure registry credentials, you have three options (listed in priority or
     bl push --image docker.io/myuser/my-sandbox:latest --name my-custom-sandbox --docker-config ~/.docker/config.json
     ```
 
+    Only `auths` entries with an `auth` value are sent. Docker Desktop usually keeps passwords in a credential helper (`credsStore` or `credHelpers` in `~/.docker/config.json`), which leaves no `auth` value to send: use `--registry-cred` instead.
+
 3. Place a `.docker/config.json` in your project directory using the standard Docker config format (you can copy your existing `~/.docker/config.json`). The file will be automatically detected and used by `bl push` or `bl deploy`.
 
     <Warning>Add `.docker/config.json` to your `.gitignore` to avoid committing registry credentials to source control.</Warning>
@@ -1706,6 +1708,24 @@ The following registries are currently supported:
 - Google Artifact Registry
 - Amazon ECR
 - Any private registry which supports Basic auth
+
+### Build from a private base image
+
+A Dockerfile can start `FROM` an image in a private registry. Give `bl push` or `bl deploy` the registry credentials in any of the three ways above: they work the same for a Dockerfile build as for a registry image, and the builder uses them to pull the `FROM` images. This needs Blaxel CLI 0.1.130 or later.
+
+```dockerfile
+FROM ghcr.io/myorg/my-base:1.0
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+```shell
+bl push --name my-custom-sandbox --registry-cred "ghcr.io=myuser:$GHCR_TOKEN"
+```
+
+When a build has credentials, its log names the registries they are for, for example `Pulling base images with the registry credentials for ghcr.io`. A private `FROM` image pulled without credentials fails the build with `401 Unauthorized`.
+
+The builder takes `.docker/config.json` out of the build context before the build starts, so a `COPY . .` never puts your credentials in the image.
 
 ### Use a custom image
 
