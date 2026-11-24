@@ -4,6 +4,12 @@ sidebarTitle: "Troubleshoot common errors"
 description: "Resolve common issues with Blaxel deployments including build failures, runtime errors, connectivity problems, and CLI authentication."
 ---
 
+import CpuPerMemory from '/snippets/limits/cpu-per-memory.mdx';
+import RateLimits from '/snippets/limits/rate-limits.mdx';
+import TierSandboxes from '/snippets/limits/tier-sandboxes.mdx';
+import TierStorage from '/snippets/limits/tier-storage.mdx';
+import UploadLimits from '/snippets/limits/upload-limits.mdx';
+
 This page describes common issues and how to troubleshoot them. If your issue is not covered below, browse the [Blaxel Knowledge Base](/knowledge-base/overview).
 
 <Note>
@@ -78,6 +84,16 @@ To resolve this error, poll the sandbox's `status` field until it reaches `DEPLO
   The TypeScript SDK's `SandboxInstance.create()` handles this automatically by falling back to polling on a 504, so this only needs manual handling when calling the REST API directly or using other language SDKs.
 </Note>
 
+## Sandbox creation returns a `429` error
+
+The `code` field of the error tells you which limit was reached:
+
+- `QUOTA_EXCEEDED`: your account reached a quota of its tier, such as its number of sandboxes. Delete sandboxes you no longer need or [move to a higher tier](/Security/Quotas).
+- `WORKSPACE_RATE_LIMIT_EXCEEDED`: too many sandboxes are being created at the same time in the workspace. Wait for earlier creations to finish, then retry.
+- `RATE_LIMIT_EXCEEDED`: Blaxel is handling too many sandbox creations at the moment. Retry with exponential backoff.
+
+<RateLimits />
+
 ## Sandbox deployment fails with `STARTUP TCP probe failed` or `DEADLINE_EXCEEDED` error
 
 This error occurs when the server running inside the sandbox is not binding to the correct host and port.
@@ -102,11 +118,13 @@ app.run(host=host, port=port)
 ```
 </CodeGroup>
 
-## Sandbox deployment fails with a `QUOTA_EXCEEDED` error or a 400 status code
+## Sandbox deployment fails with a `QUOTA_EXCEEDED` error
 
-This error indicates that the maximum memory limit for the account has been reached in the current tier.
+Sandbox creation returns HTTP 429 with the code `QUOTA_EXCEEDED` when the new sandbox would take the account over a quota of its current tier, such as its total sandbox memory or its number of sandboxes. An ephemeral volume larger than the maximum size returns the same code with HTTP 400.
 
-Blaxel has a tiering system that unlocks higher limits and features on the platform as your tier progresses. To resolve this error, upgrade your account to a higher tier, which unlocks higher RAM limits for sandboxes.
+Blaxel has a tiering system that unlocks higher limits and features on the platform as your tier progresses. To resolve this error, upgrade your account to a higher tier, which unlocks higher RAM limits for sandboxes. The default sandbox quotas of each tier are:
+
+<TierSandboxes />
 
 To see more details on which quota was exceeded or to upgrade to a higher tier, visit the [**Quotas** page of the Blaxel Console](https://app.blaxel.ai/account/quotas).
 
@@ -125,9 +143,8 @@ To resolve this error, you have two options:
 - Increase the available memory allocation for the sandbox, which also increases the available filesystem storage.
 
     <Note>
-    Increasing memory also increases CPU allocation.
-    - 8GB memory = 4 CPU cores
-    - 16GB memory = 6 CPU cores
+    Increasing memory also increases CPU allocation:
+    <CpuPerMemory />
     </Note>
 
 - Add storage using [volumes](/Sandboxes/Volumes) when data should live at a specific mount path or persist independently from the sandbox lifecycle. Adding storage requires deleting and recreating the sandbox first.
@@ -135,6 +152,19 @@ To resolve this error, you have two options:
     <Note>
     Volumes are slower than the in-memory filesystem. Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for our benchmarks.
     </Note>
+
+## File uploads or process input fail with a `413` error
+
+A `413 Request Entity Too Large` response means a single request body was larger than the sandbox accepts. On sandboxes whose `nodeGeneration` is `mk3.0`, a proxy in front of the sandbox returns this 413 with a plain HTML body, not a structured JSON error.
+
+To resolve this error:
+
+- Upload large files in parts with the [multipart upload endpoints](/Sandboxes/Filesystem#write-binary-file), or use the SDK functions `write()`, `writeBinary()` and `write_binary()`, which split large files automatically.
+- Send large process input in several smaller `writeStdin` calls.
+
+The request size limits are:
+
+<UploadLimits />
 
 ## API requests fail with a 403 error even though the credentials are valid
 
@@ -169,6 +199,10 @@ To resolve this error, you can:
 - Enable volumes (if not enabled).
 - Reduce the size of your volumes.
 - Contact us to increase your volume size limits.
+
+The default volume quotas of each tier are:
+
+<TierStorage />
 
 ## Connections to the sandbox terminal fail with `websocket: bad handshake`
 
