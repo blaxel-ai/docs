@@ -57,6 +57,7 @@ Structured platform errors have a consistent JSON body and response header, as s
 | `ROUTING_UNAVAILABLE` | 503 | **Yes** | A lookup the gateway needs to route or authenticate the request didn't answer; the request wasn't forwarded |
 | `UPSTREAM_CONNECT_FAILED` | 502 | **Yes** | Connection to the workload failed (refused, no route, TLS failure); the request didn't reach it |
 | `UPSTREAM_CONNECT_TIMEOUT` | 502 | **Yes** | Connecting to the workload timed out, typically while it is still starting; the request didn't reach it |
+| `PORT_NOT_LISTENING` | 502 | No | Nothing is listening on the requested port in the sandbox: every connection was refused for 30 seconds, the time the platform waits for a server that is still starting. The request didn't reach it. Start the server on the address in `HOST` (see [real-time previews](/Sandboxes/Preview-url)) |
 | `UPSTREAM_ERROR` | 502 | **Yes** | The exchange with the workload failed, or the proxy in front of it returned a 502 (for example, nothing is listening on the port yet); the workload may have processed the request |
 | `UPSTREAM_TIMEOUT` | 502 or 504 | **Yes** | The platform gave up waiting for the workload's response; the workload may still be running the work |
 | `GATEWAY_INTERNAL_ERROR` | 500 | **Yes** | Internal gateway failure, not caused by the workload |
