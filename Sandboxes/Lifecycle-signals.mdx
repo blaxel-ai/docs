@@ -78,6 +78,8 @@ When a sandbox with a standby grace period goes idle, its processes receive `SIG
 
 The sandbox goes on standby when your code says it is done, or when the grace period ends, whichever comes first. To say it is done, write `done` to the file at `$BLAXEL_STANDBY_READY_FILE`. Write it even if the preparation fails, otherwise the sandbox waits for the full grace period.
 
+The same applies when you [put the sandbox on standby on demand](./Standby-control#put-a-sandbox-on-standby-on-demand).
+
 If the sandbox becomes active again during the grace period, the standby is cancelled: a new request, a new connection or a [keep-alive](./Processes#sandbox-keep-alive) cancels it. The next time the sandbox goes idle, it receives `SIGUSR2` again.
 
 <CodeGroup>
