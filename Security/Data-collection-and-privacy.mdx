@@ -62,6 +62,42 @@ Usage delivery is best effort: requests have a one-second timeout, process-exit 
 
 The first-resource event measures a successful create observed by an opted-in CLI installation. It does not confirm that a resource is ready or that a deployment finished, cover resources created through the Console or SDKs, or establish the first resource for an account. The anonymous local ID is not joined to identified server events. Resetting the local state, separate homes, concurrent CLI processes, opt-outs, and delivery failures can make this funnel incomplete or produce duplicates.
 
+## Coding agent in API requests
+
+Starting with the next CLI and SDK releases, the Blaxel CLI and the TypeScript and Python SDKs name the coding agent that runs them in the `User-Agent` header of their requests to the Blaxel API. Blaxel uses this to understand which coding agents people use with Blaxel.
+
+The header already names the CLI or SDK, its version, the OS and architecture, and the build commit. When a coding agent runs the CLI or SDK, the header ends with an `agent/<id>` token:
+
+```text
+blaxel/cli/golang/<version> (darwin/arm64) blaxel/<commit> agent/claude-code
+```
+
+The ID comes from environment variables that coding agents set for the commands they run:
+
+| Agent ID | Environment variable |
+| --- | --- |
+| `claude-code` | `CLAUDECODE` |
+| `codex` | `CODEX_THREAD_ID` or `CODEX_SANDBOX` |
+| `cursor` | `CURSOR_AGENT` |
+| `gemini-cli` | `GEMINI_CLI` |
+| `qwen-code` | `QWEN_CODE` |
+| `opencode` | `OPENCODE_TERMINAL` or `OPENCODE` |
+| `goose` | `GOOSE_TERMINAL` |
+| `augment` | `AUGMENT_AGENT` |
+
+If none of these is set, the CLI and SDKs read `AI_AGENT`, then `AGENT`. A known agent name in either variable maps to one of the IDs above, or to `crush` or `github-copilot`. Any other `AI_AGENT` name is sent as `agent/other`. Any other `AGENT` value is ignored, because `AGENT` is a generic name. When no coding agent is detected, the header has no `agent/` token.
+
+The token is always one of the IDs listed here. It never contains the raw value of an environment variable, a prompt, file contents, or other free-form text. The Blaxel API records the agent ID with the events it tracks for API requests. Unlike the anonymous CLI usage events above, these events are linked to your account and workspace.
+
+### Opt out of the coding agent token
+
+The token is sent by default, including in CI. Only an explicit opt-out removes it:
+
+- The CLI and the TypeScript and Python SDKs leave out the token when `DO_NOT_TRACK` is `1` or `true`.
+- The CLI also leaves it out when `BL_INSTALL_TRACKING` is false or `BL_SKIP_TELEMETRY` is `1`.
+
+The `tracking` setting in `~/.blaxel/config.yaml` does not control the token. It is the opt-in for usage events and error reports, and `bl login` saves it as `false` until you turn it on.
+
 ## Error tracking
 
 When enabled, the SDKs and CLI capture errors and exceptions that originate from the SDK/CLI itself - not from application code. Each SDK/CLI has a lightweight, custom Sentry client that collects and tracks the following error-related metadata:
@@ -77,6 +113,10 @@ When enabled, the SDKs and CLI capture errors and exceptions that originate from
 - Runtime-specific context (e.g. goroutine info in Go)
 
 No request data, API keys, file contents, IP addresses or other user or application data is collected.
+
+Starting with the next CLI and SDK releases, the CLI and the TypeScript and Python SDKs send the workspace name as the Sentry user ID. This shows how many workspaces an error affects. No other user identifier, such as an email address or account ID, is sent. A value that is not a valid workspace name is dropped.
+
+The workspace name is part of error tracking, so it follows the same setting. Error tracking is off unless you turn it on, and the `DO_NOT_TRACK` and `tracking` settings below control it. `BL_INSTALL_TRACKING` and `BL_SKIP_TELEMETRY` do not change error tracking.
 
 ### Opt in
 
