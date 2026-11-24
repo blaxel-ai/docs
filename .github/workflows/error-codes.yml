@@ -1,0 +1,37 @@
+name: Error codes reference
+
+# The control plane and sandbox API tables of troubleshooting/error-codes.mdx
+# are generated from those services' error registries by
+# scripts/error-codes/generate.mjs. Each service's CI compares its registry with
+# this page; this job checks the page itself: its generated blocks, one anchor
+# per code row, no anchor defined twice.
+
+on:
+  pull_request:
+    paths:
+      - 'troubleshooting/error-codes.mdx'
+      - 'scripts/error-codes/**'
+      - '.github/workflows/error-codes.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'troubleshooting/error-codes.mdx'
+      - 'scripts/error-codes/**'
+      - '.github/workflows/error-codes.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test the generator
+        run: node --test scripts/error-codes/generate.test.mjs
+      - name: Check the page
+        run: node scripts/error-codes/generate.mjs --check
