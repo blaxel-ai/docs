@@ -116,6 +116,8 @@ Browsers send credentials to a private preview when you call it with `credential
 
 For credentialed requests, set `Access-Control-Allow-Origin` to your frontend's origin, as described in [Configure CORS headers on a preview](#configure-cors-headers-on-a-preview).
 
+To show a private preview in an iframe instead of calling it with `fetch`, see [Embed a private preview in an iframe](./Preview-url#embed-a-private-preview-in-an-iframe).
+
 <Warning>
 When a request to a private preview fails authentication, Blaxel returns a `401` with `Access-Control-Allow-Origin: *`. On a credentialed request, the browser reports a CORS error instead of the `401`. If the preflight passes but the request fails with a CORS error, check your token first.
 </Warning>
