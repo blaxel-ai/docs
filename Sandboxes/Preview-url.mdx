@@ -58,6 +58,8 @@ When you create a private preview URL a token is required to access the URL. You
 - a `bl_preview_token` query parameter when accessing the preview URL (e.g. *https://tkmu0oj2bf6iuoag6mmlt8.preview.bl.run/health?bl_preview_token={token.value}*)
 - an `X-Blaxel-Preview-Token` header
 
+To show a private preview in an iframe on your own site, see [Embed a private preview in an iframe](#embed-a-private-preview-in-an-iframe).
+
 ## Caching
 
 Preview URLs pass the `Cache-Control` sent by your application through to the browser, so browser caching and conditional requests (`ETag` / `If-None-Match` answered with `304 Not Modified`) work the same way as through the sandbox URL. Blaxel only restricts shared caches (CDNs, proxies):
@@ -306,6 +308,78 @@ preview = await sandbox.previews.create_if_not_exists({
 </CodeGroup>
 
 When using a prefix URL, the workspace name is automatically added to the prefix and included in the final structure for the preview URL - for example, `https://myprefix-workspace-xxx.preview.bl.run`.
+
+## Embed a private preview in an iframe
+
+A private preview loads in an iframe on another site when its URL carries the token. Later navigations of the iframe carry no token, so they can fail with a `401` error: when your page sets a new `src`, or when the browser blocks third-party cookies.
+
+To keep the iframe authenticated, list the origins of the pages that embed the preview in `X-Blaxel-Embed-Origins`, in the preview's `responseHeaders`:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const preview = await sandbox.previews.createIfNotExists({
+    metadata: { name: "app" },
+    spec: {
+        port: 3000,
+        public: false,
+        responseHeaders: {
+            "X-Blaxel-Embed-Origins": "https://app.example.com"
+        }
+    }
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+preview = await sandbox.previews.create_if_not_exists({
+    "metadata": {"name": "app"},
+    "spec": {
+        "port": 3000,
+        "public": False,
+        "responseHeaders": {
+            "X-Blaxel-Embed-Origins": "https://app.example.com"
+        }
+    }
+})
+```
+
+</CodeGroup>
+
+Write each origin as scheme, host and port, without a path or a trailing slash:
+
+- Separate several origins with commas or spaces.
+- Use `https` origins. `http` is accepted only for `localhost` and `127.0.0.1`.
+- Do not use wildcards. Blaxel ignores entries with a wildcard or a path.
+
+On your page, load the preview with its token the first time:
+
+```html
+<iframe src="https://<PREVIEW_URL>/?bl_preview_token=<TOKEN>"></iframe>
+```
+
+With this setting, Blaxel does the following:
+
+- On that first load, it sets a cookie that the browser keeps for this iframe on your site only (a [partitioned cookie](https://developer.mozilla.org/en-US/docs/Web/Privacy/Guides/Third-party_cookies/Partitioned_cookies)). The cookie is valid for 24 hours.
+- It accepts this cookie on later navigations of the iframe: links and redirects inside the preview, reloads, and a new `src` set by your page.
+- It sends `Content-Security-Policy: frame-ancestors 'self'` followed by your origins, so pages on other origins cannot embed the preview.
+
+`X-Blaxel-Embed-Origins` is a setting. Blaxel does not send it to the browser as a response header.
+
+<Warning>
+Blaxel reads the embedding page from the `Referer` header. Do not set `Referrer-Policy: no-referrer` on your page or `referrerpolicy="no-referrer"` on the iframe. The browser default works.
+</Warning>
+
+Keep the following limits in mind:
+
+- After 24 hours, load the iframe with a token in the URL again.
+- The cookie does not authenticate `fetch` calls from your page. To call the preview from your page, send the `X-Blaxel-Preview-Token` header and see [Handle CORS on Blaxel](./CORS).
+- On a preview that already exists, send the full spec to change `responseHeaders`. Changes apply within a few seconds.
 
 ## Custom domains
 
