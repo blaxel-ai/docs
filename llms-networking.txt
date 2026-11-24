@@ -1,0 +1,4176 @@
+# Blaxel docs: Networking and previews
+
+> Ports, preview URLs, dev server setup for previews, CORS, sessions, standby control, the outbound proxy, regions, egress gateways and custom domains.
+
+This file has the full text of 18 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Ports](https://docs.blaxel.ai/Sandboxes/Ports)
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url)
+- [Handle CORS on Blaxel](https://docs.blaxel.ai/Sandboxes/CORS)
+- [Client-side sessions](https://docs.blaxel.ai/Sandboxes/Sessions)
+- [Standby control](https://docs.blaxel.ai/Sandboxes/Standby-control)
+- [Proxy](https://docs.blaxel.ai/Sandboxes/Proxy)
+- [Proxy routing with secrets injection](https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection)
+- [Domain filtering](https://docs.blaxel.ai/Sandboxes/Proxy-domains)
+- [Regions](https://docs.blaxel.ai/Infrastructure/Regions)
+- [Dedicated egress gateways](https://docs.blaxel.ai/Infrastructure/Dedicated-egress-gateways)
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains)
+- [HTTP validation](https://docs.blaxel.ai/Infrastructure/Custom-domains-http-validation)
+- [Set up Next.js with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-nextjs-with-blaxel-sandboxes)
+- [Set up Astro with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes)
+- [Set up Vite with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-vite-with-blaxel-sandboxes)
+- [Set up Expo with Blaxel Sandboxes](https://docs.blaxel.ai/knowledge-base/integrations/setting-up-expo-with-blaxel-sandboxes)
+- [Using custom domains with sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/using-custom-domains-with-sandboxes)
+- [Getting static IP addresses for Blaxel sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/getting-static-ip-addresses-for-blaxel-sandboxes)
+
+# Ports
+Source: https://docs.blaxel.ai/Sandboxes/Ports
+
+Expose specific TCP ports on a Blaxel sandbox so external clients can connect to web servers, dev servers, or other services running inside it.
+
+Your sandbox, just like any virtual machine, can **expose ports**. These ports let you connect to a process or app running in the sandbox.
+
+## Reserved ports
+
+The following ports are reserved by Blaxel's system:
+
+- **443**: This port hosts the main [sandbox API](https://docs.blaxel.ai/api-reference/filesystem/get-file-or-directory-information) and is exposed via HTTPS
+- **80**: Reserved for system operations
+- **8080**: Reserved for sandbox API functionality
+
+You can expose and use any other port on your sandbox.
+
+## Expose a port
+
+> [!NOTE]
+>
+> To whitelist sandbox traffic in your network, you can [retrieve the public IP addresses](https://docs.blaxel.ai/Infrastructure/Regions#public-ip-addresses) used by Blaxel.
+
+You can expose specific non-reserved ports [**when creating a new sandbox**](https://docs.blaxel.ai/Sandboxes/Overview) by using the `ports` parameter. This allows you to access these ports from outside the sandbox via the sandbox API.
+
+> [!NOTE]
+>
+> You only need to expose ports at sandbox creation time if you plan to access the port via the sandbox API. For access via [preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url), ports are dynamically opened as needed.
+
+```typescript TypeScript {8}
+import { SandboxInstance } from "@blaxel/core";
+
+// Create a new sandbox
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+  ports: [{ target: 3000 }]
+});
+```
+
+```python Python {8}
+from blaxel.core import SandboxInstance
+
+# Create a new sandbox
+sandbox = await SandboxInstance.create({
+  "name": "my-sandbox",
+  "image": "blaxel/base-image:latest",
+  "memory": 4096,
+  "region": "us-pdx-1",
+  "ports": [{ "target": 3000 }]
+})
+```
+
+## Access the sandbox on a specific port
+
+### Via the sandbox API
+
+This option requires your request to be [authenticated](https://docs.blaxel.ai/Security/Access-tokens). You can access your sandbox on a specific port through the sandbox API using the following URL format:
+
+```text
+https://sbx-{resource_name}-{workspace_id}.{region_id}.bl.run/port/{port_number}
+```
+
+For example to connect to port 3000 on `my-sandbox` in workspace `abc123`: `https://sbx-my-sandbox-abc123.us-pdx-1.bl.run/port/3000`
+
+Request paths, if any, can be specified after the port number. For example: `https://sbx-my-sandbox-abc123.us-pdx-1.bl.run/port/3000/my/api/endpoint`
+
+### Via a preview URL
+
+[Preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url) provide a simple URL that maps to an internal port of your sandbox. You can either make this URL fully public or secure it with token-based authentication.
+
+Generally speaking:
+
+- for file and process management in your sandbox, use the sandbox API or SDK.
+- to access running applications within the sandbox *(such as a NextJS preview server on port 3000)*, use a preview URL instead.
+
+### Via SDK
+
+**sandbox.fetch() (recommended)**
+
+> [!NOTE]
+>
+> Available in `@blaxel/core` >= 0.2.79 (Node.js) and `blaxel` >= 0.2.49 (Python).
+
+The SDK provides a built-in `fetch` method that handles authentication and proxies requests through the sandbox's `/port/{port}` endpoint.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+// Fetch a resource on port 3000
+const response = await sandbox.fetch(3000);
+console.log(await response.text());
+
+// Fetch with a specific path
+const apiResponse = await sandbox.fetch(3000, "/api/health");
+console.log(await apiResponse.json());
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Fetch a resource on port 3000
+response = await sandbox.fetch(3000)
+print(response.text)
+
+# Fetch with a specific path
+api_response = await sandbox.fetch(3000, "/api/health")
+print(api_response.json())
+
+# Fetch with a custom HTTP method
+post_response = await sandbox.fetch(3000, "/api/data", method="POST", json={"key": "value"})
+print(post_response.json())
+```
+
+**Manual URL (older SDKs)**
+
+For older SDK versions, you can construct the port URL manually. This requires your request to be [authenticated](https://docs.blaxel.ai/Security/Access-tokens).
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+// Connect to existing sandbox
+const sandbox = await SandboxInstance.get("my-sandbox")
+
+// Get URL for port access
+const url = `${sandbox.metadata.url}/port/3000`
+
+// Use the URL with authenticated requests
+const response = await fetch(url, {
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' }
+})
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+import requests
+
+# Connect to existing sandbox
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Get URL for port access
+url = f"{sandbox.metadata.url}/port/3000"
+
+# Use the URL with authenticated requests
+response = requests.get(url, headers={ "Authorization": f"Bearer YOUR_TOKEN" })
+```
+
+- [Create preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url): Expose applications running within the sandbox via a direct preview URL.
+
+# Real-time previews
+Source: https://docs.blaxel.ai/Sandboxes/Preview-url
+
+Render an application in real-time through a direct preview URL backed by a running Blaxel sandbox, with optional auth and custom domains.
+
+Sometimes you may need to access a running sandbox application and preview the content in real time in a front-end client. This is useful for example to instantly preview React code generated by a codegen AI agent.
+
+You can do this via a **preview URL** that routes to a specific port on your sandbox (e.g. *port 3000* for `npm run dev -- --host $HOST --port 3000 &`). This preview URL can be either **public** (does not require you to be authenticated to access it) or **private** (see below).
+
+They will look something like this:
+
+```text
+https://tkmu0oj2bf6iuoag6mmlt8.us-pdx-1.preview.bl.run
+```
+
+You can have multiple preview URLs per sandbox.
+
+> [!NOTE]
+>
+> If you see a 502 error when accessing the preview URL, the most common cause is that your application server is not reachable externally. To resolve this, configure your server to bind to the address provided by the `HOST` environment variable, which Blaxel injects into the sandbox, rather than a static value. If you need a static fallback (for example when running the same code outside a sandbox), use `::` so it listens on all available network interfaces over both IPv4 and IPv6 (use `0.0.0.0` only if you specifically need to restrict the server to IPv4). Note that not every server or dev tool accepts a bare `::` as a host value - confirm your specific tool supports IPv6 wildcard binding before relying on it. Sample server startup commands are shown below:
+>
+>
+>
+> ```tsx TypeScript
+> npm run dev -- --host $HOST
+> # or
+> npm serve -- --host $HOST
+> ```
+>
+> ```python Python
+> python main.py --host $HOST
+> ```
+>
+>
+>
+> Read more about this in our [troubleshooting page](https://docs.blaxel.ai/troubleshooting).
+
+You can also set a **custom domain** on a preview URL (see down below).
+
+## Current limitations of real-time previews
+
+JavaScript module bundlers handle real-time previewing. Here are the key compatibility requirements and limitations:
+
+- Module bundler **must implement** [ping-pong](https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2).
+- Both [Webpack](https://webpack.js.org/) and [Turbopack](https://nextjs.org/docs/app/api-reference/turbopack) (v16.1.1) have been tested and confirmed to work.
+- Blaxel has a **15-minute connection timeout**. To maintain previews beyond this limit, ensure your bundler implements automatic reconnection.
+- You cannot create a preview on **port 80** which is reserved for the system.
+
+> [!TIP]
+>
+> Using a Webpack server but unable to hot reload your previews? Check our [troubleshooting page](https://docs.blaxel.ai/troubleshooting) for possible solutions.
+
+## Private preview URLs
+
+When you create a private preview URL a token is required to access the URL. You must include the token as:
+
+- a `bl_preview_token` query parameter when accessing the preview URL (e.g. *https://tkmu0oj2bf6iuoag6mmlt8.preview.bl.run/health?bl_preview_token={token.value}*)
+- an `X-Blaxel-Preview-Token` header
+
+## Caching
+
+Preview URLs pass the `Cache-Control` sent by your application through to the browser, so browser caching and conditional requests (`ETag` / `If-None-Match` answered with `304 Not Modified`) work the same way as through the sandbox URL. Blaxel only restricts shared caches (CDNs, proxies):
+
+- **Public previews**: `public` and `s-maxage` are removed and `private` is added, unless the response is marked `immutable` and sets no cookie, in which case it may stay in shared caches.
+- **Private previews**: `public` and `s-maxage` are always removed and `private` is added, so only the user's browser caches the response.
+
+Responses without a `Cache-Control` header are served with `Cache-Control: no-store`.
+
+## Manage preview URLs
+
+> [!NOTE]
+>
+> To whitelist sandbox traffic in your network, you can [retrieve the public IP addresses](https://docs.blaxel.ai/Infrastructure/Regions#public-ip-addresses) used by Blaxel.
+
+### Blaxel console
+
+You can create a preview URL for a sandbox from the Blaxel Console, on the overview of a sandbox:
+
+### Blaxel SDK
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+The Blaxel SDK does not accept credentials as constructor arguments. Credentials must come from environment variables, a `.env` file, or a local CLI login session (see below).
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+The recommended pattern for preview creation is `createIfNotExists()` / `create_if_not_exists()`. Blaxel first checks for an existing preview with the provided `name` and either returns it or creates a new one using your specified configuration.
+
+Preview names only need to be unique within a sandbox. Use a constant name such as `"app"` across all your sandboxes to reuse one preview per sandbox. Always provide `metadata.name` when using the SDKs.
+
+Create and manage a sandbox’s public preview URL:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+// Create public preview
+const preview = await sandbox.previews.createIfNotExists({
+    metadata: { name: "app-preview" },
+    spec: {
+        port: 3000,
+        public: true,
+        responseHeaders: {
+            "Access-Control-Allow-Origin": "https://YOUR-DOMAIN",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+            "Access-Control-Max-Age": "86400",
+            "Vary": "Origin"
+        }
+    }
+});
+
+// Get preview URL
+const url = preview.spec?.url;
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+# Create public preview
+preview = await sandbox.previews.create_if_not_exists({
+    "metadata": {"name": "app-preview"},
+    "spec": {
+        "port": 3000,
+        "public": True,
+        "responseHeaders": {
+            "Access-Control-Allow-Origin": "https://YOUR-DOMAIN",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+            "Access-Control-Max-Age": "86400",
+            "Vary": "Origin"
+        }
+    }
+})
+
+# Get preview URL
+url = preview.spec.url
+```
+
+> [!TIP]
+>
+> To call a preview URL from a frontend on another origin, see [Handle CORS on Blaxel](https://docs.blaxel.ai/Sandboxes/CORS).
+
+For a private preview, list its tokens and reuse one that remains valid long enough for your session. Create a new token only when none qualifies. This example requires at least one hour of remaining validity and otherwise creates a token valid for one day. Expired tokens are deleted automatically.
+
+> [!NOTE]
+>
+> `createIfNotExists` (`create_if_not_exists` in Python) returns existing resources unchanged, so check their region and preview privacy when reusing names.
+
+Run your application on port 3000 before opening the URL.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+    name: "my-app",
+    region: "us-was-1"
+});
+
+// Create private preview
+const preview = await sandbox.previews.createIfNotExists({
+    metadata: { name: "app" },
+    spec: {
+      port: 3000,
+      public: false
+    }
+});
+
+const token = (await preview.tokens.list()).find(
+    t => !t.expired && +new Date(t.expiresAt) > Date.now() + 3_600_000
+) ?? await preview.tokens.create(new Date(Date.now() + 86_400_000));
+
+const url = `${preview.spec.url}?bl_preview_token=${token.value}`;
+const response = await fetch(url);
+```
+
+```python Python
+import httpx
+
+from blaxel.core import SandboxInstance
+from datetime import datetime, timedelta, UTC
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-app",
+    "region": "us-was-1"
+})
+
+# Create private preview
+preview = await sandbox.previews.create_if_not_exists({
+    "metadata": {"name": "app"},
+    "spec": {
+        "port": 3000,
+        "public": False
+    }
+})
+
+min_expiry = datetime.now(UTC) + timedelta(hours=1)
+token = next((
+    t for t in await preview.tokens.list()
+    if datetime.fromisoformat(t.expires_at.replace("Z", "+00:00")) > min_expiry
+), None)
+if token is None:
+    token = await preview.tokens.create(datetime.now(UTC) + timedelta(days=1))
+
+url = f"{preview.spec.url}?bl_preview_token={token.value}"
+async with httpx.AsyncClient() as client:
+    response = await client.get(url)
+```
+
+Treat token-bearing URLs as credentials. Share them only with users who should have access to the preview.
+
+An alternative is to use `create()`, which raises an error when a preview with the specified name already exists:
+
+```typescript TypeScript
+const preview = await sandbox.previews.create({
+    metadata: {
+        name: "preview-name"
+    },
+    spec: {
+        port: 443,
+        public: false
+    }
+})
+```
+
+```python Python
+preview = await sandbox.previews.create({
+    "metadata": {
+        "name": "preview-name"
+    },
+    "spec": {
+        "port": 443,
+        "public": False
+    }
+})
+```
+
+### URL prefix
+
+`prefixUrl` (`prefix_url` in Python) is optional. Without it, Blaxel builds a stable URL from your workspace, sandbox, and preview names. The same names in the same region produce the same URL, so you do not need to generate a unique prefix for each sandbox.
+
+Set `prefixUrl` only when you want a custom string prefix:
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const preview = await sandbox.previews.createIfNotExists({
+    metadata: { name: "app-preview" },
+    spec: {
+        port: 3000,
+        public: true,
+        prefixUrl: "my-prefix"
+    }
+});
+```
+
+```python Python
+sandbox = await SandboxInstance.get("my-sandbox")
+
+preview = await sandbox.previews.create_if_not_exists({
+    "metadata": {"name": "app-preview"},
+    "spec": {
+        "port": 3000,
+        "public": True,
+        "prefix_url": "my-prefix"
+    }
+})
+```
+
+When using a prefix URL, the workspace name is automatically added to the prefix and included in the final structure for the preview URL - for example, `https://myprefix-workspace-xxx.preview.bl.run`.
+
+## Custom domains
+
+To set up a custom domain for your sandbox preview:
+
+- Register a [custom domain](https://docs.blaxel.ai/Infrastructure/Custom-domains) to your Blaxel workspace and complete the verification process
+- Use this verified custom domain when creating a new preview:
+
+```typescript TypeScript {8}
+const preview = await sandbox.previews.createIfNotExists({
+    metadata: {
+        name: "preview-custom-domain"
+    },
+    spec: {
+        port: 443,
+        public: false,
+        customDomain: "your.custom.domain.dev"
+    }
+})
+```
+
+```python Python {8}
+preview = await sandbox.previews.create_if_not_exists({
+    "metadata": {
+        "name": "preview-custom-domain"
+    },
+    "spec": {
+        "port": 443,
+        "public": True,
+        "customDomain": "your.custom.domain.dev"
+    }
+})
+```
+
+> [!NOTE]
+>
+> When you register a custom domain, you also enable the use of wildcard subdomains for that domain. For example, if you register `mycompany.com`, you can configure preview URLs to use any `*.mycompany.com` subdomain.
+
+### Fallback preview
+
+You can also designate one preview as the fallback or catch-all for a custom domain. Any request to a subdomain that does not match an existing preview is routed to this fallback preview instead of returning a 404.
+
+Common use cases for this include:
+
+- Serving a branded "page not found" or landing page instead of a raw 404
+- Routing all traffic to a primary preview by default
+- Letting your application handle unknown subdomains with custom logic
+
+To use a fallback preview, you must have:
+
+- A [verified custom domain](https://docs.blaxel.ai/Sandboxes/Preview-url#custom-domains) in your workspace
+- At least one active preview on that custom domain
+
+To configure a fallback preview from the console:
+
+1. Go to **Workspace Settings** > **Custom Domains**
+2. Click the **...** menu on the domain you want to configure
+3. Select **Set Fallback Preview**
+4. Enter the name of the preview to use as the catch-all
+5. Click **Save**
+
+To remove the fallback, open the same dialog and clear the preview name.
+
+To configure from the API, update the `fallbackPreviewId` field on the custom domain resource:
+
+```bash Set fallback
+curl -X PUT "https://api.blaxel.ai/v0/customdomains/{domainName}" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "name": "yourdomain.com"
+    },
+    "spec": {
+      "fallbackPreviewId": "my-landing-page"
+    }
+  }'
+```
+
+```bash Remove fallback
+curl -X PUT "https://api.blaxel.ai/v0/customdomains/{domainName}" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "name": "yourdomain.com"
+    },
+    "spec": {
+      "fallbackPreviewId": ""
+    }
+  }'
+```
+
+When a request arrives for a subdomain on your custom domain:
+
+1. Blaxel checks for a preview matching that subdomain.
+2. If no match is found and a fallback is configured, the request is routed to the fallback preview.
+3. If no fallback is configured, the request returns a 404.
+
+> [!NOTE]
+>
+> The fallback only applies to requests on your custom domain. Standard Blaxel preview URLs (`*.preview.bl.run`) are not affected.
+
+When a request is routed via fallback, Blaxel adds headers to the request so your application can customize its response:
+
+| Header | Value | Description |
+| --- | --- | --- |
+| `X-Blaxel-Fallback` | `true` | Indicates the request was routed via fallback |
+| `X-Blaxel-Fallback-Preview` | Preview name | The subdomain or preview name originally requested |
+| `X-Blaxel-Fallback-Domain` | Domain name | The base custom domain (e.g. `yourdomain.com`) |
+
+Use `X-Blaxel-Fallback-Preview` to display a contextual message such as "Preview [name] was not found" on your fallback page.
+
+Security considerations:
+
+- The fallback preview must belong to the same workspace as the custom domain; cross-workspace fallbacks are not allowed.
+- Client-injected `X-Blaxel-Fallback-*` headers are stripped before routing, so only Blaxel-set values are forwarded.
+- If the fallback lookup fails for any reason, the request falls through to normal routing without blocking traffic.
+
+For example, suppose you have a custom domain `demo-previews.store` with two previews:
+
+| Preview name | URL |
+| --- | --- |
+| `my-app` | `my-app.demo-previews.store` |
+| `landing-page` | `landing-page.demo-previews.store` |
+
+With `landing-page` set as the fallback, requests are routed as follows:
+
+- `my-app.demo-previews.store` routes to the `my-app` preview (direct match)
+- `landing-page.demo-previews.store` routes to the `landing-page` preview (direct match)
+- `unknown.demo-previews.store` routes to the `landing-page` preview (fallback)
+
+On fallback requests, your `landing-page` application receives `X-Blaxel-Fallback: true` and `X-Blaxel-Fallback-Preview: unknown`, allowing it to show a contextual error page.
+
+## Delete a preview
+
+When a sandbox is deleted, whether manually or automatically due to a TTL or expiration policy, all of its associated preview URLs are automatically cleaned up as part of that deletion.
+
+If you need to remove a preview URL before a sandbox is deleted, you can do so explicitly using the SDKs.
+
+```typescript TypeScript
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+await sandbox.previews.delete("app-preview");
+```
+
+```python Python
+sandbox = await SandboxInstance.get("my-sandbox")
+
+await sandbox.previews.delete("app-preview")
+```
+
+## FAQ
+
+**What is a fallback preview for a custom domain?**
+
+A fallback preview is a designated preview that receives requests for unrecognized subdomains on your custom domain, instead of returning a 404 error.
+
+**When does Blaxel route traffic to the fallback preview?**
+
+Blaxel routes to the fallback when a request arrives for a subdomain that does not match any existing preview on that custom domain. If no fallback is configured, the request returns a 404.
+
+**How do I configure a fallback preview from the console?**
+
+In the Blaxel Console, go to **Workspace Settings** > **Custom Domains**, click the **...** menu on the domain, select **Set Fallback Preview**, enter the preview name, and click **Save**.
+
+**What headers does my application receive on a fallback request?**
+
+Blaxel adds `X-Blaxel-Fallback: true`, `X-Blaxel-Fallback-Preview` (the subdomain that was requested), and `X-Blaxel-Fallback-Domain` (the base custom domain) to all fallback requests.
+
+**How do I remove a fallback preview?**
+
+From the console, open the Configure Fallback dialog and clear the preview name. From the API, send a PUT request with `fallbackPreviewId` set to an empty string.
+
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains): Register and verify a custom domain for your Blaxel workspace.
+
+- [Sandbox expiration policies](https://docs.blaxel.ai/Sandboxes/Expiration): Configure TTL and auto-deletion rules for sandboxes.
+
+# Handle CORS on Blaxel
+Source: https://docs.blaxel.ai/Sandboxes/CORS
+
+Configure CORS headers on Blaxel preview URLs so browser frontends on another origin can call your sandbox applications, including with credentials.
+
+When a browser frontend on one origin calls a Blaxel [preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url), the browser enforces CORS. This page explains which CORS headers Blaxel returns, how to change them, and how to check the result.
+
+## How Blaxel handles CORS
+
+Blaxel handles CORS differently for preflight requests and normal responses on a preview URL.
+
+- Preflight (`OPTIONS`) requests are answered by Blaxel directly. They never reach your application, and they do not require authentication, even on a private preview.
+- Normal responses come from your application. Blaxel adds CORS headers only when your application does not set them.
+
+By default, a preflight response contains:
+
+```text
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+Access-Control-Allow-Headers: Content-Type, Authorization, X-Blaxel-Preview-Token
+Access-Control-Allow-Credentials: true
+Access-Control-Max-Age: 86400
+Access-Control-Expose-Headers: X-Blaxel-Source, X-Blaxel-Error-Code, X-Blaxel-Dispatch-State, Retry-After
+```
+
+These defaults work for requests without credentials that only send the listed headers. You need to configure the preview when:
+
+- your frontend sends other request headers
+- your frontend sends credentials (`fetch(..., { credentials: "include" })`), because browsers reject `Access-Control-Allow-Origin: *` on credentialed requests
+
+## Configure CORS headers on a preview
+
+Set CORS headers in the preview's `responseHeaders`. Blaxel applies them in the following order:
+
+| Response | Header source, from highest to lowest priority |
+|---|---|
+| Preflight (`OPTIONS`) | `responseHeaders`, then Blaxel defaults |
+| Normal response | Your application, then `responseHeaders`, then Blaxel defaults |
+
+When you set CORS headers:
+
+- Set `Access-Control-Allow-Origin` to your frontend's exact origin (scheme, host and port, without a trailing slash).
+- List every request header your frontend sends in `Access-Control-Allow-Headers`. Your value replaces the default list, so add `X-Blaxel-Preview-Token` back if your frontend sends it.
+- Omit `Access-Control-Allow-Credentials`, because Blaxel already adds `Access-Control-Allow-Credentials: true`.
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const preview = await sandbox.previews.create({
+  metadata: { name: "app" },
+  spec: {
+    port: 3000,
+    public: false,
+    responseHeaders: {
+      "Access-Control-Allow-Origin": "https://app.example.com",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header",
+    },
+  },
+});
+console.log(preview.spec.url);
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+preview = await sandbox.previews.create({
+    "metadata": {"name": "app"},
+    "spec": {
+        "port": 3000,
+        "public": False,
+        "responseHeaders": {
+            "Access-Control-Allow-Origin": "https://app.example.com",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header",
+        },
+    },
+})
+print(preview.spec.url)
+```
+
+```bash
+# To update an existing preview, send a `PUT` request with the full spec: `port`, `public` and `responseHeaders`. Changes apply within a few seconds.
+curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox/previews/app" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: $BL_WORKSPACE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {"name": "app"},
+    "spec": {
+      "port": 3000,
+      "public": false,
+      "responseHeaders": {
+        "Access-Control-Allow-Origin": "https://app.example.com",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Your-Header"
+      }
+    }
+  }'
+```
+
+## Handle CORS in your application
+
+Your application can set its own CORS headers on normal responses, for example to echo the request `Origin` from a list of allowed origins. Blaxel keeps the values set by your application.
+
+Your application cannot handle preflights, because Blaxel answers them. Set the preflight headers in the preview's `responseHeaders`.
+
+## Send credentials to a private preview
+
+Browsers send credentials to a private preview when you call it with `credentials: "include"`. Open `<PREVIEW_URL>/?bl_preview_token=<token>` once in the browser: Blaxel sets a `bl_preview_token` cookie (`SameSite=None; Secure`) that the browser sends with later credentialed requests. You can also send the token in the `X-Blaxel-Preview-Token` header. For details on tokens, see [private preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url#private-preview-urls).
+
+For credentialed requests, set `Access-Control-Allow-Origin` to your frontend's origin, as described in [Configure CORS headers on a preview](https://docs.blaxel.ai/Sandboxes/CORS#configure-cors-headers-on-a-preview).
+
+> [!WARNING]
+>
+> When a request to a private preview fails authentication, Blaxel returns a `401` with `Access-Control-Allow-Origin: *`. On a credentialed request, the browser reports a CORS error instead of the `401`. If the preflight passes but the request fails with a CORS error, check your token first.
+
+## Check your CORS configuration
+
+Send a preflight with curl:
+
+```bash
+PREVIEW_URL="https://<id>.preview.bl.run"   # from preview.spec.url
+ORIGIN="https://app.example.com"
+
+curl -si -X OPTIONS "$PREVIEW_URL/api/anything" \
+  -H "Origin: $ORIGIN" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: content-type,x-your-header" \
+  | grep -i '^access-control'
+```
+
+The output contains your origin and your header list. If you see `access-control-allow-origin: *`, the preview does not have your headers. Check `preview.spec.responseHeaders`.
+
+To check a normal response, send a regular request. For a private preview, pass a preview token:
+
+```bash
+curl -si "$PREVIEW_URL/api/anything" \
+  -H "Origin: $ORIGIN" \
+  -H "X-Blaxel-Preview-Token: $PREVIEW_TOKEN" \
+  | grep -i '^access-control-allow-origin'
+```
+
+To check in the browser, open your frontend at `$ORIGIN` and run the following in the devtools console:
+
+```javascript
+await fetch("<PREVIEW_URL>/api/anything", {
+  method: "POST",
+  credentials: "include",
+  headers: { "Content-Type": "application/json", "X-Your-Header": "1" },
+  body: "{}",
+}).then(r => r.status);
+```
+
+The call returns a status code, with no CORS error. In the Network tab, the `OPTIONS` request shows your origin in `access-control-allow-origin`.
+
+## Limitations
+
+- One origin per preview. Preflight headers are static, so a preview allows a single origin for credentialed requests. To allow several origins (for example staging and production), create one preview per origin.
+- Static header list. Every request header your frontend sends must be listed in `Access-Control-Allow-Headers`.
+- Preflight cache. Browsers cache preflights for up to 24 hours (`Access-Control-Max-Age: 86400`). After changing the headers, hard-reload the page or test in a new private window.
+
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url): Create public and private preview URLs for a sandbox.
+
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains): Serve a preview on your own domain.
+
+# Client-side sessions
+Source: https://docs.blaxel.ai/Sandboxes/Sessions
+
+Operate Blaxel sandboxes directly from a frontend client using time-limited, scoped session tokens generated by your backend, with no proxy needed.
+
+In many situations, you’ll need to operate a sandbox from a frontend client. When doing so, you cannot share the Blaxel credentials needed to access the sandbox. The solution is to use **sessions.**
+
+Sessions are created for a sandbox from a backend server (using Blaxel credentials) and then shared with the frontend client, allowing the browser to connect to the sandbox.
+
+From a session, you can:
+
+- only interact with the [sandbox API](https://docs.blaxel.ai/api-reference/filesystem/get-file-or-directory-information) (i.e. manage the sandbox filesystem, processes and logs).
+
+From a session, you cannot:
+
+- interact with Blaxel API to create other preview URLs or sessions. These operations must be done server-side.
+
+## Basic example
+
+Create a temporary backend session to access a sandbox instance from your client application. The main parameter for this is `expiresAt`, a `Date()` corresponding to the expiration date.
+
+```typescript TypeScript
+// From your backend
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+
+const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+const session = await sandbox.sessions.create({ expiresAt });
+```
+
+```python Python
+# From your backend
+from datetime import datetime, timedelta, UTC
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.get("my-sandbox")
+
+expires_at = datetime.now(UTC) + timedelta(hours=24)
+session = await sandbox.sessions.create({"expires_at": expires_at})
+```
+
+```tsx
+/// From your frontend:
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxWithSession = await SandboxInstance.fromSession(session)
+```
+
+### Create if expired
+
+This helper function either retrieves an existing session or creates a new one if it expired. You can optionally pass `delta` (default: 1 hour), the time window in milliseconds before actual expiration when a session should still be recreated.
+
+```typescript TypeScript
+const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+const session = await sandbox.sessions.createIfExpired(
+  { expiresAt },
+  60000 // delta in milliseconds
+);
+```
+
+```python Python
+expires_at = datetime.now(UTC) + timedelta(hours=24)
+session = await sandbox.sessions.create_if_expired(
+  {"expiresAt": expires_at},
+  delta_seconds=60000
+)
+```
+
+## Example (NextJS)
+
+The following example demonstrates a full implementation of sessions in a backend server and frontend client using NextJS.
+
+### Server code (backend)
+
+```typescript expandable
+
+import { NextResponse } from 'next/server';
+import { SandboxInstance } from "@blaxel/core";
+
+const SANDBOX_NAME = 'my-sandbox';
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "http://localhost:3000",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  "Vary": "Origin"
+}
+
+export async function GET() {
+  // Get or create sandbox
+  const sandbox = await SandboxInstance.createIfNotExists({
+    name: SANDBOX_NAME,
+    image: "blaxel/base-image:latest",
+    memory: 4096,
+    region: "us-pdx-1"
+  });
+
+  // Create session (24 hours expiry)
+  const session = await sandbox.sessions.create({
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+  });
+
+  // Create preview for port 3000
+  const preview = await sandbox.previews.create({
+    metadata: { name: "app-preview" },
+    spec: {
+      port: 3000,
+      public: true,
+      responseHeaders: responseHeaders
+    }
+  });
+
+  return NextResponse.json({
+    session,
+    preview_url: preview.spec?.url
+  });
+}
+
+```
+
+### Client code (frontend)
+
+```typescript expandable
+
+'use client'
+
+import { SandboxInstance } from "@blaxel/core";
+import { useState, useEffect } from "react";
+
+export default function SandboxClient() {
+  const [sandbox, setSandbox] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    initializeSandbox();
+  }, []);
+
+  async function initializeSandbox() {
+    // Get session from backend
+    const response = await fetch('/api/sandbox');
+    const { session, preview_url } = await response.json();
+
+    // Create sandbox from session
+    const sandboxInstance = await SandboxInstance.fromSession(session);
+
+    setSandbox(sandboxInstance);
+    setPreviewUrl(preview_url);
+
+    // Start development server
+    await sandboxInstance.process.exec({
+      name: "dev-server",
+      command: "npm run dev",
+      workingDir: "/app",
+      waitForPorts: [3000]
+    });
+    setLoading(false);
+  }
+
+  if (loading) return <div>Loading sandbox...</div>;
+
+  return (
+    <div>
+      <h1>Sandbox Demo</h1>
+      {previewUrl && (
+        <iframe
+          src={previewUrl}
+          width="100%"
+          height="600px"
+          title="App Preview"
+        />
+      )}
+    </div>
+  );
+}
+
+```
+
+# Standby control
+Source: https://docs.blaxel.ai/Sandboxes/Standby-control
+
+Control when sandboxes remain active by managing WebSocket connections, tab visibility, auto-disconnect behavior, and activity-based timeouts.
+
+Sandboxes stay active as long as there's an active connection to them, typically through a WebSocket connection. When a browser tab becomes inactive, the WebSocket should disconnect after some time, but this behavior depends on the specific browser implementation.
+
+> [!NOTE]
+>
+> You can also use [process keep-alive](https://docs.blaxel.ai/Sandboxes/Processes#sandbox-keep-alive) to keep the sandbox running when you launch a process, even if there isn't an active connection to it.
+
+There are no built-in stop or start functions available in the SDKs to manage standby mode. This means you'll need to rely on other approaches to better control when sandboxes remain active:
+
+1. Hide iframe when tab is inactive
+
+    Use JavaScript events to detect when a user is not active on the tab:
+    - Listen for tab visibility events that indicate when the user switches away from your tab
+    - When the user becomes inactive, hide the iframe containing the sandbox preview
+    - Show the iframe again when the user returns to the tab
+
+1. Implement auto-disconnect on tab switch
+
+    Some browsers (like Chrome) may keep WebSockets alive even when tabs are inactive to improve performance. You can implement an auto-disconnect feature that:
+    - Detects when users switch tabs
+    - Automatically disconnects the WebSocket connection
+    - Reconnects when the user returns
+
+1. Use activity-based timeouts
+
+    Set up a timer system in your interface that:
+    - Monitors user activity (typing, interactions, etc.)
+    - Hides the preview after a period of inactivity
+    - Prompts the user to confirm they're still using the sandbox
+
+You can use the SDKs from the frontend if you have the right headers set on the session. Use the [`sandbox.sessions.create` function](https://docs.blaxel.ai/Sandboxes/Sessions) to manage sessions.
+
+Here is an example of auto disconnect on tab switch with Vite through a plugin:
+
+> [!WARNING]
+>
+> The code below is illustrative and not intended for production use.
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { hmrVisibility } from './vite-plugin-hmr-visibility'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    hmrVisibility({
+      disconnectDelay: 2000, // Wait 2 seconds before disconnecting
+      debug: true, // Enable debug logging
+    }),
+  ],
+  server: {
+    // Prevent Vite from aggressive reconnection attempts
+    hmr: {
+      overlay: false, // Disable error overlay which can trigger reconnections
+    },
+  },
+})
+
+// vite-plugin-hmr-visibility.ts
+/**
+ * Vite Plugin: HMR Visibility Manager
+ * Automatically disconnects/reconnects HMR websocket based on tab visibility
+ * to reduce serverless billing costs
+ */
+
+import type { Plugin } from 'vite'
+
+export interface HMRVisibilityOptions {
+  /**
+   * Grace period before disconnecting (ms)
+   * @default 2000
+   */
+  disconnectDelay?: number
+
+  /**
+   * Enable debug logging
+   * @default false
+   */
+  debug?: boolean
+}
+
+export function hmrVisibility(options: HMRVisibilityOptions = {}): Plugin {
+  const {
+    disconnectDelay = 2000,
+    debug = false,
+  } = options
+
+  return {
+    name: 'vite-plugin-hmr-visibility',
+    apply: 'serve', // Only apply in dev mode
+
+    transformIndexHtml() {
+      // Inject the HMR visibility manager as an inline script
+      return [
+        {
+          tag: 'script',
+          attrs: { type: 'module' },
+          children: `
+// HMR Visibility Manager - Disconnects HMR when tab is hidden
+(function() {
+  const log = (...args) => {
+    if (${JSON.stringify(debug)}) {
+      console.log('[HMR Visibility]', ...args);
+    }
+  };
+
+  let disconnectTimer = null;
+  let isTabVisible = !document.hidden;
+  const DISCONNECT_DELAY = ${JSON.stringify(disconnectDelay)};
+
+  // Store reference to original functions
+  const OriginalWebSocket = window.WebSocket;
+  const OriginalSetTimeout = window.setTimeout;
+  const OriginalSetInterval = window.setInterval;
+
+  let hmrSocket = null;
+  let shouldBlockReconnect = false;
+  let blockedTimers = new Set();
+
+  // Patch setTimeout and setInterval to block Vite's reconnection timers
+  window.setTimeout = function(callback, delay, ...args) {
+    // Block timers when tab is hidden and it looks like a reconnection attempt
+    if (shouldBlockReconnect && delay && delay >= 500 && delay <= 5000) {
+      const callbackStr = callback.toString();
+      if (callbackStr.includes('connect') || callbackStr.includes('WebSocket') || callbackStr.includes('ws')) {
+        log('Blocked reconnection timer (setTimeout)');
+        const timerId = OriginalSetTimeout(() => {}, 999999999);
+        blockedTimers.add(timerId);
+        return timerId;
+      }
+    }
+    return OriginalSetTimeout.call(this, callback, delay, ...args);
+  };
+
+  window.setInterval = function(callback, delay, ...args) {
+    // Block intervals when tab is hidden
+    if (shouldBlockReconnect) {
+      const callbackStr = callback.toString();
+      if (callbackStr.includes('connect') || callbackStr.includes('WebSocket') || callbackStr.includes('ws')) {
+        log('Blocked reconnection interval (setInterval)');
+        const timerId = OriginalSetInterval(() => {}, 999999999);
+        blockedTimers.add(timerId);
+        return timerId;
+      }
+    }
+    return OriginalSetInterval.call(this, callback, delay, ...args);
+  };
+
+  // Patch WebSocket to track and block HMR connections
+  window.WebSocket = function(url, protocols) {
+    // Block new WebSocket connections when tab is hidden
+    if (shouldBlockReconnect) {
+      log('Blocked WebSocket connection attempt while tab is hidden:', url);
+      // Return a fake WebSocket that stays in CONNECTING state forever
+      const fakeWs = {
+        readyState: 0, // CONNECTING (keeps Vite waiting)
+        close: () => { log('Fake WebSocket close called'); },
+        send: () => { log('Fake WebSocket send called'); },
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+        onopen: null,
+        onclose: null,
+        onerror: null,
+        onmessage: null,
+      };
+      return fakeWs;
+    }
+
+    const ws = new OriginalWebSocket(url, protocols);
+
+    // Track HMR WebSocket and intercept its event handlers
+    if (typeof url === 'string') {
+      hmrSocket = ws;
+      log('HMR WebSocket created and tracked');
+
+      // Intercept the onclose setter to control reconnection behavior
+      let userOnClose = null;
+      Object.defineProperty(ws, 'onclose', {
+        get() { return userOnClose; },
+        set(handler) {
+          userOnClose = function(event) {
+            // If we're blocking reconnect, don't call Vite's onclose handler
+            if (shouldBlockReconnect) {
+              log('Suppressed onclose handler - blocking reconnection');
+              return;
+            }
+            // Otherwise, call the original handler
+            if (handler) {
+              handler.call(this, event);
+            }
+          };
+        },
+        configurable: true
+      });
+
+      // Also intercept addEventListener for 'close' events
+      const originalAddEventListener = ws.addEventListener;
+      ws.addEventListener = function(type, listener, options) {
+        if (type === 'close') {
+          const wrappedListener = function(event) {
+            if (shouldBlockReconnect) {
+              log('Suppressed close event listener - blocking reconnection');
+              return;
+            }
+            listener.call(this, event);
+          };
+          return originalAddEventListener.call(this, type, wrappedListener, options);
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+      };
+    }
+
+    return ws;
+  };
+
+  // Copy static properties from original WebSocket
+  Object.setPrototypeOf(window.WebSocket, OriginalWebSocket);
+  window.WebSocket.prototype = OriginalWebSocket.prototype;
+
+  // Copy static constants
+  Object.defineProperty(window.WebSocket, 'CONNECTING', { value: 0, enumerable: true });
+  Object.defineProperty(window.WebSocket, 'OPEN', { value: 1, enumerable: true });
+  Object.defineProperty(window.WebSocket, 'CLOSING', { value: 2, enumerable: true });
+  Object.defineProperty(window.WebSocket, 'CLOSED', { value: 3, enumerable: true });
+
+  const disconnectHMR = () => {
+    if (hmrSocket && (hmrSocket.readyState === 0 || hmrSocket.readyState === 1)) {
+      log('Disconnecting HMR websocket (tab hidden) - saving costs ✅');
+      hmrSocket.close(1000, 'Tab hidden');
+      hmrSocket = null;
+    }
+    shouldBlockReconnect = true;
+  };
+
+  const reconnectHMR = () => {
+    shouldBlockReconnect = false;
+
+    // Clear any blocked timers
+    blockedTimers.forEach(timerId => {
+      try {
+        clearTimeout(timerId);
+        clearInterval(timerId);
+      } catch (e) {}
+    });
+    blockedTimers.clear();
+
+    // If HMR was disconnected, reload to reconnect
+    if (!hmrSocket || hmrSocket.readyState === 3) {
+      log('Reloading page to restore HMR connection');
+      setTimeout(() => window.location.reload(), 100);
+    }
+  };
+
+  // Handle tab visibility changes
+  document.addEventListener('visibilitychange', () => {
+    isTabVisible = !document.hidden;
+
+    if (document.hidden) {
+      log('Tab hidden - will disconnect HMR in ' + DISCONNECT_DELAY + 'ms');
+
+      disconnectTimer = OriginalSetTimeout(() => {
+        if (document.hidden) {
+          disconnectHMR();
+        }
+      }, DISCONNECT_DELAY);
+
+    } else {
+      log('Tab visible - allowing HMR reconnection');
+
+      // Clear disconnect timer if tab becomes visible again
+      if (disconnectTimer) {
+        clearTimeout(disconnectTimer);
+        disconnectTimer = null;
+      }
+
+      OriginalSetTimeout(() => {
+        reconnectHMR();
+      }, 100);
+    }
+  });
+
+  // Handle page freeze events
+  window.addEventListener('freeze', () => {
+    log('Page freeze detected - disconnecting HMR immediately');
+    disconnectHMR();
+  }, { capture: true });
+
+  window.addEventListener('resume', () => {
+    log('Page resume detected - allowing HMR reconnection');
+    OriginalSetTimeout(() => {
+      reconnectHMR();
+    }, 100);
+  }, { capture: true });
+
+  log('HMR Visibility Manager initialized - will block reconnection attempts when tab is hidden');
+})();
+          `,
+          injectTo: 'head-prepend',
+        },
+      ]
+    },
+  }
+}
+```
+
+# Proxy
+Source: https://docs.blaxel.ai/Sandboxes/Proxy
+
+Route outbound sandbox traffic through Blaxel's proxy with MITM header and body injection, inject secrets, and configure per-domain firewalls.
+
+> [!NOTE]
+>
+> This feature is currently in public preview and is not recommended for production use.
+
+The Blaxel SDK supports two network features when creating sandboxes:
+
+- **[Proxy routing with secrets injection](https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection)** - the Blaxel proxy performs man-in-the-middle (MITM) interception on outbound HTTPS traffic and injects headers, body fields, and secrets server-side.
+- **[Domain filtering](https://docs.blaxel.ai/Sandboxes/Proxy-domains)** - the Blaxel proxy controls which external domains the sandbox can reach.
+
+Proxy and network configuration can be updated after creation: you can rotate secrets, add or remove routing rules, and change the domain allowlist or denylist on a running sandbox.
+
+> [!WARNING]
+>
+> You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Enabling or disabling the proxy requires a new sandbox. If you remove all routing rules and domain filters from an existing proxy-enabled sandbox, the proxy remains active transparently - traffic continues to flow through it without any secret injection or domain blocking.
+
+## How it works
+
+When a sandbox is created with a proxy config, Blaxel:
+
+1. Sets `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables inside the sandbox
+2. Installs a CA certificate and sets `NODE_EXTRA_CA_CERTS` and `SSL_CERT_FILE` so TLS clients trust the proxy
+3. Performs MITM on outbound HTTPS via CONNECT tunneling
+4. Matches each request against routing rules by destination domain
+5. Injects configured headers and body fields, resolving `{{SECRET:name}}` placeholders server-side
+6. Adds an `X-Blaxel-Request-Id` header to every proxied request for tracing
+
+Most HTTP clients work transparently because they read the injected `HTTP_PROXY`, `HTTPS_PROXY`, and `SSL_CERT_FILE` environment variables - `curl`, `pip`, `npm`, `git`, Python `requests`, and Python `httpx` all work out of the box. Lower-level libraries that don't follow these conventions (for example, calling `urllib3` directly) need to be pointed at the proxy explicitly.
+
+> [!NOTE]
+>
+> Localhost (`127.0.0.1`), private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), `169.254.169.254`, `.local`, and `.internal` are always bypassed automatically.
+
+## Configuration reference
+
+All network settings are passed via the `network` key in the sandbox creation options:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    // Domain filtering (firewall)
+    allowedDomains: [...],
+    forbiddenDomains: [...],
+    // Proxy with header/body injection
+    proxy: {
+      routing: [...],
+      bypass: [...],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        # Domain filtering (firewall)
+        "allowedDomains": [...],
+        "forbiddenDomains": [...],
+        # Proxy with header/body injection
+        "proxy": {
+            "routing": [...],
+            "bypass": [...],
+        },
+    },
+})
+```
+
+> [!WARNING]
+>
+> Adding a proxy config to a sandbox enforces the proxy on **all** outbound requests. If some requests should not go through it, use [proxy bypass](https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection#proxy-bypass).
+
+### `SandboxNetwork`
+
+| Field | Type | Description |
+|---|---|---|
+| `allowedDomains` | `string[]` / `list[str]` | Allowlist - only these domains are reachable. Supports wildcards (`*.s3.amazonaws.com`). |
+| `forbiddenDomains` | `string[]` / `list[str]` | Denylist - all domains except these are reachable. Supports wildcards. If a request matches both lists, `forbiddenDomains` takes precedence and the request is blocked. |
+| `firewall` | `FirewallConfig` | Network-level lockdown that forces sandbox egress through the proxy. See [domain filter enforcement](https://docs.blaxel.ai/Sandboxes/Proxy-domains#domain-filter-enforcement). |
+| `proxy` | `ProxyConfig` | Proxy routing and bypass configuration. |
+
+### `FirewallConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `rulesets` | `string[]` / `list[str]` | Lockdown rulesets to apply. Set to `["proxy"]` to force all sandbox outbound traffic through the Blaxel proxy, even for tools that ignore `HTTP_PROXY`/`HTTPS_PROXY`. Can only be set at sandbox creation. |
+
+### `ProxyConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `routing` | `ProxyTarget[]` / `list[ProxyTarget]` | Per-destination routing rules with header/body injection. |
+| `bypass` | `string[]` / `list[str]` | Domains added to `NO_PROXY` that skip the proxy entirely. Supports wildcards. |
+
+### `ProxyTarget`
+
+| Field | Type | Description |
+|---|---|---|
+| `destinations` | `string[]` / `list[str]` | Domain patterns this rule applies to. Use `["*"]` for a global catch-all rule. Supports wildcards (`*.example.com` matches `sub.example.com` but not `example.com`). |
+| `headers` | `Record<string, string>` / `dict` | Headers injected into matching requests. Values may contain `{{SECRET:name}}` references. |
+| `body` | `Record<string, string>` / `dict` | JSON body fields injected into matching requests. Values may contain `{{SECRET:name}}` references. |
+| `secrets` | `Record<string, string>` / `dict` | Named secret values for this rule. Referenced via `{{SECRET:name}}` in headers and body. Write-only - never returned in API responses. Stored encrypted at rest. |
+
+## Region availability
+
+Proxy availability is region-dependent. The `Region` type includes a `proxyAvailable` boolean field. Check region support before relying on proxy features:
+
+```typescript TypeScript
+import { listRegions } from "@blaxel/core";
+
+const { data: regions } = await listRegions({ throwOnError: true });
+for (const r of regions) {
+  console.log(`${r.name}: proxy=${r.proxyAvailable}`);
+}
+```
+
+```python Python
+from blaxel.core import listRegions
+
+result = await listRegions()
+for r in result.data:
+    print(f"{r.name}: proxy={r.proxy_available}")
+```
+
+## Environment variables set inside the sandbox
+
+When proxy is configured, the sandbox automatically has:
+
+| Variable | Purpose |
+|---|---|
+| `HTTP_PROXY` | Proxy URL for HTTP traffic |
+| `HTTPS_PROXY` | Proxy URL for HTTPS traffic |
+| `NO_PROXY` | Comma-separated bypass list (always includes localhost, private ranges) |
+| `NODE_EXTRA_CA_CERTS` | Path to CA cert for Node.js TLS verification |
+| `SSL_CERT_FILE` | Path to CA cert for other TLS clients (`curl`, Python, etc.) |
+
+## CLI tool compatibility
+
+When proxy is enabled, common CLI tools and high-level clients work transparently inside the sandbox with no extra configuration:
+
+| Tool | Protocol | Notes |
+|---|---|---|
+| `curl` | HTTPS | Automatic via `HTTPS_PROXY` env var |
+| `git` | HTTPS | May need `GIT_SSL_CAINFO=$SSL_CERT_FILE` for some operations |
+| `pip` / `pip3` | HTTPS | Automatic |
+| `npm` / `npx` | HTTPS | Automatic |
+| Python `requests` | HTTPS | Automatic via env vars |
+| Python `httpx` | HTTPS | Automatic via env vars |
+
+Python's stdlib `urllib.request` is not recommended with the proxy. Prefer `requests` or `httpx`, or configure `urllib3.ProxyManager` directly if you need lower-level control:
+
+```python
+import os
+import urllib.parse
+import urllib3
+
+proxy_url = os.environ["HTTPS_PROXY"]
+_parsed = urllib.parse.urlsplit(proxy_url)
+_userinfo = _parsed.netloc.rsplit("@", 1)
+proxy_kwargs = {}
+if len(_userinfo) == 2:
+    proxy_auth = urllib.parse.unquote(_userinfo[0])
+    proxy_kwargs["proxy_headers"] = urllib3.make_headers(proxy_basic_auth=proxy_auth)
+http = urllib3.ProxyManager(
+    proxy_url,
+    **proxy_kwargs,
+    cert_reqs="CERT_REQUIRED",
+    ca_certs=os.environ.get("SSL_CERT_FILE"),
+)
+resp = http.request(
+    "GET",
+    "https://api.stripe.com/v1/charges"
+)
+print(resp.status, resp.data.decode())
+```
+
+## Behavior details
+
+- **Wildcard matching**: `*.example.com` matches `sub.example.com` and `a.b.example.com` but not `example.com` itself
+- **No cross-route leakage**: Headers/secrets from one routing rule are never applied to requests matching a different rule
+- **User headers preserved**: The proxy adds injected headers alongside any headers the sandbox code sends - it does not overwrite user-sent headers
+- **Body merge**: Injected body fields are merged into JSON request bodies up to 1 MB. User-sent fields take precedence on key collisions. Requests over 1 MB, requests without a known `Content-Length` (e.g. chunked uploads), and streaming RPCs are forwarded unchanged - use header injection for credentials in those cases
+- **Tracing**: Every proxied request gets an `X-Blaxel-Request-Id` header for observability
+- **Local traffic**: Requests to `localhost` / `127.0.0.1` are never routed through the proxy
+
+### HTTP/2 and gRPC
+
+The proxy supports HTTP/2 and gRPC. Clients that previously required HTTP/1.1 workarounds now work without any flags or downgrades:
+
+- gRPC SDKs in Go, Python (`grpcio`), and Node (`@grpc/grpc-js`)
+- `curl --http2`
+- Go `net/http` (HTTP/2 is the default)
+
+All four gRPC RPC styles - unary, server-streaming, client-streaming, and bidirectional - flow through, and gRPC trailers (`grpc-status`, `grpc-message`) are preserved end-to-end.
+
+A few things to keep in mind:
+
+- **Header injection works on every request**, including streaming RPCs.
+- **Body injection is skipped on streaming requests** (gRPC streams, chunked uploads). Use header injection to attach credentials on streaming workloads - see the body injection limits in [Behavior details](https://docs.blaxel.ai/Sandboxes/Proxy#behavior-details).
+
+## Update proxy configuration
+
+You can update proxy routing rules, secrets, domain filters, and bypass lists on a running sandbox using the SDK's `updateNetwork` method. This fetches the current sandbox, merges the new network config, and applies the update in one call:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+await SandboxInstance.updateNetwork("my-sandbox", {
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY" },
+        },
+        {
+          destinations: ["api.anthropic.com"],
+          headers: { "x-api-key": "{{SECRET:anthropic-key}}" },
+          secrets: { "anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY" },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+from blaxel.core.sandbox.types import SandboxUpdateNetwork
+
+await SandboxInstance.update_network(
+    "my-sandbox",
+    SandboxUpdateNetwork(network={
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY"},
+                },
+                {
+                    "destinations": ["api.anthropic.com"],
+                    "headers": {"x-api-key": "{{SECRET:anthropic-key}}"},
+                    "secrets": {"anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY"},
+                },
+            ],
+        },
+    }),
+)
+```
+
+```bash cURL
+curl -X PUT "https://api.blaxel.ai/v0/sandboxes/my-sandbox" \
+  -H "Authorization: Bearer $BL_API_KEY" \
+  -H "X-Blaxel-Workspace: my-workspace" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": { "name": "my-sandbox" },
+    "spec": {
+      "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "api.anthropic.com"],
+        "proxy": {
+          "routing": [
+            {
+              "destinations": ["api.stripe.com"],
+              "headers": { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+              "secrets": { "stripe-key": "sk_live_REPLACE_WITH_YOUR_KEY" }
+            },
+            {
+              "destinations": ["api.anthropic.com"],
+              "headers": { "x-api-key": "{{SECRET:anthropic-key}}" },
+              "secrets": { "anthropic-key": "REPLACE_WITH_YOUR_ANTHROPIC_KEY" }
+            }
+          ]
+        }
+      }
+    }
+  }'
+```
+
+The update replaces the entire `network` configuration. Include all routing rules, domain filters, and secrets you want active after the update.
+
+> [!WARNING]
+>
+> You cannot enable the proxy on a sandbox that was created without it, or fully disable the proxy on a sandbox that was created with it. Removing all routing rules and domain filters does not disable the proxy - traffic continues to flow through it transparently without any injection or blocking.
+
+## Full example: agent sandbox with proxy + firewall
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "agent-workspace",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  labels: { team: "ml", env: "staging" },
+  network: {
+    allowedDomains: [
+      "api.stripe.com",
+      "api.openai.com",
+      "httpbin.org",
+      "*.s3.amazonaws.com",
+    ],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+            "Stripe-Version": "2024-12-18.acacia",
+          },
+          body: {
+            "api_key": "{{SECRET:stripe-key}}",
+          },
+          secrets: {
+            "stripe-key": "sk-live-abc123...",
+          },
+        },
+        {
+          destinations: ["api.openai.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:openai-key}}",
+            "OpenAI-Organization": "org-abc123",
+          },
+          secrets: {
+            "openai-key": "sk-proj-xyz789...",
+          },
+        },
+      ],
+      bypass: ["*.s3.amazonaws.com"],
+    },
+  },
+});
+
+// curl https://api.stripe.com/...  -> gets auth header + body injected
+// curl https://api.openai.com/...  -> gets auth header injected
+// curl https://httpbin.org/...     -> allowed, no injection
+// curl https://evil.com/...        -> BLOCKED by allowedDomains firewall
+
+const result = await sandbox.process.exec({
+  command: "curl -s https://api.stripe.com/v1/charges",
+  waitForCompletion: true,
+});
+console.log(result.logs);
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "agent-workspace",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "labels": {"team": "ml", "env": "staging"},
+    "network": {
+        "allowedDomains": [
+            "api.stripe.com",
+            "api.openai.com",
+            "httpbin.org",
+            "*.s3.amazonaws.com",
+        ],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                        "Stripe-Version": "2024-12-18.acacia",
+                    },
+                    "body": {
+                        "api_key": "{{SECRET:stripe-key}}",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk-live-abc123...",
+                    },
+                },
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:openai-key}}",
+                        "OpenAI-Organization": "org-abc123",
+                    },
+                    "secrets": {
+                        "openai-key": "sk-proj-xyz789...",
+                    },
+                },
+            ],
+            "bypass": ["*.s3.amazonaws.com"],
+        },
+    },
+})
+
+# curl https://api.stripe.com/...  -> gets auth header + body injected
+# curl https://api.openai.com/...  -> gets auth header injected
+# curl https://httpbin.org/...     -> allowed, no injection
+# curl https://evil.com/...        -> BLOCKED by allowedDomains firewall
+
+result = await sandbox.process.exec({
+    "command": "curl -s https://api.stripe.com/v1/charges",
+    "wait_for_completion": True,
+})
+print(result.logs)
+```
+
+# Proxy routing with secrets injection
+Source: https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection
+
+Inject secrets, dynamic values, headers, and body fields into outbound sandbox requests through the Blaxel proxy so code never sees raw API keys or credentials.
+
+> [!NOTE]
+>
+> This feature is currently in public preview and is not recommended for production use.
+
+The Blaxel proxy intercepts outbound HTTPS requests from the sandbox and injects headers, body fields, and secrets server-side.
+
+> [!WARNING]
+>
+> Adding a proxy config to a sandbox enforces the proxy on **all** outbound requests. If some requests should not go through it, use [proxy bypass](https://docs.blaxel.ai/Sandboxes/Proxy-secrets-injection#proxy-bypass).
+
+## Secrets injection
+
+### Header injection
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+            "Stripe-Version": "2024-12-18.acacia",
+          },
+          secrets: {
+            "stripe-key": "sk_live_...",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+
+sandbox = await SandboxInstance.create({
+    "name": "my-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                        "Stripe-Version": "2024-12-18.acacia",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk_live_...",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+Code inside the sandbox calls `api.stripe.com` normally - the proxy intercepts the request, injects the `Authorization` and `Stripe-Version` headers with the resolved secret, and forwards it. The sandbox never sees the raw API key.
+
+### Body injection (POST requests)
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "body-injection",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: {
+            "Authorization": "Bearer {{SECRET:stripe-key}}",
+          },
+          body: {
+            "api_key": "{{SECRET:stripe-key}}",
+          },
+          secrets: {
+            "stripe-key": "sk_live_...",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "body-injection",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {
+                        "Authorization": "Bearer {{SECRET:stripe-key}}",
+                    },
+                    "body": {
+                        "api_key": "{{SECRET:stripe-key}}",
+                    },
+                    "secrets": {
+                        "stripe-key": "sk_live_...",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+The proxy merges body fields into outbound POST/PUT/PATCH JSON payloads. User-sent fields are preserved; injected fields are added alongside them.
+
+### Multiple routing rules
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "multi-route",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_..." },
+        },
+        {
+          destinations: ["api.openai.com"],
+          headers: { "Authorization": "Bearer {{SECRET:openai-key}}" },
+          secrets: { "openai-key": "sk-proj-..." },
+        },
+      ],
+      bypass: ["*.s3.amazonaws.com"],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "multi-route",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_..."},
+                },
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:openai-key}}"},
+                    "secrets": {"openai-key": "sk-proj-..."},
+                },
+            ],
+            "bypass": ["*.s3.amazonaws.com"],
+        },
+    },
+})
+```
+
+Secrets are scoped per rule - the Stripe key is never injected into OpenAI requests and vice versa.
+
+### Global catch-all rule
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "global-auth",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["*"],
+          headers: {
+            "X-Global-Auth": "Bearer {{SECRET:global-key}}",
+          },
+          secrets: {
+            "global-key": "token-xyz",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "global-auth",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["*"],
+                    "headers": {"X-Global-Auth": "Bearer {{SECRET:global-key}}"},
+                    "secrets": {"global-key": "token-xyz"},
+                },
+            ],
+        },
+    },
+})
+```
+
+The `["*"]` destination matches all proxied traffic.
+
+### Secret interpolation
+
+Secrets are referenced in headers and body values using the `{{SECRET:name}}` syntax:
+
+```text
+"Authorization": "Bearer {{SECRET:api-token}}"          → "Bearer tok_live_abc123"
+"X-Multi":       "{{SECRET:part-a}}-{{SECRET:part-b}}"  → "ALPHA-BETA"
+"X-Plain":       "no-secret-here"                        → "no-secret-here" (unchanged)
+```
+
+- Multiple `{{SECRET:...}}` placeholders can appear in a single value
+- Secrets are resolved server-side by the proxy - the sandbox runtime never sees raw secret values
+- Secrets are write-only: the `secrets` field is stripped from API responses
+- Secrets are scoped per routing rule: a secret defined on route A cannot be resolved by route B
+- User code inside the sandbox can also send `{{SECRET:name}}` in its own request headers or body - the proxy will resolve them if the secret exists on the matching route
+
+## Proxy bypass
+
+Domains listed in `bypass` skip the proxy tunnel entirely (direct connection):
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "bypass-only",
+  network: {
+    proxy: {
+      bypass: ["*.s3.amazonaws.com", "169.254.169.254"],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "bypass-only",
+    "network": {
+        "proxy": {
+            "bypass": ["*.s3.amazonaws.com", "169.254.169.254"],
+        },
+    },
+})
+```
+
+S3 and metadata endpoint traffic goes direct; everything else routes through the proxy.
+
+## Dynamic value injection
+
+Alongside secrets, you can inject values that are generated fresh for every request using the `{{FUNC:name(args)}}` syntax. Use them for idempotency keys, request IDs, timestamps, nonces, and other one-time values.
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "idempotency-key",
+  network: {
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.openai.com"],
+          headers: {
+            "X-Request-Id": "req-{{FUNC:uuid()}}",
+          },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "idempotency-key",
+    "network": {
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.openai.com"],
+                    "headers": {
+                        "X-Request-Id": "req-{{FUNC:uuid()}}",
+                    },
+                },
+            ],
+        },
+    },
+})
+```
+
+Each request through this rule gets a different `X-Request-Id`. Function names are case-insensitive, and each occurrence is evaluated independently, so `{{FUNC:uuid()}}-{{FUNC:uuid()}}` produces two different UUIDs.
+
+### Available functions
+
+| Placeholder | Expands to |
+|-------------|------------|
+| `{{FUNC:uuid()}}` / `{{FUNC:uuidv4()}}` | Random v4 UUID |
+| `{{FUNC:uuidv7()}}` | Time-ordered v7 UUID |
+| `{{FUNC:timestamp()}}` | Current Unix time in seconds |
+| `{{FUNC:timestamp_ms()}}` | Current Unix time in milliseconds |
+| `{{FUNC:timestamp_ns()}}` | Current Unix time in nanoseconds |
+| `{{FUNC:datetime()}}` / `{{FUNC:iso8601()}}` | Current UTC time, RFC 3339 |
+| `{{FUNC:date()}}` | Current UTC date, `YYYY-MM-DD` |
+| `{{FUNC:time()}}` | Current UTC time of day, `HH:MM:SS` |
+| `{{FUNC:randint()}}` / `{{FUNC:randint(n)}}` | Random integer in `[0, 2147483647)` or `[0, n)` |
+| `{{FUNC:randhex()}}` / `{{FUNC:randhex(n)}}` | 32 or `n` random hex characters (`n` up to 1024) |
+| `{{FUNC:randstr()}}` / `{{FUNC:randstr(n)}}` | 16 or `n` random alphanumerics (`n` up to 1024) |
+| `{{FUNC:nonce()}}` | 32 random hex characters |
+
+Random functions use a cryptographically secure random source. `randstr` draws uniformly from `[a-zA-Z0-9]`.
+
+### Where dynamic values apply
+
+`{{FUNC:*}}` expansion runs only in the header and body values you define on a routing rule. It never runs on data that code inside the sandbox sends. Request headers and body content your code sends are resolved for `{{SECRET:name}}` only; any `{{FUNC:*}}` text your code sends is passed through unchanged.
+
+| Source | `{{SECRET:*}}` | `{{FUNC:*}}` |
+|--------|:--:|:--:|
+| Routing rule header and body values | Yes | Yes |
+| Request headers sent by sandbox code | Yes | No (left as text) |
+| Request body sent by sandbox code | Yes | No (left as text) |
+
+Within a single value, functions are expanded before secrets are substituted. A secret whose value happens to contain `{{...}}` syntax is inserted verbatim and never re-interpreted as a placeholder.
+
+> [!NOTE]
+>
+> Functions expand only in the values you configure on a routing rule, never in data your sandbox code sends. This keeps a caller from packing a request with many expensive placeholders to force disproportionate work.
+
+### Reading generated values from the response
+
+Because generated values are produced inside the proxy, each injected header or body field that used a function is echoed back on the response as its own header, keyed by the injection target:
+
+```text
+X-Blaxel-Func-<target>: <function>=<value>[, <function>=<value> ...]
+```
+
+For example, injecting `{{FUNC:uuid()}}` into the `X-Request-Id` header adds the following response header:
+
+```text
+X-Blaxel-Func-X-Request-Id: uuid=3f2a...c9
+```
+
+The value lists the functions used in that target as `name=value` tokens, in generation order. Only function values are echoed. Resolved `{{SECRET:*}}` values are never returned to your code. A value is echoed only when its injection resolves cleanly: if a value combines a function with a secret that fails to resolve, the whole injection is skipped and nothing is echoed for it.
+
+### Fail-safe behavior and limits
+
+Anything the proxy cannot resolve is left as literal text rather than blanked out or failing the request:
+
+- Unknown function, for example `{{FUNC:notafunction()}}`
+- Malformed placeholder with missing parentheses, for example `{{FUNC:uuid}}`
+- Invalid argument, for example `{{FUNC:randhex(abc)}}` or `{{FUNC:randint(0)}}`
+- Over the size cap, for example `{{FUNC:randstr(5000)}}`
+- Beyond the per-request budget
+
+Two limits bound the work any single request can trigger:
+
+- Per-function output: `randstr` and `randhex` cap their length argument at 1024 characters
+- Per-request count: at most 10 functions are expanded per request, counted across all header and body values combined. Any beyond the limit are left as literal text
+
+## Reading proxy config from an existing sandbox
+
+After creation or retrieval, network config is available as typed model attributes:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const network = sandbox.spec.network;
+
+if (network?.proxy?.routing) {
+  for (const route of network.proxy.routing) {
+    console.log(route.destinations);
+    console.log(route.headers["Authorization"]);
+  }
+  if (network.proxy.bypass) {
+    console.log(network.proxy.bypass);
+  }
+}
+
+if (network?.allowedDomains) {
+  console.log(network.allowedDomains);
+}
+```
+
+```python Python
+from blaxel.core.sandbox import SandboxInstance
+from blaxel.core.client.types import Unset
+
+sandbox = await SandboxInstance.get("my-sandbox")
+network = sandbox.spec.network  # SandboxNetwork (or Unset)
+
+if not isinstance(network, Unset) and not isinstance(network.proxy, Unset):
+    for route in network.proxy.routing:
+        print(route.destinations)
+        print(route.headers["Authorization"])
+    if not isinstance(network.proxy.bypass, Unset):
+        print(network.proxy.bypass)
+
+if not isinstance(network, Unset) and not isinstance(network.allowed_domains, Unset):
+    print(network.allowed_domains)
+```
+
+# Domain filtering
+Source: https://docs.blaxel.ai/Sandboxes/Proxy-domains
+
+Restrict which external domains, HTTP methods, and URL paths a Blaxel sandbox can reach using allowlists and denylists to prevent data exfiltration and unwanted outbound traffic.
+
+> [!NOTE]
+>
+> This feature is currently in public preview and is not recommended for production use.
+
+Domain filtering lets you control which external domains a sandbox can reach. You can define an allowlist (only listed domains are reachable) or a denylist (all domains except listed ones are reachable). Domain filtering and proxy routing are **independent configurations** - you do not need to duplicate domains across both. A domain can appear in the allowlist without having a proxy routing rule, and vice versa.
+
+> [!WARNING]
+>
+> Domain filtering relies on the sandbox's tools and libraries respecting the standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`). Traffic from tools that ignore proxy environment variables will not be filtered unless [domain filter enforcement](https://docs.blaxel.ai/Sandboxes/Proxy-domains#domain-filter-enforcement) is enabled.
+
+## Allowlist
+
+Only the listed domains are reachable:
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "restricted-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "restricted-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+## Denylist
+
+All domains except the listed ones are reachable:
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "denylist-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    forbiddenDomains: ["*.malware.com", "evil.example.org"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "denylist-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "forbiddenDomains": ["*.malware.com", "evil.example.org"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+> [!NOTE]
+>
+> When a request matches both lists, `forbiddenDomains` wins and the request is blocked. An empty `allowedDomains` allows everything that is not in `forbiddenDomains`.
+
+## Method and path patterns
+
+Each entry in `allowedDomains` and `forbiddenDomains` is a pattern. A bare domain like `api.stripe.com` or `*.s3.amazonaws.com` is the simplest form. You can also scope a rule to specific HTTP methods and URL paths by adding method prefixes and a path suffix:
+
+```text
+[!]METHOD:...:domain[/path]
+```
+
+- An optional leading `!` negates the method set.
+- Zero or more HTTP methods, colon-separated, before the domain (case-insensitive).
+- The domain (exact, `*.suffix`, or `*`).
+- An optional `/path` prefix.
+
+| Pattern | Matches |
+|---------|---------|
+| `api.openai.com` | Any request to `api.openai.com` |
+| `*.googleapis.com` | Any subdomain, but not the bare `googleapis.com` |
+| `*` | Any domain |
+| `GET:POST:storage.googleapis.com` | Only GET and POST to that domain |
+| `!POST:storage.googleapis.com` | Every method except POST |
+| `storage.googleapis.com/company-mercor*` | Paths starting with `/company-mercor` |
+| `GET:storage.googleapis.com/data/` | GET requests under `/data/` |
+
+### Methods
+
+- No method in the pattern matches any method.
+- One or more methods match only those methods (case-insensitive).
+- A leading `!` negates the set: it matches every method except those listed. `!POST:domain` matches everything but POST, and `!GET:POST:domain` matches everything but GET and POST.
+
+### Domains
+
+- `*` matches every domain.
+- `*.example.com` matches `sub.example.com` and `a.b.example.com`, but not the bare `example.com`.
+- Any other value is an exact, case-insensitive match.
+- A `:port` on the request is ignored when matching.
+
+### Paths
+
+- No path in the pattern applies the rule to every path on the domain.
+- A path is matched as a start-anchored prefix. `*` matches any run of characters; every other character is literal.
+  - `/data/` matches `/data/` and `/data/file.txt`, but not `/data`.
+  - `/company-mercor*` matches `/company-mercor` and `/company-mercor-1/obj`, but not `/company-other`.
+- The query string is ignored, so tokens in query parameters never affect the decision.
+- The path is canonicalized before matching, so `.`, `..`, and duplicate slashes cannot slip a request past a prefix rule. A request to `/company-mercor/../other/obj` is evaluated as `/other/obj`.
+
+> [!TIP]
+>
+> A pattern that does not fit this shape is treated as a plain domain equal to the literal string. It can never widen access beyond the domain it names, so a typo fails safe and matches nothing extra.
+
+This example allows read-only access under one path prefix and blocks writes to a sensitive subpath:
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "scoped-egress",
+  network: {
+    allowedDomains: ["GET:storage.googleapis.com/company-mercor*"],
+    forbiddenDomains: ["POST:storage.googleapis.com/company-mercor/secrets*"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "scoped-egress",
+    "network": {
+        "allowedDomains": ["GET:storage.googleapis.com/company-mercor*"],
+        "forbiddenDomains": ["POST:storage.googleapis.com/company-mercor/secrets*"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+## Evaluation order
+
+For each outbound request the proxy decides in this order:
+
+1. If any `forbiddenDomains` pattern matches, the request is blocked.
+2. Otherwise, if `allowedDomains` is non-empty and no pattern matches, the request is blocked.
+3. Otherwise, the request is allowed.
+
+Forbidden rules always take precedence over allow rules. An empty `allowedDomains` allows everything that is not forbidden. A blocked request receives an HTTP `403` response with a `Proxy-Error: firewall_blocked` header.
+
+## Backward compatibility
+
+Plain-domain entries behave exactly as before, so existing configurations keep working without changes. The method, path, and negation syntax is opt-in: put the richer strings into the same `allowedDomains` and `forbiddenDomains` arrays. There are no new fields.
+
+## Domain filter enforcement
+
+By default, domain filtering depends on the sandbox's tools respecting `HTTP_PROXY` and `HTTPS_PROXY`. To enforce filtering even for tools that bypass those variables, add a `firewall` config with `rulesets: ["proxy"]`. This locks down the sandbox's egress at the network level so that all outbound traffic must flow through the proxy.
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "enforced-sandbox",
+  image: "blaxel/base-image:latest",
+  region: "us-was-1",
+  network: {
+    firewall: { rulesets: ["proxy"] },
+    allowedDomains: ["httpbin.org"],
+    proxy: { routing: [] },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "enforced-sandbox",
+    "image": "blaxel/base-image:latest",
+    "region": "us-was-1",
+    "network": {
+        "firewall": {"rulesets": ["proxy"]},
+        "allowedDomains": ["httpbin.org"],
+        "proxy": {"routing": []},
+    },
+})
+```
+
+> [!NOTE]
+>
+> Firewall rulesets can only be set when the sandbox is created; changing them on an existing sandbox is rejected. Enforcement is not enabled automatically when a proxy is configured - you must opt in with the `firewall` config. Firewalled sandboxes run on Mark 3.0 infrastructure; this feature is not yet available on [Carbon (Mark 3.1)](https://docs.blaxel.ai/Infrastructure/Gens#carbon-aka-mark-31).
+
+## Firewall + proxy combined
+
+Firewall rules and proxy routing compose naturally:
+
+```typescript TypeScript
+await SandboxInstance.create({
+  name: "locked-down",
+  network: {
+    allowedDomains: ["api.stripe.com", "api.openai.com"],
+    proxy: {
+      routing: [
+        {
+          destinations: ["api.stripe.com"],
+          headers: { "Authorization": "Bearer {{SECRET:stripe-key}}" },
+          secrets: { "stripe-key": "sk_live_..." },
+        },
+      ],
+    },
+  },
+});
+```
+
+```python Python
+await SandboxInstance.create({
+    "name": "locked-down",
+    "network": {
+        "allowedDomains": ["api.stripe.com", "api.openai.com"],
+        "proxy": {
+            "routing": [
+                {
+                    "destinations": ["api.stripe.com"],
+                    "headers": {"Authorization": "Bearer {{SECRET:stripe-key}}"},
+                    "secrets": {"stripe-key": "sk_live_..."},
+                },
+            ],
+        },
+    },
+})
+```
+
+Only `api.stripe.com` and `api.openai.com` are reachable. The proxy injects credentials for Stripe requests; OpenAI requests go through unmodified.
+
+# Regions
+Source: https://docs.blaxel.ai/Infrastructure/Regions
+
+Available deployment regions for Blaxel infrastructure including Oregon, Virginia, London, and Frankfurt, with guidance on resource-specific region selection.
+
+Blaxel is available in many regions across the globe. Some types of resources can be deployed ‘globally’ over multiple regions (for example: [agents](https://docs.blaxel.ai/Agents/Overview)), while some other types are deployed only in one specific region (for example: [sandboxes](https://docs.blaxel.ai/Sandboxes/Overview)).
+
+This guide details the available regions for [Mark 3 infrastructure generation](https://docs.blaxel.ai/Infrastructure/Gens).
+
+## Available regions
+
+The following regions are available for [Mark 3 infrastructure generation](https://docs.blaxel.ai/Infrastructure/Gens):
+
+| **Region code** | **Location** | **Country** |
+| --- | --- | --- |
+| `us-pdx-1` | Oregon | United States |
+| `us-was-1` | North Virginia | United States |
+| `eu-lon-1` | London | United Kingdom |
+| `eu-fra-1` | Frankfurt | Germany |
+| `auto` | Automatic (your closest region) | - |
+
+All regions are not necessarily available in self-service by default. Please [contact us](http://blaxel.ai/contact?message=I+would+like+to+get+access+to+region+XYZ+because+&purpose=regions&origin=docs) if you would like access to a specific region.
+
+## Selecting a region for deployment
+
+When deploying a resource on Blaxel, you sometimes have the option to choose the deployment region. This depends on the type of resource, as explained below.
+
+For all resource types, the deployment region **is always subject to the** [deployment policies](https://docs.blaxel.ai/Model-Governance/Policies) applied to the resource or workspace. A resource will never be deployed in a region that is prohibited by an existing deployment policy.
+
+### Resources which are globally distributed over multiple regions
+
+This is the case of:
+
+- [agents](https://docs.blaxel.ai/Agents/Overview)
+- [MCP servers](https://docs.blaxel.ai/Functions/Overview)
+- [batch jobs](https://docs.blaxel.ai/Jobs/Overview)
+
+**When deploying**
+
+For these types of resources, you don't need to specify a region during deployment. The resource becomes available across all regions allowed by applicable [deployment policies](https://docs.blaxel.ai/Model-Governance/Policies).
+
+However, you can optionally **pin an agent or MCP server to a specific region** by setting the `region` field in your [`blaxel.toml`](https://docs.blaxel.ai/deployment-reference). This is required when you want to [attach volumes to an agent](https://docs.blaxel.ai/Agents/Deploy-an-agent#attach-volumes-to-an-agent), since volumes are regional resources and the agent must run in the same region.
+
+```toml blaxel.toml
+region = "us-pdx-1"
+```
+
+**When requesting**
+
+For these types of resources, you receive a global query endpoint that automatically routes to the optimal region as determined by Blaxel's Global Agentics Network.
+
+### Resources which are deployed in one specific region
+
+- [sandboxes](https://docs.blaxel.ai/Sandboxes/Overview) (and their [preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url))
+
+**When deploying**
+
+For these types of resources, you can **optionally specify** a region during deployment, provided it is allowed by applicable [deployment policies](https://docs.blaxel.ai/Model-Governance/Policies). If you do not specify a region, Blaxel will deploy the resource automatically on a default region determined to be optimal.
+
+**When requesting**
+
+For these types of resources, you receive a regional query endpoint (which contains the name of the region in the domain).
+
+## Public IP addresses
+
+If you need to whitelist traffic from your Blaxel deployments, you can retrieve the current [list of public IP addresses](https://docs.blaxel.ai/api-reference/publicips:list/list-public-ips#list-public-ips) used by Blaxel through the Blaxel API. IP addresses are returned as CIDR ranges per region, and the results list can also be filtered by adding a `region` parameter to the API query (only for [Mark 3 infrastructure](https://docs.blaxel.ai/Infrastructure/Gens#mark-3-infrastructure)).
+
+Here is an example API request:
+
+```shell
+curl --request GET \
+  --url https://api.blaxel.ai/v0/publicIps?region=us-was-1 \
+  --header 'Authorization: Bearer <token>'
+```
+
+# Dedicated egress gateways
+Source: https://docs.blaxel.ai/Infrastructure/Dedicated-egress-gateways
+
+Attach dedicated egress IP addresses to Blaxel workloads so outbound traffic from sandboxes, agents, and jobs uses predictable, allowlistable IPs.
+
+> [!NOTE]
+>
+> This feature is currently in private preview and is not intended for production use. In private preview, it has the following limitations:
+> - It is only available for sandboxes.
+> - Egress gateway assignment is only possible at sandbox creation time.
+> - Egress gateway removal is only possible by deleting the corresponding sandbox.
+>
+> For more information, [contact us on Discord](https://discord.gg/CsWKUZUHFQ) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20dedicated%20egress%20IPs%20for%20the%20following%20use%20case%3A).
+
+Dedicated egress gateways enable customers to exclusively attach IP addresses to sandboxes within their workspace. This makes it possible to whitelist outbound traffic from Blaxel's systems for use in downstream providers and eliminates the need for workarounds such as self-hosted proxy servers or VPNs.
+
+A single egress IP address supports up to 32,000 sandboxes. It is also possible to group IP addresses into pools to automatically load-balance outbound traffic for high-demand workloads.
+
+Sandboxes that do not have a dedicated egress gateway will use the shared [public IP addresses](https://docs.blaxel.ai/Infrastructure/Regions#public-ip-addresses) instead.
+
+## Order an egress gateway
+
+Egress gateway configuration takes place from the [Blaxel Console](https://app.blaxel.ai).
+
+- Navigate to **Network** > **Egress gateways**.
+- Click the **Order IP** button in the top right corner.
+
+- Select the quantity and egress gateway region.
+
+Provisioning is automated and typically completes within a few minutes.
+
+## Assign an egress gateway to a sandbox
+
+Once provisioning is complete, you can attach the assigned egress gateway when creating one or more sandboxes. All outbound traffic from the attached sandboxes will then originate from this unique address.
+
+You can assign an egress gateway to a sandbox at creation time via the Blaxel Console or via the Blaxel SDK.
+
+### Blaxel Console
+
+When creating a new sandbox via the Blaxel Console, use the **Egress IP** drop-down to assign an available egress gateway to that sandbox. Only egress gateways in the same region as the new sandbox are shown for assignment.
+
+### Blaxel SDK
+
+When creating a new sandbox via the Blaxel SDK, you can assign it to a dedicated egress gateway by passing a `network` option when creating the sandbox. Here is an example when creating a sandbox:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "blaxel/base-image:latest",
+  memory: 4096,
+  region: "eu-fra-1",
+  network: {
+    egress: {
+      mode: "dedicated",
+      gateway: "egress-gateway-4"
+    }
+  },
+});
+```
+
+```python Python
+import asyncio
+from blaxel.core.sandbox import SandboxInstance
+
+async def main():
+    sandbox = await SandboxInstance.create(
+        {
+            "name": "my-sandbox",
+            "image": "blaxel/base-image:latest",
+            "memory": 4096,
+            "region": "eu-fra-1",
+            "network": {
+                "egress": {
+                    "mode": "dedicated",
+                    "gateway": "egress-gateway-4",
+                },
+            },
+        }
+    )
+
+asyncio.run(main())
+```
+
+# Custom domains
+Source: https://docs.blaxel.ai/Infrastructure/Custom-domains
+
+Expose Blaxel agents, sandboxes, MCP servers, and other resources through your own custom domain names with managed TLS certificates.
+
+Blaxel allows you to connect your own domain names to your Blaxel workspace to use when exposing resources.
+
+You can also share a verified preview custom domain with another workspace in the same account. The target workspace can use the shared domain for its own previews, while the shared copy stays read-only.
+
+When you register a domain, you also enable the use of wildcard subdomains for that domain. For example:
+
+- If you register `mycompany.com`, you can use any `*.mycompany.com` subdomain to create custom URLs.
+- If you register `preview.mycompany.com`, you can use any `*.preview.mycompany.com` subdomain to create custom URLs.
+- And so on.
+
+Each domain is uniquely assigned to a region. For example, if `preview.mycompany.com` is registered in region `us-pdx-1`, it is not possible to use it in region `eu-lon-1` (for example) or any other region.
+
+In the [Blaxel Console](https://app.blaxel.ai/), navigate to **Network** > **Custom Domains** in the sidebar and add a new custom domain. Then, you'll need to configure DNS records with your domain provider. Finally, verify from within Blaxel: after DNS propagation completes, your custom domain will become fully usable.
+
+## Share a custom domain
+
+After you verify a preview custom domain, you can share it with another workspace in the same account.
+
+- Use a workspace share when one target workspace should get a read-only copy
+- Use an account share when every workspace in the account should be able to use the domain
+- Create previews from the target workspace after the share is in place
+
+> [!NOTE]
+>
+> Only verified preview custom domains can be shared.
+
+When a target workspace binds a preview to the shared domain, the full host still needs to be unique across the account. If another workspace already uses the same `<prefixUrl>.<domain>` host, Blaxel returns `409`.
+
+## Certificate validation methods
+
+Blaxel issues a TLS certificate for each custom domain. The certificate must be validated before the domain becomes usable. Choose the validation method when you create the domain. It cannot be changed afterwards.
+
+- DNS validation (default): works for every domain type. Blaxel returns a unique validation CNAME record in addition to the routing record. Publish both records with your DNS provider, then click Verify.
+- HTTP validation (private preview): for application domains with exact host names only. Point your domain to Blaxel with the routing record and Blaxel validates the certificate over HTTP, with no validation record to publish. See [HTTP validation](https://docs.blaxel.ai/Infrastructure/Custom-domains-http-validation).
+
+## Use a custom domain
+
+Custom domains can currently be used for:
+
+- [Sandbox previews](https://docs.blaxel.ai/Sandboxes/Preview-url)
+- Agents: coming soon!
+- MCP servers: coming soon!
+
+Related pages:
+
+- [Sandbox preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url): Create preview URLs and configure fallback routing for custom domains.
+
+- [HTTP validation](https://docs.blaxel.ai/Infrastructure/Custom-domains-http-validation): Validate application domain certificates over HTTP without publishing a validation record.
+
+- [Changelog](https://docs.blaxel.ai/changelog): Review recent platform updates related to custom domains and previews.
+
+# HTTP validation
+Source: https://docs.blaxel.ai/Infrastructure/Custom-domains-http-validation
+
+Validate the TLS certificate of an application custom domain over HTTP, without publishing a DNS validation record.
+
+> [!NOTE]
+>
+> This feature is currently in private preview and is not recommended for production use.
+>
+> For more information and to gain access, [contact us on Discord](https://discord.gg/CsWKUZUHFQ) or [request access](https://blaxel.ai/contact?message=I%20want%20to%20get%20preview%20access%20to%20HTTP%20validation%20for%20custom%20domains%20for%20the%20following%20use%20case%3A).
+
+HTTP validation lets Blaxel validate the TLS certificate of a [custom domain](https://docs.blaxel.ai/Infrastructure/Custom-domains) once the domain resolves to Blaxel. You only publish the routing records: there is no validation record to add with your DNS provider.
+
+## How it works
+
+Point your domain to Blaxel with the routing records, then click Verify. Blaxel validates the certificate over HTTP once the domain resolves to Blaxel. Verification usually completes within a few minutes of DNS propagation. Click Verify again if the first attempt reports that validation is still pending.
+
+HTTP validation is only available for application domains with exact host names. Preview domains use a wildcard certificate, which can only be validated with DNS. HTTP validation is rejected for wildcard names and wildcard subject alternative names.
+
+## DNS records
+
+The records to publish depend on the host name:
+
+- Subdomain (for example `shop.client.com`): one CNAME record from the subdomain to the Blaxel routing endpoint.
+- Apex domain (for example `client.com`): an ALIAS, ANAME or flattened CNAME record from the apex to the Blaxel routing endpoint, plus a TXT record named `_cf-challenge.client.com` whose value is the Blaxel routing endpoint shown in the console.
+- Apex with `www` as a subject alternative name: the two apex records above plus a CNAME record from `www` to the Blaxel routing endpoint. No TXT record is needed for `www`.
+
+The console and the API return the exact records for your domain.
+
+## Select HTTP validation
+
+In the [Blaxel Console](https://app.blaxel.ai/), set the domain type to Applications, and choose HTTP under Certificate Validation when adding the domain.
+
+With the API or SDKs, set `spec.validationMethod` to `http` when creating the domain. Omitting the field uses DNS validation.
+
+```bash
+curl -X POST 'https://api.blaxel.ai/v0/customdomains' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'X-Blaxel-Workspace: YOUR-WORKSPACE' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "metadata": { "name": "client.com" },
+    "spec": {
+      "domainType": "applications",
+      "subjectAlternativeNames": ["www.client.com"],
+      "validationMethod": "http"
+    }
+  }'
+```
+
+Related pages:
+
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains): Register, verify and share custom domains for your workspace.
+
+- [Applications](https://docs.blaxel.ai/Applications/Overview): Serve AI-generated software on stable public endpoints with custom URLs.
+
+# Set up Next.js with Blaxel Sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/integrations/setting-up-nextjs-with-blaxel-sandboxes
+
+Run a Next.js application in a Blaxel Sandbox and expose it securely with a Blaxel preview URL.
+
+This guide explains how to run a Next.js application inside a Blaxel Sandbox and expose it securely using Blaxel previews.
+
+## Prerequisites
+
+- [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) installed and authenticated with `bl login`
+- Node.js 18 or later
+- `@blaxel/core` installed in your project with `npm install @blaxel/core`
+
+## 1. Understand the architecture
+
+Running Next.js inside a Blaxel Sandbox requires minimal adjustments compared to local development:
+
+- Next.js binds to all interfaces by default in development mode
+- Blaxel exposes services through preview URLs
+- The preview URL handles routing and authentication
+
+Run the Next.js development server on port `3000`, then expose it through a [Blaxel preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url).
+
+## 2. Build the sandbox image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  netcat-openbsd \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Create a Next.js project with TypeScript, Tailwind, App Router, and Turbopack
+RUN mkdir -p /app \
+  && npx create-next-app@latest /app --use-npm --typescript --eslint --tailwind --src-dir --app --turbopack \
+  && cd /app && npm install --save @next/swc-linux-x64-musl
+
+COPY ./next.config.ts /app/next.config.ts
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENV PATH="/usr/local/bin:$PATH"
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+Create an `entrypoint.sh` script that starts the sandbox API and development server:
+
+```bash
+#!/bin/sh
+
+export PATH="/usr/local/bin:$PATH"
+
+/usr/local/bin/sandbox-api &
+
+wait_for_port() {
+  local port=$1
+  local timeout=30
+  local count=0
+
+  echo "Waiting for port $port to be available..."
+  while ! nc -z localhost "$port"; do
+    sleep 1
+    count=$((count + 1))
+    if [ "$count" -gt "$timeout" ]; then
+      echo "Timeout waiting for port $port"
+      exit 1
+    fi
+  done
+  echo "Port $port is now available"
+}
+
+wait_for_port 8080
+
+echo "Running Next.js dev server..."
+curl http://localhost:8080/process \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "dev-server",
+    "workingDir": "/app",
+    "command": "npm run dev -- --port 3000",
+    "waitForCompletion": false,
+    "restartOnFailure": true,
+    "maxRestarts": 25
+  }'
+
+wait
+```
+
+## 3. Configure Next.js
+
+Create `next.config.ts`:
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  allowedDevOrigins: ["*.preview.bl.run"],
+};
+
+export default nextConfig;
+```
+
+The `allowedDevOrigins` setting lets the development server accept requests from Blaxel preview origins. If your Blaxel workspace uses a custom domain, add it to the array:
+
+```typescript
+allowedDevOrigins: ["*.preview.bl.run", "*.preview.mycompany.com"];
+```
+
+## 4. Configure and deploy the image
+
+Create `blaxel.toml` in the same directory as your `Dockerfile`:
+
+```toml
+type = "sandbox"
+name = "nextjs-template"
+
+[runtime]
+memory = 4096
+
+[[runtime.ports]]
+name = "nextjs-dev"
+target = 3000
+protocol = "tcp"
+```
+
+Deploy the image:
+
+```bash
+bl deploy
+```
+
+For more information about reusable images, see [sandbox images](https://docs.blaxel.ai/Sandboxes/Templates).
+
+## 5. Create or reuse a sandbox
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-nextjs-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  labels: {
+    framework: "nextjs",
+  },
+  image: "nextjs-template:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 3000, protocol: "HTTP" },
+  ],
+});
+```
+
+## 6. Configure preview response headers
+
+Next.js development servers work well with permissive CORS headers when accessed through a preview URL:
+
+```typescript
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+```
+
+Alternatively, use [custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains) to expose previews on your own domain.
+
+## 7. Create the preview and token
+
+Next.js runs on port `3000`. Create a private preview for that port:
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "dev-server-preview" },
+  spec: {
+    responseHeaders,
+    public: false,
+    port: 3000,
+  },
+});
+```
+
+Generate a token that expires after one day:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+const token = await preview.tokens.create(expiresAt);
+```
+
+## 8. Start and monitor the development server
+
+If you do not use the entrypoint script, start the development server programmatically:
+
+```typescript
+async function startDevServer(sandbox: SandboxInstance) {
+  console.log("Starting Next.js dev server...");
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --port 3000",
+    workingDir: "/app",
+    waitForPorts: [3000],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+Stream its logs:
+
+```typescript
+const logStream = sandbox.process.streamLogs("dev-server", {
+  onLog(log) {
+    console.log(log);
+  },
+});
+
+logStream.close();
+```
+
+## 9. Access the Next.js application
+
+Once the server is running, open:
+
+```text
+${preview.spec?.url}?bl_preview_token=${token.value}
+```
+
+## 10. Run the complete example
+
+The following example creates the sandbox and preview, starts the server when needed, prints the access URL, and streams logs:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-nextjs-sandbox";
+
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+async function startDevServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npm run dev -- --port 3000",
+    workingDir: "/app",
+    waitForPorts: [3000],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      labels: {
+        framework: "nextjs",
+      },
+      image: "nextjs-template:latest",
+      memory: 4096,
+      ports: [
+        { name: "preview", target: 3000, protocol: "HTTP" },
+      ],
+    });
+
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "preview" },
+      spec: {
+        responseHeaders,
+        public: false,
+        port: 3000,
+      },
+    });
+
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    const processes = await sandbox.process.list();
+    if (!processes.find((process) => process.name === "dev-server")) {
+      await startDevServer(sandbox);
+    }
+
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    console.log(`Next.js Preview URL: ${webUrl}`);
+
+    const logStream = sandbox.process.streamLogs("dev-server", {
+      onLog(log) {
+        console.log(log);
+      },
+    });
+
+    process.on("SIGINT", () => {
+      logStream.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+## 11. Use Next.js features
+
+### Turbopack
+
+The template uses Turbopack, Next.js's Rust-based bundler. It provides:
+
+- Faster cold starts
+- Instant hot module replacement
+- Optimized incremental compilation
+
+The `@next/swc-linux-x64-musl` package is preinstalled for Alpine Linux performance.
+
+### App Router
+
+The template configures the App Router with the `/app` directory structure. It provides:
+
+- Server Components by default
+- Nested layouts
+- Loading and error states
+- Server Actions
+
+### TypeScript, Tailwind CSS, and ESLint
+
+The template enables TypeScript with strict type checking. Tailwind CSS is preconfigured in `src/app/globals.css`, and ESLint uses the recommended Next.js rules.
+
+This setup runs Next.js fully inside a Blaxel Sandbox, securely exposes the development server, supports Fast Refresh, and provides a fast environment for previews, internal demos, and AI-powered coding workflows.
+
+## Resources
+
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url): Configure public and private preview URLs for sandbox services.
+
+- [Sandbox images](https://docs.blaxel.ai/Sandboxes/Templates): Build and manage reusable Blaxel Sandbox images.
+
+# Set up Astro with Blaxel Sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/integrations/setting-up-astro-with-blaxel-sandboxes
+
+Run an Astro application in a Blaxel Sandbox and expose it securely with a Blaxel preview URL.
+
+This guide explains how to run an Astro application inside a Blaxel Sandbox and expose it securely using Blaxel previews.
+
+## Prerequisites
+
+- [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) installed and authenticated with `bl login`
+- Node.js 18 or later
+- `@blaxel/core` installed in your project with `npm install @blaxel/core`
+
+## 1. Understand the architecture
+
+Running Astro inside a Blaxel Sandbox requires a few adjustments:
+
+- Astro normally binds to localhost
+- Blaxel exposes services through preview URLs
+- Astro must accept external connections and all hosts
+
+Configure `astro.config.mjs` with `host: "0.0.0.0"` and `allowedHosts: true`, then expose the Astro development server through a [Blaxel preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url).
+
+## 2. Build the sandbox image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM oven/bun:alpine
+
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  netcat-openbsd \
+  nodejs \
+  npm \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Create the Astro project with npx, then use Bun for dependencies
+RUN npx create-astro@latest /app --template basics --no-install --no-git --yes \
+  && bun install
+
+COPY ./astro.config.mjs /app/astro.config.mjs
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+## 3. Configure Astro
+
+Create `astro.config.mjs` to allow external connections:
+
+```javascript
+// @ts-check
+import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  server: {
+    host: "0.0.0.0",
+    port: 4321,
+    allowedHosts: true,
+  },
+});
+```
+
+## 4. Create the entrypoint
+
+Create `entrypoint.sh` to start the sandbox API and Astro development server:
+
+```bash
+#!/bin/sh
+
+export PATH="/usr/local/bin:$PATH"
+
+/usr/local/bin/sandbox-api &
+
+wait_for_port() {
+  local port=$1
+  local timeout=30
+  local count=0
+
+  echo "Waiting for port $port to be available..."
+  while ! nc -z localhost "$port"; do
+    sleep 1
+    count=$((count + 1))
+    if [ "$count" -gt "$timeout" ]; then
+      echo "Timeout waiting for port $port"
+      exit 1
+    fi
+  done
+  echo "Port $port is now available"
+}
+
+wait_for_port 8080
+
+echo "Running Astro dev server..."
+curl http://localhost:8080/process \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "dev-server",
+    "workingDir": "/app",
+    "command": "bun run dev",
+    "waitForCompletion": false,
+    "restartOnFailure": true,
+    "maxRestarts": 25
+  }'
+
+wait
+```
+
+## 5. Configure and deploy the image
+
+Create `blaxel.toml` beside the `Dockerfile`:
+
+```toml
+type = "sandbox"
+name = "astro-template"
+
+[runtime]
+memory = 4096
+
+[[runtime.ports]]
+name = "astro-dev"
+target = 4321
+protocol = "tcp"
+```
+
+Deploy the image:
+
+```bash
+bl deploy
+```
+
+## 6. Create or reuse a sandbox
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-astro-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  labels: {
+    framework: "astro",
+  },
+  image: "astro-template:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 4321, protocol: "HTTP" },
+  ],
+});
+```
+
+## 7. Configure preview response headers
+
+Astro development servers work well with permissive CORS headers when accessed through a preview URL:
+
+```typescript
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+```
+
+Alternatively, use [custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains) to expose previews on your own domain.
+
+## 8. Create the preview and token
+
+Astro runs on port `4321`. Create a private preview for that port:
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "dev-server-preview" },
+  spec: {
+    responseHeaders,
+    public: false,
+    port: 4321,
+  },
+});
+```
+
+Generate a token that expires after one day:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+const token = await preview.tokens.create(expiresAt);
+```
+
+## 9. Start and monitor the development server
+
+If you do not use the entrypoint script, start Astro programmatically:
+
+```typescript
+async function startDevServer(sandbox: SandboxInstance) {
+  console.log("Starting Astro dev server...");
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "bun run dev",
+    workingDir: "/app",
+    waitForPorts: [4321],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+Stream its logs:
+
+```typescript
+const logStream = sandbox.process.streamLogs("dev-server", {
+  onLog(log) {
+    console.log(log);
+  },
+});
+
+logStream.close();
+```
+
+## 10. Access the Astro application
+
+Once the server is running, open:
+
+```text
+${preview.spec?.url}?bl_preview_token=${token.value}
+```
+
+## 11. Run the complete example
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-astro-sandbox";
+
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+async function startDevServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "bun run dev",
+    workingDir: "/app",
+    waitForPorts: [4321],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      labels: {
+        framework: "astro",
+      },
+      image: "astro-template:latest",
+      memory: 4096,
+      ports: [
+        { name: "preview", target: 4321, protocol: "HTTP" },
+      ],
+    });
+
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "preview" },
+      spec: {
+        responseHeaders,
+        public: false,
+        port: 4321,
+      },
+    });
+
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    const processes = await sandbox.process.list();
+    if (!processes.find((process) => process.name === "dev-server")) {
+      await startDevServer(sandbox);
+    }
+
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    console.log(`Astro Preview URL: ${webUrl}`);
+
+    const logStream = sandbox.process.streamLogs("dev-server", {
+      onLog(log) {
+        console.log(log);
+      },
+    });
+
+    process.on("SIGINT", () => {
+      logStream.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+This setup runs Astro fully inside a Blaxel Sandbox, securely exposes the development server, supports hot module replacement, and uses Bun for fast dependency installation and development server performance. It is suitable for static sites, blogs, documentation, preview environments, internal demos, and AI-powered coding workflows.
+
+## Resources
+
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url): Configure public and private preview URLs for sandbox services.
+
+- [Sandbox images](https://docs.blaxel.ai/Sandboxes/Templates): Build and manage reusable Blaxel Sandbox images.
+
+# Set up Vite with Blaxel Sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/integrations/setting-up-vite-with-blaxel-sandboxes
+
+Run a Vite React and TypeScript application in a Blaxel Sandbox and expose it securely with a preview URL.
+
+This guide explains how to run a Vite React and TypeScript application inside a Blaxel Sandbox and expose it securely using Blaxel previews.
+
+## Prerequisites
+
+- [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) installed and authenticated with `bl login`
+- Node.js 18 or later
+- `@blaxel/core` installed in your project with `npm install @blaxel/core`
+
+## 1. Understand the architecture
+
+Running Vite inside a Blaxel Sandbox requires a few adjustments:
+
+- Vite normally binds to localhost
+- Blaxel exposes services through preview URLs
+- Vite must accept external connections and all hosts
+
+Configure `vite.config.ts` with `host: "0.0.0.0"` and `allowedHosts: true`, then expose the Vite development server through a [Blaxel preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url).
+
+## 2. Build the sandbox image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+RUN apk update && apk add --no-cache \
+  git curl bash \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+RUN curl -fsSL https://bun.sh/install | bash \
+  && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
+  && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
+
+RUN bun create vite@latest . --template react-ts
+
+# Install patch-package globally first to avoid postinstall script errors
+RUN bun install -g patch-package
+RUN bun install
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+COPY ./vite.config.ts /app/vite.config.ts
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+## 3. Configure Vite
+
+Create `vite.config.ts` to allow external connections:
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    host: "0.0.0.0",
+    allowedHosts: true,
+  },
+});
+```
+
+## 4. Create the entrypoint
+
+Create `entrypoint.sh` to start the sandbox API and Vite development server:
+
+```bash
+#!/bin/sh
+
+export PATH="/usr/local/bin:$PATH"
+
+/usr/local/bin/sandbox-api &
+
+wait_for_port() {
+  local port=$1
+  local timeout=30
+  local count=0
+
+  echo "Waiting for port $port to be available..."
+  while ! nc -z localhost "$port"; do
+    sleep 1
+    count=$((count + 1))
+    if [ "$count" -gt "$timeout" ]; then
+      echo "Timeout waiting for port $port"
+      exit 1
+    fi
+  done
+  echo "Port $port is now available"
+}
+
+wait_for_port 8080
+
+echo "Running Vite dev server with Bun..."
+curl http://localhost:8080/process \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "dev-server",
+    "workingDir": "/app",
+    "command": "bun run dev",
+    "waitForCompletion": false,
+    "restartOnFailure": true,
+    "maxRestarts": 25
+  }'
+
+wait
+```
+
+## 5. Configure and deploy the image
+
+Create `blaxel.toml` beside the `Dockerfile`:
+
+```toml
+type = "sandbox"
+name = "vite-template"
+
+[runtime]
+memory = 4096
+
+[[runtime.ports]]
+name = "vite-dev"
+target = 5173
+protocol = "tcp"
+```
+
+Deploy the image:
+
+```bash
+bl deploy
+```
+
+## 6. Create or reuse a sandbox
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-vite-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  labels: {
+    framework: "vite",
+  },
+  image: "vite-template:latest",
+  memory: 4096,
+  ports: [
+    { name: "preview", target: 5173, protocol: "HTTP" },
+  ],
+});
+```
+
+## 7. Configure preview response headers
+
+Vite development servers work well with permissive CORS headers when accessed through a preview URL:
+
+```typescript
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+```
+
+Alternatively, use [custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains) to expose previews on your own domain.
+
+## 8. Create the preview and token
+
+Vite runs on port `5173`. Create a private preview for that port:
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "dev-server-preview" },
+  spec: {
+    responseHeaders,
+    public: false,
+    port: 5173,
+  },
+});
+```
+
+Generate a token that expires after one day:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+const token = await preview.tokens.create(expiresAt);
+```
+
+## 9. Start and monitor the development server
+
+If you do not use the entrypoint script, start Vite programmatically:
+
+```typescript
+async function startDevServer(sandbox: SandboxInstance) {
+  console.log("Starting Vite dev server...");
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "bun run dev",
+    workingDir: "/app",
+    waitForPorts: [5173],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+Stream its logs:
+
+```typescript
+const logStream = sandbox.process.streamLogs("dev-server", {
+  onLog(log) {
+    console.log(log);
+  },
+});
+
+logStream.close();
+```
+
+## 10. Access the Vite application
+
+Once the server is running, open:
+
+```text
+${preview.spec?.url}?bl_preview_token=${token.value}
+```
+
+## 11. Run the complete example
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-vite-sandbox";
+
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+async function startDevServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "bun run dev",
+    workingDir: "/app",
+    waitForPorts: [5173],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      labels: {
+        framework: "vite",
+      },
+      image: "vite-template:latest",
+      memory: 4096,
+      ports: [
+        { name: "preview", target: 5173, protocol: "HTTP" },
+      ],
+    });
+
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "preview" },
+      spec: {
+        responseHeaders,
+        public: false,
+        port: 5173,
+      },
+    });
+
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    const processes = await sandbox.process.list();
+    if (!processes.find((process) => process.name === "dev-server")) {
+      await startDevServer(sandbox);
+    }
+
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    console.log(`Vite Preview URL: ${webUrl}`);
+
+    const logStream = sandbox.process.streamLogs("dev-server", {
+      onLog(log) {
+        console.log(log);
+      },
+    });
+
+    process.on("SIGINT", () => {
+      logStream.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+This setup runs Vite fully inside a Blaxel Sandbox, securely exposes the development server, supports hot module replacement, and uses Bun for fast dependency installation and development server performance. It is suitable for preview environments, internal demos, and AI-powered coding workflows.
+
+## Resources
+
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url): Configure public and private preview URLs for sandbox services.
+
+- [Sandbox images](https://docs.blaxel.ai/Sandboxes/Templates): Build and manage reusable Blaxel Sandbox images.
+
+# Set up Expo with Blaxel Sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/integrations/setting-up-expo-with-blaxel-sandboxes
+
+Run an Expo React Native and web application in a Blaxel Sandbox and access it through secure preview URLs.
+
+This guide explains how to run an Expo React Native and web application inside a Blaxel Sandbox, expose it securely using Blaxel previews, and access it on a mobile device.
+
+## Prerequisites
+
+- [Blaxel CLI](https://docs.blaxel.ai/cli-reference/introduction) installed and authenticated with `bl login`
+- Node.js 18 or later
+- `@blaxel/core` installed in your project with `npm install @blaxel/core`
+
+## 1. Understand the architecture
+
+Running Expo inside a Blaxel Sandbox requires a few adjustments:
+
+- Expo normally binds to local or internal URLs
+- Blaxel exposes services through preview URLs
+- Expo must use those preview URLs explicitly
+
+Inject the preview URL into `app.json`, set `EXPO_PACKAGER_PROXY_URL`, restart the development server after configuration changes, and expose the Expo server through a [Blaxel preview URL](https://docs.blaxel.ai/Sandboxes/Preview-url).
+
+## 2. Build the sandbox image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  netcat-openbsd \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/blaxel-ai/sandbox:latest /sandbox-api /usr/local/bin/sandbox-api
+
+# Create an Expo project with the default template
+RUN npx create-expo-app@latest .
+
+# Install the dependencies required for Expo web support
+RUN npx expo install react-dom react-native-web
+
+# Pre-warm the Metro bundler cache using the development server
+RUN timeout 120 npx expo start --web --port 8081 --no-dev-client 2>/dev/null || true
+
+ENV PATH="/usr/local/bin:$PATH"
+
+ENTRYPOINT ["/usr/local/bin/sandbox-api"]
+```
+
+## 3. Configure and deploy the image
+
+Create `blaxel.toml` beside the `Dockerfile`:
+
+```toml
+type = "sandbox"
+name = "expo-template"
+
+[runtime]
+memory = 8192
+
+[[runtime.ports]]
+name = "expo-web"
+target = 8081
+```
+
+Deploy the image:
+
+```bash
+bl deploy
+```
+
+## 4. Create or reuse a sandbox
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-expo-sandbox";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: sandboxName,
+  labels: {
+    framework: "expo",
+  },
+  image: "expo-template:latest",
+  memory: 8192,
+  ports: [
+    { name: "preview", target: 8081, protocol: "HTTP" },
+  ],
+});
+```
+
+## 5. Configure preview response headers
+
+Expo development servers require permissive CORS headers when accessed through a preview URL:
+
+```typescript
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+```
+
+Alternatively, use [custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains) to expose previews on your own domain.
+
+## 6. Create the preview and token
+
+Expo runs on port `8081`. Create a private preview for that port:
+
+```typescript
+const preview = await sandbox.previews.createIfNotExists({
+  metadata: { name: "dev-server-preview" },
+  spec: {
+    responseHeaders,
+    public: false,
+    port: 8081,
+  },
+});
+```
+
+Generate a token that expires after one day:
+
+```typescript
+const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+const token = await preview.tokens.create(expiresAt);
+```
+
+## 7. Inject the preview URL into Expo
+
+Expo Router requires the correct origin when it runs behind a proxy. Update `app.json` in the sandbox:
+
+```typescript
+async function addRouterOriginToAppJson(
+  sandbox: SandboxInstance,
+  previewUrl: string
+) {
+  const appJsonPath = "/app/app.json";
+  const appJsonContent = await sandbox.fs.read(appJsonPath);
+  const appJson = JSON.parse(appJsonContent);
+
+  appJson.expo = {
+    ...appJson.expo,
+    extra: {
+      ...(appJson.expo.extra || {}),
+      router: {
+        ...(appJson.expo.extra?.router || {}),
+        origin: previewUrl,
+      },
+    },
+  };
+
+  await sandbox.fs.write(appJsonPath, JSON.stringify(appJson, null, 2));
+}
+```
+
+## 8. Configure the proxy URL
+
+Expo must serve assets through the preview URL. The following function updates `.env` only when the expected value is missing:
+
+```typescript
+async function configureExpoProxyUrl(
+  sandbox: SandboxInstance,
+  previewUrl: string
+): Promise<boolean> {
+  const baseUrl = previewUrl.replace(/\/$/, "");
+
+  let envContent = "";
+  try {
+    envContent = await sandbox.fs.read("/app/.env");
+  } catch {
+    // The file does not exist yet
+  }
+
+  const expectedEnvLine = `EXPO_PACKAGER_PROXY_URL=${baseUrl}`;
+
+  if (envContent.includes(expectedEnvLine)) {
+    console.log("Expo proxy URL already configured correctly");
+    return false;
+  }
+
+  const lines = envContent
+    .split("\n")
+    .filter((line) => !line.startsWith("EXPO_PACKAGER_PROXY_URL="));
+  lines.push(expectedEnvLine);
+
+  await sandbox.fs.write("/app/.env", lines.join("\n"));
+  console.log(`Configured Expo to use proxy URL: ${baseUrl}`);
+  return true;
+}
+```
+
+## 9. Start and monitor the development server
+
+After setting the proxy URL, start the development server:
+
+```typescript
+async function startDevServer(sandbox: SandboxInstance) {
+  console.log("Starting dev server with updated configuration...");
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npx expo start --web --port 8081 --scheme exp",
+    workingDir: "/app",
+    waitForPorts: [8081],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+```
+
+Stream its logs:
+
+```typescript
+const logStream = sandbox.process.streamLogs("dev-server", {
+  onLog(log) {
+    console.log(log);
+  },
+});
+
+logStream.close();
+```
+
+## 10. Access the Expo application
+
+Open the web application at:
+
+```text
+${preview.spec?.url}?bl_preview_token=${token.value}
+```
+
+To access the application on a mobile device, build an Expo URL from the authenticated preview URL:
+
+```typescript
+const previewUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+const expoUrl = previewUrl.replace("https://", "exp://");
+```
+
+Encode the `exp://` URL in a QR code:
+
+```text
+exp://your-sandbox.preview.blaxel.ai/?bl_preview_token=your-token
+```
+
+Scan the QR code with your device's camera or the Expo Go application.
+
+## 11. Run the complete example
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandboxName = "my-expo-sandbox";
+
+const responseHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, X-Blaxel-Workspace, X-Blaxel-Preview-Token, X-Blaxel-Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Expose-Headers": "Content-Length, X-Request-Id",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+async function addRouterOriginToAppJson(
+  sandbox: SandboxInstance,
+  previewUrl: string
+) {
+  const appJsonPath = "/app/app.json";
+  const appJsonContent = await sandbox.fs.read(appJsonPath);
+  const appJson = JSON.parse(appJsonContent);
+
+  appJson.expo = {
+    ...appJson.expo,
+    extra: {
+      ...(appJson.expo.extra || {}),
+      router: {
+        ...(appJson.expo.extra?.router || {}),
+        origin: previewUrl,
+      },
+    },
+  };
+
+  await sandbox.fs.write(appJsonPath, JSON.stringify(appJson, null, 2));
+}
+
+async function configureExpoProxyUrl(
+  sandbox: SandboxInstance,
+  previewUrl: string
+): Promise<boolean> {
+  const baseUrl = previewUrl.replace(/\/$/, "");
+
+  let envContent = "";
+  try {
+    envContent = await sandbox.fs.read("/app/.env");
+  } catch {
+    // The file does not exist
+  }
+
+  const expectedEnvLine = `EXPO_PACKAGER_PROXY_URL=${baseUrl}`;
+  if (envContent.includes(expectedEnvLine)) {
+    return false;
+  }
+
+  const lines = envContent
+    .split("\n")
+    .filter((line) => !line.startsWith("EXPO_PACKAGER_PROXY_URL="));
+  lines.push(expectedEnvLine);
+
+  await sandbox.fs.write("/app/.env", lines.join("\n"));
+  return true;
+}
+
+async function startDevServer(sandbox: SandboxInstance) {
+  await sandbox.process.exec({
+    name: "dev-server",
+    command: "npx expo start --web --port 8081 --scheme exp",
+    workingDir: "/app",
+    waitForPorts: [8081],
+    restartOnFailure: true,
+    maxRestarts: 25,
+  });
+}
+
+async function configureExpo(
+  sandbox: SandboxInstance,
+  previewUrl: string
+) {
+  await addRouterOriginToAppJson(sandbox, previewUrl);
+  await configureExpoProxyUrl(sandbox, previewUrl);
+  await startDevServer(sandbox);
+}
+
+async function main() {
+  try {
+    const sandbox = await SandboxInstance.createIfNotExists({
+      name: sandboxName,
+      labels: {
+        framework: "expo",
+      },
+      image: "expo-template:latest",
+      memory: 8192,
+      ports: [
+        { name: "preview", target: 8081, protocol: "HTTP" },
+      ],
+    });
+
+    const preview = await sandbox.previews.createIfNotExists({
+      metadata: { name: "preview" },
+      spec: {
+        responseHeaders,
+        public: false,
+        port: 8081,
+      },
+    });
+
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const token = await preview.tokens.create(expiresAt);
+
+    await configureExpo(sandbox, preview.spec?.url!);
+
+    const processes = await sandbox.process.list();
+    if (!processes.find((process) => process.name === "dev-server")) {
+      await startDevServer(sandbox);
+    }
+
+    const webUrl = `${preview.spec?.url}?bl_preview_token=${token.value}`;
+    const expoUrl = webUrl.replace("https://", "exp://");
+    console.log(`Web Preview URL: ${webUrl}`);
+    console.log(`Expo Mobile URL: ${expoUrl}`);
+
+    const logStream = sandbox.process.streamLogs("dev-server", {
+      onLog(log) {
+        console.log(log);
+      },
+    });
+
+    process.on("SIGINT", () => {
+      logStream.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+This setup runs Expo fully inside a Blaxel Sandbox, securely exposes the development server, supports Expo Router and asset loading, provides mobile access through the `exp://` protocol, and starts the server after configuration changes. It is suitable for preview environments, internal demos, and AI-powered coding workflows.
+
+## Resources
+
+- [Real-time previews](https://docs.blaxel.ai/Sandboxes/Preview-url): Configure public and private preview URLs for sandbox services.
+
+- [Sandbox images](https://docs.blaxel.ai/Sandboxes/Templates): Build and manage reusable Blaxel Sandbox images.
+
+# Using custom domains with sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/using-custom-domains-with-sandboxes
+
+Configure verified custom domains and wildcard subdomains for Blaxel sandbox preview URLs.
+
+You can use custom domains with sandbox preview URLs. Registering a domain automatically enables wildcard subdomains.
+
+For example:
+
+- Registering `mycompany.com` lets you use any `*.mycompany.com` subdomain
+- Registering `preview.mycompany.com` lets you use any `*.preview.mycompany.com` subdomain
+
+## Create a preview URL
+
+Use the SDK to create a sandbox preview on your custom domain:
+
+```typescript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.get("my-sandbox");
+const preview = await sandbox.previews.create({
+  metadata: { name: "preview-custom-domain" },
+  spec: {
+    port: 443,
+    public: false,
+    customDomain: "your.custom.domain.dev",
+  },
+});
+```
+
+This approach lets you:
+
+- Give the preview a specific name
+- Retrieve the preview later with the SDK
+- Access the custom domain URL from the preview specification
+
+## Requirements and limitations
+
+- Custom domains require Tier 3 or higher access
+- Each custom domain is assigned to one region and cannot be used across regions
+- You must configure the required DNS records and verify the domain in the Blaxel Console
+- Custom domains currently work only for sandbox previews
+
+- [Custom domains](https://docs.blaxel.ai/Infrastructure/Custom-domains): Register, verify, and manage custom domains.
+
+- [Sandbox preview URLs](https://docs.blaxel.ai/Sandboxes/Preview-url): Create and manage public or private sandbox previews.
+
+# Getting static IP addresses for Blaxel sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/getting-static-ip-addresses-for-blaxel-sandboxes
+
+Retrieve the regional public IP address ranges used by Blaxel sandboxes for network allowlists.
+
+If network restrictions require you to allowlist IP addresses for Blaxel deployments, including sandbox traffic, retrieve the current public IP ranges through the Blaxel API. The API returns addresses as CIDR ranges for each region.
+
+## Retrieve public IP addresses
+
+Send an authenticated request to the public IP endpoint:
+
+```bash
+curl --request GET \
+  --url https://api.blaxel.ai/v0/publicIps \
+  --header "Authorization: Bearer $BL_API_KEY"
+```
+
+## IP address stability
+
+Blaxel public IP addresses are static and do not change frequently. New addresses are typically added only as the platform scales, which happens a few times per year or less.
+
+Retrieve the list from the API whenever you need the latest ranges.
+
+## Regional IP addresses
+
+Blaxel offers sandboxes in four regions:
+
+- `us-pdx-1`: Portland
+- `us-was-1`: North Virginia
+- `eu-lon-1`: London
+- `eu-fra-1`: Frankfurt
+
+To retrieve addresses for one region, add the `region` query parameter:
+
+```bash
+curl --request GET \
+  --url "https://api.blaxel.ai/v0/publicIps?region=us-was-1" \
+  --header "Authorization: Bearer $BL_API_KEY"
+```
+
+## Future networking options
+
+Blaxel is working on:
+
+- Dedicated IP addresses per customer without significant resource reservation
+- Private endpoint connections to AWS VPCs
+
+These options will provide additional networking controls for customers with strict security requirements.
+
+- [Regions and public IP addresses](https://docs.blaxel.ai/Infrastructure/Regions#public-ip-addresses): Review regions and the public IP API.
+
+- [Dedicated egress gateways](https://docs.blaxel.ai/Infrastructure/Dedicated-egress-gateways): Configure dedicated outbound networking for supported workloads.

@@ -1,0 +1,12 @@
+{
+  "name": "blaxel-docs",
+  "private": true,
+  "description": "Blaxel documentation, built and hosted by Mintlify.",
+  "scripts": {
+    "llms": "node scripts/generate-llms/main.mjs",
+    "llms:check": "node scripts/generate-llms/main.mjs --check"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,1364 @@
+# Blaxel docs: Storage
+
+> Volumes, volume templates and Agent Drive.
+
+This file has the full text of 7 pages from https://docs.blaxel.ai. The other product files are listed in https://docs.blaxel.ai/llms-full.txt, and https://docs.blaxel.ai/llms.txt lists every page with a one-line description.
+
+Pages in this file:
+
+- [Volumes for sandboxes](https://docs.blaxel.ai/Sandboxes/Volumes)
+- [Agent Drive overview](https://docs.blaxel.ai/Agent-drive/Overview)
+- [Drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions)
+- [Access Agent Drive over S3](https://docs.blaxel.ai/Agent-drive/S3-endpoint)
+- [Volumes](https://docs.blaxel.ai/Volumes/Overview)
+- [Volume templates](https://docs.blaxel.ai/Volumes/Volumes-templates)
+- [Volume resizing for running sandboxes](https://docs.blaxel.ai/knowledge-base/configuration-and-operation/volume-resizing-for-running-sandboxes)
+
+# Volumes for sandboxes
+Source: https://docs.blaxel.ai/Sandboxes/Volumes
+
+Attach Blaxel Volumes to sandboxes for persistent storage that survives sandbox destruction and recreation, with mount path configuration.
+
+Blaxel Volumes provide persistent storage that survives sandbox destruction and recreation.
+
+> [!TIP]
+>
+> For full documentation on creating, deleting, resizing, and listing volumes, see the [Volumes overview](https://docs.blaxel.ai/Volumes/Overview).
+
+## Attach a volume to a sandbox
+
+> [!WARNING]
+>
+> At this time, you can only attach one volume to a sandbox. A volume can also only be attached to one sandbox at a time.
+
+To use a volume, attach it **when you create a sandbox** by passing an array of volume configurations to the `volumes` property.
+
+Each configuration must include the `name` of the volume to attach and the `mountPath` where it will be accessible inside the sandbox's filesystem. The mount path **will override the existing content** of a directory.
+
+Use `createIfNotExists()` / `create_if_not_exists()` so that re-running your setup code is safe even if the sandbox already exists with the volume attached:
+
+```typescript TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-sandbox",
+  image: "blaxel/nextjs:latest",
+  memory: 4096,
+  region: "us-pdx-1",
+  volumes: [{
+    name: "my-volume",     // Must match the name of the created volume
+    mountPath: "/app",     // Directory inside the sandbox
+    readOnly: false        // Set to true to prevent writes
+  }],
+  // ... other sandbox properties
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+  "name": "my-sandbox",
+  "image": "blaxel/nextjs:latest",
+  "memory": 4096,
+  "region": "us-pdx-1",
+  "volumes": [{
+    "name": "my-volume",     # Must match the name of the created volume
+    "mount_path": "/app",    # Directory inside the sandbox
+    "read_only": False       # Set to True to prevent writes
+  }],
+  # ... other sandbox properties
+})
+```
+
+Any files written to the `/app` directory within this sandbox will be stored on `my-volume` and will persist even if this sandbox is deleted.
+
+At this time, you cannot detach a volume from a sandbox.
+
+## Check volume attachment status
+
+Each volume returned from the API includes a `state.attachedTo` field indicating which sandbox the volume is currently attached to.
+
+When a sandbox is deleted, Blaxel automatically clears this field on the volume. You can therefore check `state.attachedTo` directly to determine whether a volume is free to attach to a new sandbox.
+
+- [Learn more about volumes](https://docs.blaxel.ai/Volumes/Overview): Learn how to create and manage volumes.
+
+- [Learn more about volume templates](https://docs.blaxel.ai/Volumes/Volumes-templates): Pre-populate volumes with files for faster environment setup.
+
+# Agent Drive overview
+Source: https://docs.blaxel.ai/Agent-drive/Overview
+
+Agent Drive is a distributed filesystem mountable to multiple sandboxes or agents simultaneously, with concurrent read-write access and built-in replication.
+
+> [!NOTE]
+>
+> This feature is currently in private preview. During the preview, the Agent Drive feature is only available in the `us-was-1` region. Both your drive and your sandbox must be created in this region. Drive size is not configurable at the moment. A quotas system for drive storage is coming soon. [Request access](https://blaxel.fillout.com/t/pbTXmanx3Sus).
+
+Agent Drive is a distributed filesystem that can be mounted to multiple sandboxes or agents at any time, including while they are already running. Drives support concurrent read-write access (RWX) from multiple sandboxes simultaneously, with built-in replication for durability.
+
+Unlike [volumes](https://docs.blaxel.ai/Volumes/Overview), which are block storage devices attached at sandbox creation to a single sandbox, drives behave like a shared cloud filesystem, but mounted directly into a sandbox's file tree. An optimized FUSE client built specifically for this filesystem is added directly to the sandbox or agent to give a POSIX-compliant interface.
+
+- A drive can be attached to an already-running sandbox at any mount path, without needing to recreate the sandbox.
+- Multiple sandboxes can mount the same drive simultaneously with full read-write access.
+- A specific subdirectory of a drive can be mounted using `drivePath` (instead of mounting the entire drive).
+- Drives scale automatically with no fixed capacity limits. Pre-provisioning or run-time resizing is not required.
+
+> [!TIP]
+>
+> Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+## Use cases
+
+Some examples of use cases are:
+
+- Passing data or files from one sandbox to another directly, without needing intermediary storage or services
+- Storing tool call outputs and context histories for use in other agents
+- Sharing common datasets across agents
+- Creating a shared filesystem cache of package dependencies to speed up future agent/sandbox deployments
+
+## Create a drive
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+Create a standalone drive by specifying a unique `name` and `region`. You can also optionally specify the display name and labels for the drive.
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.create({
+  name: "my-drive",
+  region: "us-was-1",
+  displayName: "My Project Drive", // optional; defaults to `name`
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+drive = await DriveInstance.create(
+    {
+        "name": "my-drive",
+        "region": "us-was-1",
+        "display_name": "My Project Drive", # optional; defaults to `name`
+        "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+    }
+)
+```
+
+```bash CLI
+bl drive create --name my-drive --region us-was-1
+```
+
+You can also use `createIfNotExists()` to retrieve an existing drive or create a new one if it doesn't exist:
+
+```tsx TypeScript
+const drive = await DriveInstance.createIfNotExists({
+  name: "my-drive",
+  region: "us-was-1",
+  displayName: "My Project Drive", // optional; defaults to `name`
+  labels: { env: "dev", project: "my-project" }, // optional; labels
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+drive = await DriveInstance.create_if_not_exists(
+    {
+        "name": "my-drive",
+        "region": "us-was-1",
+        "display_name": "My Project Drive", # optional; defaults to `name`
+        "labels": {"env": "dev", "project": "my-project"},  # optional; labels
+    }
+)
+```
+
+## Mount a drive to a sandbox
+
+Drives cannot be attached in the sandbox create call. Unlike [volumes](https://docs.blaxel.ai/Sandboxes/Volumes#attach-a-volume-to-a-sandbox), which use `volumes: [{ name, mountPath }]` at creation, drives are mounted afterward. Create or get a drive in the same region as your sandbox, then call `sandbox.drives.mount(...)`.
+
+Specify the `driveName`, the `mountPath` (where the drive will appear in the sandbox's filesystem), and optionally the `drivePath` (a subdirectory within the drive to mount).
+
+```tsx TypeScript
+import { SandboxInstance, DriveInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-app",
+  region: "us-was-1",
+});
+const drive = await DriveInstance.createIfNotExists({
+  name: "my-app-data",
+  region: "us-was-1",
+});
+
+await sandbox.drives.mount({
+  driveName: drive.name,
+  mountPath: "/mnt/data",
+  drivePath: "/",   // optional; defaults to root of the drive
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+from blaxel.core.drive import DriveInstance
+
+sandbox = await SandboxInstance.create_if_not_exists({
+    "name": "my-app",
+    "region": "us-was-1",
+})
+drive = await DriveInstance.create_if_not_exists({
+    "name": "my-app-data",
+    "region": "us-was-1",
+})
+
+await sandbox.drives.mount(
+    drive_name=drive.name,
+    mount_path="/mnt/data",
+    drive_path="/", # optional; defaults to root of the drive
+)
+```
+
+```bash CLI
+bl drive mount --sandbox my-app --drive my-app-data --mount-path /mnt/data
+```
+
+Once mounted, any file written to `/mnt/data` inside the sandbox will be stored on the drive and persist even after the sandbox is deleted.
+
+### Mount a subdirectory
+
+You can mount a specific subdirectory of a drive rather than its root. This is useful when a single drive contains multiple project directories:
+
+```tsx TypeScript
+await sandbox.drives.mount({
+  driveName: "my-drive",
+  mountPath: "/app/project",
+  drivePath: "/projects/alpha",
+});
+```
+
+```python Python
+await sandbox.drives.mount(
+    drive_name="my-drive",
+    mount_path="/app/project",
+    drive_path="/projects/alpha",
+)
+```
+
+```bash CLI
+bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /app/project --drive-path /projects/alpha
+```
+
+> [!NOTE]
+>
+> `drivePath` / `drive_path` controls the subtree visible to the sandbox. When combined with [drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions), you can restrict a workload to a specific subfolder of a drive using the `path` field in a permission rule.
+
+### Mount a drive as read-only
+
+You can mount a drive in read-only mode:
+
+```tsx TypeScript
+await sandbox.drives.mount({
+  driveName: "my-drive",
+  mountPath: "/mnt/shared",
+  readOnly: true,
+});
+```
+
+```python Python
+await sandbox.drives.mount(
+    drive_name="my-drive",
+    mount_path="/mnt/shared",
+    read_only=True,
+)
+```
+
+```bash CLI
+bl drive mount --sandbox my-sandbox --drive my-drive --mount-path /mnt/shared --read-only
+```
+
+The same drive can be mounted read-write in one sandbox and read-only in others. However, any write attempt to a drive mounted as read-only will fail with a permission error.
+
+> [!NOTE]
+>
+> When [drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions) are configured with `mode: "read"`, read-only access is enforced both at the FUSE mount level and at the storage server level. The workload's identity token is validated against the permission rules, preventing unauthorized remounting in read-write mode.
+
+## List mounted drives
+
+List all drives currently mounted to a sandbox:
+
+```tsx TypeScript
+const mounts = await sandbox.drives.list();
+console.log(mounts);
+```
+
+```python Python
+mounts = await sandbox.drives.list()
+print(mounts)
+```
+
+```bash CLI
+bl drive mounts --sandbox my-sandbox
+```
+
+## List all drives
+
+To retrieve all drives in your workspace, use the built-in SDK pagination helper functions.
+
+> [!NOTE]
+>
+> Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drives = await DriveInstance.list({ limit: 50 });
+for await (const drive of drives) {
+  console.log(drive.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core.drive import DriveInstance
+
+async def main():
+    drives = await DriveInstance.list(limit=50)
+    async for drive in drives.auto_paging_iter():
+        print(drive.name)
+
+asyncio.run(main())
+```
+
+```bash CLI
+bl drive list
+```
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](https://docs.blaxel.ai/sdk-reference/introduction#pagination).
+
+Pagination is also available via the Management API list endpoint.
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/drives?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 24
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/drives?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+> [!TIP]
+>
+> For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+
+For more information, refer to the [API reference documentation](https://docs.blaxel.ai/api-reference/introduction#pagination).
+
+## Get drive details
+
+Retrieve details about a specific drive:
+
+```bash CLI
+bl drive get my-drive
+```
+
+## Unmount a drive
+
+Unmount a drive from a running sandbox by specifying the mount path:
+
+```tsx TypeScript
+await sandbox.drives.unmount("/mnt/data");
+```
+
+```python Python
+await sandbox.drives.unmount("/mnt/data")
+```
+
+```bash CLI
+bl drive unmount --sandbox my-sandbox --mount-path /mnt/data
+```
+
+## Delete a drive
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+// Class-level
+await DriveInstance.delete("my-drive");
+
+// Or instance-level
+const drive = await DriveInstance.get("my-drive");
+await drive.delete();
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+# Class-level
+await DriveInstance.delete("my-drive")
+
+# Or instance-level
+drive = await DriveInstance.get("my-drive")
+await drive.delete()
+```
+
+```bash CLI
+bl drive delete my-drive
+```
+
+> [!TIP]
+>
+> Complete code examples demonstrating all operations are available in Blaxel's GitHub repositories, [for TypeScript](https://github.com/blaxel-ai/sdk-typescript/tree/main/tests/integration/sandbox), [for Python](https://github.com/blaxel-ai/sdk-python/tree/main/tests/integration/core/sandbox), and [for Go](https://github.com/blaxel-ai/sdk-go/tree/main/integration_tests).
+
+## Full example
+
+The following example creates a drive, creates a sandbox from a custom sandbox image using its image ID, mounts the drive, writes a file to the mounted path, and reads it back:
+
+```tsx TypeScript
+import { SandboxInstance, DriveInstance } from "@blaxel/core";
+
+// 1. Create a drive
+const drive = await DriveInstance.createIfNotExists({
+  name: "agent-storage",
+  region: "us-was-1",
+});
+
+// 2. Create a sandbox
+//    Use the image ID of the custom sandbox image
+const sandbox = await SandboxInstance.createIfNotExists({
+  name: "my-agent-sandbox",
+  image: "my-sandbox-image-id",
+  memory: 2048,
+  region: "us-was-1",
+});
+
+// 3. Mount the drive to the sandbox
+await sandbox.drives.mount({
+  driveName: "agent-storage",
+  mountPath: "/mnt/storage",
+  drivePath: "/",
+});
+
+// 4. Write a file to the mounted drive
+await sandbox.fs.write("/mnt/storage/hello.txt", "Hello from the drive!");
+
+// 5. Read it back
+const content = await sandbox.fs.read("/mnt/storage/hello.txt");
+console.log(content); // "Hello from the drive!"
+
+// 6. List mounted drives
+const mounts = await sandbox.drives.list();
+console.log(mounts);
+```
+
+```python Python
+import asyncio
+from blaxel.core.drive import DriveInstance
+from blaxel.core import SandboxInstance
+
+async def main():
+    # 1. Create a drive
+    drive = await DriveInstance.create_if_not_exists(
+        {
+            "name": "agent-storage",
+            "region": "us-was-1",
+        }
+    )
+
+    # 2. Create a sandbox
+    sandbox = await SandboxInstance.create_if_not_exists(
+        {
+            "name": "my-agent-sandbox",
+            "image": "my-sandbox-image-id",
+            "memory": 2048,
+            "region": "us-was-1",
+        }
+    )
+
+    # 3. Mount the drive to the sandbox
+    await sandbox.drives.mount(
+        drive_name="agent-storage",
+        mount_path="/mnt/storage",
+        drive_path="/",
+    )
+
+    # 4. Write a file to the mounted drive
+    await sandbox.fs.write("/mnt/storage/hello.txt", "Hello from the drive!")
+
+    # 5. Read it back
+    content = await sandbox.fs.read("/mnt/storage/hello.txt")
+    print(content)  # "Hello from the drive!"
+
+    # 6. List mounted drives
+    mounts = await sandbox.drives.list()
+    print(mounts)
+
+asyncio.run(main())
+```
+
+- [Drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions): Restrict which sandboxes, agents, or jobs can access a drive.
+
+- [Sandboxes overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn about sandbox lifecycle and configuration.
+
+# Drive permissions
+Source: https://docs.blaxel.ai/Agent-drive/Permissions
+
+Configure label-based ACL rules on an Agent Drive to grant sandboxes, agents, or jobs read or read-write access, scoped to specific paths.
+
+Drive permissions control which sandboxes, agents, or jobs can access the contents of a drive (or a specific folder in a drive). They are access control rules set at the drive level, evaluated against the workload's identity labels. If no permissions are defined on a drive, any workload in the workspace can access all of its contents.
+
+## Mount and access are different things
+
+The most common point of confusion is treating a mount as an access boundary. It is not. Mounting and accessing a drive are two separate operations, and permissions govern access, not the mount.
+
+- Mounting is a client-side operation. It projects a drive's contents into a sandbox's filesystem at a mount path, so the workload can read and write files with a standard POSIX interface. Mounting a drive is like serving a website locally: it changes where the content appears, not who is allowed to reach it.
+- Accessing is reaching the drive's contents. Agent Drive exposes an internal HTTP API, so a workload can read and write a drive's files directly, whether or not the drive is mounted anywhere.
+
+Because a workload can reach a drive's contents through the API without ever mounting it, controlling the mount does not isolate a drive. Permissions are what isolate a drive: they are enforced by the server for every access path, both mounts and direct API calls.
+
+> [!WARNING]
+>
+> By default, a new drive has no permissions, which means any workload in the workspace can access all of its contents, mounted or not. Set permissions to restrict access to the workloads you choose.
+
+## How permissions work
+
+Permissions are a list of access control rules attached to a drive. A workload is granted access when it matches a rule, and the same rules apply whether the workload mounts the drive or calls the HTTP API directly.
+
+Each drive can have up to 3 permission rules. A permission rule contains:
+
+| Field | Description | Default |
+|---|---|---|
+| `labels` | Key-value pairs the workload must have (AND logic within a rule) | Required |
+| `mode` | Access mode: `read` or `read-write` | `read-write` |
+| `path` | Subfolder the workload is restricted to | `/` (full drive) |
+
+Rules are evaluated with OR logic: the first matching rule grants access with its `mode` and `path`. Within a single rule, all specified labels must match (AND logic). If no rule matches, access is denied.
+
+## Label matching
+
+Workload labels are automatically injected into the workload's identity token at creation time. These include infrastructure labels (like `blaxel-workspace`, `blaxel-type`, `blaxel-name`) and any user-defined labels set on the resource's metadata.
+
+To add user-defined labels to a sandbox, set them in `labels` when creating the resource:
+
+```tsx TypeScript
+import { SandboxInstance } from "@blaxel/core";
+
+const sandbox = await SandboxInstance.create({
+  name: "my-sandbox",
+  image: "my-image",
+  labels: { team: "backend", env: "production" },
+});
+```
+
+```python Python
+from blaxel.core import SandboxInstance
+
+sandbox = await SandboxInstance.create(
+    {
+        "name": "my-sandbox",
+        "image": "my-image",
+        "labels": {"team": "backend", "env": "production"},
+    }
+)
+```
+
+These labels then appear in the workload identity token and are evaluated against the drive's permission rules on every access.
+
+## Create a drive with permissions
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.create({
+  name: "team-drive",
+  region: "us-was-1",
+  permissions: [
+    {
+      labels: { team: "backend" },
+      mode: "read-write",
+    },
+    {
+      labels: { team: "frontend" },
+      mode: "read",
+      path: "/shared",
+    },
+  ],
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.create(
+    {
+        "name": "team-drive",
+        "region": "us-was-1",
+        "permissions": [
+            {
+                "labels": {"team": "backend"},
+                "mode": "read-write",
+            },
+            {
+                "labels": {"team": "frontend"},
+                "mode": "read",
+                "path": "/shared",
+            },
+        ],
+    }
+)
+```
+
+## Update permissions on an existing drive
+
+Permissions can be modified on a drive that is already in use.
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.get("team-drive");
+await drive.update({
+  permissions: [
+    {
+      labels: { team: "backend", env: "production" },
+      mode: "read-write",
+    },
+  ],
+});
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.get("team-drive")
+await drive.update(
+    {
+        "permissions": [
+            {
+                "labels": {"team": "backend", "env": "production"},
+                "mode": "read-write",
+            },
+        ],
+    }
+)
+```
+
+To remove all permissions and make the drive open-access again, set `permissions` to an empty array.
+
+## Permission patterns
+
+### Restrict to a single team
+
+Only workloads with `team: "data-science"` can access the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "data-science" }, mode: "read-write" },
+]
+```
+
+### AND logic (multiple labels in one rule)
+
+The workload must have both `team: "backend"` AND `env: "production"` to match:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend", env: "production" }, mode: "read-write" },
+]
+```
+
+### OR logic (multiple rules)
+
+Either `team: "backend"` OR `team: "ml"` can access the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend" }, mode: "read-write" },
+  { labels: { team: "ml" }, mode: "read-write" },
+]
+```
+
+### Read-only access for some teams
+
+The backend team gets full access, the frontend team can only read:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "backend" }, mode: "read-write" },
+  { labels: { team: "frontend" }, mode: "read" },
+]
+```
+
+### Path scoping
+
+Restrict a workload to a specific subfolder within the drive:
+
+```tsx TypeScript
+permissions: [
+  { labels: { team: "analytics" }, mode: "read", path: "/reports" },
+]
+```
+
+The workload can only access files under `/reports`, whether it reads them through the API or mounts the drive.
+
+## Behavior summary
+
+| Scenario | Result |
+|---|---|
+| No permissions defined on drive | Any workload in the workspace can access all contents (via mount or internal API) |
+| Permissions defined, workload labels match a rule | Access allowed with the rule's mode and path |
+| Permissions defined, no rule matches | Access denied |
+| Multiple rules match | First matching rule applies |
+| Rule with empty `mode` | Defaults to `read-write` |
+| Rule with empty `path` | Defaults to `/` (full drive) |
+
+- [Agent Drive overview](https://docs.blaxel.ai/Agent-drive/Overview): Create, mount, and manage drives.
+
+- [Sandboxes overview](https://docs.blaxel.ai/Sandboxes/Overview): Learn about sandbox lifecycle and configuration.
+
+# Access Agent Drive over S3
+Source: https://docs.blaxel.ai/Agent-drive/S3-endpoint
+
+Access an Agent Drive instance from S3-compatible clients using its HTTP endpoint, service account credentials, and SigV4 signing.
+
+Every drive exposes an S3-compatible HTTP endpoint, so you can read and write its contents directly from any S3 client, such as the AWS CLI, boto3, or the AWS SDK for JavaScript, without mounting the drive into a sandbox first.
+
+Requests must use SigV4 signing and path-style addressing (the bucket in the path, not the hostname). Credentials are a [service account](https://docs.blaxel.ai/Security/Service-accounts)'s [API key](https://docs.blaxel.ai/Security/Access-tokens): `AWS_ACCESS_KEY_ID` is the API key's record ID and `AWS_SECRET_ACCESS_KEY` is its raw secret value - **not** the service account's OAuth client ID/secret pair. Personal API keys and OAuth tokens are not supported for S3 access.
+
+> [!WARNING]
+>
+> Drive permission rules (labels, `path`, `mode`) are **not currently enforced** for S3 access. A valid service-account API key grants full read-write access to every drive in the workspace over S3, regardless of any [drive permissions](https://docs.blaxel.ai/Agent-drive/Permissions) configured on them. Only issue S3 credentials to service accounts you're comfortable giving full access to all drives in the workspace; enforcing permission rules over S3 is planned but not yet available.
+
+> [!NOTE]
+>
+> API keys created before S3 support was added may not work for SigV4 signing and will return `InvalidAccessKeyId`. If you hit this error, create a new API key for the service account (or rotate the existing one) and use the new credentials.
+
+## Find a drive's S3 endpoint and bucket
+
+The endpoint is returned in the drive's state as `s3Url`, in the form `{endpoint}/{bucket}`:
+
+```tsx TypeScript
+import { DriveInstance } from "@blaxel/core";
+
+const drive = await DriveInstance.get("my-drive");
+console.log(drive.state?.s3Url);
+```
+
+```python Python
+from blaxel.core.drive import DriveInstance
+
+drive = await DriveInstance.get("my-drive")
+state = drive.drive.state
+print(state.s_3_url if state and state.s_3_url else None)  # low-level field name; a higher-level property is planned
+```
+
+The bucket is the last path segment of `s3Url`; the rest of the URL is the endpoint to pass to your S3 client.
+
+> [!NOTE]
+>
+> The Blaxel CLI does not currently expose the S3 endpoint via `bl drive get`. Use the TypeScript or Python SDK to retrieve it until CLI support is added.
+
+## Use the AWS CLI
+
+Export the service account's API key as AWS-style credentials, then use standard `aws s3` commands with `--endpoint-url` and `--region` set to the drive's endpoint and region:
+
+```bash
+export AWS_ACCESS_KEY_ID="<api-key-id>"       # the API key's record ID, not the service account's OAuth client ID
+export AWS_SECRET_ACCESS_KEY="<api-key-secret>"  # the API key's raw secret value, not the OAuth client secret
+```
+
+```bash
+aws s3 ls "s3://<bucket>/" \
+  --endpoint-url "<endpoint>" \
+  --region "<drive-region>"
+```
+
+```bash
+aws s3 cp ./local.bin "s3://<bucket>/path/local.bin" \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+aws s3 cp "s3://<bucket>/path/local.bin" ./local.bin \
+  --endpoint-url "<endpoint>" --region "<drive-region>"
+```
+
+> [!TIP]
+>
+> The region passed to the S3 client must match the drive's `region`, and the endpoint must be called with path-style addressing (the default for most S3 clients when a custom endpoint is set).
+
+# Volumes
+Source: https://docs.blaxel.ai/Volumes/Overview
+
+Attach Blaxel volumes to sandboxes and other resources for persistent storage that survives recreation, enabling stateful environments.
+
+Blaxel Volumes provide **persistent storage that survives resource destruction and recreation**, enabling stateful environments and data retention across lifecycle events.
+
+While Blaxel automatically snapshots the full state of a sandbox at scale down and stores it in warm storage for ultra-fast boot times, volumes offer a more cost-effective solution to persist files for weeks to years. Use [volume templates](https://docs.blaxel.ai/Volumes/Volumes-templates) to start from a pre-populated filesystem.
+
+Volumes use block storage and can only be accessed by attaching them to a running sandbox or agent. They cannot be mounted locally on your machine. Blaxel also does not support mounting external storage (such as S3 buckets) as volumes.
+
+> [!TIP]
+>
+> Refer to our [blog post on choosing the right storage for your Blaxel agents](https://blaxel.ai/blog/choose-the-right-storage-for-your-blaxel-agents) for more information.
+
+## Create a volume
+
+To create a standalone volume, you must provide a unique `name` and specify its `size` in megabytes (MB). You can also specify optional labels. This volume exists independently of any resource it may later be attached to.
+
+**Learn more about authentication on Blaxel**
+
+The Blaxel SDK requires two environment variables to authenticate:
+
+| Variable | Description |
+|---|---|
+| `BL_WORKSPACE` | Your Blaxel workspace name |
+| `BL_API_KEY` | Your Blaxel API key |
+
+You can create an API key from the [Blaxel console](https://app.blaxel.ai/profile/security). Your workspace name is visible in the URL when you log in to the console (e.g. `app.blaxel.ai/{workspace}`).
+
+Set them as environment variables or add them to a `.env` file at the root of your project:
+
+```bash
+export BL_WORKSPACE=my-workspace
+export BL_API_KEY=my-api-key
+```
+
+When developing locally, you can also **log in to your workspace with Blaxel CLI** (as shown above). This allows you to run Blaxel SDK functions that will automatically connect to your workspace without additional setup. When you deploy on Blaxel, authentication is handled automatically - no environment variables needed.
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.create({
+  name: "my-volume",
+  size: 2048,          // in MB
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,          # in MB
+  "region": "us-pdx-1",
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+
+You can create a volume from a [template](https://docs.blaxel.ai/Volumes/Volumes-templates) to automatically pre-populate it with files.
+
+```typescript TypeScript
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:1",  // Use template-name:revision or template-name:latest
+  region: "us-pdx-1",
+});
+```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:1",  # Use template-name:revision or template-name:latest
+  "region": "us-pdx-1",
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: myvolume
+spec:
+  region: us-pdx-1
+  template: "mytemplate:1"
+EOF
+```
+
+Labels are specified as key-value pairs during volume creation.
+
+```typescript TypeScript
+const volume = await VolumeInstance.create({
+  name: "my-volume",
+  size: 2048,
+  region: "us-pdx-1",
+  labels: { env: "test", project: "12345" },
+});
+```
+
+```python Python
+volume = await VolumeInstance.create({
+  "name": "my-volume",
+  "size": 2048,
+  "region": "us-pdx-1",
+  "labels": {"env": "test", "project": "12345"},
+})
+```
+
+```bash Blaxel CLI
+bl apply -f - <<EOF
+kind: Volume
+metadata:
+  name: my-volume
+  labels:
+    env: test
+    project: 12345
+spec:
+  size: 2048
+  region: us-pdx-1
+EOF
+```
+
+## Delete a volume
+
+Delete a volume by calling:
+
+- the class-level `delete()` method with the volume `name` as argument, or
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+await VolumeInstance.delete("my-volume");
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+await VolumeInstance.delete("my-volume")
+```
+
+- the instance-level `delete()` method:
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.get("my-volume");
+await volume.delete()
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.get("my-volume")
+await volume.delete()
+```
+
+## Resize a volume
+
+> [!NOTE]
+>
+> Currently, it is only possible to increase the volume size (not decrease it).
+
+Resize a volume by calling:
+
+- the class-level `update()` method with the volume `name` and new size as argument, or
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const updatedVolume = await VolumeInstance.update("my-volume", { size: 1024 });
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+updated_volume = await VolumeInstance.update("my-volume", { "size": 1024 })
+```
+
+- the instance-level `update()` method with the new size as argument:
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volume = await VolumeInstance.get("my-volume");
+const updatedVolume = await volume.update({ size: 1024 });
+```
+
+```python Python
+from blaxel.core import VolumeInstance
+
+volume = await VolumeInstance.get("my-volume")
+updated_volume = await volume.update({ "size": 1024 })
+```
+
+## List volumes
+
+To retrieve all volumes in your workspace, use the built-in SDK pagination helper functions.
+
+> [!NOTE]
+>
+> Pagination is recommended for list operations because retrieving all available resources in a single request is slow and resource-intensive, and therefore does not scale well.
+
+```typescript TypeScript
+import { VolumeInstance } from "@blaxel/core";
+
+const volumes = await VolumeInstance.list({ limit: 50 });
+for await (const volume of volumes) {
+  console.log(volume.name);
+}
+```
+
+```python Python
+import asyncio
+from blaxel.core import VolumeInstance
+
+async def main():
+    volumes = await VolumeInstance.list(limit=50)
+    async for volume in volumes.auto_paging_iter():
+        print(volume.name)
+
+asyncio.run(main())
+```
+
+```shell Blaxel CLI
+bl get volumes
+```
+
+For more information on the SDK pagination helpers, refer to the [SDK reference documentation](https://docs.blaxel.ai/sdk-reference/introduction#pagination).
+
+Pagination is also available via the Management API list endpoint.
+
+Request the first page:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+The response includes a `data` array and a `meta` object:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "hasMore": true,
+    "nextCursor": "...",
+    "total": 18
+  }
+}
+```
+
+Pass `meta.nextCursor` as `cursor` on the next request and repeat until `meta.hasMore` is `false`:
+
+```bash
+curl 'https://api.blaxel.ai/v0/volumes?limit=50&cursor=NEXT_CURSOR' \
+  -H 'X-Blaxel-Authorization: Bearer YOUR-API-KEY' \
+  -H 'Blaxel-Version: 2026-04-28'
+```
+
+> [!TIP]
+>
+> For accounts with multiple workspaces, specify the workspace as an additional request parameter, such as `?workspace=WORKSPACE_NAME&...`, or via an additional `X-Blaxel-Workspace: WORKSPACE_NAME` header in the request.
+
+For more information, refer to the [API reference documentation](https://docs.blaxel.ai/api-reference/introduction#pagination).
+
+You can use labels for filtering volumes in the Blaxel CLI or Blaxel Console:
+
+```shell
+# Get volumes with specific label (e.g., env=test)
+bl get volumes -o json | jq -r '.[] | select(.metadata.labels.env == "test") | .metadata.name'
+```
+
+## Use volumes with sandboxes and agents
+
+- [Use volumes with sandboxes](https://docs.blaxel.ai/Sandboxes/Volumes): Attach persistent storage to a sandbox at creation time.
+
+- [Use volumes with agents](https://docs.blaxel.ai/Agents/Volumes): Attach persistent storage to a deployed agent via `blaxel.toml`.
+
+# Volume templates
+Source: https://docs.blaxel.ai/Volumes/Volumes-templates
+
+Create volume templates pre-populated with files, dependencies, or datasets so new Blaxel sandboxes and resources start with environments ready to use.
+
+Volume templates let you create **pre-populated [volumes](https://docs.blaxel.ai/Volumes/Overview) with files and directories**, improving copy performance by up to 90% compared to `cp -r`. Use them to build development environments with pre-installed dependencies, datasets, or application code.
+
+## Create a volume template
+
+### Initialize a new template
+
+To create a new volume template, use the following command:
+
+```bash
+bl new volume-template mytemplate
+```
+
+This creates a folder named `mytemplate` containing a `blaxel.toml` file with the following configuration:
+
+```toml
+type = "volume-template"
+directory = "."          # Root of your volume - everything at and below this level will be copied
+defaultSize = 2048       # Default size in MB for volumes created from this template
+```
+
+The `directory` field specifies which folder's contents will be included in the template:
+- `"."` (default) - Includes everything in the template folder
+- `"app"` - Includes only files inside the `app` subdirectory
+- `"src/data"` - Includes only files inside the `src/data` subdirectory
+
+For example, if you want to include only your application code without configuration files:
+
+```toml
+type = "volume-template"
+directory = "app"        # Only files inside the 'app' folder will be copied
+defaultSize = 2048
+```
+
+### Deploy a volume template
+
+Deploy your volume template to make it available for creating other volumes:
+
+```bash
+bl deploy
+```
+
+To preview the deployment without making changes:
+
+```bash
+bl deploy --dryrun
+```
+
+Each deployment creates a new revision of your template. Revisions are auto-incremented and versioned for rollback capabilities.
+
+## Use volume templates
+
+Once deployed, you can create volumes from your template:
+
+```typescript TypeScript
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:1"  // Use template-name:revision or template-name:latest
+});
+```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:1"  # Use template-name:revision or template-name:latest
+})
+```
+
+Override the default volume size if needed:
+
+```typescript TypeScript
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  size: 4096  // Override the default size if needed
+});
+```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "size": 4096  # Override the default size if needed
+})
+```
+
+Template revisions are incremental and auto-generated. The system maintains a limited number of versions for each template.
+
+## Manage volume templates
+
+List all available templates in your workspace:
+
+```bash
+bl get volumetemplates
+```
+
+View details of a specific template, including size requirements:
+
+```bash
+bl get volumetemplate mytemplate
+```
+
+### Size constraints
+
+Volumes must be provisioned with sufficient space for the template content. If a volume is smaller than the template data, creation will fail with an error.
+
+Always add a delta (extra space) to your volume size beyond the template content size. This ensures you can add files to the volume after it's attached. We recommend provisioning at least 20-30% extra space.
+
+To check your template directory size before deployment:
+
+```bash
+du -sh mytemplate
+```
+
+For example, if your template is 1.5GB, create volumes with at least 2GB of space:
+
+```typescript TypeScript
+const volume = await VolumeInstance.createIfNotExists({
+  name: "myvolume",
+  template: "mytemplate:latest",
+  size: 2048  // 2GB for a 1.5GB template - leaves 500MB for new files
+});
+```
+
+```python Python
+volume = await VolumeInstance.create_if_not_exists({
+  "name": "myvolume",
+  "template": "mytemplate:latest",
+  "size": 2048  # 2GB for a 1.5GB template - leaves 500MB for new files
+})
+```
+
+This helps you set an appropriate `defaultSize` in your `blaxel.toml` or specify the correct size when creating volumes.
+
+### Delete a template
+
+To delete a volume template and all its associated revisions:
+
+```bash
+bl delete volumetemplate mytemplate
+```
+
+Deleting a template does not affect existing volumes created from that template. However, you won't be able to create new volumes from deleted templates.
+
+## Limitations
+
+Volume templates **do not handle symlinks or hardlinks**, which may cause unexpected behavior. In addition, symlinks pointing outside the template (for example, `symlink -> /etc/hosts`) are explicitly forbidden. In these cases, use a copy instead.
+
+As a result, using package managers like `pnpm` or `uv` may also behave unexpectedly if dependencies are vendored within the template.
+
+## Use volume templates with sandboxes and agents
+
+- [Volume templates with sandboxes](https://docs.blaxel.ai/Sandboxes/Volumes#use-volume-templates-with-sandboxes): Create and attach pre-populated volumes to sandboxes.
+
+- [Volume templates with agents](https://docs.blaxel.ai/Agents/Volumes#use-volume-templates-with-agents): Create and attach pre-populated volumes to agents.
+
+# Volume resizing for running sandboxes
+Source: https://docs.blaxel.ai/knowledge-base/configuration-and-operation/volume-resizing-for-running-sandboxes
+
+Increase attached volume capacity while a Blaxel sandbox is running and automate resizing based on disk usage.
+
+You can resize a volume while its sandbox is running. The operation typically completes in under one second.
+
+## Limitations
+
+- You can increase a volume's size but cannot decrease it
+- Blaxel does not currently provide built-in automatic resizing
+
+## Resizing strategy
+
+To avoid running out of disk space:
+
+- Check volume usage before file-intensive commands such as package installations
+- Resize the volume when usage approaches 80%
+- Run a periodic monitor in the sandbox to measure usage and trigger resizing
+
+## Monitor and resize a volume
+
+The following function checks disk usage every three seconds and doubles the volume size when usage reaches 80%:
+
+```typescript
+import { SandboxInstance, VolumeInstance } from "@blaxel/core";
+
+async function startVolumeMonitor(
+  sandbox: SandboxInstance,
+  volumeName: string,
+  mountPath: string,
+  initialSizeMB: number,
+  usageThresholdPercent: number = 80,
+  growthFactor: number = 2,
+  pollIntervalSeconds: number = 3,
+) {
+  let currentSizeMB = initialSizeMB;
+  let resizing = false;
+
+  const monitorCmd = `while true; do df -m ${mountPath}; sleep ${pollIntervalSeconds}; done`;
+
+  await sandbox.process.exec({
+    command: monitorCmd,
+    onLog: (log) => {
+      const lines = log.split("\n");
+
+      for (const line of lines) {
+        if (!line.includes(mountPath) || line.startsWith("Filesystem")) continue;
+
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 5) continue;
+
+        const usagePercent = parseInt(parts[4]!.replace("%", ""), 10);
+        if (isNaN(usagePercent)) continue;
+
+        console.log(
+          `[monitor] ${parts[2]}MB used / ${parts[1]}MB total (${usagePercent}%)`,
+        );
+
+        if (usagePercent >= usageThresholdPercent && !resizing) {
+          resizing = true;
+          const newSize = Math.ceil(currentSizeMB * growthFactor);
+
+          console.log(
+            `[monitor] Usage ${usagePercent}% >= ${usageThresholdPercent}%, resizing ${currentSizeMB}MB to ${newSize}MB`,
+          );
+
+          VolumeInstance.update(volumeName, { size: newSize })
+            .then(() => {
+              currentSizeMB = newSize;
+              console.log(`[monitor] Resize to ${newSize}MB complete`);
+            })
+            .catch((err) => {
+              console.error("[monitor] Resize failed:", err);
+            })
+            .finally(() => {
+              resizing = false;
+            });
+        }
+      }
+    },
+  });
+
+  return {
+    getCurrentSize: () => currentSizeMB,
+  };
+}
+```
+
+Adjust the threshold, growth factor, and polling interval for your workload.
+
+- [Volumes overview](https://docs.blaxel.ai/Volumes/Overview#resize-a-volume): Create, inspect, resize, and delete volumes.
+
+- [Volumes for sandboxes](https://docs.blaxel.ai/Sandboxes/Volumes): Attach persistent storage to a sandbox.
